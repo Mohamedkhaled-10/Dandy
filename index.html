@@ -65,6 +65,11 @@
       <a href="#"><i class="fab fa-whatsapp"></i></a>
     </div>
   </footer>
+  <!-- زر الوضع الليلي -->
+<button id="theme-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+
 <script>
   // سلايدر الصور
    let current = 0;
@@ -92,6 +97,28 @@
     }
     lastScrollTop = scrollTop;
   });
+</script>
+<script>
+  // 🌙 زر الوضع الليلي
+const toggleBtn = document.getElementById("theme-toggle");
+const icon = toggleBtn.querySelector("i");
+
+// حفظ التفضيل
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+  document.body.classList.add("dark-mode");
+  icon.classList.replace("fa-moon", "fa-sun");
+}
+
+toggleBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  const isDark = document.body.classList.contains("dark-mode");
+  icon.classList.toggle("fa-moon", !isDark);
+  icon.classList.toggle("fa-sun", isDark);
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+});
+
+
 </script>
 </body>
 </html>

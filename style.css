@@ -237,3 +237,112 @@ footer p {
       color: var(--accent-color);
       transform: scale(1.2);
     }
+
+    /* 🌙 الوضع الليلي */
+body.dark-mode {
+  background-color: #121212;
+  color: #f49ac1;
+}
+
+body.dark-mode nav {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode nav .logo,
+body.dark-mode nav ul li a {
+  color: #f49ac1;
+}
+
+body.dark-mode nav ul li a::after {
+  background-color: #f49ac1;
+}
+
+body.dark-mode footer {
+  background-color: #1e1e1e;
+  color: #f49ac1;
+}
+
+body.dark-mode .product {
+  background-color: #222;
+  color: #f49ac1;
+}
+
+body.dark-mode .product a {
+  background-color: #f49ac1;
+  color: #121212;
+}
+
+body.dark-mode .product a:hover {
+  background-color: #e07aa2;
+  color: white;
+}
+
+body.dark-mode .price {
+  color: #ff80b0;
+}
+
+body.dark-mode .btn-facebook,
+body.dark-mode .btn-whatsapp,
+body.dark-mode .btn-instagram {
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px rgba(244, 154, 193, 0.4);
+}
+
+body.dark-mode .social-icons a {
+  color: #f49ac1;
+}
+
+body.dark-mode .buttons a {
+  color: #121212;
+}
+
+/* 🌟 زر التحويل بين الوضعين */
+#theme-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #f49ac1;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.2rem;
+  color: white;
+  cursor: pointer;
+  z-index: 2000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s, transform 0.3s;
+}
+
+#theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* قسم المنتجات بالكامل في الوضع الليلي */
+body.dark-mode .products {
+  background-color: #1e1e1e;
+}
+
+body.dark-mode .products h2 {
+  color: #f49ac1;
+}
+
+body.dark-mode .product {
+  background-color: #2b2b2b;
+  color: #f49ac1;
+}
+
+body.dark-mode .product h3 {
+  color: #f49ac1;
+}
+
+body.dark-mode .product a {
+  background-color: #f49ac1;
+  color: #1e1e1e;
+}
+
+body.dark-mode .product a:hover {
+  background-color: #e07aa2;
+  color: white;
+}
