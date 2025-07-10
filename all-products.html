@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>كل المنتجات | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 2rem auto 3rem;
+      max-width: 800px;
+      justify-content: center;
+    }
+
+    .filter-bar label {
+      background-color: var(--primary-color);
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--text-color);
+      transition: background 0.3s;
+    }
+
+    .filter-bar input[type="checkbox"] {
+      display: none;
+    }
+
+    .filter-bar input[type="checkbox"]:checked + label {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .product.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="logo">
+  <img src="images/logo.png" alt="Dandy Logo" />
+</div>
+    <ul>
+      <li><a href="index.html">الرئيسية</a></li>
+      <li><a href="#products">المنتجات</a></li>
+      <li><a href="#contact">تواصل معنا</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+<section class="hero">
+  <div class="hero-slider">
+    <img src="images/hero/hero-1.jpg" alt="عرض 1" class="active">
+    <img src="images/hero/hero-2.jpg" alt="عرض 2">
+    <img src="images/hero/hero-3.jpg" alt="عرض 3">
+  </div>
+</section>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <input type="checkbox" id="filter1" data-category="الشعر">
+    <label for="filter1">الشعر</label>
+
+    <input type="checkbox" id="filter2" data-category="مرطبات">
+    <label for="filter2">مرطبات</label>
+
+    <input type="checkbox" id="filter3" data-category="الشفاه">
+    <label for="filter3">الشفاه</label>
+  </div>
+
+  <!-- Products -->
+  <section class="products">
+    <h2>كل المنتجات</h2>
+    <div class="product-grid" id="productContainer">
+      <div class="product" data-category="الشعر">
+        <img src="images/products/product-1.jpg" alt="الشعر 1">
+        <h3>Hair wax</h3>
+        <a href="product.html?id=1">تواصلي الآن</a>
+      </div>
+
+      <div class="product" data-category="مرطبات">
+        <img src="images/products/product-2.jpg" alt="مرطبات 1">
+        <h3>DANDY Fragrance Mist</h3>
+        <a href="product.html?id=2">تواصلي الآن</a>
+      </div>
+
+      <div class="product" data-category="الشفاه">
+        <img src="images/products/product-3.jpg" alt="الشفاه 1">
+        <h3>DANDY ( Gel )Tint</h3>
+        <a href="product.html?id=3">تواصلي الآن</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <p>© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+      <a href="#"><i class="fab fa-whatsapp"></i></a>
+    </div>
+  </footer>
+
+  <script>
+    const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
+    const products = document.querySelectorAll('.product');
+
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const activeFilters = Array.from(checkboxes)
+          .filter(chk => chk.checked)
+          .map(chk => chk.getAttribute('data-category'));
+
+        products.forEach(product => {
+          const category = product.getAttribute('data-category');
+          if (activeFilters.length === 0 || activeFilters.includes(category)) {
+            product.classList.remove('hidden');
+          } else {
+            product.classList.add('hidden');
+          }
+        });
+      });
+    });
+    // إخفاء وظهور شريط التنقل
+  let lastScrollTop = 0;
+  const nav = document.querySelector('nav');
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > lastScrollTop) {
+      // نازل
+      nav.style.top = "-80px";
+    } else {
+      // طالع
+      nav.style.top = "0";
+    }
+    lastScrollTop = scrollTop;
+  });
+  </script>
+</body>
+</html>
