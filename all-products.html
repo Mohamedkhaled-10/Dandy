@@ -211,7 +211,7 @@ toggleBtn.addEventListener("click", () => {
       productEl.innerHTML = `
         <img src="${data.image}" alt="${data.name}">
         <h3>${data.name}</h3>
-        <a href="#">تواصلي الآن</a>
+        <a href="product.html?id=${child.key}">تواصلي الآن</a>
       `;
       container.appendChild(productEl);
     });
