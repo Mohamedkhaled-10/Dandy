@@ -48,6 +48,45 @@
     button:hover {
       background-color: #8e3e63;
     }
+
+    .products-list {
+      max-width: 700px;
+      margin: 3rem auto;
+      background: #fff;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .product-item {
+      border-bottom: 1px solid #ddd;
+      padding: 1rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-item:last-child {
+      border-bottom: none;
+    }
+
+    .product-name {
+      font-weight: bold;
+      color: #444;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+    }
   </style>
 </head>
 <body>
@@ -66,11 +105,27 @@
     <label>رابط الصورة</label>
     <input type="url" id="image" required placeholder="مثال: https://...">
 
-    <label>الوصف (اختياري)</label>
+    <label>الوصف</label>
     <textarea id="description"></textarea>
+
+    <label>السعر</label>
+    <input type="text" id="price" required placeholder="مثال: EGP 250">
+
+    <label>رابط واتساب</label>
+    <input type="url" id="whatsapp" required placeholder="https://wa.me/...">
+
+    <label>رابط فيسبوك</label>
+    <input type="url" id="facebook" required>
+
+    <label>رابط إنستجرام</label>
+    <input type="url" id="instagram" required>
 
     <button type="submit">إضافة المنتج</button>
   </form>
+
+  <div class="products-list" id="productsList">
+    <h2 style="text-align:center">المنتجات الحالية</h2>
+  </div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -90,26 +145,64 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // إضافة المنتج
     document.getElementById("productForm").addEventListener("submit", function(e) {
       e.preventDefault();
+
       const name = document.getElementById("name").value;
       const category = document.getElementById("category").value;
       const image = document.getElementById("image").value;
       const description = document.getElementById("description").value;
+      const price = document.getElementById("price").value;
+      const whatsapp = document.getElementById("whatsapp").value;
+      const facebook = document.getElementById("facebook").value;
+      const instagram = document.getElementById("instagram").value;
 
       const newProductRef = db.ref("products").push();
       newProductRef.set({
-        name,
-        category,
-        image,
-        description
+        name, category, image, description, price, whatsapp, facebook, instagram
       }).then(() => {
-        alert("تم إضافة المنتج بنجاح!");
+        alert("✅ تم إضافة المنتج بنجاح!");
         document.getElementById("productForm").reset();
+        loadProducts(); // تحديث القائمة
       }).catch(error => {
-        console.error("خطأ:", error);
+        console.error("❌ خطأ:", error);
       });
     });
+
+    // تحميل المنتجات وعرضها
+    function loadProducts() {
+      const list = document.getElementById("productsList");
+      list.innerHTML = '<h2 style="text-align:center">المنتجات الحالية</h2>';
+
+      db.ref("products").once("value", snapshot => {
+        snapshot.forEach(child => {
+          const product = child.val();
+          const key = child.key;
+
+          const div = document.createElement("div");
+          div.className = "product-item";
+          div.innerHTML = `
+            <span class="product-name">${product.name}</span>
+            <button class="delete-btn" onclick="deleteProduct('${key}')">حذف</button>
+          `;
+          list.appendChild(div);
+        });
+      });
+    }
+
+    // حذف منتج
+    function deleteProduct(key) {
+      if (confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) {
+        db.ref("products").child(key).remove().then(() => {
+          alert("تم حذف المنتج");
+          loadProducts();
+        });
+      }
+    }
+
+    // تحميل المنتجات عند التشغيل
+    loadProducts();
   </script>
 </body>
 </html>
