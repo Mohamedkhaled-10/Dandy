@@ -145,6 +145,26 @@ textarea:focus {
       width: 100%;
     }
   }
+
+  #toast {
+  position: fixed;
+  top: -100px;
+  right: 20px;
+  background-color: #6d214f;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transition: top 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+}
+#toast.show {
+  top: 20px;
+  opacity: 1;
+}
+
   </style>
 </head>
 <body>
@@ -185,6 +205,8 @@ textarea:focus {
     <h2 style="text-align:center">المنتجات الحالية</h2>
   </div>
 
+  <div id="toast" style="display:none;"></div>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -216,17 +238,17 @@ textarea:focus {
       const facebook = document.getElementById("facebook").value;
       const instagram = document.getElementById("instagram").value;
 
-      const newProductRef = db.ref("products").push();
-      newProductRef.set({
-        name, category, image, description, price, whatsapp, facebook, instagram
-      }).then(() => {
-        alert("✅ تم إضافة المنتج بنجاح!");
-        document.getElementById("productForm").reset();
-        loadProducts(); // تحديث القائمة
-      }).catch(error => {
-        console.error("❌ خطأ:", error);
-      });
-    });
+const newProductRef = db.ref("products").push();
+newProductRef.set({
+  name, category, image, description, price, whatsapp, facebook, instagram
+}).then(() => {
+  showToast("✅ تم إضافة المنتج بنجاح!");
+  document.getElementById("productForm").reset();
+  loadProducts(); // تحديث القائمة
+}).catch(error => {
+  console.error("❌ خطأ:", error);
+  showToast("❌ حدث خطأ أثناء الإضافة");
+});
 
     // تحميل المنتجات وعرضها
     function loadProducts() {
@@ -249,18 +271,34 @@ textarea:focus {
       });
     }
 
-    // حذف منتج
-    function deleteProduct(key) {
-      if (confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) {
-        db.ref("products").child(key).remove().then(() => {
-          alert("تم حذف المنتج");
-          loadProducts();
-        });
-      }
-    }
+// حذف منتج
+function deleteProduct(key) {
+  if (confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) {
+    db.ref("products").child(key).remove().then(() => {
+      showToast("🗑️ تم حذف المنتج");
+      loadProducts();
+    }).catch(error => {
+      console.error("❌ خطأ في الحذف:", error);
+      showToast("❌ حدث خطأ أثناء حذف المنتج");
+    });
+  }
+}
+
 
     // تحميل المنتجات عند التشغيل
     loadProducts();
   </script>
+<script>
+function showToast(message, duration = 3000) {
+  const toast = document.getElementById("toast");
+  toast.innerText = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, duration);
+}
+
+</script>
 </body>
 </html>
