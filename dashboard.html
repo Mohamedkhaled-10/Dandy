@@ -6,6 +6,8 @@
   <title>لوحة التحكم | Dandy</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
@@ -37,9 +39,7 @@
       color: #f8a5c2;
     }
 
-    input,
-    select,
-    textarea {
+    input, select, textarea {
       width: 100%;
       padding: 0.9rem 1rem;
       margin-bottom: 1.5rem;
@@ -220,6 +220,9 @@
 
   <div class="products-list" id="productsList">
     <h2>المنتجات الحالية</h2>
+    <div style="text-align: center; margin-bottom: 1rem;">
+      <button onclick="downloadExcel()" style="width: auto; padding: 0.7rem 1.5rem;">📥 تحميل أسماء المنتجات Excel</button>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -277,7 +280,12 @@
 
     function loadProducts() {
       const list = document.getElementById("productsList");
-      list.innerHTML = '<h2>المنتجات الحالية</h2>';
+      list.innerHTML = `
+        <h2>المنتجات الحالية</h2>
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <button onclick="downloadExcel()" style="width: auto; padding: 0.7rem 1.5rem;">📥 تحميل أسماء المنتجات Excel</button>
+        </div>
+      `;
 
       db.ref("products").once("value", snapshot => {
         snapshot.forEach(child => {
@@ -305,6 +313,26 @@
           loadProducts();
         });
       }
+    }
+
+    function downloadExcel() {
+      db.ref("products").once("value", snapshot => {
+        const products = [];
+        snapshot.forEach(child => {
+          const p = child.val();
+          products.push({
+            "اسم المنتج": p.name,
+            "الفئة": p.category,
+            "السعر": p.price
+          });
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(products);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "المنتجات");
+
+        XLSX.writeFile(workbook, "منتجات_Dandy.xlsx");
+      });
     }
 
     loadProducts();
