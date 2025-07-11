@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>إحصائيات الزوار | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #f8a5c2;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .card {
+      background-color: #1e1e2e;
+      padding: 1rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    canvas {
+      background-color: #1e1e2e;
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    .table-container {
+      background-color: #1e1e2e;
+      border-radius: 15px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-top: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #444;
+    }
+    th {
+      background-color: #29293d;
+      color: #f8a5c2;
+    }
+    .download-btn {
+      margin-top: 1rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      background: #f8a5c2;
+      color: #1e1e2e;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>إحصائيات الزوار - Dandy</h1>
+
+  <div class="stats">
+    <div class="card"><h3>آخر ساعة</h3><p id="lastHour">0</p></div>
+    <div class="card"><h3>اليوم</h3><p id="today">0</p></div>
+    <div class="card"><h3>الشهر</h3><p id="month">0</p></div>
+    <div class="card"><h3>السنة</h3><p id="year">0</p></div>
+  </div>
+
+  <canvas id="chart" height="100"></canvas>
+
+  <div class="table-container">
+    <h2>زيارات اليوم</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>الوقت</th>
+          <th>الصفحة</th>
+          <th>المتصفح</th>
+        </tr>
+      </thead>
+      <tbody id="todayVisits"></tbody>
+    </table>
+    <button class="download-btn" onclick="downloadExcel()">📥 تحميل ملف Excel</button>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function getBrowserInfo(ua) {
+      if (!ua) return "غير معروف";
+      if (ua.includes("Chrome") && !ua.includes("Edg") && !ua.includes("OPR")) return "Chrome";
+      if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+      if (ua.includes("Firefox")) return "Firefox";
+      if (ua.includes("Edg")) return "Edge";
+      if (ua.includes("OPR") || ua.includes("Opera")) return "Opera";
+      if (ua.includes("iPhone")) return "iPhone";
+      if (ua.includes("Android")) return "Android";
+      return "غير معروف";
+    }
+
+    function countVisits(visits) {
+      const now = new Date();
+      let lastHour = 0, today = 0, month = 0, year = 0;
+      const todayList = [];
+
+      visits.forEach(v => {
+        const time = new Date(v.timestamp);
+        const diff = (now - time) / (1000 * 60); // minutes
+        if (diff <= 60) lastHour++;
+        if (time.toDateString() === now.toDateString()) {
+          today++;
+          todayList.push({
+            date: time.toLocaleDateString(),
+            time: time.toLocaleTimeString(),
+            page: v.page || "غير معروف",
+            agent: getBrowserInfo(v.userAgent)
+          });
+        }
+        if (time.getMonth() === now.getMonth() && time.getFullYear() === now.getFullYear()) month++;
+        if (time.getFullYear() === now.getFullYear()) year++;
+      });
+
+      document.getElementById("lastHour").innerText = lastHour;
+      document.getElementById("today").innerText = today;
+      document.getElementById("month").innerText = month;
+      document.getElementById("year").innerText = year;
+
+      const tbody = document.getElementById("todayVisits");
+      tbody.innerHTML = todayList.map(v => `<tr><td>${v.date}</td><td>${v.time}</td><td>${v.page}</td><td>${v.agent}</td></tr>`).join("");
+
+      drawChart(visits);
+    }
+
+    function drawChart(visits) {
+      const hours = Array(24).fill(0);
+      const now = new Date();
+      visits.forEach(v => {
+        const time = new Date(v.timestamp);
+        if (time.toDateString() === now.toDateString()) {
+          hours[time.getHours()]++;
+        }
+      });
+
+      new Chart(document.getElementById('chart'), {
+        type: 'bar',
+        data: {
+          labels: hours.map((_, i) => `${i}:00`),
+          datasets: [{
+            label: 'عدد الزيارات في كل ساعة اليوم',
+            data: hours,
+            backgroundColor: '#f8a5c2'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { ticks: { color: '#fff' } },
+            y: { ticks: { color: '#fff' } }
+          }
+        }
+      });
+    }
+
+    function downloadExcel() {
+      const table = document.getElementById("todayVisits");
+      const rows = [["التاريخ", "الوقت", "الصفحة", "المتصفح"]];
+      Array.from(table.rows).forEach(tr => {
+        const row = Array.from(tr.cells).map(td => td.innerText);
+        rows.push(row);
+      });
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, "زيارات اليوم");
+      XLSX.writeFile(wb, `زيارات_اليوم_${new Date().toLocaleDateString()}.xlsx`);
+    }
+
+    db.ref("visits").once("value").then(snapshot => {
+      const visits = [];
+      snapshot.forEach(child => {
+        visits.push(child.val());
+      });
+      countVisits(visits);
+    });
+  </script>
+</body>
+</html>
