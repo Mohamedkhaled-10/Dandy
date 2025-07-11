@@ -102,41 +102,26 @@
 
   <!-- Products -->
   <section class="products">
-  <!-- ✅ Firebase v8 - الإصدار المناسب لطريقتك في الكود -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <h2>كل المنتجات</h2>
+    <div class="product-grid" id="productContainer">
+      <div class="product" data-category="الشعر">
+        <img src="images/products/product-1.jpg" alt="الشعر 1">
+        <h3>Hair wax</h3>
+        <a href="product.html?id=1">تواصلي الآن</a>
+      </div>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-  authDomain: "dandy-562fc.firebaseapp.com",
-  projectId: "dandy-562fc",
-  storageBucket: "dandy-562fc.firebasestorage.app",
-  messagingSenderId: "454972972842",
-  appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-};
+      <div class="product" data-category="مرطبات">
+        <img src="images/products/product-2.jpg" alt="مرطبات 1">
+        <h3>DANDY Fragrance Mist</h3>
+        <a href="product.html?id=2">تواصلي الآن</a>
+      </div>
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  const productContainer = document.getElementById("productContainer");
-
-  db.collection("products").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-    productContainer.innerHTML = ""; // تفريغ الموجود
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const div = document.createElement("div");
-      div.className = "product";
-      div.setAttribute("data-category", data.category);
-      div.innerHTML = `
-        <img src="${data.image}" alt="${data.name}">
-        <h3>${data.name}</h3>
-        <a href="${data.link}">تواصلي الآن</a>
-      `;
-      productContainer.appendChild(div);
-    });
-  });
-</script>
+      <div class="product" data-category="الشفاه">
+        <img src="images/products/product-3.jpg" alt="الشفاه 1">
+        <h3>DANDY ( Gel )Tint</h3>
+        <a href="product.html?id=3">تواصلي الآن</a>
+      </div>
+    </div>
   </section>
 
   <!-- Footer -->
@@ -211,6 +196,5 @@ toggleBtn.addEventListener("click", () => {
 
 
 </script>
-
 </body>
 </html>
