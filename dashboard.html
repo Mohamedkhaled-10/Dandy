@@ -183,28 +183,6 @@
       }
     }
   </style>
-
-  <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-    authDomain: "dandy-562fc.firebaseapp.com",
-  };
-
-  firebase.initializeApp(firebaseConfig);
-
-  // حماية الصفحة
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) {
-      // لم يتم تسجيل الدخول – رجع المستخدم لصفحة الدخول
-      window.location.href = "login.html";
-    }
-  });
-</script>
-
 </head>
 <body>
   <h1>لوحة التحكم - إضافة منتج</h1>
@@ -252,7 +230,8 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
@@ -266,6 +245,13 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+      // حماية الصفحة
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
+      // لم يتم تسجيل الدخول – رجع المستخدم لصفحة الدخول
+      window.location.href = "login.html";
+    }
+  });
 
     function showNotification(message) {
       const note = document.createElement("div");
