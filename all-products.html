@@ -104,23 +104,7 @@
   <section class="products">
     <h2>كل المنتجات</h2>
     <div class="product-grid" id="productContainer">
-      <div class="product" data-category="الشعر">
-        <img src="images/products/product-1.jpg" alt="الشعر 1">
-        <h3>Hair wax</h3>
-        <a href="product.html?id=1">تواصلي الآن</a>
-      </div>
-
-      <div class="product" data-category="مرطبات">
-        <img src="images/products/product-2.jpg" alt="مرطبات 1">
-        <h3>DANDY Fragrance Mist</h3>
-        <a href="product.html?id=2">تواصلي الآن</a>
-      </div>
-
-      <div class="product" data-category="الشفاه">
-        <img src="images/products/product-3.jpg" alt="الشفاه 1">
-        <h3>DANDY ( Gel )Tint</h3>
-        <a href="product.html?id=3">تواصلي الآن</a>
-      </div>
+      <!-- كل المنتجات هتظهر هنا -->
     </div>
   </section>
 
@@ -196,5 +180,43 @@ toggleBtn.addEventListener("click", () => {
 
 
 </script>
+
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const container = document.getElementById("productContainer");
+
+  db.ref("products").on("value", snapshot => {
+    container.innerHTML = "";
+    snapshot.forEach(child => {
+      const data = child.val();
+      const productEl = document.createElement("div");
+      productEl.className = "product";
+      productEl.setAttribute("data-category", data.category);
+      productEl.innerHTML = `
+        <img src="${data.image}" alt="${data.name}">
+        <h3>${data.name}</h3>
+        <a href="#">تواصلي الآن</a>
+      `;
+      container.appendChild(productEl);
+    });
+  });
+</script>
+
 </body>
 </html>
