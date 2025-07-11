@@ -374,5 +374,31 @@
     <a href="statues.html" style="display:inline-block; background:#3498db; color:white; padding:0.9rem 2rem; border-radius:12px; font-weight:bold; text-decoration:none;">📊 عرض إحصائيات الزوار</a>
   </div>
 
+  <div style="margin-top: -1rem; margin-bottom: 1rem;">
+  <label><i class="fas fa-magic"></i> توليد رابط واتساب من رقم الهاتف</label>
+  <div style="display:flex; gap:0.5rem;">
+    <input type="text" id="waNumber" placeholder="مثال: 201234567890" style="flex:1;">
+    <button type="button" onclick="generateWhatsAppLink()" style="background:#2ecc71; color:#fff; padding:0 1rem; border-radius:10px; border:none; cursor:pointer;">🔗 نسخ الرابط</button>
+  </div>
+</div>
+
+  <script>
+
+    function generateWhatsAppLink() {
+  const number = document.getElementById("waNumber").value.trim();
+  if (!number.match(/^2?01[0-9]{8}$/)) {
+    return showNotification("⚠️ رقم الهاتف غير صحيح! مثال صحيح: 201234567890");
+  }
+
+  const link = `https://wa.me/${number}`;
+  navigator.clipboard.writeText(link).then(() => {
+    document.getElementById("whatsapp").value = link; // تعبئة حقل واتساب تلقائياً
+    showNotification("✅ تم توليد ونسخ رابط واتساب بنجاح!");
+  }).catch(() => {
+    showNotification("❌ فشل النسخ إلى الحافظة!");
+  });
+}
+
+  </script>
 </body>
 </html>
