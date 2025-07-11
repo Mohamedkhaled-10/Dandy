@@ -283,28 +283,6 @@
 </button>
 
   <script>
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-
-  const container = document.querySelector(".container");
-
-  db.ref("products/" + id).once("value").then(snapshot => {
-    if (snapshot.exists()) {
-      const product = snapshot.val();
-      document.getElementById("product-img").src = product.image;
-      document.getElementById("product-title").textContent = product.name;
-      document.getElementById("product-desc").textContent = product.description || "لا يوجد وصف متاح.";
-      document.getElementById("product-price").textContent = product.price || "السعر غير متوفر";
-      document.getElementById("whatsapp-link").href = product.whatsapp || "#";
-      document.getElementById("facebook-link").href = product.facebook || "#";
-      document.getElementById("instagram-link").href = product.instagram || "#";
-    } else {
-      container.innerHTML = '<p style="text-align:center; font-size:1.2rem">المنتج غير موجود.</p>';
-    }
-  }).catch(error => {
-    container.innerHTML = '<p style="text-align:center; font-size:1.2rem">حدث خطأ أثناء تحميل المنتج.</p>';
-    console.error(error);
-  });
     // إخفاء وظهور شريط التنقل
   let lastScrollTop = 0;
   const nav = document.querySelector('nav');
@@ -362,6 +340,29 @@ toggleBtn.addEventListener("click", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 </script>
+<script>
+    const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
 
+  const container = document.querySelector(".container");
+
+  db.ref("products/" + id).once("value").then(snapshot => {
+    if (snapshot.exists()) {
+      const product = snapshot.val();
+      document.getElementById("product-img").src = product.image;
+      document.getElementById("product-title").textContent = product.name;
+      document.getElementById("product-desc").textContent = product.description || "لا يوجد وصف متاح.";
+      document.getElementById("product-price").textContent = product.price || "السعر غير متوفر";
+      document.getElementById("whatsapp-link").href = product.whatsapp || "#";
+      document.getElementById("facebook-link").href = product.facebook || "#";
+      document.getElementById("instagram-link").href = product.instagram || "#";
+    } else {
+      container.innerHTML = '<p style="text-align:center; font-size:1.2rem">المنتج غير موجود.</p>';
+    }
+  }).catch(error => {
+    container.innerHTML = '<p style="text-align:center; font-size:1.2rem">حدث خطأ أثناء تحميل المنتج.</p>';
+    console.error(error);
+  });
+</script>
 </body>
 </html>
