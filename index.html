@@ -144,5 +144,40 @@ toggleBtn.addEventListener("click", () => {
 
 
 </script>
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // نمنع التكرار عبر localStorage: كل زيارة تتسجل مرة كل 30 دقيقة فقط
+  const lastVisit = localStorage.getItem("last_visit_time");
+  const now = new Date();
+
+  if (!lastVisit || (now - new Date(lastVisit)) > 30 * 60 * 1000) {
+    // حفظ الوقت محليًا
+    localStorage.setItem("last_visit_time", now.toISOString());
+
+    // إرسال البيانات إلى Firebase
+    db.ref("visits").push({
+      timestamp: now.toISOString(),
+      userAgent: navigator.userAgent,
+      page: window.location.pathname
+    });
+  }
+</script>
+
 </body>
 </html>
