@@ -385,20 +385,28 @@
 
 
   <script>
+function generateWhatsAppLink() {
+  let number = document.getElementById("waNumber").value.trim();
 
-    function generateWhatsAppLink() {
-  const number = document.getElementById("waNumber").value.trim();
-  if (!number.match(/^2?01[0-9]{8}$/)) {
-    return showNotification("⚠️ رقم الهاتف غير صحيح! مثال صحيح: 201234567890");
+  // إزالة أي فراغات أو شرطات أو رموز
+  number = number.replace(/\D/g, '');
+
+  // التأكد إن الرقم يبدأ بـ 01 ومكون من 11 رقم
+  if (!number.match(/^01[0-9]{9}$/)) {
+    return showNotification("⚠️ من فضلك أدخل رقم مصري صحيح مثل: 01234567891");
   }
 
-  const link = `https://wa.me/${number}`;
-  navigator.clipboard.writeText(link).then(() => {
-    document.getElementById("whatsapp").value = link; // تعبئة حقل واتساب تلقائياً
-    showNotification("✅ تم توليد ونسخ رابط واتساب بنجاح!");
-  }).catch(() => {
-    showNotification("❌ فشل النسخ إلى الحافظة!");
-  });
+  const fullNumber = `2${number}`; // إضافة كود مصر
+  const link = `https://wa.me/${fullNumber}`;
+  document.getElementById("whatsapp").value = link;
+
+  navigator.clipboard.writeText(link)
+    .then(() => {
+      showNotification("✅ تم إنشاء ونسخ رابط واتساب!");
+    })
+    .catch(() => {
+      showNotification("❌ لم يتم النسخ تلقائيًا، انسخه يدويًا.");
+    });
 }
 
   </script>
