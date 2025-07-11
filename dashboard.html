@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>لوحة التحكم | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #9e6f42;
+      --secondary: #f1e8e1;
+      --bg: #f9f9f9;
+      --text-dark: #333;
+      --text-light: #777;
+      --white: #fff;
+    }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background-color: var(--bg);
+      color: var(--text-dark);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 2rem;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      background-color: var(--white);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+
+    form input, form select, form button {
+      width: 100%;
+      margin-bottom: 1.2rem;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    form button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    form button:hover {
+      background-color: #87572e;
+    }
+
+    #productList {
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .product-preview {
+      background: var(--white);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    }
+
+    .product-preview img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid #eee;
+    }
+
+    .product-preview h3 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--primary);
+    }
+
+    .product-preview p {
+      margin: 0.5rem 0;
+      color: var(--text-light);
+    }
+
+    .product-preview a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .product-preview a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+</head>
+<body>
+
+  <h1>لوحة التحكم - إضافة منتج جديد</h1>
+
+  <form id="addProductForm">
+    <input type="text" id="name" placeholder="اسم المنتج" required>
+    <input type="text" id="image" placeholder="رابط الصورة" required>
+    <select id="category" required>
+      <option value="">اختر الفئة</option>
+      <option value="الشعر">الشعر</option>
+      <option value="مرطبات">مرطبات</option>
+      <option value="الشفاه">الشفاه</option>
+    </select>
+    <input type="text" id="link" placeholder="رابط التفاصيل (مثلاً: product.html?id=...)" required>
+    <button type="submit">إضافة المنتج</button>
+  </form>
+
+  <div id="productList"></div>
+
+  <script>
+    const form = document.getElementById("addProductForm");
+    const productList = document.getElementById("productList");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const image = document.getElementById("image").value.trim();
+      const category = document.getElementById("category").value;
+      const link = document.getElementById("link").value.trim();
+
+      const existing = await db.collection("products").where("name", "==", name).get();
+      if (!existing.empty) {
+        alert("⚠️ يوجد منتج بنفس الاسم بالفعل.");
+        return;
+      }
+
+      try {
+        await db.collection("products").add({
+          name,
+          image,
+          category,
+          link,
+          createdAt: new Date()
+        });
+
+        alert("✅ تمت إضافة المنتج بنجاح!");
+        form.reset();
+      } catch (error) {
+        console.error("❌ فشل في الإضافة:", error);
+        alert("حدث خطأ أثناء إضافة المنتج.");
+      }
+    });
+
+    // عرض المنتجات
+    db.collection("products").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+      productList.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.className = "product-preview";
+        div.innerHTML = `
+          <img src="${data.image}" alt="${data.name}">
+          <div>
+            <h3>${data.name}</h3>
+            <p>الفئة: ${data.category}</p>
+            <a href="${data.link}" target="_blank">رابط المنتج</a>
+          </div>
+        `;
+        productList.appendChild(div);
+      });
+    });
+  </script>
+
+</body>
+</html>
