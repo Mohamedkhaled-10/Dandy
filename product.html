@@ -283,57 +283,28 @@
 </button>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
 
-    const products = [
-      {
-  id: "1",
-  title: "Hair Wax",
-  desc: "كريم لتغذية وتصفيف الشعر غني بزبدة الشيا وزبدة الكاكاو وزبدة جوز الهند، بالإضافة إلى مزيج من ستة زيوت طبيعية وهي زيت جوز الهند، زيت الجوجوبا، زيت اللوز الحلو، زيت اليقطين، زيت بذور العنب، وزيت السمسم. يغذي الشعر من الجذور حتى الأطراف، ويساعد على ترطيبه والحفاظ على حيويته. يمنح الشعر قوة ولمعانًا، ومع الاستمرار في الاستخدام يساعد على فرد الكسرات والثنيات بفعالية.",
-  price: "EGP 350",
-  img: "images/products/product-1.jpg",
-  whatsapp: "https://wa.me/201234567890",
-  facebook: "https://www.facebook.com/share/18sXcYKT5J/",
-  instagram: "https://www.instagram.com/p/C_B6KbQII43/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
-},
+  const container = document.querySelector(".container");
 
-{
-        id: "2",
-        title: "DANDY Fragrance Mist",
-        desc: "بادي ميست من DANDY يمنحك رائحة منعشة وخفيفة تدوم طوال اليوم. يمنحك إحساسًا دائمًا بالانتعاش ويترك أثرًا عطريًا ثابتًا على البشرة. متوفر بروائح متعددة تناسب جميع الأذواق، سواء كنت تفضلين الروائح الفريش أو السويت أو الفروتي أو الزهرية. مناسب لجميع الأوقات، سواء للعمل أو الخروج أو حتى قبل النوم.",
-        price: "EGP 250",
-        img: "images/products/product-2.jpg",
-        whatsapp: "https://wa.me/201234567891",
-        facebook: "https://www.facebook.com/share/p/1B9ky5pQen/",
-        instagram: "https://www.instagram.com/p/DJ4p9hCog0t/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
-      },
-
-      {
-        id: "3",
-        title: "DANDY ( Gel )Tint",
-        desc: "مورد الشفاه والخدود من DANDY (Gel Tint). تنت جل طبيعي بتركيبة خفيفة تمنح الشفاه والخدود لونًا ورديًا ناعمًا ومظهرًا طبيعيًا. يتميز بسهولة الاستخدام دون أن يترك طبقة محسوسة على البشرة، كما لا يطبع أو يبهت بسهولة. يمكن استخدامه يوميًا حتى بدون مكياج. من مميزاته: يمنح مظهرًا ورديًا طبيعيًا، يتمتع بثبات يدوم لأكثر من 8 ساعات، يرطب البشرة بفعالية، ويمكن استخدامه بمفرده، بالإضافة إلى سعره المناسب للجميع.",
-        price: "EGP 250",
-        img: "images/products/product-3.jpg",
-        whatsapp: "https://wa.me/201234567891",
-        facebook: "https://www.facebook.com/share/p/1YmMeayjUA/",
-        instagram: "https://www.instagram.com/p/DF0qf1uIbvD/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
-      }
-    ];
-
-    const product = products.find(p => p.id === id);
-
-    if (product) {
-      document.getElementById("product-img").src = product.img;
-      document.getElementById("product-title").textContent = product.title;
-      document.getElementById("product-desc").textContent = product.desc;
-      document.getElementById("product-price").textContent = product.price;
-      document.getElementById("whatsapp-link").href = product.whatsapp;
-      document.getElementById("facebook-link").href = product.facebook;
-      document.getElementById("instagram-link").href = product.instagram;
+  db.ref("products/" + id).once("value").then(snapshot => {
+    if (snapshot.exists()) {
+      const product = snapshot.val();
+      document.getElementById("product-img").src = product.image;
+      document.getElementById("product-title").textContent = product.name;
+      document.getElementById("product-desc").textContent = product.description || "لا يوجد وصف متاح.";
+      document.getElementById("product-price").textContent = product.price || "السعر غير متوفر";
+      document.getElementById("whatsapp-link").href = product.whatsapp || "#";
+      document.getElementById("facebook-link").href = product.facebook || "#";
+      document.getElementById("instagram-link").href = product.instagram || "#";
     } else {
-      document.querySelector(".container").innerHTML = '<p style="text-align:center; font-size:1.2rem">المنتج غير موجود.</p>';
+      container.innerHTML = '<p style="text-align:center; font-size:1.2rem">المنتج غير موجود.</p>';
     }
+  }).catch(error => {
+    container.innerHTML = '<p style="text-align:center; font-size:1.2rem">حدث خطأ أثناء تحميل المنتج.</p>';
+    console.error(error);
+  });
     // إخفاء وظهور شريط التنقل
   let lastScrollTop = 0;
   const nav = document.querySelector('nav');
@@ -372,5 +343,25 @@ toggleBtn.addEventListener("click", () => {
 
 
 </script>
+
+  <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+
 </body>
 </html>
