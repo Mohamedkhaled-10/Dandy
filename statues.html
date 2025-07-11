@@ -138,6 +138,7 @@
       <tbody id="todayVisits"></tbody>
     </table>
     <button class="download-btn" onclick="downloadExcel()">📥 تحميل ملف Excel</button>
+    <button class="download-btn" style="background:#e74c3c;" onclick="clearData()">🗑️ تنظيف جميع البيانات</button>
   </div>
 
   <!-- Firebase -->
@@ -254,6 +255,21 @@
       });
       countVisits(visits);
     });
+  </script>
+  <script>
+  function clearData() {
+  if (confirm("هل أنت متأكد أنك تريد حذف جميع البيانات؟ لا يمكن التراجع!")) {
+    db.ref("visits").remove()
+      .then(() => {
+        alert("تم حذف جميع الزيارات بنجاح");
+        location.reload(); // نعيد تحميل الصفحة لتحديث البيانات
+      })
+      .catch(error => {
+        alert("حدث خطأ أثناء الحذف: " + error.message);
+      });
+  }
+}
+
   </script>
 </body>
 </html>
