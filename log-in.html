@@ -81,6 +81,14 @@
     #register-btn:hover {
       background: #ddd;
     }
+    .logout-btn {
+      margin-top: 2rem;
+      background: #444;
+      color: white;
+    }
+    .logout-btn:hover {
+      background: #000;
+    }
     @media (max-width: 480px) {
       .auth-box {
         padding: 1.5rem;
@@ -98,6 +106,7 @@
       <button type="submit">تسجيل الدخول</button>
     </form>
     <button id="register-btn">إنشاء حساب جديد</button>
+    <button id="logout-btn" class="logout-btn" style="display:none">تسجيل الخروج</button>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -119,6 +128,15 @@
 
     const authForm = document.getElementById("auth-form");
     const registerBtn = document.getElementById("register-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        logoutBtn.style.display = "block";
+      } else {
+        logoutBtn.style.display = "none";
+      }
+    });
 
     authForm.addEventListener("submit", function(e) {
       e.preventDefault();
@@ -144,6 +162,13 @@
           window.location.href = "profile.html";
         })
         .catch(err => alert("خطأ: " + err.message));
+    });
+
+    logoutBtn.addEventListener("click", function() {
+      auth.signOut().then(() => {
+        alert("تم تسجيل الخروج بنجاح.");
+        location.reload();
+      });
     });
   </script>
 </body>
