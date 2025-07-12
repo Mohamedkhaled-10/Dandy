@@ -26,11 +26,38 @@
       max-width: 900px;
       margin: auto;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      text-align: center;
     }
-    .profile-box h2 {
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      background-color: #fff0f6;
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .user-card .avatar {
+      width: 70px;
+      height: 70px;
+      background-color: #f49ac1;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+    }
+    .user-details {
+      flex: 1;
+    }
+    .user-details h2 {
+      margin: 0;
       color: var(--accent-color);
-      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+    }
+    .user-details p {
+      margin: 0.3rem 0;
+      color: var(--text-color);
     }
     .section {
       margin-top: 2rem;
@@ -39,14 +66,11 @@
       color: var(--accent-color);
       margin-bottom: 1rem;
       font-size: 1.4rem;
-      text-align: right;
     }
     .cards-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1.5rem;
-      padding: 0;
-      margin: 0;
     }
     .product-card {
       background: #fff0f6;
@@ -96,6 +120,9 @@
       font-size: 1rem;
       cursor: pointer;
       transition: background 0.3s;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     .logout-btn:hover {
       background-color: #e07aa2;
@@ -104,19 +131,20 @@
 </head>
 <body>
   <div class="profile-box">
-    <h2>مرحباً، <span id="user-name">...</span></h2>
+    <div class="user-card">
+      <div class="avatar"><i class="fas fa-user"></i></div>
+      <div class="user-details">
+        <h2 id="user-name">...</h2>
+        <p id="user-email"></p>
+        <p>آخر تسجيل دخول: <span id="last-login"></span></p>
+      </div>
+    </div>
 
     <div class="section">
       <h3>منتجات مقترحة لك</h3>
       <div class="cards-container" id="suggestions">
         <div>جاري التحميل...</div>
       </div>
-    </div>
-
-    <div class="section">
-      <h3>معلومات الحساب</h3>
-      <p id="user-email"></p>
-      <p>تاريخ آخر تسجيل دخول: <span id="last-login"></span></p>
     </div>
 
     <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
