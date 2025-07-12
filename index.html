@@ -254,6 +254,17 @@ toggleBtn.addEventListener("click", () => {
           window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
         }
       });
+      // إغلاق الشريط عند الضغط خارج منطقة البحث
+document.addEventListener("click", function (e) {
+  const searchSlide = document.getElementById("searchSlide");
+  const isSearchOpen = searchSlide.classList.contains("active");
+  const clickedInside = searchSlide.contains(e.target) || e.target.classList.contains("mobile-search-icon") || e.target.closest(".mobile-search-icon");
+
+  if (isSearchOpen && !clickedInside) {
+    searchSlide.classList.remove("active");
+  }
+});
+
     }
   });
 </script>
