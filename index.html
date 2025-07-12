@@ -40,6 +40,10 @@
   <img src="images/logo.png" alt="Dandy Logo" />
 </div>
     <ul>
+      <form id="search-form" style="margin-right: 1rem;">
+  <input type="text" id="search-input" placeholder="ابحث عن منتج..." style="padding: 5px 10px; border-radius: 20px; border: none; outline: none;" />
+</form>
+
       <li><a href="#">الرئيسية</a></li>
       <li><a href="all-products.html">المنتجات</a></li>
       <li><a href="#contact">تواصل معنا</a></li>
@@ -186,6 +190,18 @@ toggleBtn.addEventListener("click", () => {
     moreBtn.innerHTML = `<a href="all-products.html">← تصفحي المزيد من المنتجات</a>`;
     homeContainer.appendChild(moreBtn);
   });
+</script>
+<script>
+  const searchForm = document.getElementById("search-form");
+  if (searchForm) {
+    searchForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const query = document.getElementById("search-input").value.trim();
+      if (query) {
+        window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+      }
+    });
+  }
 </script>
 
 </body>
