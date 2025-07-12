@@ -347,88 +347,39 @@ body.dark-mode .product a:hover {
   color: white;
 }
 
-/* 🔍 شريط البحث العصري */
-.search-bar {
-  display: flex;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 50px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 3px 10px;
-  transition: box-shadow 0.3s ease;
-  max-width: 250px;
-  margin-right: 1rem;
-}
-
-.search-bar input {
-  border: none;
-  outline: none;
-  padding: 8px 12px;
-  border-radius: 50px;
-  flex: 1;
-  font-family: 'Tajawal', sans-serif;
-  font-size: 14px;
-}
-
-.search-bar button {
-  background: none;
-  border: none;
-  color: #f49ac1;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 8px;
-  transition: transform 0.3s;
-}
-
-.search-bar button:hover {
-  transform: scale(1.2);
-}
-
-/* إخفاء/إظهار حسب الجهاز */
-.desktop-search {
-  display: flex;
-}
-.mobile-search-btn {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: #f49ac1;
-  cursor: pointer;
-}
-
-/* نافذة البحث المنبثقة للموبايل */
-.mobile-search-popup {
-  display: none;
+/* 🔍 Slide-down شريط البحث */
+.mobile-search-slide {
   position: fixed;
-  top: 20%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: -100px;
+  left: 0;
+  right: 0;
   background: white;
-  padding: 1rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-  z-index: 2000;
-  width: 90%;
-  max-width: 400px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 9999;
+  transition: top 0.4s ease;
+  display: flex;
+  justify-content: center;
 }
 
-.mobile-search-popup form {
+.mobile-search-slide form {
   display: flex;
   gap: 10px;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
 }
 
-.mobile-search-popup input {
+.mobile-search-slide input {
   flex: 1;
-  padding: 10px;
+  padding: 10px 15px;
   border-radius: 30px;
   border: 1px solid #ccc;
   outline: none;
   font-family: 'Tajawal', sans-serif;
 }
 
-.mobile-search-popup button {
+.mobile-search-slide button {
   background: #f49ac1;
   border: none;
   border-radius: 50%;
@@ -437,13 +388,33 @@ body.dark-mode .product a:hover {
   font-size: 16px;
 }
 
-/* الموبايل فقط */
-@media (max-width: 768px) {
-  .desktop-search {
+.close-slide {
+  position: absolute;
+  top: 50%;
+  right: -30px;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+}
+
+/* إظهار الشريط */
+.mobile-search-slide.active {
+  top: 0;
+}
+
+/* على الموبايل فقط */
+@media (min-width: 769px) {
+  .mobile-search-icon {
     display: none !important;
   }
+}
 
-  .mobile-search-btn {
-    display: inline-block;
-  }
+.mobile-search-icon {
+  background: none;
+  border: none;
+  color: #f49ac1;
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 10px;
 }
