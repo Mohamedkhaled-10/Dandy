@@ -6,25 +6,14 @@
   <title>ملفي الشخصي - Dandy</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
   <style>
-    :root {
-      --primary-color: #f8d8e3;
-      --secondary-color: #ffffff;
-      --accent-color: #f49ac1;
-      --text-color: #333;
-    }
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background-color: var(--secondary-color);
-      margin: 0;
-      padding: 1rem;
-    }
     .profile-box {
       background: white;
       padding: 1rem;
       border-radius: 20px;
       max-width: 900px;
-      margin: auto;
+      margin: 2rem auto;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     .user-card {
@@ -140,6 +129,31 @@
   </style>
 </head>
 <body>
+  <!-- ✅ الشريط العلوي والبحث -->
+  <div class="mobile-search-slide" id="searchSlide">
+    <form id="mobile-search-form">
+      <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج...">
+      <button type="submit"><i class="fas fa-search"></i></button>
+      <span class="close-slide" id="closeSearch">&times;</span>
+    </form>
+  </div>
+
+  <nav>
+    <div class="logo">
+      <img src="images/logo.png" alt="Dandy Logo" />
+    </div>
+    <ul>
+      <li><a href="index.html">الرئيسية</a></li>
+      <li><a href="all-products.html">المنتجات</a></li>
+      <li><a href="#contact">تواصل معنا</a></li>
+    </ul>
+    <form id="search-form" class="desktop-search search-bar">
+      <input type="text" id="search-input" placeholder="ابحث عن منتج...">
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+    <button class="mobile-search-icon"><i class="fas fa-search"></i></button>
+  </nav>
+
   <div class="profile-box">
     <div class="user-card">
       <div class="avatar"><i class="fas fa-user"></i></div>
@@ -160,6 +174,19 @@
     <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
   </div>
 
+  <footer id="contact">
+    <p>© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+      <a href="#"><i class="fab fa-whatsapp"></i></a>
+    </div>
+  </footer>
+  <button id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <!-- Firebase & Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -236,7 +263,7 @@
 
     function logout() {
       auth.signOut().then(() => {
-        window.location.href = "log-in.html";
+        window.location.href = "login.html";
       });
     }
   </script>
