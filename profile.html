@@ -17,11 +17,11 @@
       font-family: 'Tajawal', sans-serif;
       background-color: var(--secondary-color);
       margin: 0;
-      padding: 2rem;
+      padding: 1rem;
     }
     .profile-box {
       background: white;
-      padding: 2rem;
+      padding: 1rem;
       border-radius: 20px;
       max-width: 900px;
       margin: auto;
@@ -29,35 +29,35 @@
     }
     .user-card {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1rem;
       background-color: #fff0f6;
       border-radius: 15px;
       padding: 1.5rem;
       margin-bottom: 2rem;
+      text-align: center;
     }
     .user-card .avatar {
-      width: 70px;
-      height: 70px;
+      width: 90px;
+      height: 90px;
       background-color: #f49ac1;
       color: white;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2rem;
-    }
-    .user-details {
-      flex: 1;
+      font-size: 2.5rem;
     }
     .user-details h2 {
       margin: 0;
       color: var(--accent-color);
-      font-size: 1.5rem;
+      font-size: 1.6rem;
     }
     .user-details p {
       margin: 0.3rem 0;
       color: var(--text-color);
+      font-size: 0.95rem;
     }
     .section {
       margin-top: 2rem;
@@ -66,6 +66,7 @@
       color: var(--accent-color);
       margin-bottom: 1rem;
       font-size: 1.4rem;
+      text-align: center;
     }
     .cards-container {
       display: grid;
@@ -127,6 +128,15 @@
     .logout-btn:hover {
       background-color: #e07aa2;
     }
+    @media (min-width: 600px) {
+      .user-card {
+        flex-direction: row;
+        text-align: start;
+      }
+      .user-details {
+        text-align: start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -175,7 +185,10 @@
     auth.onAuthStateChanged(user => {
       if (user) {
         const uid = user.uid;
-        nameSpan.textContent = user.displayName || "مستخدم";
+        db.ref("users/" + uid).once("value", snapshot => {
+          const userData = snapshot.val();
+          nameSpan.textContent = userData?.name || user.displayName || "بدون اسم";
+        });
         emailDisplay.textContent = `البريد الإلكتروني: ${user.email}`;
         loginDisplay.textContent = new Date(user.metadata.lastSignInTime).toLocaleString('ar-EG');
         loadDailySuggestions(uid);
