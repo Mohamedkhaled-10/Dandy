@@ -347,7 +347,59 @@ body.dark-mode .product a:hover {
   color: white;
 }
 
-/* 🔍 Slide-down شريط البحث */
+/* ✅ شريط بحث الديسكتوب */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 3px 10px;
+  transition: box-shadow 0.3s ease;
+  max-width: 250px;
+  margin-right: 1rem;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  border-radius: 50px;
+  flex: 1;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 14px;
+}
+
+.search-bar button {
+  background: none;
+  border: none;
+  color: #f49ac1;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.3s;
+}
+
+.search-bar button:hover {
+  transform: scale(1.2);
+}
+
+/* ✅ إخفاء/إظهار حسب الجهاز */
+.desktop-search {
+  display: flex;
+}
+.mobile-search-icon {
+  display: none;
+  background: none;
+  border: none;
+  color: #f49ac1;
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+/* ✅ الشريط المنزلق للموبايل */
 .mobile-search-slide {
   position: fixed;
   top: -100px;
@@ -360,6 +412,10 @@ body.dark-mode .product a:hover {
   transition: top 0.4s ease;
   display: flex;
   justify-content: center;
+}
+
+.mobile-search-slide.active {
+  top: 0;
 }
 
 .mobile-search-slide form {
@@ -398,23 +454,13 @@ body.dark-mode .product a:hover {
   cursor: pointer;
 }
 
-/* إظهار الشريط */
-.mobile-search-slide.active {
-  top: 0;
-}
-
-/* على الموبايل فقط */
-@media (min-width: 769px) {
-  .mobile-search-icon {
+/* ✅ ميديا كويري للتبديل بين الوضعين */
+@media (max-width: 768px) {
+  .desktop-search {
     display: none !important;
   }
-}
 
-.mobile-search-icon {
-  background: none;
-  border: none;
-  color: #f49ac1;
-  font-size: 20px;
-  cursor: pointer;
-  margin-right: 10px;
+  .mobile-search-icon {
+    display: inline-block;
+  }
 }
