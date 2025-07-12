@@ -595,24 +595,26 @@ body.dark-mode .mobile-menu ul li a {
       return;
     }
 
+    const usedPhone = phone; // ✅ حفظ الرقم مؤقتًا قبل التفريغ
     const chatRef = db.ref("chatMessages").push();
+
     chatRef.set({
       name,
-      phone,
+      phone: usedPhone,
       message,
       timestamp: Date.now()
     }).then(() => {
       alert("✅ تم إرسال رسالتك بنجاح");
 
-      // تفريغ الحقول
+      // ✅ تحقق من وجود رد مباشرة بعد الإرسال
+      checkForReply(usedPhone);
+
+      // ✅ تفريغ الحقول بعد عرض الرد
       document.getElementById("chat-name").value = "";
       document.getElementById("chat-phone").value = "";
       document.getElementById("chat-message").value = "";
 
-      // عرض الرد (لو فيه)
-      checkForReply(phone);
-
-      // إغلاق النافذة بعد 5 ثواني
+      // ✅ إغلاق نافذة الدردشة بعد 5 ثواني
       setTimeout(() => {
         document.getElementById("chat-box").classList.add("hidden");
       }, 5000);
