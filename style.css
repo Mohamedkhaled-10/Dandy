@@ -346,3 +346,66 @@ body.dark-mode .product a:hover {
   background-color: #e07aa2;
   color: white;
 }
+
+/* 🔍 شريط البحث العصري */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 3px 10px;
+  transition: box-shadow 0.3s ease;
+  max-width: 250px;
+  margin-right: 1rem;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  border-radius: 50px;
+  flex: 1;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 14px;
+}
+
+.search-bar button {
+  background: none;
+  border: none;
+  color: #f49ac1;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.3s;
+}
+
+.search-bar button:hover {
+  transform: scale(1.2);
+}
+
+/* 📱 مظهر جميل على الهاتف */
+@media (max-width: 768px) {
+  .search-bar {
+    max-width: 100%;
+    width: 100%;
+    margin: 10px auto;
+  }
+
+  nav {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  nav ul {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  nav .logo {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+}
