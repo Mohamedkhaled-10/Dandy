@@ -113,6 +113,12 @@
       </div>
     </div>
 
+    <div class="section">
+      <h3>معلومات الحساب</h3>
+      <p id="user-email"></p>
+      <p>تاريخ آخر تسجيل دخول: <span id="last-login"></span></p>
+    </div>
+
     <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
   </div>
 
@@ -134,55 +140,62 @@
     const db = firebase.database();
 
     const nameSpan = document.getElementById("user-name");
+    const emailDisplay = document.getElementById("user-email");
+    const loginDisplay = document.getElementById("last-login");
     const suggestionsList = document.getElementById("suggestions");
 
     auth.onAuthStateChanged(user => {
       if (user) {
         const uid = user.uid;
-        db.ref("users/" + uid).once("value", snapshot => {
-          const data = snapshot.val();
-          nameSpan.textContent = data.name || "مستخدم";
-        });
-        loadSuggestions();
+        nameSpan.textContent = user.displayName || "مستخدم";
+        emailDisplay.textContent = `البريد الإلكتروني: ${user.email}`;
+        loginDisplay.textContent = new Date(user.metadata.lastSignInTime).toLocaleString('ar-EG');
+        loadDailySuggestions(uid);
       } else {
         window.location.href = "login.html";
       }
     });
 
-    function loadSuggestions() {
-      db.ref("products").once("value", snapshot => {
-        suggestionsList.innerHTML = "";
-        const allProducts = [];
-        snapshot.forEach(child => {
-          const product = child.val();
-          allProducts.push({
-            name: product.name,
-            image: product.image,
-            id: child.key
+    function loadDailySuggestions(uid) {
+      const todayKey = new Date().toISOString().split('T')[0];
+      db.ref(`users/${uid}/dailySuggestions/${todayKey}`).once("value", snap => {
+        if (snap.exists()) {
+          renderSuggestions(snap.val());
+        } else {
+          db.ref("products").once("value", snapshot => {
+            const allProducts = [];
+            snapshot.forEach(child => {
+              allProducts.push({
+                name: child.val().name,
+                image: child.val().image,
+                id: child.key
+              });
+            });
+            const randomThree = allProducts.sort(() => 0.5 - Math.random()).slice(0, 3);
+            db.ref(`users/${uid}/dailySuggestions/${todayKey}`).set(randomThree);
+            renderSuggestions(randomThree);
           });
-        });
-        const shuffled = allProducts.sort(() => 0.5 - Math.random()).slice(0, 5);
-
-        shuffled.forEach(p => {
-          const card = document.createElement("div");
-          card.className = "product-card";
-          card.innerHTML = `
-            <img src="${p.image}" alt="${p.name}">
-            <h4>${p.name}</h4>
-            <a href="product.html?id=${p.id}">عرض المنتج</a>
-          `;
-          suggestionsList.appendChild(card);
-        });
-
-        if (!suggestionsList.children.length) {
-          suggestionsList.innerHTML = "<div>لا توجد اقتراحات حالياً.</div>";
         }
+      });
+    }
+
+    function renderSuggestions(products) {
+      suggestionsList.innerHTML = "";
+      products.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+          <img src="${p.image}" alt="${p.name}">
+          <h4>${p.name}</h4>
+          <a href="product.html?id=${p.id}">عرض المنتج</a>
+        `;
+        suggestionsList.appendChild(card);
       });
     }
 
     function logout() {
       auth.signOut().then(() => {
-        window.location.href = "login.html";
+        window.location.href = "log-in.html";
       });
     }
   </script>
