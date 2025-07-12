@@ -347,116 +347,115 @@ body.dark-mode .product a:hover {
   color: white;
 }
 
-    /* ✅ شريط بحث الديسكتوب */
-    .search-bar {
-      display: flex;
-      align-items: center;
-      background-color: #fff;
-      border-radius: 50px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 3px 10px;
-      transition: box-shadow 0.3s ease;
-      max-width: 250px;
-      margin-right: 1rem;
-    }
+/* ✅ شريط البحث العادي للكمبيوتر */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 3px 10px;
+  transition: box-shadow 0.3s ease;
+  max-width: 250px;
+  margin-right: 1rem;
+}
 
-    .search-bar input {
-      border: none;
-      outline: none;
-      padding: 8px 12px;
-      border-radius: 50px;
-      flex: 1;
-      font-family: 'Tajawal', sans-serif;
-      font-size: 14px;
-    }
+.search-bar input {
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  border-radius: 50px;
+  flex: 1;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 14px;
+}
 
-    .search-bar button {
-      background: none;
-      border: none;
-      color: #f49ac1;
-      font-size: 16px;
-      cursor: pointer;
-      padding: 8px;
-      transition: transform 0.3s;
-    }
+.search-bar button {
+  background: none;
+  border: none;
+  color: #f49ac1;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.3s;
+}
+.search-bar button:hover {
+  transform: scale(1.2);
+}
 
-    .search-bar button:hover {
-      transform: scale(1.2);
-    }
+/* ✅ زر العدسة في الموبايل */
+.mobile-search-icon {
+  display: none;
+  background: none;
+  border: none;
+  color: #f49ac1;
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 10px;
+}
 
-    /* ✅ الشريط المنزلق للموبايل */
-    .mobile-search-slide {
-      position: fixed;
-      top: -100px;
-      left: 0;
-      right: 0;
-      background: white;
-      padding: 15px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      z-index: 9999;
-      transition: top 0.4s ease;
-      display: flex;
-      justify-content: center;
-    }
+/* ✅ شريط البحث المنزلق للموبايل */
+.mobile-search-slide {
+  position: fixed;
+  top: -100px;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 15px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 9999;
+  transition: top 0.4s ease;
+  display: flex;
+  justify-content: center;
+}
+.mobile-search-slide.active {
+  top: 0;
+}
 
-    .mobile-search-slide.active {
-      top: 0;
-    }
+.mobile-search-slide form {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+}
 
-    .mobile-search-slide form {
-      display: flex;
-      gap: 10px;
-      width: 100%;
-      max-width: 500px;
-      position: relative;
-    }
+.mobile-search-slide input {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-family: 'Tajawal', sans-serif;
+}
 
-    .mobile-search-slide input {
-      flex: 1;
-      padding: 10px 15px;
-      border-radius: 30px;
-      border: 1px solid #ccc;
-      outline: none;
-      font-family: 'Tajawal', sans-serif;
-    }
+.mobile-search-slide button {
+  background: #f49ac1;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+}
 
-    .mobile-search-slide button {
-      background: #f49ac1;
-      border: none;
-      border-radius: 50%;
-      color: white;
-      padding: 10px;
-      font-size: 16px;
-    }
+.close-slide {
+  position: absolute;
+  top: 50%;
+  right: -30px;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+}
 
-    .close-slide {
-      position: absolute;
-      top: 50%;
-      right: -30px;
-      transform: translateY(-50%);
-      font-size: 24px;
-      color: #999;
-      cursor: pointer;
-    }
+/* ✅ إظهار الزر في الموبايل فقط */
+@media (max-width: 768px) {
+  .desktop-search {
+    display: none !important;
+  }
+  .mobile-search-icon {
+    display: inline-block;
+  }
+}
 
-    /* ✅ الموبايل فقط */
-    .mobile-search-icon {
-      display: none;
-      background: none;
-      border: none;
-      color: #f49ac1;
-      font-size: 20px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-
-    @media (max-width: 768px) {
-      .desktop-search {
-        display: none !important;
-      }
-
-      .mobile-search-icon {
-        display: inline-block;
-      }
-    }
