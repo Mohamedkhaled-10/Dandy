@@ -218,7 +218,8 @@ toggleBtn.addEventListener("click", () => {
     });
   }
 </script>
-  <script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
     // ✅ بحث الديسكتوب
     const searchForm = document.getElementById("search-form");
     if (searchForm) {
@@ -236,23 +237,27 @@ toggleBtn.addEventListener("click", () => {
     const openBtn = document.querySelector(".mobile-search-icon");
     const closeBtn = document.getElementById("closeSearch");
 
-    openBtn.addEventListener("click", () => {
-      searchSlide.classList.add("active");
-      document.getElementById("mobile-search-input").focus();
-    });
+    if (openBtn && searchSlide && closeBtn) {
+      openBtn.addEventListener("click", () => {
+        searchSlide.classList.add("active");
+        document.getElementById("mobile-search-input").focus();
+      });
 
-    closeBtn.addEventListener("click", () => {
-      searchSlide.classList.remove("active");
-    });
+      closeBtn.addEventListener("click", () => {
+        searchSlide.classList.remove("active");
+      });
 
-    document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const query = document.getElementById("mobile-search-input").value.trim();
-      if (query) {
-        window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
-      }
-    });
-  </script>
+      document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const query = document.getElementById("mobile-search-input").value.trim();
+        if (query) {
+          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+        }
+      });
+    }
+  });
+</script>
+
 
 </body>
 </html>
