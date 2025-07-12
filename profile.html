@@ -343,8 +343,11 @@
   <input type="text" id="chat-phone" placeholder="رقم الهاتف" required>
   <textarea id="chat-message" placeholder="رسالتك" rows="3" required></textarea>
   <button onclick="sendChatMessage()">إرسال</button>
+  <hr>
+  <div id="chat-response" style="margin-top: 1rem; font-size: 0.95rem; color: #444;"></div>
   <span id="close-chat" class="close-chat">&times;</span>
 </div>
+
 
 <style>
   .chat-toggle-btn {
@@ -411,12 +414,36 @@
 <script>
   // فتح وغلق نافذة الدردشة
   document.getElementById("chat-toggle").addEventListener("click", () => {
-    document.getElementById("chat-box").classList.toggle("hidden");
+    const chatBox = document.getElementById("chat-box");
+    chatBox.classList.toggle("hidden");
+
+    // لو رقم الهاتف مكتوب، اعرض الرد تلقائيًا
+    const phone = document.getElementById("chat-phone").value.trim();
+    if (phone) {
+      checkForReply(phone);
+    }
   });
 
   document.getElementById("close-chat").addEventListener("click", () => {
     document.getElementById("chat-box").classList.add("hidden");
   });
+
+  // التحقق من وجود رد سابق للعميل بناءً على رقم الهاتف
+  function checkForReply(phone) {
+    db.ref("chatMessages").orderByChild("phone").equalTo(phone).limitToLast(1).once("value", snapshot => {
+      const chatResponse = document.getElementById("chat-response");
+      if (snapshot.exists()) {
+        const msgData = Object.values(snapshot.val())[0];
+        if (msgData.reply) {
+          chatResponse.innerHTML = `<strong>ردنا عليك:</strong><br>${msgData.reply}<br><small>📩 بتاريخ: ${new Date(msgData.repliedAt).toLocaleString('ar-EG')}</small>`;
+        } else {
+          chatResponse.innerHTML = `⏳ تم استلام رسالتك، نعمل على الرد قريبًا.`;
+        }
+      } else {
+        chatResponse.innerHTML = "";
+      }
+    });
+  }
 
   // إرسال الرسالة إلى Firebase
   function sendChatMessage() {
@@ -437,16 +464,20 @@
       timestamp: Date.now()
     }).then(() => {
       alert("تم إرسال رسالتك بنجاح");
-      document.getElementById("chat-box").classList.add("hidden");
       document.getElementById("chat-name").value = "";
       document.getElementById("chat-phone").value = "";
       document.getElementById("chat-message").value = "";
+      document.getElementById("chat-box").classList.add("hidden");
+
+      // عرض الرد مباشرة بعد الإرسال
+      checkForReply(phone);
     }).catch((error) => {
       console.error("فشل الإرسال", error);
       alert("حدث خطأ أثناء الإرسال");
     });
   }
 </script>
+
 
 </body>
 </html>
