@@ -330,5 +330,123 @@
       });
     }
   </script>
+
+  <!-- زر فتح الدردشة -->
+<button id="chat-toggle" class="chat-toggle-btn">
+  <i class="fas fa-comment-dots"></i>
+</button>
+
+<!-- نافذة الدردشة -->
+<div id="chat-box" class="chat-box hidden">
+  <h4>تواصل معنا</h4>
+  <input type="text" id="chat-name" placeholder="الاسم" required>
+  <input type="text" id="chat-phone" placeholder="رقم الهاتف" required>
+  <textarea id="chat-message" placeholder="رسالتك" rows="3" required></textarea>
+  <button onclick="sendChatMessage()">إرسال</button>
+  <span id="close-chat" class="close-chat">&times;</span>
+</div>
+
+<style>
+  .chat-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background-color: #f49ac1;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.3rem;
+    z-index: 9999;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  .chat-box {
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    width: 280px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    padding: 1rem;
+    z-index: 9999;
+  }
+
+  .chat-box.hidden {
+    display: none;
+  }
+
+  .chat-box input, .chat-box textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  .chat-box button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f49ac1;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .close-chat {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #888;
+  }
+</style>
+
+<script>
+  // فتح وغلق نافذة الدردشة
+  document.getElementById("chat-toggle").addEventListener("click", () => {
+    document.getElementById("chat-box").classList.toggle("hidden");
+  });
+
+  document.getElementById("close-chat").addEventListener("click", () => {
+    document.getElementById("chat-box").classList.add("hidden");
+  });
+
+  // إرسال الرسالة إلى Firebase
+  function sendChatMessage() {
+    const name = document.getElementById("chat-name").value.trim();
+    const phone = document.getElementById("chat-phone").value.trim();
+    const message = document.getElementById("chat-message").value.trim();
+
+    if (!name || !phone || !message) {
+      alert("يرجى ملء جميع الحقول");
+      return;
+    }
+
+    const chatRef = db.ref("chatMessages").push();
+    chatRef.set({
+      name,
+      phone,
+      message,
+      timestamp: Date.now()
+    }).then(() => {
+      alert("تم إرسال رسالتك بنجاح");
+      document.getElementById("chat-box").classList.add("hidden");
+      document.getElementById("chat-name").value = "";
+      document.getElementById("chat-phone").value = "";
+      document.getElementById("chat-message").value = "";
+    }).catch((error) => {
+      console.error("فشل الإرسال", error);
+      alert("حدث خطأ أثناء الإرسال");
+    });
+  }
+</script>
+
 </body>
 </html>
