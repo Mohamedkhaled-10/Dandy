@@ -232,20 +232,7 @@ toggleBtn.addEventListener("click", () => {
 const container = document.getElementById("productContainer");
 const urlParams = new URLSearchParams(window.location.search);
 const searchQuery = urlParams.get("search")?.toLowerCase() || "";
-
-  // تسجيل الكلمة في سجل المستخدم
-if (searchQuery) {
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      firebase.database().ref("users/" + user.uid + "/searches").push({
-        query: searchQuery,
-        timestamp: new Date().toISOString()
-      });
-    }
-  });
-}
-
-
+  
 db.ref("products").on("value", snapshot => {
   container.innerHTML = "";
   snapshot.forEach(child => {
