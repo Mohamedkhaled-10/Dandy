@@ -35,13 +35,14 @@
 </head>
 <body>
 
+  <!-- ✅ الشريط المنزلق للموبايل -->
   <div class="mobile-search-slide" id="searchSlide">
-  <form id="mobile-search-form">
-    <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج...">
-    <button type="submit"><i class="fas fa-search"></i></button>
-    <span class="close-slide" id="closeSearch">&times;</span>
-  </form>
-</div>
+    <form id="mobile-search-form">
+      <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج...">
+      <button type="submit"><i class="fas fa-search"></i></button>
+      <span class="close-slide" id="closeSearch">&times;</span>
+    </form>
+  </div>
 
   
   <!-- Navigation -->
@@ -54,25 +55,16 @@
       <li><a href="all-products.html">المنتجات</a></li>
       <li><a href="#contact">تواصل معنا</a></li>
     </ul>
-    <!-- ✅ شريط البحث للكمبيوتر فقط -->
-<form id="search-form" class="desktop-search search-bar">
-  <input type="text" id="search-input" placeholder="ابحث عن منتج...">
-  <button type="submit"><i class="fas fa-search"></i></button>
-</form>
+    <!-- ✅ شريط البحث للكمبيوتر -->
+    <form id="search-form" class="desktop-search search-bar">
+      <input type="text" id="search-input" placeholder="ابحث عن منتج...">
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
 
-<!-- ✅ زر العدسة للموبايل -->
-<button class="mobile-search-icon"><i class="fas fa-search"></i></button>
-
+    <!-- ✅ زر العدسة للموبايل -->
+    <button class="mobile-search-icon"><i class="fas fa-search"></i></button>
   </nav>
-
-  <div class="mobile-search-slide" id="searchSlide">
-  <form id="mobile-search-form">
-    <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج...">
-    <button type="submit"><i class="fas fa-search"></i></button>
-    <span class="close-slide" id="closeSearch">&times;</span>
-  </form>
-</div>
-
+  
   <!-- Hero -->
 <section class="hero">
   <div class="hero-slider">
@@ -226,41 +218,41 @@ toggleBtn.addEventListener("click", () => {
     });
   }
 </script>
-<script>
-  // ✅ بحث الكمبيوتر
-  const searchForm = document.getElementById("search-form");
-  if (searchForm) {
-    searchForm.addEventListener("submit", function(e) {
+  <script>
+    // ✅ بحث الديسكتوب
+    const searchForm = document.getElementById("search-form");
+    if (searchForm) {
+      searchForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const query = document.getElementById("search-input").value.trim();
+        if (query) {
+          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+        }
+      });
+    }
+
+    // ✅ بحث الموبايل المنزلق
+    const searchSlide = document.getElementById("searchSlide");
+    const openBtn = document.querySelector(".mobile-search-icon");
+    const closeBtn = document.getElementById("closeSearch");
+
+    openBtn.addEventListener("click", () => {
+      searchSlide.classList.add("active");
+      document.getElementById("mobile-search-input").focus();
+    });
+
+    closeBtn.addEventListener("click", () => {
+      searchSlide.classList.remove("active");
+    });
+
+    document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
       e.preventDefault();
-      const query = document.getElementById("search-input").value.trim();
+      const query = document.getElementById("mobile-search-input").value.trim();
       if (query) {
         window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
       }
     });
-  }
-
-  // ✅ بحث الموبايل المنزلق
-  const searchSlide = document.getElementById("searchSlide");
-  const openBtn = document.querySelector(".mobile-search-icon");
-  const closeBtn = document.getElementById("closeSearch");
-
-  openBtn.addEventListener("click", () => {
-    searchSlide.classList.add("active");
-    document.getElementById("mobile-search-input").focus();
-  });
-
-  closeBtn.addEventListener("click", () => {
-    searchSlide.classList.remove("active");
-  });
-
-  document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const query = document.getElementById("mobile-search-input").value.trim();
-    if (query) {
-      window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
-    }
-  });
-</script>
+  </script>
 
 </body>
 </html>
