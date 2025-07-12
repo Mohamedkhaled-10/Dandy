@@ -13,7 +13,6 @@
       color: var(--text-color);
     }
 
-    /* Navigation */
 nav {
   background-color: var(--primary-color, #fff);
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -74,6 +73,71 @@ nav {
   color: var(--accent-color, #f49ac1);
   transform: scale(1.05);
 }
+
+/* البحث */
+.desktop-search {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  padding: 0.3rem 0.6rem;
+}
+
+.desktop-search input {
+  border: none;
+  outline: none;
+  padding: 0.4rem;
+  font-family: inherit;
+}
+
+.desktop-search button {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* أيقونة القائمة للموبايل */
+.hamburger-icon {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* أيقونة البحث للموبايل */
+.mobile-search-icon {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .desktop-search {
+    display: none;
+  }
+
+  .hamburger-icon,
+  .mobile-search-icon {
+    display: block;
+  }
+
+  .main-nav-container {
+    justify-content: space-between;
+  }
+}
+
 
     /* Hero Section */
 .hero {
