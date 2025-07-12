@@ -1,112 +1,97 @@
-<!-- login.html -->
+<!-- profile.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول / إنشاء حساب - Dandy</title>
+  <title>ملفي الشخصي - Dandy</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --primary-color: #f8d8e3;
+      --secondary-color: #ffffff;
       --accent-color: #f49ac1;
       --text-color: #333;
-      --input-bg: #fff0f6;
-    }
-    * {
-      box-sizing: border-box;
     }
     body {
       font-family: 'Tajawal', sans-serif;
-      background-color: var(--primary-color);
+      background-color: var(--secondary-color);
       margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      padding: 2rem;
     }
-    .auth-box {
+    .profile-box {
       background: white;
       padding: 2rem;
       border-radius: 20px;
-      width: 100%;
-      max-width: 380px;
+      max-width: 600px;
+      margin: auto;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
     }
-    .auth-box h2 {
+    .profile-box h2 {
       color: var(--accent-color);
       text-align: center;
-      margin-bottom: 1.5rem;
     }
-    .auth-box input {
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 12px;
+    .section {
+      margin-top: 2rem;
+    }
+    .section h3 {
+      color: var(--accent-color);
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    ul li {
+      background: #fff0f6;
+      padding: 0.75rem 1rem;
       border-radius: 12px;
-      border: 1px solid #ddd;
-      background-color: var(--input-bg);
-      font-family: 'Tajawal', sans-serif;
-      font-size: 1rem;
-      transition: border-color 0.3s;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: background 0.3s;
     }
-    .auth-box input:focus {
-      outline: none;
-      border-color: var(--accent-color);
+    ul li:hover {
+      background: #ffe6ef;
     }
-    .auth-box button {
-      width: 100%;
-      background-color: var(--accent-color);
+    .logout-btn {
+      display: block;
+      margin: 2rem auto 0;
+      background-color: #f49ac1;
       color: white;
       border: none;
-      padding: 12px;
+      padding: 12px 20px;
       border-radius: 12px;
-      font-weight: bold;
       font-size: 1rem;
-      margin-top: 0.5rem;
       cursor: pointer;
       transition: background 0.3s;
     }
-    .auth-box button:hover {
-      background-color: #e07aa2;
-    }
-    #register-btn {
-      background: #eee;
-      color: #333;
-      margin-top: 1rem;
-    }
-    #register-btn:hover {
-      background: #ddd;
-    }
-    .logout-btn {
-      margin-top: 2rem;
-      background: #444;
-      color: white;
-    }
     .logout-btn:hover {
-      background: #000;
-    }
-    @media (max-width: 480px) {
-      .auth-box {
-        padding: 1.5rem;
-        margin: 1rem;
-      }
+      background-color: #e07aa2;
     }
   </style>
 </head>
 <body>
-  <div class="auth-box">
-    <h2>تسجيل الدخول / إنشاء حساب</h2>
-    <form id="auth-form">
-      <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-      <input type="password" id="password" placeholder="كلمة المرور" required>
-      <button type="submit">تسجيل الدخول</button>
-    </form>
-    <button id="register-btn">إنشاء حساب جديد</button>
-    <button id="logout-btn" class="logout-btn" style="display:none">تسجيل الخروج</button>
+  <div class="profile-box">
+    <h2>مرحباً، <span id="user-name">...</span></h2>
+
+    <div class="section">
+      <h3>سجل البحث:</h3>
+      <ul id="search-history">
+        <li>جاري التحميل...</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h3>اقتراحات لك:</h3>
+      <ul id="suggestions">
+        <li>جاري التحميل...</li>
+      </ul>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -126,50 +111,62 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    const authForm = document.getElementById("auth-form");
-    const registerBtn = document.getElementById("register-btn");
-    const logoutBtn = document.getElementById("logout-btn");
+    const nameSpan = document.getElementById("user-name");
+    const searchList = document.getElementById("search-history");
+    const suggestionsList = document.getElementById("suggestions");
 
     auth.onAuthStateChanged(user => {
       if (user) {
-        logoutBtn.style.display = "block";
+        const uid = user.uid;
+        db.ref("users/" + uid).once("value", snapshot => {
+          const data = snapshot.val();
+          nameSpan.textContent = data.name || "مستخدم";
+        });
+
+        db.ref("users/" + uid + "/searches").limitToLast(10).once("value", snapshot => {
+          searchList.innerHTML = "";
+          const keywords = [];
+          snapshot.forEach(child => {
+            const q = child.val().query;
+            keywords.push(q);
+            const li = document.createElement("li");
+            li.textContent = q;
+            searchList.appendChild(li);
+          });
+          suggestProducts(keywords);
+        });
       } else {
-        logoutBtn.style.display = "none";
+        window.location.href = "login.html";
       }
     });
 
-    authForm.addEventListener("submit", function(e) {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => window.location.href = "profile.html")
-        .catch(err => alert("خطأ: " + err.message));
-    });
-
-    registerBtn.addEventListener("click", function() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(userCred => {
-          const uid = userCred.user.uid;
-          db.ref("users/" + uid).set({
-            email: email,
-            name: email.split('@')[0]
-          });
-          window.location.href = "profile.html";
-        })
-        .catch(err => alert("خطأ: " + err.message));
-    });
-
-    logoutBtn.addEventListener("click", function() {
-      auth.signOut().then(() => {
-        alert("تم تسجيل الخروج بنجاح.");
-        location.reload();
+    function suggestProducts(keywords) {
+      db.ref("products").once("value", snapshot => {
+        suggestionsList.innerHTML = "";
+        const added = new Set();
+        snapshot.forEach(child => {
+          const p = child.val();
+          const match = keywords.some(k =>
+            (p.name && p.name.includes(k)) || (p.description && p.description.includes(k))
+          );
+          if (match && !added.has(p.name)) {
+            added.add(p.name);
+            const li = document.createElement("li");
+            li.textContent = p.name;
+            suggestionsList.appendChild(li);
+          }
+        });
+        if (!suggestionsList.children.length) {
+          suggestionsList.innerHTML = "<li>لا توجد اقتراحات حالياً.</li>";
+        }
       });
-    });
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    }
   </script>
 </body>
 </html>
