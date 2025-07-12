@@ -355,10 +355,10 @@ body.dark-mode .product a:hover {
   background-color: #fff;
   border-radius: 50px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   padding: 3px 10px;
   transition: box-shadow 0.3s ease;
-  max-width: 300px;
+  max-width: 250px;
   margin-right: 1rem;
 }
 
@@ -369,19 +369,18 @@ body.dark-mode .product a:hover {
   border-radius: 50px;
   flex: 1;
   font-family: 'Tajawal', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .search-bar button {
   background: none;
   border: none;
   color: #f49ac1;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   padding: 8px;
   transition: transform 0.3s;
 }
-
 .search-bar button:hover {
   transform: scale(1.2);
 }
@@ -392,7 +391,7 @@ body.dark-mode .product a:hover {
   background: none;
   border: none;
   color: #f49ac1;
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
   margin-right: 10px;
 }
@@ -411,7 +410,6 @@ body.dark-mode .product a:hover {
   display: flex;
   justify-content: center;
 }
-
 .mobile-search-slide.active {
   top: 0;
 }
@@ -431,8 +429,6 @@ body.dark-mode .product a:hover {
   border: 1px solid #ccc;
   outline: none;
   font-family: 'Tajawal', sans-serif;
-  background-color: #fafafa;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.05);
 }
 
 .mobile-search-slide button {
@@ -493,12 +489,10 @@ body.dark-mode .product a:hover {
   width: 250px;
   height: 100%;
   background-color: #fff;
-  box-shadow: -3px 0 16px rgba(0, 0, 0, 0.2);
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
   z-index: 9999;
   transition: right 0.3s ease;
   padding-top: 4rem;
-  overflow-y: auto;
-  border-right: 1px solid #eee;
 }
 
 .mobile-menu ul {
@@ -516,8 +510,6 @@ body.dark-mode .product a:hover {
   color: var(--text-color);
   font-size: 1.1rem;
   transition: color 0.3s;
-  padding: 0.5rem 0.2rem;
-  border-bottom: 1px solid #f2f2f2;
 }
 
 .mobile-menu ul li a:hover {
@@ -528,28 +520,12 @@ body.dark-mode .product a:hover {
   right: 0;
 }
 
-/* الوضع الليلي */
+/* الوضع الليلي للقائمة الجانبية */
 body.dark-mode .mobile-menu {
   background-color: #1e1e1e;
-  border-right: 1px solid #333;
 }
 
 body.dark-mode .mobile-menu ul li a {
   color: #f49ac1;
-  border-bottom: 1px solid #333;
 }
 
-body.dark-mode .mobile-search-slide {
-  background: #2a2a2a;
-}
-
-body.dark-mode .mobile-search-slide input {
-  background-color: #444;
-  color: white;
-  border: 1px solid #666;
-}
-
-body.dark-mode .mobile-search-slide button {
-  background: #f49ac1;
-  color: white;
-}
