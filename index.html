@@ -40,11 +40,22 @@
   <img src="images/logo.png" alt="Dandy Logo" />
 </div>
     <ul>
-      <form id="search-form" class="search-bar">
+  <!-- شريط البحث العادي (يظهر على الديسكتوب فقط) -->
+<form id="search-form" class="search-bar desktop-search">
   <input type="text" id="search-input" placeholder="ابحث عن منتج...">
   <button type="submit"><i class="fas fa-search"></i></button>
 </form>
 
+<!-- زر البحث الخاص بالموبايل -->
+<button class="mobile-search-btn"><i class="fas fa-search"></i></button>
+
+<!-- النافذة المنبثقة للموبايل -->
+<div class="mobile-search-popup" id="mobileSearchPopup">
+  <form id="mobile-search-form">
+    <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج...">
+    <button type="submit"><i class="fas fa-search"></i></button>
+  </form>
+</div>
 
       <li><a href="#">الرئيسية</a></li>
       <li><a href="all-products.html">المنتجات</a></li>
