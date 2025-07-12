@@ -89,15 +89,25 @@
     </form>
   </div>
   <!-- Navigation -->
-  <nav>
+    <!-- قائمة الموبايل الجانبية -->
+<div class="mobile-menu" id="mobileMenu">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="#">المنتجات</a></li>
+    <li><a href="profile.html">الملف الشخصي</a></li>
+    <li><a href="log-in.html">تسجيل الدخول</a></li>
+    <li><a href="#contact">تواصل معنا</a></li>
+  </ul>
+</div>
+
     <div class="logo">
   <img src="images/logo.png" alt="Dandy Logo" />
 </div>
-    <ul>
-      <li><a href="index.html">الرئيسية</a></li>
-      <li><a href="#products">المنتجات</a></li>
-      <li><a href="#contact">تواصل معنا</a></li>
-    </ul>
+    <!-- زر القائمة الجانبية للموبايل -->
+<button class="hamburger-icon" id="hamburgerBtn">
+  <i class="fas fa-bars"></i>
+</button>
+
       <!-- ✅ شريط البحث للكمبيوتر -->
     <form id="search-form" class="desktop-search search-bar">
       <input type="text" id="search-input" placeholder="ابحث عن منتج...">
