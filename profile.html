@@ -1,0 +1,176 @@
+<!-- profile.html -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ملفي الشخصي - Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #f8d8e3;
+      --secondary-color: #ffffff;
+      --accent-color: #f49ac1;
+      --text-color: #333;
+    }
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background-color: var(--secondary-color);
+      margin: 0;
+      padding: 2rem;
+    }
+    .profile-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .profile-box h2 {
+      color: var(--accent-color);
+      text-align: center;
+    }
+    .section {
+      margin-top: 2rem;
+    }
+    .section h3 {
+      color: var(--accent-color);
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    ul li {
+      background: #fff0f6;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: background 0.3s;
+    }
+    ul li:hover {
+      background: #ffe6ef;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+      .profile-box {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-box">
+    <h2>مرحباً، <span id="user-name">...</span></h2>
+
+    <div class="section">
+      <h3>سجل البحث:</h3>
+      <ul id="search-history">
+        <li>جاري التحميل...</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h3>اقتراحات لك:</h3>
+      <ul id="suggestions">
+        <li>جاري التحميل...</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    const nameSpan = document.getElementById("user-name");
+    const searchList = document.getElementById("search-history");
+    const suggestionsList = document.getElementById("suggestions");
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        db.ref("users/" + uid).once("value", snapshot => {
+          const data = snapshot.val();
+          nameSpan.textContent = data.name || "مستخدم مجهول";
+        });
+
+        // عرض سجل البحث
+        db.ref("users/" + uid + "/searches").limitToLast(10).once("value", snapshot => {
+          searchList.innerHTML = "";
+          const keywords = [];
+          snapshot.forEach(child => {
+            const q = child.val().query;
+            keywords.push(q);
+            const li = document.createElement("li");
+            li.textContent = q;
+            searchList.appendChild(li);
+          });
+
+          // اقتراح المنتجات بناءً على الكلمات
+          suggestProducts(keywords);
+        });
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    function suggestProducts(keywords) {
+      db.ref("products").once("value", snapshot => {
+        suggestionsList.innerHTML = "";
+        const added = new Set();
+        snapshot.forEach(child => {
+          const p = child.val();
+          const match = keywords.some(k =>
+            (p.name && p.name.includes(k)) || (p.description && p.description.includes(k))
+          );
+          if (match && !added.has(p.name)) {
+            added.add(p.name);
+            const li = document.createElement("li");
+            li.textContent = p.name;
+            suggestionsList.appendChild(li);
+          }
+        });
+
+        if (!suggestionsList.children.length) {
+          suggestionsList.innerHTML = "<li>لا توجد اقتراحات حالياً.</li>";
+        }
+      });
+    }
+
+    // 🔁 حفظ أي كلمة بحث في Firebase
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get("search");
+    if (searchQuery) {
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          const uid = user.uid;
+          db.ref("users/" + uid + "/searches").push({
+            query: searchQuery,
+            timestamp: Date.now()
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>
