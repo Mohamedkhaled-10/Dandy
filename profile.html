@@ -8,8 +8,29 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <style>
+    html, body {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    body {
+      flex: 1;
+    }
+    main {
+      flex: 1;
+    }
     body.dark-mode {
       background-color: #121212;
+      color: #f49ac1;
+    }
+    .dark-mode .profile-box,
+    .dark-mode .user-card,
+    .dark-mode .product-card {
+      background-color: #1e1e1e;
+      color: #f49ac1;
+    }
+    .dark-mode .product-card h4,
+    .dark-mode .user-details p {
       color: #f49ac1;
     }
     .profile-box {
@@ -120,6 +141,33 @@
     }
     .logout-btn:hover {
       background-color: #e07aa2;
+    }
+    footer {
+      background-color: var(--primary-color);
+      text-align: center;
+      padding: 2rem;
+      margin-top: auto;
+    }
+    footer p {
+      margin: 0.5rem 0;
+      color: #666;
+    }
+    .social-icons a {
+      margin: 0 10px;
+      color: #666;
+      font-size: 1.2rem;
+      transition: color 0.3s, transform 0.3s;
+    }
+    .social-icons a:hover {
+      color: var(--accent-color);
+      transform: scale(1.2);
+    }
+    .dark-mode footer {
+      background-color: #1e1e1e;
+      color: #f49ac1;
+    }
+    .dark-mode .social-icons a {
+      color: #f49ac1;
     }
     @media (min-width: 600px) {
       .user-card {
