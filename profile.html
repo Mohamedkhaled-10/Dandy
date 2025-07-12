@@ -429,13 +429,16 @@ body.dark-mode .mobile-menu ul li a {
         searchSlide.classList.remove("active");
       });
 
-      document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const query = document.getElementById("mobile-search-input").value.trim();
-        if (query) {
-          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
-        }
-      });
+// ✅ تحديث فوري عند كتابة الرقم
+document.getElementById("chat-phone").addEventListener("input", function () {
+  const phone = this.value.trim();
+  if (phone.length >= 8) {
+    checkForReply(phone);
+  } else {
+    document.getElementById("chat-response").innerHTML = "";
+  }
+});
+
 
       document.addEventListener("click", function (e) {
         const isSearchOpen = searchSlide.classList.contains("active");
