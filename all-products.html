@@ -211,12 +211,25 @@ toggleBtn.addEventListener("click", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  const container = document.getElementById("productContainer");
+const container = document.getElementById("productContainer");
+const urlParams = new URLSearchParams(window.location.search);
+const searchQuery = urlParams.get("search")?.toLowerCase() || "";
 
-  db.ref("products").on("value", snapshot => {
-    container.innerHTML = "";
-    snapshot.forEach(child => {
-      const data = child.val();
+db.ref("products").on("value", snapshot => {
+  container.innerHTML = "";
+  snapshot.forEach(child => {
+    const data = child.val();
+    const name = data.name?.toLowerCase() || "";
+    const desc = data.description?.toLowerCase() || "";
+    const category = data.category?.toLowerCase() || "";
+
+    // فلترة حسب البحث
+    if (
+      !searchQuery ||
+      name.includes(searchQuery) ||
+      desc.includes(searchQuery) ||
+      category.includes(searchQuery)
+    ) {
       const productEl = document.createElement("div");
       productEl.className = "product";
       productEl.setAttribute("data-category", data.category);
@@ -226,32 +239,34 @@ toggleBtn.addEventListener("click", () => {
         <a href="product.html?id=${child.key}">تواصلي الآن</a>
       `;
       container.appendChild(productEl);
-    });
-
-    applyFilters(); // ← بعد إضافة المنتجات فعليًا
+    }
   });
 
-  function applyFilters() {
-    const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
-    const products = document.querySelectorAll('.product');
+  applyFilters(); // ← لازم تنفذها بعد ما تضيف المنتجات
+});
 
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        const activeFilters = Array.from(checkboxes)
-          .filter(chk => chk.checked)
-          .map(chk => chk.getAttribute('data-category'));
+function applyFilters() {
+  const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
+  const products = document.querySelectorAll('.product');
 
-        products.forEach(product => {
-          const category = product.getAttribute('data-category');
-          if (activeFilters.length === 0 || activeFilters.includes(category)) {
-            product.classList.remove('hidden');
-          } else {
-            product.classList.add('hidden');
-          }
-        });
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      const activeFilters = Array.from(checkboxes)
+        .filter(chk => chk.checked)
+        .map(chk => chk.getAttribute('data-category'));
+
+      products.forEach(product => {
+        const category = product.getAttribute('data-category');
+        if (activeFilters.length === 0 || activeFilters.includes(category)) {
+          product.classList.remove('hidden');
+        } else {
+          product.classList.add('hidden');
+        }
       });
     });
-  }
+  });
+}
+
 </script>
 
 </body>
