@@ -3,124 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>رسائل العملاء - Dandy Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <title>لوحة الرد على رسائل العملاء - Dandy</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
       font-family: 'Tajawal', sans-serif;
-      background-color: #fafafa;
-      margin: 0;
-      padding: 0;
-      color: #333;
+      padding: 2rem;
+      background-color: #f9f9f9;
     }
 
-    header {
-      background-color: #f49ac1;
-      padding: 1rem;
-      text-align: center;
-      color: white;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background-color: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .message-card {
-      border: 1px solid #eee;
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      background-color: #fff0f6;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      position: relative;
-    }
-
-    .message-card:hover {
-      transform: translateY(-3px);
-    }
-
-    .message-card h4 {
-      margin: 0;
-      color: #e07aa2;
-      font-size: 1.2rem;
-    }
-
-    .message-card p {
-      margin: 0.3rem 0;
-    }
-
-    .timestamp {
-      font-size: 0.85rem;
-      color: #888;
-    }
-
-    .reply-box {
-      margin-top: 1rem;
-    }
-
-    .reply-box textarea {
+    table {
       width: 100%;
-      border-radius: 8px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      font-family: 'Tajawal', sans-serif;
-      resize: none;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
 
-    .reply-box button {
-      margin-top: 8px;
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f49ac1;
+      color: white;
+    }
+
+    button {
       background-color: #f49ac1;
       border: none;
-      padding: 8px 14px;
       color: white;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
-    .status {
-      position: absolute;
-      top: 10px;
-      left: 15px;
-      font-size: 0.85rem;
-      background-color: #ccc;
-      color: white;
-      padding: 2px 10px;
-      border-radius: 10px;
+    button:hover {
+      background-color: #e07aa2;
     }
 
-    .status.replied {
-      background-color: #4caf50;
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      justify-content: center;
+      align-items: center;
     }
 
-    @media (max-width: 600px) {
-      .container {
-        margin: 1rem;
-        padding: 1rem;
-      }
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .modal-content textarea {
+      width: 100%;
+      height: 100px;
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      resize: none;
+    }
+
+    .modal-content button {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    رسائل العملاء
-  </header>
+  <h2>📬 رسائل العملاء</h2>
+  <table id="messages-table">
+    <thead>
+      <tr>
+        <th>الاسم</th>
+        <th>رقم الهاتف</th>
+        <th>الرسالة</th>
+        <th>الوقت</th>
+        <th>الرد</th>
+        <th>إجراء</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  <div class="container" id="messagesContainer">
-    <p>جاري تحميل الرسائل...</p>
+  <!-- نافذة الرد -->
+  <div id="reply-modal" class="modal">
+    <div class="modal-content">
+      <h3>رد على العميل</h3>
+      <p id="modal-message-text"></p>
+      <textarea id="reply-text" placeholder="اكتب الرد هنا..."></textarea>
+      <br>
+      <button onclick="submitReply()">إرسال الرد</button>
+      <button onclick="closeModal()" style="background:#aaa">إغلاق</button>
+    </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
@@ -131,60 +121,57 @@
       messagingSenderId: "454972972842",
       appId: "1:454972972842:web:fedc5e92e258a06ca08853"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const container = document.getElementById("messagesContainer");
+    const tableBody = document.querySelector("#messages-table tbody");
+    let currentMessageKey = null;
 
-    db.ref("chatMessages").orderByChild("timestamp").on("value", snapshot => {
-      container.innerHTML = "";
-      if (snapshot.exists()) {
-        const messages = Object.entries(snapshot.val()).reverse();
-        messages.forEach(([id, data]) => {
-          const date = new Date(data.timestamp).toLocaleString('ar-EG');
-          const replied = data.reply ? true : false;
-          const replyText = data.reply || "";
-          const replyTime = data.repliedAt ? new Date(data.repliedAt).toLocaleString('ar-EG') : "";
+    // جلب الرسائل من Firebase
+    db.ref("chatMessages").on("value", snapshot => {
+      tableBody.innerHTML = "";
+      snapshot.forEach(child => {
+        const msg = child.val();
+        const tr = document.createElement("tr");
 
-          const card = document.createElement("div");
-          card.className = "message-card";
+        tr.innerHTML = `
+          <td>${msg.name}</td>
+          <td>${msg.phone}</td>
+          <td>${msg.message}</td>
+          <td>${new Date(msg.timestamp).toLocaleString('ar-EG')}</td>
+          <td>${msg.reply ? msg.reply + `<br><small>${new Date(msg.repliedAt).toLocaleString('ar-EG')}</small>` : "—"}</td>
+          <td><button onclick="openReplyModal('${child.key}', \`${msg.message.replace(/`/g, "'")}\`)">رد</button></td>
+        `;
 
-          card.innerHTML = `
-            <div class="status ${replied ? "replied" : ""}">
-              ${replied ? "تم الرد ✅" : "في الانتظار ⏳"}
-            </div>
-            <h4>${data.name}</h4>
-            <p><strong>📞 الهاتف:</strong> ${data.phone}</p>
-            <p><strong>💬 الرسالة:</strong><br>${data.message}</p>
-            <p class="timestamp">🕒 تم الإرسال: ${date}</p>
-            ${replied ? `<p><strong>📝 آخر رد:</strong> ${replyText}</p>
-                         <p class="timestamp">📩 الرد بتاريخ: ${replyTime}</p>` : `
-            <div class="reply-box">
-              <textarea rows="2" placeholder="اكتب الرد هنا..." id="reply-${id}"></textarea>
-              <button onclick="sendReply('${id}')">إرسال الرد</button>
-            </div>`}
-          `;
-          container.appendChild(card);
-        });
-      } else {
-        container.innerHTML = "<p>لا توجد رسائل حالياً.</p>";
-      }
+        tableBody.appendChild(tr);
+      });
     });
 
-    function sendReply(id) {
-      const replyField = document.getElementById("reply-" + id);
-      const reply = replyField.value.trim();
-      if (!reply) return alert("اكتب الرد أولًا");
+    // فتح نافذة الرد
+    function openReplyModal(key, message) {
+      currentMessageKey = key;
+      document.getElementById("modal-message-text").innerText = message;
+      document.getElementById("reply-text").value = "";
+      document.getElementById("reply-modal").style.display = "flex";
+    }
 
-      db.ref("chatMessages/" + id).update({
-        reply: reply,
+    function closeModal() {
+      document.getElementById("reply-modal").style.display = "none";
+    }
+
+    function submitReply() {
+      const replyText = document.getElementById("reply-text").value.trim();
+      if (!replyText) {
+        alert("اكتب الرد أولاً");
+        return;
+      }
+
+      db.ref("chatMessages/" + currentMessageKey).update({
+        reply: replyText,
         repliedAt: Date.now()
       }).then(() => {
-        alert("تم إرسال الرد");
-      }).catch((err) => {
-        alert("حدث خطأ أثناء إرسال الرد");
-        console.error(err);
+        alert("تم إرسال الرد بنجاح ✅");
+        closeModal();
       });
     }
   </script>
