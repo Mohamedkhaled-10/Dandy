@@ -8,6 +8,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <style>
+    body.dark-mode {
+      background-color: #121212;
+      color: #f49ac1;
+    }
     .profile-box {
       background: white;
       padding: 1rem;
@@ -264,6 +268,65 @@
     function logout() {
       auth.signOut().then(() => {
         window.location.href = "login.html";
+      });
+    }
+
+    // 🌙 زر الوضع الليلي
+    const toggleBtn = document.getElementById("theme-toggle");
+    const icon = toggleBtn.querySelector("i");
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark-mode");
+      icon.classList.replace("fa-moon", "fa-sun");
+    }
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      const isDark = document.body.classList.contains("dark-mode");
+      icon.classList.toggle("fa-moon", !isDark);
+      icon.classList.toggle("fa-sun", isDark);
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    });
+
+    // 🔍 البحث
+    const searchForm = document.getElementById("search-form");
+    if (searchForm) {
+      searchForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const query = document.getElementById("search-input").value.trim();
+        if (query) {
+          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+        }
+      });
+    }
+
+    const searchSlide = document.getElementById("searchSlide");
+    const openBtn = document.querySelector(".mobile-search-icon");
+    const closeBtn = document.getElementById("closeSearch");
+
+    if (openBtn && searchSlide && closeBtn) {
+      openBtn.addEventListener("click", () => {
+        searchSlide.classList.add("active");
+        document.getElementById("mobile-search-input").focus();
+      });
+
+      closeBtn.addEventListener("click", () => {
+        searchSlide.classList.remove("active");
+      });
+
+      document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const query = document.getElementById("mobile-search-input").value.trim();
+        if (query) {
+          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+        }
+      });
+
+      document.addEventListener("click", function (e) {
+        const isSearchOpen = searchSlide.classList.contains("active");
+        const clickedInside = searchSlide.contains(e.target) || e.target.classList.contains("mobile-search-icon") || e.target.closest(".mobile-search-icon");
+        if (isSearchOpen && !clickedInside) {
+          searchSlide.classList.remove("active");
+        }
       });
     }
   </script>
