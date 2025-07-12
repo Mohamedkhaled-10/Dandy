@@ -112,90 +112,75 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  // فتح وغلق نافذة الدردشة
-  document.getElementById("chat-toggle").addEventListener("click", () => {
-    const chatBox = document.getElementById("chat-box");
-    chatBox.classList.toggle("hidden");
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
 
-    // لو رقم الهاتف مكتوب، اعرض الرد تلقائيًا
-    const phone = document.getElementById("chat-phone").value.trim();
-    if (phone) {
-      checkForReply(phone);
-    }
-  });
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-  document.getElementById("close-chat").addEventListener("click", () => {
-    document.getElementById("chat-box").classList.add("hidden");
-  });
+  const tableBody = document.querySelector("#messages-table tbody");
+  let currentMessageKey = null;
 
-  // ✅ التحقق من وجود رد بناءً على رقم الهاتف
-  function checkForReply(phone) {
-    const chatResponse = document.getElementById("chat-response");
-
-    db.ref("chatMessages").orderByChild("phone").equalTo(phone).once("value", snapshot => {
-      if (snapshot.exists()) {
-        const messages = Object.values(snapshot.val());
-
-        // ترتيب الرسائل حسب الوقت من الأحدث للأقدم
-        messages.sort((a, b) => b.timestamp - a.timestamp);
-
-        // نبحث عن أحدث رسالة تحتوي على رد
-        const lastWithReply = messages.find(m => m.reply);
-
-        if (lastWithReply) {
-          chatResponse.innerHTML = `
-            <strong>ردنا عليك:</strong><br>
-            ${lastWithReply.reply}<br>
-            <small>📩 بتاريخ: ${new Date(lastWithReply.repliedAt).toLocaleString('ar-EG')}</small>
-          `;
-        } else {
-          chatResponse.innerHTML = `⏳ تم استلام رسالتك، نعمل على الرد قريبًا.`;
-        }
-      } else {
-        chatResponse.innerHTML = "🔍 لم يتم العثور على رسالة مرتبطة بهذا الرقم.";
-      }
+  // تحميل جميع رسائل العملاء
+  db.ref("chatMessages").on("value", snapshot => {
+    tableBody.innerHTML = "";
+    snapshot.forEach(child => {
+      const key = child.key;
+      const data = child.val();
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${data.name}</td>
+        <td>${data.phone}</td>
+        <td>${data.message}</td>
+        <td>${new Date(data.timestamp).toLocaleString('ar-EG')}</td>
+        <td>${data.reply ? data.reply + "<br><small>" + new Date(data.repliedAt).toLocaleString('ar-EG') + "</small>" : "—"}</td>
+        <td><button onclick="openReplyModal('${key}', '${data.message.replace(/'/g, "\\'")}')">رد</button></td>
+      `;
+      tableBody.appendChild(tr);
     });
+  });
+
+  // فتح المودال
+  function openReplyModal(key, msgText) {
+    currentMessageKey = key;
+    document.getElementById("modal-message-text").innerText = msgText;
+    document.getElementById("reply-text").value = "";
+    document.getElementById("reply-modal").style.display = "flex";
   }
 
-  // ✅ إرسال الرسالة إلى Firebase
-  function sendChatMessage() {
-    const name = document.getElementById("chat-name").value.trim();
-    const phone = document.getElementById("chat-phone").value.trim();
-    const message = document.getElementById("chat-message").value.trim();
+  // غلق المودال
+  function closeModal() {
+    document.getElementById("reply-modal").style.display = "none";
+  }
 
-    if (!name || !phone || !message) {
-      alert("يرجى ملء جميع الحقول");
+  // إرسال الرد
+  function submitReply() {
+    const replyText = document.getElementById("reply-text").value.trim();
+    if (!replyText) {
+      alert("يرجى كتابة الرد أولاً");
       return;
     }
 
-    const chatRef = db.ref("chatMessages").push();
-    chatRef.set({
-      name,
-      phone,
-      message,
-      timestamp: Date.now()
+    db.ref("chatMessages/" + currentMessageKey).update({
+      reply: replyText,
+      repliedAt: Date.now()
     }).then(() => {
-      alert("✅ تم إرسال رسالتك بنجاح");
-
-      // تفريغ الحقول
-      document.getElementById("chat-name").value = "";
-      document.getElementById("chat-phone").value = "";
-      document.getElementById("chat-message").value = "";
-
-      // عرض الرد (لو فيه)
-      checkForReply(phone);
-
-      // إغلاق النافذة بعد 5 ثواني
-      setTimeout(() => {
-        document.getElementById("chat-box").classList.add("hidden");
-      }, 5000);
-
-    }).catch((error) => {
-      console.error("❌ فشل الإرسال", error);
-      alert("حدث خطأ أثناء الإرسال، حاول مرة أخرى.");
+      alert("✅ تم إرسال الرد بنجاح");
+      closeModal();
+    }).catch(err => {
+      console.error("❌ خطأ في إرسال الرد:", err);
+      alert("حدث خطأ أثناء إرسال الرد");
     });
   }
 </script>
+
 
 </body>
 </html>
