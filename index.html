@@ -34,29 +34,23 @@
 
 </head>
 <body>
+
+  <div class="mobile-search-slide" id="searchSlide">
+  <form id="mobile-search-form">
+    <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج...">
+    <button type="submit"><i class="fas fa-search"></i></button>
+    <span class="close-slide" id="closeSearch">&times;</span>
+  </form>
+</div>
+
+  
   <!-- Navigation -->
   <nav>
     <div class="logo">
   <img src="images/logo.png" alt="Dandy Logo" />
 </div>
     <ul>
-  <!-- شريط البحث العادي (يظهر على الديسكتوب فقط) -->
-<form id="search-form" class="search-bar desktop-search">
-  <input type="text" id="search-input" placeholder="ابحث عن منتج...">
-  <button type="submit"><i class="fas fa-search"></i></button>
-</form>
-
-<!-- زر البحث الخاص بالموبايل -->
-<button class="mobile-search-btn"><i class="fas fa-search"></i></button>
-
-<!-- النافذة المنبثقة للموبايل -->
-<div class="mobile-search-popup" id="mobileSearchPopup">
-  <form id="mobile-search-form">
-    <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج...">
-    <button type="submit"><i class="fas fa-search"></i></button>
-  </form>
-</div>
-
+      <button class="mobile-search-icon"><i class="fas fa-search"></i></button>
       <li><a href="#">الرئيسية</a></li>
       <li><a href="all-products.html">المنتجات</a></li>
       <li><a href="#contact">تواصل معنا</a></li>
@@ -215,6 +209,31 @@ toggleBtn.addEventListener("click", () => {
       }
     });
   }
+</script>
+<script>
+  const searchSlide = document.getElementById("searchSlide");
+  const openBtn = document.querySelector(".mobile-search-icon");
+  const closeBtn = document.getElementById("closeSearch");
+
+  // فتح الشريط عند الضغط على 🔍
+  openBtn.addEventListener("click", () => {
+    searchSlide.classList.add("active");
+    document.getElementById("mobile-search-input").focus();
+  });
+
+  // إغلاقه عند الضغط على ×
+  closeBtn.addEventListener("click", () => {
+    searchSlide.classList.remove("active");
+  });
+
+  // البحث
+  document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const query = document.getElementById("mobile-search-input").value.trim();
+    if (query) {
+      window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+    }
+  });
 </script>
 
 </body>
