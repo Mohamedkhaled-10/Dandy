@@ -439,59 +439,73 @@
     document.getElementById("chat-box").classList.add("hidden");
   });
 
-  // التحقق من وجود رد سابق للعميل بناءً على رقم الهاتف
+  // ✅ التحقق من وجود رد بناءً على رقم الهاتف
   function checkForReply(phone) {
-    db.ref("chatMessages").orderByChild("phone").equalTo(phone).limitToLast(1).once("value", snapshot => {
-      const chatResponse = document.getElementById("chat-response");
+    const chatResponse = document.getElementById("chat-response");
+
+    db.ref("chatMessages").orderByChild("phone").equalTo(phone).once("value", snapshot => {
       if (snapshot.exists()) {
-        const msgData = Object.values(snapshot.val())[0];
-        if (msgData.reply) {
-          chatResponse.innerHTML = `<strong>ردنا عليك:</strong><br>${msgData.reply}<br><small>📩 بتاريخ: ${new Date(msgData.repliedAt).toLocaleString('ar-EG')}</small>`;
+        const messages = Object.values(snapshot.val());
+
+        // ترتيب الرسائل حسب الوقت من الأحدث للأقدم
+        messages.sort((a, b) => b.timestamp - a.timestamp);
+
+        // نبحث عن أحدث رسالة تحتوي على رد
+        const lastWithReply = messages.find(m => m.reply);
+
+        if (lastWithReply) {
+          chatResponse.innerHTML = `
+            <strong>ردنا عليك:</strong><br>
+            ${lastWithReply.reply}<br>
+            <small>📩 بتاريخ: ${new Date(lastWithReply.repliedAt).toLocaleString('ar-EG')}</small>
+          `;
         } else {
           chatResponse.innerHTML = `⏳ تم استلام رسالتك، نعمل على الرد قريبًا.`;
         }
       } else {
-        chatResponse.innerHTML = "";
+        chatResponse.innerHTML = "🔍 لم يتم العثور على رسالة مرتبطة بهذا الرقم.";
       }
     });
   }
 
-function sendChatMessage() {
-  const name = document.getElementById("chat-name").value.trim();
-  const phone = document.getElementById("chat-phone").value.trim();
-  const message = document.getElementById("chat-message").value.trim();
+  // ✅ إرسال الرسالة إلى Firebase
+  function sendChatMessage() {
+    const name = document.getElementById("chat-name").value.trim();
+    const phone = document.getElementById("chat-phone").value.trim();
+    const message = document.getElementById("chat-message").value.trim();
 
-  if (!name || !phone || !message) {
-    alert("يرجى ملء جميع الحقول");
-    return;
+    if (!name || !phone || !message) {
+      alert("يرجى ملء جميع الحقول");
+      return;
+    }
+
+    const chatRef = db.ref("chatMessages").push();
+    chatRef.set({
+      name,
+      phone,
+      message,
+      timestamp: Date.now()
+    }).then(() => {
+      alert("✅ تم إرسال رسالتك بنجاح");
+
+      // تفريغ الحقول
+      document.getElementById("chat-name").value = "";
+      document.getElementById("chat-phone").value = "";
+      document.getElementById("chat-message").value = "";
+
+      // عرض الرد (لو فيه)
+      checkForReply(phone);
+
+      // إغلاق النافذة بعد 5 ثواني
+      setTimeout(() => {
+        document.getElementById("chat-box").classList.add("hidden");
+      }, 5000);
+
+    }).catch((error) => {
+      console.error("❌ فشل الإرسال", error);
+      alert("حدث خطأ أثناء الإرسال، حاول مرة أخرى.");
+    });
   }
-
-  const chatRef = db.ref("chatMessages").push();
-  chatRef.set({
-    name,
-    phone,
-    message,
-    timestamp: Date.now()
-  }).then(() => {
-    alert("تم إرسال رسالتك بنجاح");
-    document.getElementById("chat-name").value = "";
-    document.getElementById("chat-phone").value = "";
-    document.getElementById("chat-message").value = "";
-
-    // ✅ عرض الرد
-    checkForReply(phone);
-
-    // ✅ إغلاق النافذة بعد 5 ثواني
-    setTimeout(() => {
-      document.getElementById("chat-box").classList.add("hidden");
-    }, 5000);
-
-  }).catch((error) => {
-    console.error("فشل الإرسال", error);
-    alert("حدث خطأ أثناء الإرسال");
-  });
-}
-
 </script>
 
 
