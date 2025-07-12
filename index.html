@@ -47,9 +47,25 @@
   
   <!-- Navigation -->
   <nav>
+    <!-- قائمة الموبايل الجانبية -->
+<div class="mobile-menu" id="mobileMenu">
+  <ul>
+    <li><a href="#">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="profile.html">الملف الشخصي</a></li>
+    <li><a href="log-in.html">تسجيل الدخول</a></li>
+    <li><a href="#contact">تواصل معنا</a></li>
+  </ul>
+</div>
+
     <div class="logo">
   <img src="images/logo.png" alt="Dandy Logo" />
 </div>
+    <!-- زر القائمة الجانبية للموبايل -->
+<button class="hamburger-icon" id="hamburgerBtn">
+  <i class="fas fa-bars"></i>
+</button>
+
     <ul>
       <li><a href="#">الرئيسية</a></li>
       <li><a href="all-products.html">المنتجات</a></li>
@@ -267,6 +283,24 @@ document.addEventListener("click", function (e) {
   }
 });
 
+    }
+  });
+</script>
+<script>
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const mobileMenu = document.getElementById("mobileMenu");
+
+  hamburgerBtn.addEventListener("click", () => {
+    mobileMenu.classList.toggle("active");
+  });
+
+  // إغلاق القائمة عند الضغط خارجها
+  document.addEventListener("click", function (e) {
+    if (
+      !mobileMenu.contains(e.target) &&
+      !hamburgerBtn.contains(e.target)
+    ) {
+      mobileMenu.classList.remove("active");
     }
   });
 </script>
