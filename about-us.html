@@ -67,6 +67,104 @@
   </button>
 
   <!-- ✅ سكريبتات الموقع -->
-  <script src="scripts.js"></script> <!-- لو عندك ملف JavaScript منفصل -->
+<script>
+  // إخفاء وظهور شريط التنقل
+  let lastScrollTop = 0;
+  const nav = document.querySelector('nav');
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > lastScrollTop) {
+      // نازل
+      nav.style.top = "-80px";
+    } else {
+      // طالع
+      nav.style.top = "0";
+    }
+    lastScrollTop = scrollTop;
+  });
+</script>
+
+<script>
+  const searchForm = document.getElementById("search-form");
+  if (searchForm) {
+    searchForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const query = document.getElementById("search-input").value.trim();
+      if (query) {
+        window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+      }
+    });
+  }
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // ✅ بحث الديسكتوب
+    const searchForm = document.getElementById("search-form");
+    if (searchForm) {
+      searchForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const query = document.getElementById("search-input").value.trim();
+        if (query) {
+          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+        }
+      });
+    }
+
+    // ✅ بحث الموبايل المنزلق
+    const searchSlide = document.getElementById("searchSlide");
+    const openBtn = document.querySelector(".mobile-search-icon");
+    const closeBtn = document.getElementById("closeSearch");
+
+    if (openBtn && searchSlide && closeBtn) {
+      openBtn.addEventListener("click", () => {
+        searchSlide.classList.add("active");
+        document.getElementById("mobile-search-input").focus();
+      });
+
+      closeBtn.addEventListener("click", () => {
+        searchSlide.classList.remove("active");
+      });
+
+      document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const query = document.getElementById("mobile-search-input").value.trim();
+        if (query) {
+          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+        }
+      });
+      // إغلاق الشريط عند الضغط خارج منطقة البحث
+document.addEventListener("click", function (e) {
+  const searchSlide = document.getElementById("searchSlide");
+  const isSearchOpen = searchSlide.classList.contains("active");
+  const clickedInside = searchSlide.contains(e.target) || e.target.classList.contains("mobile-search-icon") || e.target.closest(".mobile-search-icon");
+
+  if (isSearchOpen && !clickedInside) {
+    searchSlide.classList.remove("active");
+  }
+});
+
+    }
+  });
+</script>
+<script>
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const mobileMenu = document.getElementById("mobileMenu");
+
+  hamburgerBtn.addEventListener("click", () => {
+    mobileMenu.classList.toggle("active");
+  });
+
+  // إغلاق القائمة عند الضغط خارجها
+  document.addEventListener("click", function (e) {
+    if (
+      !mobileMenu.contains(e.target) &&
+      !hamburgerBtn.contains(e.target)
+    ) {
+      mobileMenu.classList.remove("active");
+    }
+  });
+</script>
+
 </body>
 </html>
