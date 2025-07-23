@@ -528,3 +528,41 @@ body.dark-mode .mobile-menu ul li a {
   color: #f49ac1;
 }
 
+  .privacy-banner {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: #fff0f6;
+    color: #333;
+    padding: 12px 20px;
+    font-family: 'Tajawal', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 9999;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+  }
+
+  .privacy-banner p {
+    margin: 0;
+    font-size: 15px;
+    flex: 1 1 75%;
+  }
+
+  .privacy-banner button {
+    background-color: #f49ac1;
+    border: none;
+    padding: 8px 20px;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+    border-radius: 25px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+
+  .privacy-banner button:hover {
+    background-color: #e07ca8;
+  }
