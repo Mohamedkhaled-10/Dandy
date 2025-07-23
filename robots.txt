@@ -1,3 +1,7 @@
 User-agent: *
+Disallow: /login.html
+Disallow: /dashboard.html
+Disallow: /admin-chat.html
 Allow: /
+
 Sitemap: https://dandy-ebon.vercel.app/sitemap.xml
