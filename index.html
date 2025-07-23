@@ -124,19 +124,24 @@
   </style>
 
 <script>
-  const banner = document.getElementById("privacy-banner");
-  const acceptBtn = document.getElementById("accept-privacy");
+  document.addEventListener("DOMContentLoaded", function () {
+    const banner = document.getElementById("privacy-banner");
+    const acceptBtn = document.getElementById("accept-privacy");
 
-  if (localStorage.getItem("privacy_accepted")) {
-    banner.style.display = "none";
-  }
+    // ✅ فقط إذا لم يتم الموافقة سابقًا
+    if (!localStorage.getItem("privacy_accepted")) {
+      banner.style.display = "flex";
+    } else {
+      banner.style.display = "none";
+    }
 
-  acceptBtn.addEventListener("click", function () {
-    localStorage.setItem("privacy_accepted", "true");
-    banner.style.display = "none";
+    acceptBtn.addEventListener("click", function () {
+      localStorage.setItem("privacy_accepted", "true");
+      banner.style.display = "none";
+    });
   });
 </script>
-  
+
 <script>
   // سلايدر الصور
    let current = 0;
