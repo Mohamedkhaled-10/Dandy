@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>من نحن | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ✅ الشريط العلوي -->
+  <nav>
+    <div class="logo">
+      <img src="images/logo.png" alt="Dandy Logo" />
+    </div>
+    <button class="hamburger-icon" id="hamburgerBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <ul>
+      <li><a href="index.html">الرئيسية</a></li>
+      <li><a href="all-products.html">المنتجات</a></li>
+      <li><a href="#contact">تواصل معنا</a></li>
+    </ul>
+    <form id="search-form" class="desktop-search search-bar">
+      <input type="text" id="search-input" placeholder="ابحث عن منتج..." />
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+    <button class="mobile-search-icon"><i class="fas fa-search"></i></button>
+  </nav>
+
+  <!-- ✅ قسم من نحن -->
+  <section class="products">
+    <h2>من نحن</h2>
+    <div style="max-width: 800px; margin: 0 auto; background-color: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); line-height: 1.8;">
+      <p>مرحباً بكم في <strong>Dandy</strong>، حيث يلتقي الجمال بالعناية، وتتحول التفاصيل الصغيرة إلى لحظات من الثقة والتألق.</p>
+      <p>نحن علامة متخصصة في تقديم مجموعة مختارة من مستحضرات التجميل ومنتجات العناية الشخصية، التي تهتم بجمالك الطبيعي وتعزز من إشراقتك اليومية. نفتخر بتوفير منتجات مختارة بعناية لتناسب كافة أنواع البشرة واحتياجاتها، لأننا نؤمن أن لكل بشرة جمالها الخاص الذي يستحق العناية والدلال.</p>
+      <p><strong>📍 نحن متواجدون في مدينة نصر، مصر.</strong></p>
+      <p>سواء كنتِ تبحثين عن منتج يعزز من إشراقتك أو عن لمسة نهائية تكمّل إطلالتك، نحن هنا لنقدّم لكِ ما تحتاجينه لتشعري بثقة أكثر وصحة داخلية تنعكس على مظهرك الخارجي.</p>
+      <p>ثقتكم تعني لنا الكثير، ونسعى دائماً لنكون جزءًا من قصتكم اليومية مع الجمال.</p>
+
+      <hr style="margin: 2rem 0;" />
+
+      <p><strong>💕 لمتابعتنا:</strong></p>
+      <ul style="padding-right: 1.5rem;">
+        <li>إنستجرام: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
+        <li>فيسبوك: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">صفحتنا الرسمية</a></li>
+        <li>رقم التواصل: <a href="tel:01067228170">01067228170</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ✅ الفوتر -->
+  <footer id="contact">
+    <p>© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+      <a href="#"><i class="fab fa-whatsapp"></i></a>
+    </div>
+  </footer>
+
+  <!-- ✅ الوضع الليلي -->
+  <button id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <!-- ✅ سكريبتات الموقع -->
+  <script src="scripts.js"></script> <!-- لو عندك ملف JavaScript منفصل -->
+</body>
+</html>
