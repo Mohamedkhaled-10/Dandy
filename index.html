@@ -114,25 +114,27 @@
   <i class="fas fa-moon"></i>
 </button>
 
-<div id="popup" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  background-color: white; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.3); z-index: 9999; border-radius: 8px; max-width: 90%; text-align: center;">
-  <p>موقعنا يستخدم ملفات تعريف الارتباط لتحسين تجربتك. باستخدامك هذا الموقع، فإنك توافق على ذلك.</p>
-  <button onclick="closePopup()">حسنًا</button>
+<!-- نافذة منبثقة -->
+<div id="popup" style="display:none;">
+  <div class="popup-content">
+    <p>موقعنا يستخدم ملفات تعريف الارتباط لتحسين تجربتك. باستخدامك هذا الموقع، فإنك توافق على ذلك.</p>
+    <button onclick="closePopup()">حسنًا</button>
+  </div>
 </div>
 
 
+<!-- سكريبت التحكم -->
 <script>
   function closePopup() {
     document.getElementById('popup').style.display = 'none';
-    localStorage.setItem('cookieConsentShown', 'true');
+    localStorage.setItem('cookieAccepted', 'true');
   }
 
   window.onload = function() {
-    const shown = localStorage.getItem('cookieConsentShown');
-    if (!shown) {
-      document.getElementById('popup').style.display = 'block';
+    if (!localStorage.getItem('cookieAccepted')) {
+      document.getElementById('popup').style.display = 'flex';
     }
-  };
+  }
 </script>
 
 
