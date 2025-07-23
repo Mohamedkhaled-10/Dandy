@@ -114,33 +114,27 @@
   <i class="fas fa-moon"></i>
 </button>
 
-  <div id="privacy-banner" class="privacy-banner">
-  <p>
-    نحن نهتم بخصوصيتك 💖 نستخدم ملفات التخزين المحلية لتحسين تجربتك على موقع Dandy. بمتابعتك التصفح، أنت توافقين على ذلك.
-  </p>
-  <button id="accept-privacy">فهمت ✅</button>
+<div id="popup" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background-color: white; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.3); z-index: 9999; border-radius: 8px; max-width: 90%; text-align: center;">
+  <p>موقعنا يستخدم ملفات تعريف الارتباط لتحسين تجربتك. باستخدامك هذا الموقع، فإنك توافق على ذلك.</p>
+  <button onclick="closePopup()">حسنًا</button>
 </div>
 
-  </style>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const banner = document.getElementById("privacy-banner");
-    const acceptBtn = document.getElementById("accept-privacy");
+  function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+    localStorage.setItem('cookieConsentShown', 'true');
+  }
 
-    // ✅ فقط إذا لم يتم الموافقة سابقًا
-    if (!localStorage.getItem("privacy_accepted")) {
-      banner.style.display = "flex";
-    } else {
-      banner.style.display = "none";
+  window.onload = function() {
+    const shown = localStorage.getItem('cookieConsentShown');
+    if (!shown) {
+      document.getElementById('popup').style.display = 'block';
     }
-
-    acceptBtn.addEventListener("click", function () {
-      localStorage.setItem("privacy_accepted", "true");
-      banner.style.display = "none";
-    });
-  });
+  };
 </script>
+
 
 <script>
   // سلايدر الصور
