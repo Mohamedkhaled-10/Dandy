@@ -144,18 +144,17 @@
   </div>
 </section>
 
-<!-- Filters -->
-<div class="filter-bar">
-<input type="checkbox" id="filter1" data-category="الشعر">
-<label for="filter1">منتجات الشعر</label>
+  <!-- Filters -->
+  <div class="filter-bar">
+    <input type="checkbox" id="filter1" data-category="الشعر">
+    <label for="filter1">الشعر</label>
 
-<input type="checkbox" id="filter2" data-category="منتجات العناية بالجسم">
-<label for="filter2">منتجات العناية بالجسم</label>
+    <input type="checkbox" id="filter2" data-category="مرطبات">
+    <label for="filter2">مرطبات</label>
 
-<input type="checkbox" id="filter3" data-category="منتجات العطور">
-<label for="filter3">منتجات العطور</label>
-</div>
-
+    <input type="checkbox" id="filter3" data-category="الشفاه">
+    <label for="filter3">الشفاه</label>
+  </div>
 
   <!-- Products -->
   <section class="products">
@@ -180,30 +179,25 @@
 </button>
 
   <script>
-function applyFilters() {
-  const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
-  const products = document.querySelectorAll('.product');
+    const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
+    const products = document.querySelectorAll('.product');
 
-  const activeFilters = Array.from(checkboxes)
-    .filter(chk => chk.checked)
-    .map(chk => chk.getAttribute('data-category'));
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const activeFilters = Array.from(checkboxes)
+          .filter(chk => chk.checked)
+          .map(chk => chk.getAttribute('data-category'));
 
-  products.forEach(product => {
-    const category = product.getAttribute('data-category');
-    if (activeFilters.length === 0 || activeFilters.includes(category)) {
-      product.classList.remove('hidden');
-    } else {
-      product.classList.add('hidden');
-    }
-  });
-}
-
-document.addEventListener("change", function(e) {
-  if (e.target.matches('.filter-bar input[type="checkbox"]')) {
-    applyFilters();
-  }
-});
-
+        products.forEach(product => {
+          const category = product.getAttribute('data-category');
+          if (activeFilters.length === 0 || activeFilters.includes(category)) {
+            product.classList.remove('hidden');
+          } else {
+            product.classList.add('hidden');
+          }
+        });
+      });
+    });
     // إخفاء وظهور شريط التنقل
   let lastScrollTop = 0;
   const nav = document.querySelector('nav');
