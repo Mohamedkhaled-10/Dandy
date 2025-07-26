@@ -198,6 +198,25 @@
     </select>
 
 <label>
+
+  <h1>لوحة التحكم - آراء العملاء</h1>
+<form id="testimonialForm">
+  <label><i class="fas fa-photo-video"></i> نوع المحتوى</label>
+  <select id="testimonialType" required>
+    <option value="image">صورة</option>
+    <option value="video">فيديو</option>
+  </select>
+
+  <label><i class="fas fa-link"></i> رابط المحتوى</label>
+  <input type="url" id="testimonialUrl" required placeholder="مثال: https://...">
+
+  <button type="submit">إضافة رأي عميل</button>
+</form>
+
+<div class="products-list" id="testimonialList">
+  <h2>الآراء الحالية</h2>
+</div>
+
   <i class="fas fa-image"></i> رابط الصورة
   <a href="https://postimages.org/" target="_blank" style="margin-right: 10px; font-size: 0.9rem; background:#f8a5c2; color:#1e1e2e; padding: 4px 10px; border-radius: 8px; text-decoration:none;">🔗 تحويل صورة إلى رابط</a>
 </label>
@@ -347,6 +366,59 @@
     }
 
     loadProducts();
+
+    document.getElementById("testimonialForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const type = document.getElementById("testimonialType").value;
+  const url = document.getElementById("testimonialUrl").value;
+
+  const newRef = db.ref("testimonials").push();
+  newRef.set({ type, url })
+    .then(() => {
+      showNotification("✅ تم إضافة رأي العميل!");
+      document.getElementById("testimonialForm").reset();
+      loadTestimonials();
+    });
+});
+
+function loadTestimonials() {
+  const list = document.getElementById("testimonialList");
+  list.innerHTML = `<h2>الآراء الحالية</h2>`;
+
+  db.ref("testimonials").once("value", snapshot => {
+    snapshot.forEach(child => {
+      const { type, url } = child.val();
+      const key = child.key;
+
+      const div = document.createElement("div");
+      div.className = "product-item";
+      div.innerHTML = `
+        <div class="product-details">
+          ${type === 'image'
+            ? `<img src="${url}" class="product-img" alt="testimonial image" />`
+            : `<video src="${url}" class="product-img" style="width:60px; height:60px;" muted></video>`
+          }
+          <div class="product-name">${type === 'image' ? 'صورة' : 'فيديو'}</div>
+        </div>
+        <button class="delete-btn" onclick="deleteTestimonial('${key}')">حذف</button>
+      `;
+      list.appendChild(div);
+    });
+  });
+}
+
+function deleteTestimonial(key) {
+  if (confirm("هل تريد حذف هذا الرأي؟")) {
+    db.ref("testimonials").child(key).remove().then(() => {
+      showNotification("🗑️ تم حذف الرأي.");
+      loadTestimonials();
+    });
+  }
+}
+
+loadTestimonials();
+
   </script>
 <!-- 📘 دليل الاستخدام -->
 <div style="background-color:#1e1e2e; border-radius:16px; padding:1.5rem; margin-top:3rem;">
