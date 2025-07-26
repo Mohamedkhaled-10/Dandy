@@ -8,6 +8,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="style.css" rel="stylesheet">
 
+    <!-- Google Fonts: Cairo + Tajawal -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
   <!-- أيقونة المتصفح الأساسية -->
 <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 
@@ -61,39 +66,43 @@
   </div>
 
   
-  <!-- Navigation -->
-  <nav>
-    <!-- قائمة الموبايل الجانبية -->
-<div class="mobile-menu" id="mobileMenu">
+<!-- Navigation -->
+<nav dir="rtl">
+  <div class="logo">
+    <img src="images/Logo.png" alt="الشعار" />
+    <h1>DANDY</h1>
+  </div>
   <ul>
-    <li><a href="#">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="about-us.html">من نحن</a></li>
+    <li>
+      <a href="#">الرئيسية</a>
+    </li>
+    <li>
+      <a href="all-products.html">المنتجات</a>
+    </li>
+    <li>
+      <a href="about-us.html">من نحن</a>
+    </li>
+  </ul>
+  <div class="hamburger">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+  </div>
+</nav>
+
+<div class="menubar" dir="rtl">
+  <ul>
+    <li>
+      <a href="#">الرئيسية</a>
+    </li>
+    <li>
+      <a href="all-products.html">المنتجات</a>
+    </li>
+    <li>
+      <a href="about-us.html">من نحن</a>
+    </li>
   </ul>
 </div>
-
-    <div class="logo">
-  <img src="images/logo.png" alt="Dandy Logo" />
-</div>
-    <!-- زر القائمة الجانبية للموبايل -->
-<button class="hamburger-icon" id="hamburgerBtn">
-  <i class="fas fa-bars"></i>
-</button>
-
-    <ul>
-      <li><a href="#">الرئيسية</a></li>
-      <li><a href="all-products.html">المنتجات</a></li>
-      <li><a href="about-us.html">من نحن</a></li>
-    </ul>
-    <!-- ✅ شريط البحث للكمبيوتر -->
-    <form id="search-form" class="desktop-search search-bar">
-      <input type="text" id="search-input" placeholder="ابحث عن منتج...">
-      <button type="submit"><i class="fas fa-search"></i></button>
-    </form>
-
-    <!-- ✅ زر العدسة للموبايل -->
-    <button class="mobile-search-icon"><i class="fas fa-search"></i></button>
-  </nav>
   
   <!-- Hero -->
 <section class="hero">
@@ -113,19 +122,22 @@
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer id="contact">
-    <p>© 2025 Dandy. جميع الحقوق محفوظة.</p>
-    <div class="social-icons">
-      <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook"></i></a>
-      <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-      <a href="#"><i class="fab fa-whatsapp"></i></a>
+ <!-- Footer -->
+<footer>
+  <div class="footer-grid">
+  
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
+      </div>
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
     </div>
-  </footer>
-  <!-- زر الوضع الليلي -->
-<button id="theme-toggle" aria-label="Toggle dark mode">
-  <i class="fas fa-moon"></i>
-</button>
+
+  </div>
+</footer>
 
 <!-- نافذة منبثقة -->
 <div id="popup" style="display:none;">
@@ -179,28 +191,7 @@
     lastScrollTop = scrollTop;
   });
 </script>
-<script>
-  // 🌙 زر الوضع الليلي
-const toggleBtn = document.getElementById("theme-toggle");
-const icon = toggleBtn.querySelector("i");
 
-// حفظ التفضيل
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "dark") {
-  document.body.classList.add("dark-mode");
-  icon.classList.replace("fa-moon", "fa-sun");
-}
-
-toggleBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  const isDark = document.body.classList.contains("dark-mode");
-  icon.classList.toggle("fa-moon", !isDark);
-  icon.classList.toggle("fa-sun", isDark);
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-});
-
-
-</script>
   <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -272,74 +263,34 @@ toggleBtn.addEventListener("click", () => {
     });
   }
 </script>
+
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // ✅ بحث الديسكتوب
-    const searchForm = document.getElementById("search-form");
-    if (searchForm) {
-      searchForm.addEventListener("submit", function(e) {
-        e.preventDefault();
-        const query = document.getElementById("search-input").value.trim();
-        if (query) {
-          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
-        }
-      });
-    }
+const mobileNav = document.querySelector(".hamburger");
+const navbar = document.querySelector(".menubar");
 
-    // ✅ بحث الموبايل المنزلق
-    const searchSlide = document.getElementById("searchSlide");
-    const openBtn = document.querySelector(".mobile-search-icon");
-    const closeBtn = document.getElementById("closeSearch");
+const toggleNav = () => {
+  navbar.classList.toggle("active");
+  mobileNav.classList.toggle("hamburger-active");
+};
 
-    if (openBtn && searchSlide && closeBtn) {
-      openBtn.addEventListener("click", () => {
-        searchSlide.classList.add("active");
-        document.getElementById("mobile-search-input").focus();
-      });
+mobileNav.addEventListener("click", (e) => {
+  e.stopPropagation(); // علشان الضغطة على الزر ما تعتبرش ضغطة على document
+  toggleNav();
+});
 
-      closeBtn.addEventListener("click", () => {
-        searchSlide.classList.remove("active");
-      });
-
-      document.getElementById("mobile-search-form").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const query = document.getElementById("mobile-search-input").value.trim();
-        if (query) {
-          window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
-        }
-      });
-      // إغلاق الشريط عند الضغط خارج منطقة البحث
-document.addEventListener("click", function (e) {
-  const searchSlide = document.getElementById("searchSlide");
-  const isSearchOpen = searchSlide.classList.contains("active");
-  const clickedInside = searchSlide.contains(e.target) || e.target.classList.contains("mobile-search-icon") || e.target.closest(".mobile-search-icon");
-
-  if (isSearchOpen && !clickedInside) {
-    searchSlide.classList.remove("active");
+// لما المستخدم يضغط في أي مكان في الصفحة
+document.addEventListener("click", (e) => {
+  // لو القائمة مفتوحة والضغط مش جوه القائمة ولا زر الهمبرجر
+  if (
+    navbar.classList.contains("active") &&
+    !navbar.contains(e.target) &&
+    !mobileNav.contains(e.target)
+  ) {
+    navbar.classList.remove("active");
+    mobileNav.classList.remove("hamburger-active");
   }
 });
 
-    }
-  });
 </script>
-<script>
-  const hamburgerBtn = document.getElementById("hamburgerBtn");
-  const mobileMenu = document.getElementById("mobileMenu");
-
-  hamburgerBtn.addEventListener("click", () => {
-    mobileMenu.classList.toggle("active");
-  });
-
-  // إغلاق القائمة عند الضغط خارجها
-  document.addEventListener("click", function (e) {
-    if (
-      !mobileMenu.contains(e.target) &&
-      !hamburgerBtn.contains(e.target)
-    ) {
-      mobileMenu.classList.remove("active");
-    }
-  });
-</script>
-
 </body>
 </html>
