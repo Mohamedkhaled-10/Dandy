@@ -193,6 +193,33 @@
       </div>
     </div>
   </footer>
+<script>
+const mobileNav = document.querySelector(".hamburger");
+const navbar = document.querySelector(".menubar");
 
+const toggleNav = () => {
+  navbar.classList.toggle("active");
+  mobileNav.classList.toggle("hamburger-active");
+};
+
+mobileNav.addEventListener("click", (e) => {
+  e.stopPropagation(); // علشان الضغطة على الزر ما تعتبرش ضغطة على document
+  toggleNav();
+});
+
+// لما المستخدم يضغط في أي مكان في الصفحة
+document.addEventListener("click", (e) => {
+  // لو القائمة مفتوحة والضغط مش جوه القائمة ولا زر الهمبرجر
+  if (
+    navbar.classList.contains("active") &&
+    !navbar.contains(e.target) &&
+    !mobileNav.contains(e.target)
+  ) {
+    navbar.classList.remove("active");
+    mobileNav.classList.remove("hamburger-active");
+  }
+});
+
+</script>
 </body>
 </html>
