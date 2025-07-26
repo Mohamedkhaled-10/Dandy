@@ -198,25 +198,6 @@
     </select>
 
 <label>
-
-  <h1>لوحة التحكم - آراء العملاء</h1>
-<form id="testimonialForm">
-  <label><i class="fas fa-photo-video"></i> نوع المحتوى</label>
-  <select id="testimonialType" required>
-    <option value="image">صورة</option>
-    <option value="video">فيديو</option>
-  </select>
-
-  <label><i class="fas fa-link"></i> رابط المحتوى</label>
-  <input type="url" id="testimonialUrl" required placeholder="مثال: https://...">
-
-  <button type="submit">إضافة رأي عميل</button>
-</form>
-
-<div class="products-list" id="testimonialList">
-  <h2>الآراء الحالية</h2>
-</div>
-
   <i class="fas fa-image"></i> رابط الصورة
   <a href="https://postimages.org/" target="_blank" style="margin-right: 10px; font-size: 0.9rem; background:#f8a5c2; color:#1e1e2e; padding: 4px 10px; border-radius: 8px; text-decoration:none;">🔗 تحويل صورة إلى رابط</a>
 </label>
@@ -240,6 +221,25 @@
     <button type="submit">إضافة المنتج</button>
   </form>
 
+  <!-- نموذج آراء العملاء (منفصل) -->
+<h1>لوحة التحكم - آراء العملاء</h1>
+<form id="testimonialForm">
+  <label><i class="fas fa-photo-video"></i> نوع المحتوى</label>
+  <select id="testimonialType" required>
+    <option value="image">صورة</option>
+    <option value="video">فيديو</option>
+  </select>
+
+  <label><i class="fas fa-link"></i> رابط المحتوى</label>
+  <input type="url" id="testimonialUrl" required placeholder="مثال: https://...">
+
+  <button type="submit">إضافة رأي عميل</button>
+</form>
+
+<div class="products-list" id="testimonialList">
+  <h2>الآراء الحالية</h2>
+</div>
+  
   <div class="products-list" id="productsList">
     <h2>المنتجات الحالية</h2>
     <div style="text-align: center; margin-bottom: 1rem;">
