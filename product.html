@@ -25,65 +25,10 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+     padding-top: 30px; /* أو نفس ارتفاع الـ nav */
+
     }
 
-    nav {
-      background-color: var(--primary-color);
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    nav .logo {
-      font-weight: bold;
-      font-size: 1.5rem;
-      color: var(--accent-color);
-      transition: transform 0.3s;
-    }
-
-    nav .logo:hover {
-      transform: scale(1.1);
-    }
-
-    nav ul {
-      display: flex;
-      list-style: none;
-      gap: 1.5rem;
-      margin: 0;
-      padding: 0;
-    }
-
-    nav ul li a {
-      text-decoration: none;
-      color: var(--text-color);
-      transition: color 0.3s, transform 0.3s;
-      position: relative;
-    }
-
-    nav ul li a::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background-color: var(--accent-color);
-      transition: width 0.3s;
-    }
-
-    nav ul li a:hover::after {
-      width: 100%;
-    }
-
-    nav ul li a:hover {
-      color: var(--accent-color);
-      transform: scale(1.05);
-    }
 
     .container {
       max-width: 1100px;
@@ -183,29 +128,6 @@
       }
     }
 
-    footer {
-      background-color: var(--primary-color);
-      text-align: center;
-      padding: 2rem;
-      margin-top: auto;
-    }
-
-    footer p {
-      margin: 0.5rem 0;
-      color: #666;
-    }
-
-    .social-icons a {
-      margin: 0 10px;
-      color: #666;
-      font-size: 1.2rem;
-      transition: color 0.3s, transform 0.3s;
-    }
-
-    .social-icons a:hover {
-      color: var(--accent-color);
-      transform: scale(1.2);
-    }
   </style>
 
     <!-- أيقونة المتصفح الأساسية -->
@@ -282,18 +204,22 @@
     </div>
   </div>
 
-  <footer id="contact">
-    <p>© 2025 Dandy. جميع الحقوق محفوظة.</p>
-    <div class="social-icons">
-      <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook"></i></a>
-      <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-      <a href="#"><i class="fab fa-whatsapp"></i></a>
+ <!-- Footer -->
+<footer>
+  <div class="footer-grid">
+  
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
+      </div>
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
     </div>
-  </footer>
-<!-- زر الوضع الليلي -->
-<button id="theme-toggle" aria-label="Toggle dark mode">
-  <i class="fas fa-moon"></i>
-</button>
+
+  </div>
+</footer>
 
   <script>
     // إخفاء وظهور شريط التنقل
@@ -312,28 +238,7 @@
     lastScrollTop = scrollTop;
   });
   </script>
-  <script>
-  // 🌙 زر الوضع الليلي
-const toggleBtn = document.getElementById("theme-toggle");
-const icon = toggleBtn.querySelector("i");
 
-// حفظ التفضيل
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "dark") {
-  document.body.classList.add("dark-mode");
-  icon.classList.replace("fa-moon", "fa-sun");
-}
-
-toggleBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  const isDark = document.body.classList.contains("dark-mode");
-  icon.classList.toggle("fa-moon", !isDark);
-  icon.classList.toggle("fa-sun", isDark);
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-});
-
-
-</script>
 
   <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -384,5 +289,35 @@ document.getElementById("whatsapp-link").href = whatsappLink;
     console.error(error);
   });
 </script>
+
+<script>
+const mobileNav = document.querySelector(".hamburger");
+const navbar = document.querySelector(".menubar");
+
+const toggleNav = () => {
+  navbar.classList.toggle("active");
+  mobileNav.classList.toggle("hamburger-active");
+};
+
+mobileNav.addEventListener("click", (e) => {
+  e.stopPropagation(); // علشان الضغطة على الزر ما تعتبرش ضغطة على document
+  toggleNav();
+});
+
+// لما المستخدم يضغط في أي مكان في الصفحة
+document.addEventListener("click", (e) => {
+  // لو القائمة مفتوحة والضغط مش جوه القائمة ولا زر الهمبرجر
+  if (
+    navbar.classList.contains("active") &&
+    !navbar.contains(e.target) &&
+    !mobileNav.contains(e.target)
+  ) {
+    navbar.classList.remove("active");
+    mobileNav.classList.remove("hamburger-active");
+  }
+});
+
+</script>
+  
 </body>
 </html>
