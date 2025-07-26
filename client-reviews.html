@@ -6,118 +6,12 @@
   <title>آراء العملاء | Dandy</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
   <link rel="manifest" href="images/fav-icons/site.webmanifest">
-
-  <!-- Open Graph meta tags -->
   <meta property="og:title" content="DANDY | ثقة العملاء">
   <meta property="og:description" content="ثقة العملاء">
   <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
-  <meta property="og:image:type" content="image/webp">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.appspot.com",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const imageSection = document.getElementById("testimonial-images");
-    const videoSection = document.getElementById("testimonial-videos");
-
-    const testimonialsRef = ref(db, 'testimonials');
-
-    function updateViewCount(key) {
-      const itemRef = ref(db, `testimonials/${key}`);
-      get(itemRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const current = snapshot.val().views || 0;
-          update(itemRef, { views: current + 1 });
-        }
-      });
-    }
-
-    function showPopup(url) {
-      document.getElementById('popup').style.display = 'flex';
-      document.getElementById('popup-video').src = url;
-    }
-
-    function hidePopup() {
-      document.getElementById('popup').style.display = 'none';
-      document.getElementById('popup-video').src = '';
-    }
-
-    window.showPopup = showPopup;
-    window.hidePopup = hidePopup;
-
-    onValue(testimonialsRef, (snapshot) => {
-      const data = snapshot.val();
-      imageSection.innerHTML = '';
-      videoSection.innerHTML = '';
-
-      Object.entries(data).forEach(([key, item]) => {
-        const card = document.createElement('div');
-        card.className = 'testimonial-card';
-
-        const viewBox = document.createElement('div');
-        viewBox.className = 'view-count';
-        viewBox.innerHTML = `<i class="fas fa-eye"></i> <span>${item.views || 0}</span> مشاهدة`;
-
-        if (item.type === 'image') {
-          const img = document.createElement('img');
-          img.src = item.url;
-          img.alt = "رأي عميل";
-          img.className = 'testimonial-img';
-          card.appendChild(img);
-          card.appendChild(viewBox);
-          imageSection.appendChild(card);
-          updateViewCount(key);
-        } else if (item.type === 'video') {
-          const thumbnail = document.createElement('div');
-          thumbnail.className = 'testimonial-video';
-          thumbnail.style.background = '#000';
-          thumbnail.style.display = 'flex';
-          thumbnail.style.alignItems = 'center';
-          thumbnail.style.justifyContent = 'center';
-          thumbnail.style.color = '#fff';
-          thumbnail.style.fontSize = '1.2rem';
-          thumbnail.style.cursor = 'pointer';
-          thumbnail.innerText = 'اضغط لتشغيل الفيديو';
-
-          thumbnail.addEventListener('click', () => {
-            showPopup(item.url);
-            updateViewCount(key);
-          });
-
-          card.appendChild(thumbnail);
-          card.appendChild(viewBox);
-          videoSection.appendChild(card);
-        }
-      });
-    });
-  </script>
 
   <style>
     :root {
@@ -173,6 +67,7 @@
       width: 100%;
       height: auto;
       display: block;
+      loading: lazy;
     }
 
     .testimonial-video {
@@ -284,5 +179,104 @@
       </div>
     </div>
   </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    });
+
+    const db = getDatabase(app);
+    const imageSection = document.getElementById("testimonial-images");
+    const videoSection = document.getElementById("testimonial-videos");
+
+    const testimonialsRef = ref(db, 'testimonials');
+
+    function updateViewCount(key) {
+      const itemRef = ref(db, `testimonials/${key}`);
+      get(itemRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const current = snapshot.val().views || 0;
+          update(itemRef, { views: current + 1 });
+        }
+      });
+    }
+
+    function showPopup(url) {
+      document.getElementById('popup').style.display = 'flex';
+      document.getElementById('popup-video').src = url;
+    }
+
+    function hidePopup() {
+      const popup = document.getElementById('popup');
+      const iframe = document.getElementById('popup-video');
+      iframe.src = '';
+      popup.style.display = 'none';
+    }
+
+    window.showPopup = showPopup;
+    window.hidePopup = hidePopup;
+
+    onValue(testimonialsRef, snapshot => {
+      const data = snapshot.val();
+      imageSection.innerHTML = '';
+      videoSection.innerHTML = '';
+
+      let count = 0;
+      const maxItems = 20; // Limit to 20 items total to reduce load
+
+      Object.entries(data).forEach(([key, item]) => {
+        if (count >= maxItems) return;
+        count++;
+
+        const card = document.createElement('div');
+        card.className = 'testimonial-card';
+
+        const viewBox = document.createElement('div');
+        viewBox.className = 'view-count';
+        viewBox.innerHTML = `<i class="fas fa-eye"></i> <span>${item.views || 0}</span> مشاهدة`;
+
+        if (item.type === 'image') {
+          const img = document.createElement('img');
+          img.src = item.url;
+          img.alt = "رأي عميل";
+          img.className = 'testimonial-img';
+          img.loading = 'lazy';
+          card.appendChild(img);
+          card.appendChild(viewBox);
+          imageSection.appendChild(card);
+          updateViewCount(key);
+        } else if (item.type === 'video') {
+          const thumbnail = document.createElement('div');
+          thumbnail.className = 'testimonial-video';
+          thumbnail.style.background = '#000';
+          thumbnail.style.display = 'flex';
+          thumbnail.style.alignItems = 'center';
+          thumbnail.style.justifyContent = 'center';
+          thumbnail.style.color = '#fff';
+          thumbnail.style.fontSize = '1.2rem';
+          thumbnail.style.cursor = 'pointer';
+          thumbnail.innerText = 'اضغط لتشغيل الفيديو';
+
+          thumbnail.addEventListener('click', () => {
+            showPopup(item.url);
+            updateViewCount(key);
+          });
+
+          card.appendChild(thumbnail);
+          card.appendChild(viewBox);
+          videoSection.appendChild(card);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
