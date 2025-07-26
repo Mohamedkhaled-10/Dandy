@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>آراء العملاء | Dandy</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const imageSection = document.getElementById("testimonial-images");
+    const videoSection = document.getElementById("testimonial-videos");
+
+    const testimonialsRef = ref(db, 'testimonials');
+
+    onValue(testimonialsRef, (snapshot) => {
+      const data = snapshot.val();
+      imageSection.innerHTML = '';
+      videoSection.innerHTML = '';
+      Object.values(data).forEach(item => {
+        if (item.type === 'image') {
+          const img = document.createElement('img');
+          img.src = item.url;
+          img.alt = "رأي عميل";
+          img.className = 'testimonial-img';
+          imageSection.appendChild(img);
+        } else if (item.type === 'video') {
+          const video = document.createElement('iframe');
+          video.src = item.url;
+          video.className = 'testimonial-video';
+          video.frameBorder = 0;
+          video.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+          video.allowFullscreen = true;
+          videoSection.appendChild(video);
+        }
+      });
+    });
+  </script>
+  <style>
+    .testimonials-container {
+      padding: 3rem 1rem;
+      background: var(--secondary-color);
+      font-family: 'Tajawal', sans-serif;
+    }
+    .testimonials-container h2 {
+      text-align: center;
+      color: var(--accent-color);
+      margin-bottom: 2rem;
+      font-size: 2rem;
+    }
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    .testimonial-img {
+      width: 100%;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .testimonial-video {
+      width: 100%;
+      height: 300px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+<nav dir="rtl">
+  <div class="logo">
+    <img src="images/Logo.png" alt="الشعار" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li>
+      <a href="index.html">الرئيسية</a>
+    </li>
+    <li>
+      <a href="all-products.html">المنتجات</a>
+    </li>
+    <li>
+      <a href="#">ثقة العملاء</a>
+    </li>
+    <li>
+      <a href="about-us.html">من نحن</a>
+    </li>
+  </ul>
+  <div class="hamburger">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+  </div>
+</nav>
+
+<div class="menubar" dir="rtl">
+  <ul>
+    <li>
+      <a href="index.html">الرئيسية</a>
+    </li>
+    <li>
+      <a href="all-products.html">المنتجات</a>
+    </li>
+    <li>
+      <a href="#">ثقة العملاء</a>
+    </li>
+    <li>
+      <a href="about-us.html">من نحن</a>
+    </li>
+  </ul>
+</div>
+
+
+  <section class="testimonials-container">
+    <h2>آراء العملاء (صور)</h2>
+    <div class="testimonial-grid" id="testimonial-images"></div>
+
+    <h2 style="margin-top: 4rem;">آراء العملاء (فيديوهات)</h2>
+    <div class="testimonial-grid" id="testimonial-videos"></div>
+  </section>
+
+   <!-- Footer -->
+<footer>
+  <div class="footer-grid">
+  
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
+      </div>
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    </div>
+
+  </div>
+</footer>
+</body>
+</html>
