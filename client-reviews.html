@@ -6,12 +6,83 @@
   <title>آراء العملاء | Dandy</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+
+    <!-- أيقونة المتصفح الأساسية -->
+<link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
+<!-- أيقونات مختلفة لحجم متعدد -->
+<link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+
+<!-- أيقونة خاصة بأجهزة Apple -->
+<link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+
+<!-- ملف Web Manifest لتعريف الأيقونات على أنظمة التشغيل -->
+<link rel="manifest" href="images/fav-icons/site.webmanifest">
+
+  <!-- Open Graph meta tags -->
   <meta property="og:title" content="DANDY | ثقة العملاء">
   <meta property="og:description" content="ثقة العملاء">
   <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
+  <meta property="og:image:type" content="image/webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const imageSection = document.getElementById("testimonial-images");
+    const videoSection = document.getElementById("testimonial-videos");
+
+    const testimonialsRef = ref(db, 'testimonials');
+
+    onValue(testimonialsRef, (snapshot) => {
+      const data = snapshot.val();
+      imageSection.innerHTML = '';
+      videoSection.innerHTML = '';
+      Object.values(data).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'testimonial-card';
+
+        if (item.type === 'image') {
+          const img = document.createElement('img');
+          img.src = item.url;
+          img.alt = "رأي عميل";
+          img.className = 'testimonial-img';
+          card.appendChild(img);
+          imageSection.appendChild(card);
+        } else if (item.type === 'video') {
+          const iframe = document.createElement('iframe');
+          iframe.src = item.url;
+          iframe.className = 'testimonial-video';
+          iframe.frameBorder = 0;
+          iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+          iframe.allowFullscreen = true;
+          card.appendChild(iframe);
+          videoSection.appendChild(card);
+        }
+      });
+    });
+  </script>
 
   <style>
     :root {
@@ -25,115 +96,62 @@
       background-color: #fff;
     }
 
-    .testimonials-container {
-      padding: 4rem 1rem;
-      background: var(--secondary-color);
-    }
+.testimonials-container {
+  padding: 4rem 1rem;
+  background: var(--secondary-color);
+  font-family: 'Tajawal', sans-serif;
+}
 
-    .testimonial-section {
-      margin-bottom: 4rem;
-    }
+.testimonial-section {
+  margin-bottom: 4rem;
+}
 
-    .testimonial-section-title {
-      text-align: center;
-      font-size: 2.2rem;
-      color: var(--accent-color);
-      margin-bottom: 2rem;
-      font-weight: 700;
-    }
+.testimonial-section-title {
+  text-align: center;
+  font-size: 2.2rem;
+  color: var(--accent-color);
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
 
-    .testimonial-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-    .testimonial-card {
-      background: white;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+.testimonial-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-    .testimonial-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    }
+.testimonial-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
 
-    .testimonial-img {
-      width: 100%;
-      height: auto;
-      display: block;
-      loading: lazy;
-    }
+.testimonial-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
 
-    .testimonial-video {
-      width: 100%;
-      height: 300px;
-      border: none;
-      display: block;
-    }
-
-    .view-count {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0.5rem 1rem;
-      background: #fafafa;
-      font-size: 0.9rem;
-      border-top: 1px solid #eee;
-      color: #666;
-    }
-
-    .view-count i {
-      color: var(--accent-color);
-    }
-
-    #popup {
-      display: none;
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background-color: rgba(0, 0, 0, 0.7);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #popup > div {
-      position: relative;
-      width: 90%;
-      max-width: 700px;
-    }
-
-    #popup iframe {
-      width: 100%;
-      height: 400px;
-      border: none;
-    }
-
-    #popup span {
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      background: #fff;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-weight: bold;
-    }
+.testimonial-video {
+  width: 100%;
+  height: 300px;
+  border: none;
+  display: block;
+}
   </style>
 </head>
 <body>
+
+  <!-- Navigation -->
   <nav dir="rtl">
     <div class="logo">
       <img src="images/logo.png" alt="الشعار" />
@@ -147,25 +165,21 @@
     </ul>
   </nav>
 
-  <section class="testimonials-container">
-    <div class="testimonial-section">
-      <h2 class="testimonial-section-title">آراء العملاء (صور)</h2>
-      <div class="testimonial-grid" id="testimonial-images"></div>
-    </div>
-
-    <div class="testimonial-section">
-      <h2 class="testimonial-section-title">آراء العملاء (فيديوهات)</h2>
-      <div class="testimonial-grid" id="testimonial-videos"></div>
-    </div>
-  </section>
-
-  <div id="popup">
-    <div>
-      <span onclick="hidePopup()">×</span>
-      <iframe id="popup-video" allowfullscreen></iframe>
-    </div>
+  <!-- Testimonials -->
+<section class="testimonials-container">
+  <div class="testimonial-section">
+    <h2 class="testimonial-section-title">آراء العملاء (صور)</h2>
+    <div class="testimonial-grid" id="testimonial-images"></div>
   </div>
 
+  <div class="testimonial-section">
+    <h2 class="testimonial-section-title">آراء العملاء (فيديوهات)</h2>
+    <div class="testimonial-grid" id="testimonial-videos"></div>
+  </div>
+</section>
+
+
+  <!-- Footer -->
   <footer>
     <div class="footer-grid">
       <div class="footer-col footer-social">
@@ -180,103 +194,5 @@
     </div>
   </footer>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue, get, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const app = initializeApp({
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.appspot.com",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    });
-
-    const db = getDatabase(app);
-    const imageSection = document.getElementById("testimonial-images");
-    const videoSection = document.getElementById("testimonial-videos");
-
-    const testimonialsRef = ref(db, 'testimonials');
-
-    function updateViewCount(key) {
-      const itemRef = ref(db, `testimonials/${key}`);
-      get(itemRef).then(snapshot => {
-        if (snapshot.exists()) {
-          const current = snapshot.val().views || 0;
-          update(itemRef, { views: current + 1 });
-        }
-      });
-    }
-
-    function showPopup(url) {
-      document.getElementById('popup').style.display = 'flex';
-      document.getElementById('popup-video').src = url;
-    }
-
-    function hidePopup() {
-      const popup = document.getElementById('popup');
-      const iframe = document.getElementById('popup-video');
-      iframe.src = '';
-      popup.style.display = 'none';
-    }
-
-    window.showPopup = showPopup;
-    window.hidePopup = hidePopup;
-
-    onValue(testimonialsRef, snapshot => {
-      const data = snapshot.val();
-      imageSection.innerHTML = '';
-      videoSection.innerHTML = '';
-
-      let count = 0;
-      const maxItems = 20; // Limit to 20 items total to reduce load
-
-      Object.entries(data).forEach(([key, item]) => {
-        if (count >= maxItems) return;
-        count++;
-
-        const card = document.createElement('div');
-        card.className = 'testimonial-card';
-
-        const viewBox = document.createElement('div');
-        viewBox.className = 'view-count';
-        viewBox.innerHTML = `<i class="fas fa-eye"></i> <span>${item.views || 0}</span> مشاهدة`;
-
-        if (item.type === 'image') {
-          const img = document.createElement('img');
-          img.src = item.url;
-          img.alt = "رأي عميل";
-          img.className = 'testimonial-img';
-          img.loading = 'lazy';
-          card.appendChild(img);
-          card.appendChild(viewBox);
-          imageSection.appendChild(card);
-          updateViewCount(key);
-        } else if (item.type === 'video') {
-          const thumbnail = document.createElement('div');
-          thumbnail.className = 'testimonial-video';
-          thumbnail.style.background = '#000';
-          thumbnail.style.display = 'flex';
-          thumbnail.style.alignItems = 'center';
-          thumbnail.style.justifyContent = 'center';
-          thumbnail.style.color = '#fff';
-          thumbnail.style.fontSize = '1.2rem';
-          thumbnail.style.cursor = 'pointer';
-          thumbnail.innerText = 'اضغط لتشغيل الفيديو';
-
-          thumbnail.addEventListener('click', () => {
-            showPopup(item.url);
-            updateViewCount(key);
-          });
-
-          card.appendChild(thumbnail);
-          card.appendChild(viewBox);
-          videoSection.appendChild(card);
-        }
-      });
-    });
-  </script>
 </body>
 </html>
