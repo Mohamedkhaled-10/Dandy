@@ -4,28 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>آراء العملاء | Dandy</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- أيقونة المتصفح الأساسية -->
-<link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <!-- أيقونات Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- أيقونات مختلفة لحجم متعدد -->
-<link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <!-- Glightbox -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
-<!-- أيقونة خاصة بأجهزة Apple -->
-<link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
 
-<!-- ملف Web Manifest لتعريف الأيقونات على أنظمة التشغيل -->
-<link rel="manifest" href="images/fav-icons/site.webmanifest">
-
-  <!-- Open Graph meta tags -->
+  <!-- Open Graph -->
   <meta property="og:title" content="DANDY | ثقة العملاء">
   <meta property="og:description" content="ثقة العملاء">
   <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
@@ -33,6 +28,166 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
+
+  <style>
+    :root {
+      --accent-color: #f49ac1;
+      --secondary-color: #fff9fc;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Tajawal', sans-serif;
+      background-color: #fff;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: var(--secondary-color);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 40px;
+      margin-left: 10px;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1rem;
+      padding: 0;
+      margin: 0;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #444;
+      font-weight: bold;
+    }
+
+    .testimonials-container {
+      padding: 4rem 1rem;
+      background: var(--secondary-color);
+    }
+
+    .testimonial-section-title {
+      text-align: center;
+      font-size: 2.2rem;
+      color: var(--accent-color);
+      margin-bottom: 2rem;
+      font-weight: 700;
+    }
+
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .testimonial-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .testimonial-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: pointer;
+    }
+
+    .testimonial-video {
+      width: 100%;
+      height: 300px;
+      background-color: #000;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      cursor: pointer;
+    }
+
+    footer {
+      background-color: #f8f8f8;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .social-icons a {
+      margin: 0 0.5rem;
+      color: var(--accent-color);
+      font-size: 1.5rem;
+    }
+
+    .rights {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="logo">
+      <img src="images/logo.png" alt="الشعار" />
+      <h1>DANDY</h1>
+    </div>
+    <ul>
+      <li><a href="index.html">الرئيسية</a></li>
+      <li><a href="all-products.html">المنتجات</a></li>
+      <li><a href="#">ثقة العملاء</a></li>
+      <li><a href="about-us.html">من نحن</a></li>
+    </ul>
+  </nav>
+
+  <!-- Testimonials -->
+  <section class="testimonials-container">
+    <div class="testimonial-section">
+      <h2 class="testimonial-section-title">آراء العملاء (صور)</h2>
+      <div class="testimonial-grid" id="testimonial-images"></div>
+    </div>
+
+    <div class="testimonial-section">
+      <h2 class="testimonial-section-title">آراء العملاء (فيديوهات)</h2>
+      <div class="testimonial-grid" id="testimonial-videos"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
+      </div>
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    </div>
+  </footer>
+
+  <!-- Firebase Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -59,140 +214,47 @@
       const data = snapshot.val();
       imageSection.innerHTML = '';
       videoSection.innerHTML = '';
+
       Object.values(data).forEach(item => {
         const card = document.createElement('div');
         card.className = 'testimonial-card';
 
         if (item.type === 'image') {
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'images');
+
           const img = document.createElement('img');
           img.src = item.url;
           img.alt = "رأي عميل";
           img.className = 'testimonial-img';
-          card.appendChild(img);
+
+          link.appendChild(img);
+          card.appendChild(link);
           imageSection.appendChild(card);
+
         } else if (item.type === 'video') {
-          const iframe = document.createElement('iframe');
-          iframe.src = item.url;
-          iframe.className = 'testimonial-video';
-          iframe.frameBorder = 0;
-          iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-          iframe.allowFullscreen = true;
-          card.appendChild(iframe);
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.className = 'glightbox';
+          link.setAttribute('data-type', 'video');
+          link.setAttribute('data-gallery', 'videos');
+
+          const thumbnail = document.createElement('div');
+          thumbnail.className = 'testimonial-video';
+          thumbnail.innerHTML = '<i class="fas fa-play-circle"></i>';
+
+          link.appendChild(thumbnail);
+          card.appendChild(link);
           videoSection.appendChild(card);
         }
       });
+
+      setTimeout(() => {
+        GLightbox({ selector: '.glightbox' });
+      }, 500);
     });
   </script>
-
-  <style>
-    :root {
-      --accent-color: #f49ac1;
-      --secondary-color: #fff9fc;
-    }
-
-    body {
-      margin: 0;
-      font-family: 'Tajawal', sans-serif;
-      background-color: #fff;
-    }
-
-.testimonials-container {
-  padding: 4rem 1rem;
-  background: var(--secondary-color);
-  font-family: 'Tajawal', sans-serif;
-}
-
-.testimonial-section {
-  margin-bottom: 4rem;
-}
-
-.testimonial-section-title {
-  text-align: center;
-  font-size: 2.2rem;
-  color: var(--accent-color);
-  margin-bottom: 2rem;
-  font-weight: 700;
-}
-
-.testimonial-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.testimonial-card {
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-}
-
-.testimonial-img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.testimonial-video {
-  width: 100%;
-  height: 300px;
-  border: none;
-  display: block;
-}
-  </style>
-</head>
-<body>
-
-  <!-- Navigation -->
-  <nav dir="rtl">
-    <div class="logo">
-      <img src="images/logo.png" alt="الشعار" />
-      <h1>DANDY</h1>
-    </div>
-    <ul>
-      <li><a href="index.html">الرئيسية</a></li>
-      <li><a href="all-products.html">المنتجات</a></li>
-      <li><a href="#">ثقة العملاء</a></li>
-      <li><a href="about-us.html">من نحن</a></li>
-    </ul>
-  </nav>
-
-  <!-- Testimonials -->
-<section class="testimonials-container">
-  <div class="testimonial-section">
-    <h2 class="testimonial-section-title">آراء العملاء (صور)</h2>
-    <div class="testimonial-grid" id="testimonial-images"></div>
-  </div>
-
-  <div class="testimonial-section">
-    <h2 class="testimonial-section-title">آراء العملاء (فيديوهات)</h2>
-    <div class="testimonial-grid" id="testimonial-videos"></div>
-  </div>
-</section>
-
-
-  <!-- Footer -->
-  <footer>
-    <div class="footer-grid">
-      <div class="footer-col footer-social">
-        <h4>تابعينا</h4>
-        <div class="social-icons">
-          <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-          <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-          <a href="#"><i class="fab fa-whatsapp"></i></a>
-        </div>
-        <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
-      </div>
-    </div>
-  </footer>
-
 </body>
 </html>
