@@ -248,5 +248,23 @@
       }
     });
   </script>
+  <script>
+
+      // إخفاء وظهور شريط التنقل
+  let lastScrollTop = 0;
+  const nav = document.querySelector('nav');
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > lastScrollTop) {
+      // نازل
+      nav.style.top = "-80px";
+    } else {
+      // طالع
+      nav.style.top = "0";
+    }
+    lastScrollTop = scrollTop;
+  });
+  </script>
 </body>
 </html>
