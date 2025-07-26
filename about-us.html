@@ -4,78 +4,212 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>من نحن | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- Main Style -->
   <link rel="stylesheet" href="style.css" />
 
-    <!-- Google Fonts: Cairo + Tajawal -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
-
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 
-  gtag('config', 'G-NH8NG47PDV');
-</script>
-  
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fefefe;
+      color: #333;
+    }
+
+    nav {
+      background-color: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    nav .logo img {
+      height: 40px;
+      margin-left: 10px;
+    }
+
+    nav ul {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .hamburger {
+      display: none;
+    }
+
+    .menubar {
+      display: none;
+    }
+
+    .about-section {
+      background: linear-gradient(to bottom right, #fef6ff, #fff);
+      padding: 4rem 2rem;
+    }
+
+    .about-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      line-height: 2;
+      color: #333;
+    }
+
+    .about-container h2 {
+      text-align: center;
+      font-size: 2.5rem;
+      color: #f49ac1;
+      margin-bottom: 2rem;
+    }
+
+    .about-container p {
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+    }
+
+    .about-container ul {
+      list-style: none;
+      padding-right: 0;
+    }
+
+    .about-container ul li {
+      margin-bottom: 0.8rem;
+      font-size: 1rem;
+    }
+
+    .about-container ul li a {
+      color: #d66fa2;
+      text-decoration: none;
+    }
+
+    .about-container ul li a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      background-color: #f8f8f8;
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #777;
+      margin-top: 3rem;
+    }
+
+    .social-icons a {
+      margin: 0 0.5rem;
+      color: #d66fa2;
+      font-size: 1.2rem;
+    }
+
+    .rights {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    @media (max-width: 768px) {
+      nav ul {
+        display: none;
+      }
+
+      .hamburger {
+        display: block;
+        cursor: pointer;
+      }
+
+      .menubar.active {
+        display: block;
+        background-color: #fff;
+        padding: 1rem;
+      }
+
+      .menubar ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .menubar ul li {
+        margin: 1rem 0;
+      }
+
+      .menubar ul li a {
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Navigation -->
-<nav dir="rtl">
-  <div class="logo">
-    <img src="images/logo.png" alt="الشعار" />
-    <h1>DANDY</h1>
+  <!-- Navigation -->
+  <nav dir="rtl">
+    <div class="logo">
+      <img src="images/logo.png" alt="الشعار" />
+      <h1>DANDY</h1>
+    </div>
+    <ul>
+      <li><a href="index.html">الرئيسية</a></li>
+      <li><a href="all-products.html">المنتجات</a></li>
+      <li><a href="client-reviews.html">ثقة العملاء</a></li>
+      <li><a href="#">من نحن</a></li>
+    </ul>
+    <div class="hamburger">
+      <span class="line"></span>
+      <span class="line"></span>
+      <span class="line"></span>
+    </div>
+  </nav>
+
+  <div class="menubar" dir="rtl">
+    <ul>
+      <li><a href="index.html">الرئيسية</a></li>
+      <li><a href="all-products.html">المنتجات</a></li>
+      <li><a href="client-reviews.html">ثقة العملاء</a></li>
+      <li><a href="about-us.html">من نحن</a></li>
+    </ul>
   </div>
-  <ul>
-    <li>
-      <a href="index.html">الرئيسية</a>
-    </li>
-    <li>
-      <a href="all-products.html">المنتجات</a>
-    </li>
-    <li>
-      <a href="client-reviews.html">ثقة العملاء</a>
-    </li>
-    <li>
-      <a href="#">من نحن</a>
-    </li>
-  </ul>
-  <div class="hamburger">
-    <span class="line"></span>
-    <span class="line"></span>
-    <span class="line"></span>
-  </div>
-</nav>
 
-<div class="menubar" dir="rtl">
-  <ul>
-    <li>
-      <a href="#">الرئيسية</a>
-    </li>
-    <li>
-      <a href="all-products.html">المنتجات</a>
-    </li>
-    <li>
-      <a href="client-reviews.html">ثقة العملاء</a>
-    </li>
-    <li>
-      <a href="about-us.html">من نحن</a>
-    </li>
-  </ul>
-</div>
-
-
-  <!-- ✅ قسم من نحن -->
-  <section class="products">
-    <h2>من نحن</h2>
-    <div style="max-width: 800px; margin: 0 auto; background-color: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); line-height: 1.8;">
+  <!-- Section: About Us -->
+  <section class="about-section">
+    <div class="about-container">
+      <h2>من نحن</h2>
       <p>مرحباً بكم في <strong>Dandy</strong>، حيث يلتقي الجمال بالعناية، وتتحول التفاصيل الصغيرة إلى لحظات من الثقة والتألق.</p>
       <p>نحن علامة متخصصة في تقديم مجموعة مختارة من مستحضرات التجميل ومنتجات العناية الشخصية، التي تهتم بجمالك الطبيعي وتعزز من إشراقتك اليومية. نفتخر بتوفير منتجات مختارة بعناية لتناسب كافة أنواع البشرة واحتياجاتها، لأننا نؤمن أن لكل بشرة جمالها الخاص الذي يستحق العناية والدلال.</p>
       <p><strong>📍 نحن متواجدون في مدينة نصر، مصر.</strong></p>
@@ -85,91 +219,68 @@
       <hr style="margin: 2rem 0;" />
 
       <p><strong>💕 لمتابعتنا:</strong></p>
-      <ul style="padding-right: 1.5rem;">
-        <li>إنستجرام: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
-        <li>فيسبوك: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">صفحتنا الرسمية</a></li>
-        <li>رقم التواصل: <a href="tel:01067228170">01067228170</a></li>
+      <ul>
+        <li><i class="fab fa-instagram"></i> إنستجرام: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
+        <li><i class="fab fa-facebook-f"></i> فيسبوك: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">صفحتنا الرسمية</a></li>
+        <li><i class="fas fa-phone-alt"></i> رقم التواصل: <a href="tel:01067228170">01067228170</a></li>
       </ul>
     </div>
   </section>
 
- <!-- Footer -->
-<footer>
-  <div class="footer-grid">
-  
-    <div class="footer-col footer-social">
-      <h4>تابعينا</h4>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col footer-social">
+        <h4>تابعينا</h4>
+        <div class="social-icons">
+          <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a>
+        </div>
+        <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
       </div>
-      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
     </div>
+  </footer>
 
-  </div>
-</footer>
+  <!-- JavaScript -->
+  <script>
+    let lastScrollTop = 0;
+    const nav = document.querySelector('nav');
 
-  <!-- ✅ سكريبتات الموقع -->
-<script>
-  // إخفاء وظهور شريط التنقل
-  let lastScrollTop = 0;
-  const nav = document.querySelector('nav');
+    window.addEventListener('scroll', function () {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      if (scrollTop > lastScrollTop) {
+        nav.style.top = "-80px";
+      } else {
+        nav.style.top = "0";
+      }
+      lastScrollTop = scrollTop;
+    });
 
-  window.addEventListener('scroll', function () {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > lastScrollTop) {
-      // نازل
-      nav.style.top = "-80px";
-    } else {
-      // طالع
-      nav.style.top = "0";
-    }
-    lastScrollTop = scrollTop;
-  });
-</script>
+    const mobileNav = document.querySelector(".hamburger");
+    const navbar = document.querySelector(".menubar");
 
-<script>
-  const searchForm = document.getElementById("search-form");
-  if (searchForm) {
-    searchForm.addEventListener("submit", function(e) {
-      e.preventDefault();
-      const query = document.getElementById("search-input").value.trim();
-      if (query) {
-        window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+    const toggleNav = () => {
+      navbar.classList.toggle("active");
+      mobileNav.classList.toggle("hamburger-active");
+    };
+
+    mobileNav.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleNav();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (
+        navbar.classList.contains("active") &&
+        !navbar.contains(e.target) &&
+        !mobileNav.contains(e.target)
+      ) {
+        navbar.classList.remove("active");
+        mobileNav.classList.remove("hamburger-active");
       }
     });
-  }
-</script>
-
-  <script>
-const mobileNav = document.querySelector(".hamburger");
-const navbar = document.querySelector(".menubar");
-
-const toggleNav = () => {
-  navbar.classList.toggle("active");
-  mobileNav.classList.toggle("hamburger-active");
-};
-
-mobileNav.addEventListener("click", (e) => {
-  e.stopPropagation(); // علشان الضغطة على الزر ما تعتبرش ضغطة على document
-  toggleNav();
-});
-
-// لما المستخدم يضغط في أي مكان في الصفحة
-document.addEventListener("click", (e) => {
-  // لو القائمة مفتوحة والضغط مش جوه القائمة ولا زر الهمبرجر
-  if (
-    navbar.classList.contains("active") &&
-    !navbar.contains(e.target) &&
-    !mobileNav.contains(e.target)
-  ) {
-    navbar.classList.remove("active");
-    mobileNav.classList.remove("hamburger-active");
-  }
-});
-
-</script>
+  </script>
 
 </body>
 </html>
