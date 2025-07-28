@@ -284,10 +284,12 @@ db.ref("products").on("value", snapshot => {
       productEl.className = "product";
       productEl.setAttribute("data-category", data.category);
       productEl.innerHTML = `
-        <img src="${data.image}" alt="${data.name}">
-        <h3>${data.name}</h3>
-        <a href="product.html?id=${child.key}">تواصلي الآن</a>
-      `;
+  <img src="${data.image}" alt="${data.name}">
+  <div>
+    <h3>${data.name}</h3>
+    <a href="product.html?id=${child.key}">تواصلي الآن</a>
+  </div>
+`;
       container.appendChild(productEl);
     }
   });
