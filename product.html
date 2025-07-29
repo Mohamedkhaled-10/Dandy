@@ -126,6 +126,67 @@
   transform: scale(1.05);
 }
 
+    .share-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-top: 20px;
+}
+
+.btn-share-main {
+  background-color: var(--accent-color);
+ font-size: 24px;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  box-shadow: var(--hover-shadow);
+  z-index: 3;
+  position: relative;
+}
+
+.share-options {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 60px;
+  width: 0;
+  border-radius: 50px;
+  overflow: hidden;
+  background: linear-gradient(to left, #25D366, #0066ff, #cc2366);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  opacity: 0;
+  transition: width 0.5s ease, opacity 0.3s ease;
+  z-index: 2;
+}
+
+.share-options a {
+  flex: 1;
+  text-align: end;
+  color: white;
+  font-size: 20px;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.share-options a:hover {
+  transform: scale(1.3);
+}
+
+.share-container.active .share-options {
+  width: 300px;
+  opacity: 1;
+  padding: 0 10px;
+}
+
 
 
     @media (max-width: 768px) {
@@ -160,6 +221,11 @@
   <meta property="og:image:height" content="630">
   <meta property="og:url" content="https://dandy-ebon.vercel.app/product.html">
 
+
+  <meta property="og:title" content="اسم المنتج من الفايربيز">
+  <meta property="og:description" content="وصف المنتج">
+  <meta property="og:image" content="رابط الصورة">
+  <meta property="og:url" content="رابط هذه الصفحة">
 
     <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
@@ -358,6 +424,41 @@ document.addEventListener("click", (e) => {
 });
 
 </script>
+  <script>
   
+// بعد ما يتم تحميل بيانات المنتج من Firebase
+
+const shareToggle = document.getElementById("share-toggle");
+const whatsappBtn = document.getElementById("share-whatsapp");
+const facebookBtn = document.getElementById("share-facebook");
+const instagramBtn = document.getElementById("share-instagram");
+
+// مشاركة المنتج عبر المنصات
+if (shareToggle) {
+  shareToggle.addEventListener("click", () => {
+    document.querySelector(".share-container").classList.toggle("active");
+  });
+}
+
+// إنشاء روابط المشاركة الديناميكية
+const productURL = encodeURIComponent(window.location.href);
+const productName = encodeURIComponent(product.name);
+const productDesc = encodeURIComponent(product.description || "");
+const imageURL = encodeURIComponent(product.image || "");
+
+// واتساب
+document.getElementById("share-whatsapp").href = 
+  `https://wa.me/?text=${productName}%0A${window.location.href}`;
+
+// فيسبوك
+document.getElementById("share-facebook").href = 
+  `https://www.facebook.com/sharer/sharer.php?u=${productURL}&quote=${productName}`;
+
+// إنستجرام لا يدعم المشاركة المباشرة، لكن تقدر توجه المستخدم للبروفايل
+document.getElementById("share-instagram").href = 
+  "https://www.instagram.com/dandy_skincare_cosmotics/";
+
+
+</script>
 </body>
 </html>
