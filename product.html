@@ -435,7 +435,10 @@ document.addEventListener("click", (e) => {
 
 </script>
   <script>
-  
+
+    db.ref("products/" + id).once("value").then(snapshot => {
+  if (snapshot.exists()) {
+    const product = snapshot.val();
 // بعد ما يتم تحميل بيانات المنتج من Firebase
 
 const shareToggle = document.getElementById("share-toggle");
