@@ -135,13 +135,14 @@
   </div>
 </footer>
 
-<!-- نافذة منبثقة -->
-<div id="popup" style="display:none;">
+<!-- نافذة منبثقة للموافقة على الكوكيز -->
+<div id="popup" class="cookie-popup">
   <div class="popup-content">
-    <p>موقعنا يستخدم ملفات تعريف الارتباط لتحسين تجربتك. باستخدامك هذا الموقع، فإنك توافق على ذلك.</p>
-    <button onclick="closePopup()">حسنًا</button>
+    <p>🍪 موقعنا يستخدم ملفات تعريف الارتباط لتحسين تجربتك. باستخدامك هذا الموقع، فإنك توافق على ذلك.</p>
+    <button id="acceptCookies">حسنًا</button>
   </div>
 </div>
+
 
 
 <!-- سكريبت التحكم -->
@@ -291,6 +292,28 @@ document.addEventListener("click", (e) => {
 });
 
 </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const popup = document.getElementById("popup");
+    const acceptBtn = document.getElementById("acceptCookies");
+
+    // إظهار النافذة إذا لم يسبق القبول
+    if (!localStorage.getItem("cookiesAccepted")) {
+      setTimeout(() => {
+        popup.classList.add("show");
+      }, 1000); // تظهر بعد ثانية
+    }
+
+    // عند الضغط على "حسنًا"
+    acceptBtn.addEventListener("click", () => {
+      localStorage.setItem("cookiesAccepted", "true");
+      popup.classList.remove("show");
+    });
+  });
+</script>
+
 </body>
 </html>
+
 
