@@ -42,6 +42,7 @@
       color: var(--accent-color);
       margin-bottom: 2rem;
       font-size: 2rem;
+      margin: 5rem;
     }
 
     #testimonial-images,
@@ -175,6 +176,7 @@
     <ul>
       <li><a href="index.html">الرئيسية</a></li>
       <li><a href="all-products.html">المنتجات</a></li>
+      <li><a href="special-offers.html">العروض</a></li>
       <li><a href="#">ثقة العملاء</a></li>
       <li><a href="about-us.html">من نحن</a></li>
     </ul>
@@ -185,14 +187,22 @@
     </div>
   </nav>
 
-  <div class="menubar">
-    <ul>
-      <li><a href="index.html">الرئيسية</a></li>
-      <li><a href="all-products.html">المنتجات</a></li>
-      <li><a href="#">ثقة العملاء</a></li>
-      <li><a href="about-us.html">من نحن</a></li>
-    </ul>
+  <!-- Mobile Menu -->
+<div class="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
   </div>
+</div>
 
   <section class="testimonials-container">
     <h2>آراء العملاء (صور)</h2>
@@ -202,20 +212,28 @@
     <div id="testimonial-videos"></div>
   </section>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-grid">
-      <div class="footer-col footer-social">
-        <h4>تابعينا</h4>
-        <div class="social-icons">
-          <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-          <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-          <a href="#"><i class="fab fa-whatsapp"></i></a>
-        </div>
-        <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
       </div>
+
+      <!-- روابط الصفحات -->
+      <div class="footer-links">
+        <a href="privacy-policy.html">سياسة الخصوصية</a>
+        <span>|</span>
+        <a href="terms.html">الشروط والأحكام</a>
+      </div>
+
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
     </div>
-  </footer>
+  </div>
+</footer>
 
   <!-- GLightbox JS -->
   <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
@@ -254,19 +272,23 @@
 
       // إخفاء وظهور شريط التنقل
   let lastScrollTop = 0;
-  const nav = document.querySelector('nav');
+const nav = document.querySelector('nav');
+const navHeight = nav.offsetHeight; // ارتفاع الناف بار
 
-  window.addEventListener('scroll', function () {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > lastScrollTop) {
-      // نازل
-      nav.style.top = "-80px";
-    } else {
-      // طالع
-      nav.style.top = "0";
-    }
-    lastScrollTop = scrollTop;
-  });
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  
+  if (scrollTop > lastScrollTop) {
+    // نازل
+    nav.style.top = `-${navHeight}px`; // يخفيه فوق
+  } else {
+    // طالع
+    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
+  }
+
+  lastScrollTop = scrollTop;
+});
+
   </script>
 </body>
 </html>

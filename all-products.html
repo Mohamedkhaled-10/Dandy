@@ -14,6 +14,111 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
+    /* ===== Hero (Full Screen Neon Glass) ===== */
+
+body {
+  margin: 0;
+  padding-top: 0; /* شيل المسافة */
+}
+.hero-full {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  margin-top: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-full .hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-full .hero-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.hero-full .hero-bg img.active {
+  opacity: 1;
+}
+
+.hero-full .hero-bg .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,15,0.4), rgba(10,10,15,0.85));
+  backdrop-filter: var(--glass-blur);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+  padding: 0 1rem;
+}
+
+.hero-content h1 {
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-bottom: 1.8rem;
+}
+
+.hero-content .cta-btn {
+  display: inline-block;
+  padding: 0.75rem 1.8rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 800;
+  color: #0b0b12;
+  background: #fff;
+  position: relative;
+  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 8px 24px rgba(0,247,255,.18);
+}
+
+.hero-content .cta-btn::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  z-index: -1;
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  filter: blur(6px);
+  opacity: .7;
+}
+
+.hero-content .cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255,46,196,.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2.1rem;
+  }
+  .hero-content p {
+    font-size: 1rem;
+  }
+}
+
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
@@ -128,6 +233,9 @@
     <li>
       <a href="#">المنتجات</a>
     </li>
+    <li>
+      <a href="special-offers.html">العروض</a>
+    </li>
      <li>
       <a href="client-reviews.html">ثقة العملاء</a>
     </li>
@@ -142,32 +250,39 @@
   </div>
 </nav>
 
-<div class="menubar" dir="rtl">
+<!-- Mobile Menu -->
+<div class="menubar" dir="rtl" aria-hidden="true">
   <ul>
-    <li>
-      <a href="index.html">الرئيسية</a>
-    </li>
-    <li>
-      <a href="#">المنتجات</a>
-    </li>
-     <li>
-      <a href="client-reviews.html">ثقة العملاء</a>
-    </li>
-    <li>
-      <a href="about-us.html">من نحن</a>
-    </li>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="#">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
   </ul>
+
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
 </div>
 
 
   <!-- Hero -->
-<section class="hero">
-  <div class="hero-slider">
+<section class="hero hero-full">
+  <div class="hero-bg">
     <img src="images/hero/hero-1.jpg" alt="عرض 1" class="active">
     <img src="images/hero/hero-2.jpg" alt="عرض 2">
     <img src="images/hero/hero-3.jpg" alt="عرض 3">
+    <div class="overlay"></div>
+  </div>
+  <div class="hero-content">
+    <h1>اكتشفي الجمال الطبيعي</h1>
+    <p>منتجات طبيعية للعناية بالشعر والجسم تمنحك إشراقة لا مثيل لها</p>
+    <a href="#productContainer" class="cta-btn">تسوقي الآن</a>
   </div>
 </section>
+
 
   <!-- Filters -->
   <div class="filter-bar">
@@ -189,10 +304,9 @@
     </div>
   </section>
 
- <!-- Footer -->
+<!-- Footer -->
 <footer>
   <div class="footer-grid">
-  
     <div class="footer-col footer-social">
       <h4>تابعينا</h4>
       <div class="social-icons">
@@ -200,9 +314,16 @@
         <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
         <a href="#"><i class="fab fa-whatsapp"></i></a>
       </div>
+
+      <!-- روابط الصفحات -->
+      <div class="footer-links">
+        <a href="privacy-policy.html">سياسة الخصوصية</a>
+        <span>|</span>
+        <a href="terms.html">الشروط والأحكام</a>
+      </div>
+
       <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
     </div>
-
   </div>
 </footer>
 
@@ -228,19 +349,23 @@
     });
     // إخفاء وظهور شريط التنقل
   let lastScrollTop = 0;
-  const nav = document.querySelector('nav');
+const nav = document.querySelector('nav');
+const navHeight = nav.offsetHeight; // ارتفاع الناف بار
 
-  window.addEventListener('scroll', function () {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > lastScrollTop) {
-      // نازل
-      nav.style.top = "-80px";
-    } else {
-      // طالع
-      nav.style.top = "0";
-    }
-    lastScrollTop = scrollTop;
-  });
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  
+  if (scrollTop > lastScrollTop) {
+    // نازل
+    nav.style.top = `-${navHeight}px`; // يخفيه فوق
+  } else {
+    // طالع
+    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
+  }
+
+  lastScrollTop = scrollTop;
+});
+
   </script>
 
   <!-- Firebase SDK -->
@@ -349,6 +474,27 @@ document.addEventListener("click", (e) => {
   }
 });
 
+</script>
+<script>
+// تغيير الصور تلقائيًا في الـ Hero
+let heroImages = document.querySelectorAll(".hero-full .hero-bg img");
+let currentHero = 0;
+
+setInterval(() => {
+  heroImages[currentHero].classList.remove("active");
+  currentHero = (currentHero + 1) % heroImages.length;
+  heroImages[currentHero].classList.add("active");
+}, 5000); // كل 5 ثواني
+
+// تمرير سلس لقسم المنتجات
+document.querySelectorAll('a[href="#productContainer"]').forEach(link => {
+  link.addEventListener("click", function(e) {
+    e.preventDefault();
+    document.querySelector("#productContainer").scrollIntoView({
+      behavior: "smooth"
+    });
+  });
+});
 </script>
 
 </body>

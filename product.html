@@ -14,28 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
-    :root {
-      --primary-color: #f8d8e3;
-      --secondary-color: #ffffff;
-      --accent-color: #f49ac1;
-      --text-color: #333;
-      --hover-shadow: 0 8px 20px rgba(244, 154, 193, 0.3);
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Tajawal', sans-serif;
-      background-color: var(--secondary-color);
-      color: var(--text-color);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-     padding-top: 40px; /* أو نفس ارتفاع الـ nav */
-
-    }
-
-
+  
     .container {
       max-width: 1100px;
       margin: auto;
@@ -255,6 +234,9 @@
       <a href="all-products.html">المنتجات</a>
     </li>
     <li>
+      <a href="special-offers.html">العروض</a>
+    </li>
+    <li>
       <a href="client-reviews.html">ثقة العملاء</a>
     </li>
     <li>
@@ -268,21 +250,21 @@
   </div>
 </nav>
 
-<div class="menubar" dir="rtl">
+<!-- Mobile Menu -->
+<div class="menubar" dir="rtl" aria-hidden="true">
   <ul>
-    <li>
-      <a href="#">الرئيسية</a>
-    </li>
-    <li>
-      <a href="all-products.html">المنتجات</a>
-    </li>
-    <li>
-      <a href="client-reviews.html">ثقة العملاء</a>
-    </li>
-    <li>
-      <a href="about-us.html">من نحن</a>
-    </li>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
   </ul>
+
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
 </div>
 
 
@@ -320,10 +302,9 @@
     </div>
   </div>
 
- <!-- Footer -->
+<!-- Footer -->
 <footer>
   <div class="footer-grid">
-  
     <div class="footer-col footer-social">
       <h4>تابعينا</h4>
       <div class="social-icons">
@@ -331,28 +312,39 @@
         <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
         <a href="#"><i class="fab fa-whatsapp"></i></a>
       </div>
+
+      <!-- روابط الصفحات -->
+      <div class="footer-links">
+        <a href="privacy-policy.html">سياسة الخصوصية</a>
+        <span>|</span>
+        <a href="terms.html">الشروط والأحكام</a>
+      </div>
+
       <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
     </div>
-
   </div>
 </footer>
 
   <script>
     // إخفاء وظهور شريط التنقل
   let lastScrollTop = 0;
-  const nav = document.querySelector('nav');
+const nav = document.querySelector('nav');
+const navHeight = nav.offsetHeight; // ارتفاع الناف بار
 
-  window.addEventListener('scroll', function () {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > lastScrollTop) {
-      // نازل
-      nav.style.top = "-80px";
-    } else {
-      // طالع
-      nav.style.top = "0";
-    }
-    lastScrollTop = scrollTop;
-  });
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  
+  if (scrollTop > lastScrollTop) {
+    // نازل
+    nav.style.top = `-${navHeight}px`; // يخفيه فوق
+  } else {
+    // طالع
+    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
+  }
+
+  lastScrollTop = scrollTop;
+});
+
   </script>
 
 
@@ -443,29 +435,32 @@ const whatsappBtn = document.getElementById("share-whatsapp");
 const facebookBtn = document.getElementById("share-facebook");
 const instagramBtn = document.getElementById("share-instagram");
 
-// مشاركة المنتج عبر المنصات
 if (shareToggle) {
   shareToggle.addEventListener("click", () => {
     document.querySelector(".share-container").classList.toggle("active");
   });
 }
 
-// إنشاء روابط المشاركة الديناميكية
-if (product) {
-  const productName = encodeURIComponent(product.name);
-  const productDesc = encodeURIComponent(product.description || "");
-  const productURL = encodeURIComponent(window.location.href);
-  const imageURL = encodeURIComponent(product.image || "");
+db.ref("products/" + id).once("value").then(snapshot => {
+  if (snapshot.exists()) {
+    const product = snapshot.val();
 
-  // واتساب
-  whatsappBtn.href = `https://wa.me/?text=${productName}%0A${window.location.href}`;
+    // روابط المشاركة
+    const productName = encodeURIComponent(product.name);
+    const productDesc = encodeURIComponent(product.description || "");
+    const productURL = encodeURIComponent(window.location.href);
+    const imageURL = encodeURIComponent(product.image || "");
 
-  // فيسبوك
-  facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${productURL}`;
+    // واتساب
+    whatsappBtn.href = `https://wa.me/?text=${productName}%0A${window.location.href}`;
 
-  // إنستجرام: لا يدعم مشاركة روابط مباشرة، لذلك نوجه المستخدم للبروفايل أو الموقع الرسمي
-  instagramBtn.href = "https://www.instagram.com/dandy_skincare_cosmotics/";
-}
+    // فيسبوك
+    facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${productURL}`;
+
+    // إنستجرام (توجيه للحساب)
+    instagramBtn.href = "https://www.instagram.com/dandy_skincare_cosmotics/";
+  }
+});
 
 </script>
 </body>

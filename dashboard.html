@@ -182,6 +182,160 @@
         bottom: 0;
       }
     }
+
+    /* ===== تصميم الجدول المتطور ===== */
+#productsTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 20px;
+  font-family: "Tajawal", sans-serif;
+  background: #1c1c2c;
+  color: #f8a5c2;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+}
+
+#productsTable th,
+#productsTable td {
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+#productsTable th {
+  background: linear-gradient(90deg, #f78fb6, #f8a5c2);
+  color: #1c1c2c;
+  font-weight: 700;
+}
+
+#productsTable tr {
+  transition: all 0.3s ease;
+}
+
+#productsTable tr:nth-child(even) {
+  background-color: #23233a;
+}
+
+#productsTable tr:hover {
+  background-color: #2a2a45;
+  transform: scale(1.01);
+}
+
+/* ===== صور المنتجات ===== */
+.product-img-table {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* ===== أزرار التحكم ===== */
+.offer-btn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  margin: 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: 0.3s ease;
+}
+
+.remove-offer-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  margin: 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: 0.3s ease;
+}
+
+.offer-btn:hover {
+  background-color: #2ecc71;
+  transform: translateY(-2px);
+}
+
+.remove-offer-btn:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* ===== التصميم المتجاوب للهاتف ===== */
+@media screen and (max-width: 600px) {
+  #productsTable, 
+  #productsTable thead, 
+  #productsTable tbody, 
+  #productsTable th, 
+  #productsTable td, 
+  #productsTable tr {
+    display: block;
+  }
+
+  #productsTable thead tr {
+    display: none; /* إخفاء الرأس */
+  }
+
+  #productsTable tr {
+    margin-bottom: 1.2rem;
+    border-bottom: 2px solid #444;
+    padding: 0.8rem 0;
+    background-color: #1e1e2e;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  #productsTable td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+    font-size: 0.95rem;
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+  }
+
+  #productsTable td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    color: #f8a5c2;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .product-img-table {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0.5rem;
+  }
+
+  .offer-btn, .remove-offer-btn {
+    width: 100%;
+    margin-top: 5px;
+    font-size: 0.9rem;
+    padding: 0.6rem 0;
+  }
+
+  td > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+}
+
+
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3691498329769907"
      crossorigin="anonymous"></script>
@@ -222,6 +376,19 @@
 
     <button type="submit">إضافة المنتج</button>
   </form>
+
+  <table id="productsTable">
+  <thead>
+    <tr>
+      <th>اسم المنتج</th>
+      <th>السعر</th>
+      <th>القسم</th>
+      <th>الخصم الحالي</th>
+      <th>العروض</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
   <!-- نموذج آراء العملاء (منفصل) -->
 <h1>لوحة التحكم - آراء العملاء</h1>
@@ -337,6 +504,59 @@
         });
       });
     }
+
+    db.ref("products").on("value", snapshot => {
+  const tableBody = document.querySelector("#productsTable tbody");
+  tableBody.innerHTML = "";
+
+  snapshot.forEach(child => {
+    const data = child.val();
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${data.name}</td>
+      <td>${data.price}</td>
+      <td>${data.category}</td>
+      <td>${data.onSale ? `خصم ${data.discount}%` : "لا يوجد"}</td>
+      <td>
+        <button class="offer-btn" data-id="${child.key}">إضافة/تعديل الخصم</button>
+        <button class="remove-offer-btn" data-id="${child.key}">إزالة من العروض</button>
+      </td>
+    `;
+
+    tableBody.appendChild(row);
+  });
+
+  // زر إضافة أو تعديل الخصم
+  document.querySelectorAll(".offer-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const productId = btn.dataset.id;
+      const discount = prompt("أدخل نسبة الخصم (1-90)%:");
+      const discountValue = parseInt(discount);
+
+      if (!discount || discountValue < 1 || discountValue > 90) {
+        alert("⚠ نسبة الخصم يجب أن تكون بين 1 و 90");
+        return;
+      }
+
+      db.ref("products/" + productId).update({
+        onSale: true,
+        discount: discountValue
+      }).then(() => alert("✅ تم تحديث العرض بنجاح"));
+    });
+  });
+
+  // زر إزالة العرض
+  document.querySelectorAll(".remove-offer-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const productId = btn.dataset.id;
+      db.ref("products/" + productId).update({
+        onSale: false,
+        discount: null
+      }).then(() => alert("❌ تمت إزالة المنتج من العروض"));
+    });
+  });
+});
 
     function deleteProduct(key) {
       if (confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) {

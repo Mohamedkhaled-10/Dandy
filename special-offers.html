@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عروض خاصة | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- أيقونة المتصفح -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
+  <!-- Open Graph meta tags -->
+  <meta property="og:title" content="عروض خاصة | Dandy">
+  <meta property="og:description" content="أفضل الخصومات على منتجات العناية الطبيعية">
+  <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
+  <meta property="og:image:type" content="image/webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://dandy-ebon.vercel.app/offers.html">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
+  <style>
+    /* الفوتر يثبت في أسفل الصفحة */
+footer {
+  flex-shrink: 0;
+}
+
+h1 {
+    margin: 6rem;
+}
+
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav dir="rtl">
+  <div class="logo">
+    <img src="images/logo.png" alt="الشعار" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="#">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+  <div class="hamburger" aria-label="القائمة">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="#">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
+</div>
+
+<!-- Hero -->
+
+  <!-- Hero (Split: Text + Slider) -->
+<section class="hero">
+  <div class="hero-text">
+    <h2>عروض لا تفوت</h2>
+    <p>عروض وخصومات على المنتجات</p>
+    <a href="#productContainer" class="cta-btn">استكشفي المنتجات</a>
+  </div>
+
+  <div class="hero-slider">
+    <img src="images/hero/hero-1.jpg" alt="عرض 1" class="active" loading="lazy">
+    <img src="images/hero/hero-2.jpg" alt="عرض 2" loading="lazy">
+    <img src="images/hero/hero-3.jpg" alt="عرض 3" loading="lazy">
+    <img src="images/hero/hero-4.jpg" alt="عرض 3" loading="lazy">
+    <img src="images/hero/hero-5.jpg" alt="عرض 3" loading="lazy">
+    <img src="images/hero/hero-6.jpg" alt="عرض 3" loading="lazy">
+    <img src="images/hero/hero-7.jpg" alt="عرض 3" loading="lazy">
+    <img src="images/hero/hero-8.jpg" alt="عرض 3" loading="lazy">
+
+
+
+  </div>
+</section>
+
+<!-- Products -->
+<section class="products">
+  <h2>المنتجات التي عليها عروض</h2>
+  <div class="product-grid" id="productContainer">
+    <!-- المنتجات ستظهر هنا -->
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
+      </div>
+      <div class="footer-links">
+        <a href="privacy-policy.html">سياسة الخصوصية</a>
+        <span>|</span>
+        <a href="terms.html">الشروط والأحكام</a>
+      </div>
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const container = document.getElementById("productContainer");
+
+  db.ref("products").on("value", snapshot => {
+    container.innerHTML = "";
+    snapshot.forEach(child => {
+      const data = child.val();
+      if (data.onSale === true) { // عرض فقط المنتجات اللي عليها عروض
+        const productEl = document.createElement("div");
+        productEl.className = "product";
+        productEl.setAttribute("data-category", data.category);
+        productEl.innerHTML = `
+          <img src="${data.image}" alt="${data.name}">
+          <div>
+            <h3>${data.name}</h3>
+            <p style="color:red;font-weight:bold;">خصم ${data.discount || ''}%</p>
+            <a href="product.html?id=${child.key}">تسوق الآن <i class="fas fa-arrow-left"></i></a>
+          </div>
+        `;
+        container.appendChild(productEl);
+      }
+    });
+  });
+</script>
+
+<!-- Mobile menu toggle -->
+<script>
+  const mobileNav = document.querySelector(".hamburger");
+  const navbarSide = document.querySelector(".menubar");
+
+  const toggleNav = () => {
+    navbarSide.classList.toggle("active");
+    mobileNav.classList.toggle("hamburger-active");
+  };
+
+  mobileNav.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleNav();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (
+      navbarSide.classList.contains("active") &&
+      !navbarSide.contains(e.target) &&
+      !mobileNav.contains(e.target)
+    ) {
+      navbarSide.classList.remove("active");
+      mobileNav.classList.remove("hamburger-active");
+    }
+  });
+</script>
+<script>
+<!-- Hero slider -->
+const images = Array.from(document.querySelectorAll('.hero-slider img'));
+let order = shuffle([...images.keys()]);
+let index = 0;
+
+// دالة لعمل ترتيب عشوائي (Shuffle)
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// عرض الصورة الأولى
+images[order[index]].classList.add('active');
+
+setInterval(() => {
+  // إخفاء الصورة الحالية
+  images[order[index]].classList.remove('active');
+
+  // التقدم للإندكس التالي
+  index++;
+
+  // لو خلصت الدورة، أعمل shuffle جديد
+  if (index >= order.length) {
+    order = shuffle([...images.keys()]);
+    index = 0;
+  }
+
+  // عرض الصورة الجديدة
+  images[order[index]].classList.add('active');
+}, 4000); // كل 4 ثواني
+
+</script>
+<!-- Hide/Show navbar on scroll -->
+<script>
+let lastScrollTop = 0;
+const nav = document.querySelector('nav');
+const navHeight = nav.offsetHeight;
+
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  if (scrollTop > lastScrollTop) {
+    nav.style.top = `-${navHeight}px`;
+  } else {
+    nav.style.top = `20px`;
+  }
+  lastScrollTop = scrollTop;
+});
+</script>
+<script>
+    // تمرير سلس لقسم المنتجات
+document.querySelectorAll('a[href="#productContainer"]').forEach(link => {
+  link.addEventListener("click", function(e) {
+    e.preventDefault();
+    document.querySelector("#productContainer").scrollIntoView({
+      behavior: "smooth"
+    });
+  });
+});
+</script>
+</body>
+</html>

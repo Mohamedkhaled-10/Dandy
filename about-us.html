@@ -64,6 +64,9 @@
       <a href="all-products.html">المنتجات</a>
     </li>
     <li>
+      <a href="special-offers.html">العروض</a>
+    </li>
+    <li>
       <a href="client-reviews.html">ثقة العملاء</a>
     </li>
     <li>
@@ -77,28 +80,28 @@
   </div>
 </nav>
 
-<div class="menubar" dir="rtl">
+<!-- Mobile Menu -->
+<div class="menubar" dir="rtl" aria-hidden="true">
   <ul>
-    <li>
-      <a href="#">الرئيسية</a>
-    </li>
-    <li>
-      <a href="all-products.html">المنتجات</a>
-    </li>
-    <li>
-      <a href="client-reviews.html">ثقة العملاء</a>
-    </li>
-    <li>
-      <a href="about-us.html">من نحن</a>
-    </li>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
   </ul>
+
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="#">الشروط والأحكام</a>
+  </div>
 </div>
 
 
   <!-- ✅ قسم من نحن -->
   <section class="products">
     <h2>من نحن</h2>
-    <div style="max-width: 800px; margin: 0 auto; background-color: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); line-height: 1.8;">
+    <div style="max-width: 800px; margin: 0 auto; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); line-height: 1.8;">
       <p>مرحباً بكم في <strong>Dandy</strong>، حيث يلتقي الجمال بالعناية، وتتحول التفاصيل الصغيرة إلى لحظات من الثقة والتألق.</p>
       <p>نحن علامة متخصصة في تقديم مجموعة مختارة من مستحضرات التجميل ومنتجات العناية الشخصية، التي تهتم بجمالك الطبيعي وتعزز من إشراقتك اليومية. نفتخر بتوفير منتجات مختارة بعناية لتناسب كافة أنواع البشرة واحتياجاتها، لأننا نؤمن أن لكل بشرة جمالها الخاص الذي يستحق العناية والدلال.</p>
       <p><strong>📍 نحن متواجدون في مدينة نصر، مصر.</strong></p>
@@ -116,10 +119,9 @@
     </div>
   </section>
 
- <!-- Footer -->
+<!-- Footer -->
 <footer>
   <div class="footer-grid">
-  
     <div class="footer-col footer-social">
       <h4>تابعينا</h4>
       <div class="social-icons">
@@ -127,29 +129,40 @@
         <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
         <a href="#"><i class="fab fa-whatsapp"></i></a>
       </div>
+
+      <!-- روابط الصفحات -->
+      <div class="footer-links">
+        <a href="privacy-policy.html">سياسة الخصوصية</a>
+        <span>|</span>
+        <a href="terms.html">الشروط والأحكام</a>
+      </div>
+
       <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
     </div>
-
   </div>
 </footer>
 
   <!-- ✅ سكريبتات الموقع -->
 <script>
   // إخفاء وظهور شريط التنقل
-  let lastScrollTop = 0;
-  const nav = document.querySelector('nav');
+ let lastScrollTop = 0;
+const nav = document.querySelector('nav');
+const navHeight = nav.offsetHeight; // ارتفاع الناف بار
 
-  window.addEventListener('scroll', function () {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > lastScrollTop) {
-      // نازل
-      nav.style.top = "-80px";
-    } else {
-      // طالع
-      nav.style.top = "0";
-    }
-    lastScrollTop = scrollTop;
-  });
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  
+  if (scrollTop > lastScrollTop) {
+    // نازل
+    nav.style.top = `-${navHeight}px`; // يخفيه فوق
+  } else {
+    // طالع
+    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
+  }
+
+  lastScrollTop = scrollTop;
+});
+
 </script>
 
 <script>

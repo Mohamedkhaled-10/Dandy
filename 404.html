@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>صفحة غير موجودة | Dandy</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Stylesheet الموجود -->
+  <link href="style.css" rel="stylesheet">
+
+  <style>
+    /* تأثير بسيط على النصوص */
+    .error-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .error-code {
+      font-size: 10rem;
+      font-weight: 700;
+      color: #ff00ea;
+      animation: slideIn 1s ease-out;
+    }
+
+    .error-page h2 {
+      font-size: 2rem;
+      margin: 20px 0;
+      animation: fadeIn 1.5s ease-out forwards;
+    }
+
+    .error-page p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      animation: fadeIn 2s ease-out forwards;
+    }
+
+    .error-page .cta-btn {
+      padding: 12px 25px;
+      font-size: 1rem;
+      animation: fadeIn 2.5s ease-out forwards;
+    }
+
+    @keyframes slideIn {
+      0% { transform: translateY(-50px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+  </style>
+
+    <!-- أيقونات الموقع -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+
+</head>
+<body>
+
+  <section class="error-page">
+    <div class="container">
+      <div class="error-code">404</div>
+      <h2>الصفحة غير موجودة</h2>
+      <p>ربما تم حذف الصفحة أو الرابط خاطئ. يمكنك العودة للصفحة الرئيسية.</p>
+      <a href="index.html" class="cta-btn"><i class="fas fa-home"></i> العودة للصفحة الرئيسية</a>
+    </div>
+  </section>
+
+</body>
+</html>
