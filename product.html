@@ -422,14 +422,15 @@ document.addEventListener("click", (e) => {
 });
 
 </script>
-  <script>
-
-// بعد ما يتم تحميل بيانات المنتج من Firebase
-
+<script>
 const shareToggle = document.getElementById("share-toggle");
 const whatsappBtn = document.getElementById("share-whatsapp");
 const facebookBtn = document.getElementById("share-facebook");
 const instagramBtn = document.getElementById("share-instagram");
+
+// استخراج id من الرابط الحالي
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
 
 if (shareToggle) {
   shareToggle.addEventListener("click", () => {
@@ -441,25 +442,23 @@ db.ref("products/" + id).once("value").then(snapshot => {
   if (snapshot.exists()) {
     const product = snapshot.val();
 
-    // روابط المشاركة
-    const productName = encodeURIComponent(product.name);
-    const productDesc = encodeURIComponent(product.description || "");
-    const productURL = encodeURIComponent(window.location.href);
-    const imageURL = encodeURIComponent(product.image || "");
+    // نولّد رابط المشاركة الديناميكي (اللي فيه OG tags)
+    const shareURL = `${location.origin}/api/product?id=${encodeURIComponent(id)}`;
 
     // واتساب
-    whatsappBtn.href = `https://wa.me/?text=${productName}%0A${window.location.href}`;
+    whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(product.name)}%0A${shareURL}`;
 
     // فيسبوك
-    facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${productURL}`;
+    facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareURL)}`;
 
-    // إنستجرام (توجيه للحساب)
+    // إنستجرام (توجيه للحساب الرسمي)
     instagramBtn.href = "https://www.instagram.com/dandy_skincare_cosmotics/";
   }
 });
-
 </script>
+
 </body>
 </html>
+
 
 
