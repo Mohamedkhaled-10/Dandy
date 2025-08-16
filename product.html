@@ -412,16 +412,11 @@ document.addEventListener("click", (e) => {
   }
 });
 
-</script>
 <script>
 const shareToggle = document.getElementById("share-toggle");
 const whatsappBtn = document.getElementById("share-whatsapp");
 const facebookBtn = document.getElementById("share-facebook");
 const instagramBtn = document.getElementById("share-instagram");
-
-// استخراج id من الرابط الحالي
-const params = new URLSearchParams(location.search);
-const id = params.get("id");
 
 if (shareToggle) {
   shareToggle.addEventListener("click", () => {
@@ -448,8 +443,10 @@ db.ref("products/" + id).once("value").then(snapshot => {
 });
 </script>
 
+
 </body>
 </html>
+
 
 
 
