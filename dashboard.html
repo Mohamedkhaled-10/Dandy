@@ -711,12 +711,18 @@ function generateWhatsAppLink() {
 
   </script>
 
-  <script>
-    function goToArticles() {
-  window.location.href = "dashboard-blog.html"; 
+<button onclick="goToArticles()">📚 الذهاب لصفحة المقالات</button>
+
+<script>
+function goToArticles() {
+  // علامة إنه جه من الداشبورد
+  localStorage.setItem("fromDashboard", "true");
+  window.location.href = "dashboard-blog.html";
 }
-  </script>
+</script>
+
 </body>
 </html>
+
 
 
