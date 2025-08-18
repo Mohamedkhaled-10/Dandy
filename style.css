@@ -132,6 +132,77 @@ nav ul li a:hover::after {
   width: 80%;
 }
 
+/* Dropdown */
+nav ul li.dropdown {
+  position: relative;
+}
+
+/* القائمة العمودية بنفس استايل الناف بار */
+nav ul li.dropdown .dropdown-menu {
+  position: absolute;
+  top: 160%;
+  right: 0; /* RTL */
+  background: rgba(255, 255, 255, 0.08); /* نفس شفافية الناف */
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  list-style: none;
+  padding: 8px 0;
+  margin: 8px 0 0 0;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  min-width: 180px;
+  display: flex;
+  flex-direction: column; /* عمودي */
+  gap: 6px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+  z-index: 999;
+}
+
+nav ul li.dropdown .dropdown-menu li a {
+  display: block;
+  padding: 10px 16px;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  transition: background 0.25s ease, transform 0.25s ease;
+  border-radius: 12px;
+}
+
+/* الخط المتحرك في اللينكات الداخلية */
+nav ul li.dropdown .dropdown-menu li a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  width: 0%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  transition: width 0.3s ease;
+}
+
+nav ul li.dropdown .dropdown-menu li a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.03);
+}
+
+nav ul li.dropdown .dropdown-menu li a:hover::after {
+  width: 80%;
+}
+
+/* إظهار القائمة عند الهوفر */
+/* إظهار القائمة عند الهوفر */
+nav ul li.dropdown:hover .dropdown-menu,
+nav ul li.dropdown.active .dropdown-menu { /* عشان الكلك */
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
 
 /* Hamburger Icon */
 .hamburger {
@@ -545,4 +616,5 @@ footer {
   transition: transform .2s ease, box-shadow .2s ease;
 }
 .popup-content button:hover{transform: translateY(-1px); box-shadow:0 10px 22px rgba(0,247,255,.22)}
+
 
