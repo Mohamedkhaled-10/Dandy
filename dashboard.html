@@ -416,6 +416,12 @@
     </div>
   </div>
 
+<button onclick="goToArticles()" 
+style="background:#007bff;color:white;padding:10px 20px;
+border:none;border-radius:8px;cursor:pointer;font-size:16px;">
+📚 الذهاب لصفحة المقالات
+</button>
+
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -704,6 +710,13 @@ function generateWhatsAppLink() {
 }
 
   </script>
+
+  <script>
+    function goToArticles() {
+  window.location.href = "dashboard-blog.html"; 
+}
+  </script>
 </body>
 </html>
+
 
