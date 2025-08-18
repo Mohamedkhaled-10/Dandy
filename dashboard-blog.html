@@ -309,12 +309,15 @@
 <script>
 if (localStorage.getItem("loggedIn") !== "true" || 
     localStorage.getItem("fromDashboard") !== "true") {
-  window.location.href = "dashboard.html"; // أو dashboard.html
+  window.location.href = "login.html"; // أو dashboard.html
+} else {
+  // يفضل نخلي الحذف يحصل بعد ما الصفحة تجهز
+  window.addEventListener("load", () => {
+    localStorage.removeItem("fromDashboard");
+  });
 }
-
-// عشان ميقدرش يدخلها تاني مباشرة بعد الخروج
-localStorage.removeItem("fromDashboard");
 </script>
+
 
 
   <!-- Firebase -->
@@ -595,6 +598,7 @@ localStorage.removeItem("fromDashboard");
   </script>
 </body>
 </html>
+
 
 
 
