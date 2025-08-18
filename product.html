@@ -214,23 +214,19 @@
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li>
-      <a href="index.html">الرئيسية</a>
-    </li>
-    <li>
-      <a href="all-products.html">المنتجات</a>
-    </li>
-    <li>
-      <a href="special-offers.html">العروض</a>
-    </li>
-    <li>
-      <a href="client-reviews.html">ثقة العملاء</a>
-    </li>
-    <li>
-      <a href="about-us.html">من نحن</a>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="#">المزيد ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="client-reviews.html">ثقة العملاء</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
+      </ul>
     </li>
   </ul>
-  <div class="hamburger">
+  <div class="hamburger" aria-label="القائمة">
     <span class="line"></span>
     <span class="line"></span>
     <span class="line"></span>
@@ -446,6 +442,7 @@ db.ref("products/" + id).once("value").then(snapshot => {
 
 </body>
 </html>
+
 
 
 
