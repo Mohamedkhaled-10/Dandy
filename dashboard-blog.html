@@ -306,12 +306,16 @@
 
   </div> <!-- end container -->
 
-  <script>
-  // منع الدخول بدون تسجيل
-  if(localStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "login.html";
-  }
+<script>
+if (localStorage.getItem("loggedIn") !== "true" || 
+    localStorage.getItem("fromDashboard") !== "true") {
+  window.location.href = "login.html"; // أو dashboard.html
+}
+
+// عشان ميقدرش يدخلها تاني مباشرة بعد الخروج
+localStorage.removeItem("fromDashboard");
 </script>
+
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -591,4 +595,5 @@
   </script>
 </body>
 </html>
+
 
