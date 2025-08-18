@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>فاتورة الطلب | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta name="robots" content="noindex">
+  <style>
+    :root{
+      --bg: #fbfdff;
+      --panel: #ffffff;
+      --muted: #6b7280;
+      --accent: #6b8ea3;
+      --accent-2: #9fb6c8;
+      --success: #4caf84;
+      --warning: #f2b94f;
+      --danger: #ea6b6b;
+      --text: #0b1220;
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);margin:0;padding:1rem}
+    .wrap{max-width:900px;margin:0 auto}
+    .card{background:var(--panel);border-radius:12px;padding:1rem 1.1rem;box-shadow:0 8px 24px rgba(11,18,32,0.05)}
+    header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.8rem}
+    h1{margin:0;font-size:1.1rem;color:var(--accent)}
+    .invoice-meta{display:flex;gap:0.6rem;align-items:center}
+    .badge{padding:0.25rem 0.6rem;border-radius:999px;font-weight:700;font-size:0.85rem}
+    .badge.new{background:rgba(76,175,132,0.12);color:var(--success)}
+    .badge.contact{background:rgba(242,185,79,0.1);color:var(--warning)}
+    .badge.done{background:rgba(148,163,184,0.06);color:var(--muted)}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.8rem}
+    .field{background:rgba(11,18,32,0.02);padding:0.8rem;border-radius:8px}
+    .field h4{margin:0 0 0.25rem 0;font-size:0.86rem;color:var(--muted)}
+    .field p{margin:0;font-weight:700}
+
+    .items{margin-top:1rem;border-radius:8px;overflow:hidden}
+    .items table{width:100%;border-collapse:collapse}
+    .items th,.items td{padding:0.7rem;text-align:center;border-bottom:1px solid rgba(11,18,32,0.04)}
+    .items th{background:transparent;color:var(--muted);font-weight:700}
+
+    .actions{display:flex;gap:0.6rem;justify-content:flex-end;margin-top:1rem}
+    .btn{background:var(--accent);color:white;padding:0.6rem 0.8rem;border-radius:10px;text-decoration:none;display:inline-flex;gap:0.6rem;align-items:center}
+    .btn.secondary{background:transparent;border:1px solid rgba(11,18,32,0.06);color:var(--text)}
+
+    .note{margin-top:1rem;color:var(--muted);font-size:0.92rem}
+
+    @media (max-width:700px){
+      .grid{grid-template-columns:1fr}
+      header{flex-direction:column;align-items:flex-start;gap:0.6rem}
+      .actions{justify-content:stretch;flex-direction:column}
+      .btn{width:100%;justify-content:center}
+      .items th,.items td{text-align:right}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="invoice-card">
+      <header>
+        <div>
+          <h1>فاتورة الطلب</h1>
+          <div style="color:var(--muted);font-size:0.95rem;margin-top:0.25rem">رقم الفاتورة: <strong id="invoice-code">--</strong></div>
+        </div>
+        <div class="invoice-meta">
+          <div id="status-badge" class="badge new">جديد</div>
+          <div style="color:var(--muted);text-align:left;font-size:0.9rem" id="invoice-date">--</div>
+        </div>
+      </header>
+
+      <div class="grid">
+        <div class="field">
+          <h4>معلومات العميل</h4>
+          <p id="cust-name">-</p>
+          <div style="color:var(--muted);margin-top:0.45rem">الهاتف: <span id="cust-phone">-</span></div>
+          <div style="color:var(--muted);">الإيميل: <span id="cust-email">-</span></div>
+        </div>
+
+        <div class="field">
+          <h4>تفاصيل الشحن</h4>
+          <p id="cust-address">-</p>
+          <div style="color:var(--muted);margin-top:0.45rem">المنطقة: <span id="cust-city">-</span></div>
+          <div style="color:var(--muted);">الدولة: <span id="cust-country">-</span></div>
+        </div>
+      </div>
+
+      <div class="items">
+        <table>
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>السعر</th>
+            </tr>
+          </thead>
+          <tbody id="items-body">
+            <tr><td colspan="2" style="padding:1rem;text-align:center;color:var(--muted)">لا توجد بيانات حتى الآن</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem">
+        <div>
+          <div style="font-size:0.95rem;color:var(--muted)">المجموع</div>
+          <div style="font-weight:800;font-size:1.1rem" id="total-amount">-</div>
+        </div>
+
+        <div class="actions">
+          <a class="btn secondary" id="print-btn"><i class="fa fa-print"></i> طباعة الفاتورة</a>
+          <a class="btn" id="share-whatsapp"><i class="fab fa-whatsapp"></i> مشاركة عبر واتساب</a>
+        </div>
+      </div>
+
+      <div class="note">سترى هنا حالة طلبك تتحدَّث تلقائياً عندما يقوم فريق الدعم بتحديثها. رمز الفاتورة مفيد للمتابعة مع خدمة العملاء.</div>
+    </div>
+
+    <div style="text-align:center;margin-top:1rem;color:var(--muted);font-size:0.92rem">للاستعلام أو التعديل راسلنا عبر واتساب أو احتفظ برقم الفاتورة.</div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const params = new URLSearchParams(window.location.search);
+    const invoiceParam = params.get('invoice');
+    const idParam = params.get('id');
+
+    const invoiceCodeEl = document.getElementById('invoice-code');
+    const statusBadge = document.getElementById('status-badge');
+    const invoiceDateEl = document.getElementById('invoice-date');
+
+    const custName = document.getElementById('cust-name');
+    const custPhone = document.getElementById('cust-phone');
+    const custEmail = document.getElementById('cust-email');
+    const custAddress = document.getElementById('cust-address');
+    const custCity = document.getElementById('cust-city');
+    const custCountry = document.getElementById('cust-country');
+    const itemsBody = document.getElementById('items-body');
+    const totalAmount = document.getElementById('total-amount');
+
+    function setStatusBadge(status){
+      statusBadge.textContent = status || 'جديد';
+      statusBadge.className = 'badge ' + (status === 'مكتمل' ? 'done' : (status === 'تم التواصل' ? 'contact' : 'new'));
+    }
+
+    function renderOrder(order, key){
+      invoiceCodeEl.textContent = order.invoiceCode || key || '-';
+      invoiceDateEl.textContent = order.timestamp ? new Date(order.timestamp).toLocaleString('ar-EG') : new Date().toLocaleString('ar-EG');
+
+      custName.textContent = order.name || '-';
+      custPhone.textContent = order.phone || '-';
+      custEmail.textContent = order.email || '-';
+      custAddress.textContent = order.address || '-';
+      custCity.textContent = order.city || '-';
+      custCountry.textContent = order.country || '-';
+
+      itemsBody.innerHTML = '';
+      let total = 0;
+
+      if(order.products && order.products.length > 0){
+        order.products.forEach(p => {
+          const price = parseFloat(p.price.replace(/[^0-9.-]+/g,"")) || 0;
+          const quantity = parseInt(p.quantity) || 1;
+          let finalPrice = price;
+
+          let displayPrice = price.toFixed(2);
+          if(p.discount && !isNaN(p.discount)){
+            const discountAmount = (price * parseFloat(p.discount)) / 100;
+            finalPrice = price - discountAmount;
+            displayPrice = `${price.toFixed(2)} - خصم: ${p.discount}% = ${finalPrice.toFixed(2)}`;
+          }
+
+          total += finalPrice * quantity;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="text-align:right">
+              <img src="${p.image}" style="width:50px;border-radius:5px;margin-left:8px;vertical-align:middle">
+              ${p.name} × ${quantity}
+            </td>
+            <td>${displayPrice}</td>
+          `;
+          itemsBody.appendChild(tr);
+        });
+
+        totalAmount.textContent = total.toFixed(2) + " جنيه";
+      } else {
+        itemsBody.innerHTML = '<tr><td colspan="2" style="padding:1rem;text-align:center;color:var(--muted)">لا توجد بيانات حتى الآن</td></tr>';
+        totalAmount.textContent = '-';
+      }
+
+      setStatusBadge(order.status || 'جديد');
+    }
+
+    function notFound(){
+      const card = document.getElementById('invoice-card');
+      card.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--muted)">لم يتم العثور على الفاتورة المطلوبة. تأكد من رقم الفاتورة أو تواصل معنا.</p>';
+    }
+
+    if(idParam){
+      const ref = db.ref('orders/' + idParam);
+      ref.on('value', snap => {
+        if(snap.exists()) renderOrder(snap.val(), idParam);
+        else notFound();
+      });
+    } else if(invoiceParam){
+      const q = db.ref('orders').orderByChild('invoiceCode').equalTo(invoiceParam);
+      q.on('value', snap => {
+        if(snap.exists()){
+          let found = false;
+          snap.forEach(child => {
+            if(!found){ renderOrder(child.val(), child.key); found = true; }
+          });
+        } else notFound();
+      });
+    } else {
+      notFound();
+    }
+
+    document.getElementById('print-btn').addEventListener('click', ()=> window.print());
+    document.getElementById('share-whatsapp').addEventListener('click', ()=>{
+      const text = `فاتورة طلب: ${invoiceCodeEl.textContent}%0Aاسم: ${custName.textContent}%0Aالهاتف: ${custPhone.textContent}%0Aحالة الطلب: ${statusBadge.textContent}%0A${window.location.href}`;
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    });
+  </script>
+</body>
+</html>
