@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المدونة | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- أيقونات الموقع -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+
+  <style>
+    /* ===== Hero (Full Screen Neon Glass) ===== */
+
+    :root {
+  --neon-pink: #ff2ec4;
+  --neon-cyan: #00f7ff;
+  --text: #e8eaf1;
+  --muted: #b3b3b3;
+  --glass-blur: blur(14px);
+}
+body {
+  background: #0a0a0f;
+  color: var(--text);
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+  margin: 0;
+  padding-top: 0; /* شيل المسافة */
+}
+.hero-full {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  margin-top: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-full .hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-full .hero-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.hero-full .hero-bg img.active {
+  opacity: 1;
+}
+
+.hero-full .hero-bg .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,15,0.4), rgba(10,10,15,0.85));
+  backdrop-filter: var(--glass-blur);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+  padding: 0 1rem;
+}
+
+.hero-content h1 {
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-bottom: 1.8rem;
+}
+
+.hero-content .cta-btn {
+  display: inline-block;
+  padding: 0.75rem 1.8rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 800;
+  color: #0b0b12;
+  background: #fff;
+  position: relative;
+  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: 0 8px 24px rgba(0,247,255,.18);
+}
+
+.hero-content .cta-btn::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  z-index: -1;
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  filter: blur(6px);
+  opacity: .7;
+}
+
+.hero-content .cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255,46,196,.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2.1rem;
+  }
+  .hero-content p {
+    font-size: 1rem;
+  }
+}
+/* شبكة المقالات */
+.blog-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  padding: 2rem 1rem;
+}
+
+/* الكارد */
+.blog-card {
+  display: flex;
+  flex-direction: row; /* صورة شمال + نص يمين */
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-height: 220px;
+}
+.blog-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+}
+
+/* الصورة */
+.blog-card img {
+  width: 280px;
+  height: 100%;
+  object-fit: cover;
+  flex-shrink: 0;
+  transition: transform 0.4s ease;
+}
+.blog-card:hover img {
+  transform: scale(1.05);
+}
+
+/* المحتوى */
+.blog-card .content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  text-align: right;
+}
+.blog-card .content h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.6rem;
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1.5;
+}
+.blog-card .content .date {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+}
+.blog-card .content p {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+}
+
+/* زر "اقرئي المزيد" */
+.blog-card a {
+  align-self: flex-start;
+  padding: 0.65rem 1.4rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan));
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+.blog-card a:hover {
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink));
+  transform: translateY(-2px) scale(1.07);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+
+/* 📱 موبايل */
+@media (max-width: 768px) {
+  .blog-card {
+    flex-direction: column; /* الصورة فوق + النص تحت */
+  }
+  .blog-card img {
+    width: 100%;
+    height: 200px;
+  }
+  .blog-card .content h3 {
+    font-size: 1.15rem;
+  }
+}
+
+
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav dir="rtl">
+  <div class="logo">
+    <img src="images/logo.png" alt="الشعار" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="#">المقالات</a></li>
+    <li class="dropdown">
+      <a href="#">المزيد ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="client-reviews.html">ثقة العملاء</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
+      </ul>
+    </li>
+  </ul>
+  <div class="hamburger" aria-label="القائمة">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
+</div>
+<!-- Hero -->
+<section class="hero hero-full">
+  <div class="hero-bg">
+    <img src="images/hero/hero-2.jpg" alt="Blog">
+  </div>
+  <div class="hero-content">
+    <h1>مدونة Dandy</h1>
+    <p>اقرئي أحدث المقالات حول الجمال والعناية الطبيعية</p>
+  </div>
+</section>
+
+<!-- المقالات -->
+<section class="blog">
+  <h2 style="text-align:center;margin:2rem 0;">📝 أحدث المقالات</h2>
+  <div class="blog-grid" id="blogContainer"></div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
+      </div>
+
+      <!-- روابط الصفحات -->
+      <div class="footer-links">
+        <a href="privacy-policy.html">سياسة الخصوصية</a>
+        <span>|</span>
+        <a href="terms.html">الشروط والأحكام</a>
+      </div>
+
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  async function loadArticles() {
+    const container = document.getElementById("blogContainer");
+    const snapshot = await db.collection("articles").orderBy("date","desc").get();
+    container.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const card = `
+        <div class="blog-card">
+          <img src="${data.image || 'images/default.jpg'}" alt="${data.title}">
+          <div class="content">
+            <h3>${data.title}</h3>
+            <p class="date">📅 ${data.date}</p>
+            <a href="post.html?id=${doc.id}">اقرئي المزيد</a>
+          </div>
+        </div>
+      `;
+      container.innerHTML += card;
+    });
+  }
+  loadArticles();
+</script>
+
+<!-- Mobile menu toggle -->
+<script>
+  const mobileNav = document.querySelector(".hamburger");
+  const navbarSide = document.querySelector(".menubar");
+
+  const toggleNav = () => {
+    navbarSide.classList.toggle("active");
+    mobileNav.classList.toggle("hamburger-active");
+  };
+
+  mobileNav.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleNav();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (
+      navbarSide.classList.contains("active") &&
+      !navbarSide.contains(e.target) &&
+      !mobileNav.contains(e.target)
+    ) {
+      navbarSide.classList.remove("active");
+      mobileNav.classList.remove("hamburger-active");
+    }
+  });
+</script>
+
+<!-- Hide/Show navbar on scroll -->
+<script>
+let lastScrollTop = 0;
+const nav = document.querySelector('nav');
+const navHeight = nav.offsetHeight;
+
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  if (scrollTop > lastScrollTop) {
+    nav.style.top = `-${navHeight}px`;
+  } else {
+    nav.style.top = `20px`;
+  }
+  lastScrollTop = scrollTop;
+});
+</script>
+</body>
+</html>

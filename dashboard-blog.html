@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لوحة تحكم المقالات | Dandy</title>
+
+  <!-- خط -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- ======= ستايل الداشبورد (دارك - فلات) مدمج هنا ======= -->
+  <style>
+  :root {
+    --primary: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --danger: #dc3545;
+    --danger-hover: #bb2d3b;
+    --warning: #ffc107;
+    --warning-hover: #e0a800;
+    --bg: #0f1113;
+    --card-bg: #151719;
+    --text: #e9eef8;
+    --muted: #9aa3b2;
+    --radius: 10px;
+    --transition: 0.18s ease;
+    --container-width: 980px;
+  }
+
+  *{box-sizing:border-box}
+  body {
+    margin: 0;
+    padding: 22px;
+    background: linear-gradient(180deg, #0b0d0f 0%, #0f1113 100%);
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    min-height:100vh;
+  }
+
+  .container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  h1, h2 {
+    margin: 0 0 18px 0;
+    text-align: center;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 20px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+  }
+
+  /* form layout */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 18px;
+    align-items: start;
+  }
+
+  @media (max-width: 980px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  input[type="text"], input[type="url"], input[type="date"], textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.04);
+    background: #121417;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: box-shadow var(--transition), border-color var(--transition);
+  }
+  input:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(13,110,253,0.06);
+  }
+
+  .form-left { display:flex; flex-direction:column; gap:12px; }
+  .form-right { display:flex; flex-direction:column; gap:12px; }
+
+  /* buttons */
+  .buttons-row { display:flex; gap:10px; align-items:center; margin-top:6px; flex-wrap:wrap; }
+  .btn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: transform var(--transition), background var(--transition);
+    font-size: 14px;
+  }
+  .btn:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: linear-gradient(180deg,var(--primary),var(--primary-hover));
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(13,110,253,0.12);
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+  .btn-cancel {
+    background: #2c2f33;
+    color: var(--muted);
+  }
+
+  /* table */
+  .table-wrapper { overflow-x:auto; margin-top:6px; }
+  table {
+    width:100%;
+    border-collapse: collapse;
+    min-width: 620px;
+    background: transparent;
+  }
+  th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    text-align: center;
+    font-size: 14px;
+    color: var(--text);
+  }
+  th {
+    background: rgba(255,255,255,0.02);
+    font-weight:700;
+    color: var(--muted);
+  }
+
+  .action-btn {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight:700;
+    font-size:13px;
+  }
+  .action-edit { background: var(--warning); color:#000; }
+  .action-delete { background: var(--danger); color:#fff; }
+  .action-view { background: rgba(255,255,255,0.06); color:var(--text); }
+
+  /* small helper */
+  .note { color: var(--muted); font-size:13px; margin-top:6px; text-align:left; }
+  .field-compact { display:flex; gap:8px; }
+  .img-preview {
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    border-radius:8px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15));
+    border:1px solid rgba(255,255,255,0.03);
+  }
+
+  /* responsive tweaks */
+  @media (max-width: 620px) {
+    .img-preview { height:140px; }
+    th, td { font-size:12px; padding:10px; }
+    .btn { font-size:13px; padding:9px 10px; }
+  }
+
+  /* TinyMCE editor container override to match dark (some classes) */
+  .tox .tox-editor-header { background: transparent; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .tox .tox-toolbar__group { background: transparent; }
+  .tox .tox-toolbar__primary { background:transparent; }
+  .tox .tox-editor-container { background: #111214; border-radius:8px; }
+  .tox .tox-edit-area__iframe, .tox .tox-edit-area__iframe body { background: #0f1113; color: var(--text); }
+  </style>
+
+  <!-- TinyMCE (مع مفتاحك) -->
+  <script src="https://cdn.tiny.cloud/1/93rdzigk7y2vd5l21kk3bvmhapd1shislzdzjclmvj1misis/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+  <script>
+    tinymce.init({
+      selector: '#article-content',
+      height: 420,
+      directionality: 'rtl',
+      language: 'ar',
+      skin: 'oxide-dark',
+      content_css: 'dark',
+      menubar: false,
+      plugins: [
+        'anchor','autolink','charmap','codesample','emoticons','link','lists','media','searchreplace',
+        'table','visualblocks','wordcount',
+        'checklist','mediaembed','casechange','formatpainter','pageembed','a11ychecker',
+        'tinymcespellchecker','permanentpen','powerpaste','advtable','advcode','advtemplate',
+        'ai','uploadcare','mentions','tinycomments','tableofcontents','footnotes',
+        'mergetags','autocorrect','typography','inlinecss','markdown','importword',
+        'exportword','exportpdf'
+      ],
+      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | lineheight | checklist numlist bullist indent outdent | link media table mergetags | emoticons charmap codesample | removeformat | addcomment showcomments spellcheckdialog a11ycheck typography uploadcare | exportword exportpdf',
+      tinycomments_mode: 'embedded',
+      tinycomments_author: 'Admin',
+      mergetags_list: [
+        { value: 'First.Name', title: 'First Name' },
+        { value: 'Email', title: 'Email' }
+      ],
+      // AI placeholder (not implemented)
+      ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('AI Assistant needs activation')),
+      uploadcare_public_key: 'a337a7488d5ac5c0f5c6'
+    });
+  </script>
+
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <h1>✍️ لوحة تحكم المقالات</h1>
+
+      <div class="grid" style="margin-top:14px;">
+        <!-- اليسار: الفورم -->
+        <div class="form-left">
+          <label for="article-title">عنوان المقال</label>
+          <input id="article-title" type="text" placeholder="اكتب عنوانًا جذابًا للمقال">
+
+          <label for="article-image">رابط صورة المقال</label>
+          <input id="article-image" type="url" placeholder="https://... (رابط الصورة)">
+
+          <label for="article-date">تاريخ النشر (اختياري)</label>
+          <input id="article-date" type="date">
+
+          <label for="article-content">محتوى المقال</label>
+          <textarea id="article-content"></textarea>
+
+          <div class="buttons-row" style="margin-top:6px;">
+            <button id="submit-btn" class="btn btn-primary">➕ نشر المقال</button>
+            <button id="reset-btn" class="btn btn-secondary">✖️ مسح الحقول</button>
+            <button id="preview-btn" class="btn btn-cancel">👁 معاينة سريع</button>
+          </div>
+          <div class="note">ملاحظة: احرص على أن يكون المحتوى أصليًا وطويلًا (يفضل ≥ 700 كلمة) لتحسين فرص قبول AdSense.</div>
+        </div>
+
+        <!-- اليمين: معاينة الصورة + معلومات صغيرة -->
+        <div class="form-right">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <label>معاينة صورة المقال</label>
+              <img id="img-preview" class="img-preview" alt="معاينة صورة المقال" src="" onerror="this.style.opacity=0.6; this.style.objectFit='contain'">
+            </div>
+
+            <div class="card" style="padding:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <div>
+                  <div style="font-weight:700; color:var(--muted); font-size:13px;">حالة الاتصال</div>
+                  <div id="status-msg" style="font-weight:700; color:var(--text); margin-top:6px; font-size:13px;">جاهز للعمل</div>
+                </div>
+                <div>
+                  <div style="font-weight:700; color:var(--muted); font-size:13px; text-align:center;">مقالات مخزنة</div>
+                  <div id="count-articles" style="font-weight:700; color:var(--primary); font-size:18px; text-align:center; margin-top:6px;">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="padding:12px; text-align:left; color:var(--muted); font-size:13px;">
+              <div style="font-weight:700; color:var(--muted); margin-bottom:8px;">نصائح سريعة</div>
+              <ul style="margin:0 0 0 14px; padding:0; list-style:disc;">
+                <li>استخدم عناوين فرعية (H2,H3) داخل المقال.</li>
+                <li>أضف صورًا وفواصل لسهولة القراءة.</li>
+                <li>تأكد من رابط الصورة صحيح ليظهر في المعاينة.</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </div> <!-- end grid -->
+    </div> <!-- end card -->
+
+    <!-- جدول المقالات -->
+    <div class="card">
+      <h2>📌 المقالات الحالية</h2>
+      <div class="table-wrapper">
+        <table aria-live="polite">
+          <thead>
+            <tr>
+              <th>الصورة</th>
+              <th>العنوان</th>
+              <th>تاريخ النشر</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="articles-list">
+            <!-- مقالات تُحمّل بواسطة JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div> <!-- end container -->
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ===== إعداد Firebase =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // عناصر DOM
+    const titleEl = document.getElementById('article-title');
+    const imageEl = document.getElementById('article-image');
+    const dateEl = document.getElementById('article-date');
+    const submitBtn = document.getElementById('submit-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const previewBtn = document.getElementById('preview-btn');
+    const imgPreview = document.getElementById('img-preview');
+    const articlesList = document.getElementById('articles-list');
+    const countArticles = document.getElementById('count-articles');
+    const statusMsg = document.getElementById('status-msg');
+
+    let editId = null; // لو في تعديل
+
+    // تحديث معاينة الصورة عند تغيير الرابط
+    imageEl.addEventListener('input', () => {
+      const url = imageEl.value.trim();
+      imgPreview.src = url || '';
+      imgPreview.style.opacity = url ? '1' : '0.35';
+    });
+
+    // reset
+    resetBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      clearForm();
+    });
+
+    // معاينة سريع (يفتح نافذة جديدة بعرض HTML بسيط)
+    previewBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const title = titleEl.value.trim() || 'عنوان تجريبي';
+      const image = imageEl.value.trim() || '';
+      const content = tinymce.get('article-content').getContent() || '<p>محتوى تجريبي</p>';
+      const date = dateEl.value || new Date().toLocaleDateString('ar-EG');
+
+      const html = `
+        <html lang="ar" dir="rtl">
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>معاينة</title>
+        <style>body{font-family: Tajawal, sans-serif; background:#0f1113; color:#e9eef8; padding:20px} img{max-width:100%; border-radius:8px}</style>
+        </head>
+        <body>
+        <h1>${escapeHtml(title)}</h1>
+        <div style="color:#9aa3b2;margin-bottom:8px">${escapeHtml(date)}</div>
+        ${image ? `<img src="${escapeHtml(image)}" alt="image" style="margin-bottom:14px">` : ''}
+        <div>${content}</div>
+        </body></html>`;
+      const w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+    });
+
+    // إضافة مقال
+    submitBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await handleSubmit();
+    });
+
+    async function handleSubmit() {
+      const title = titleEl.value.trim();
+      const image = imageEl.value.trim();
+      const content = tinymce.get('article-content').getContent().trim();
+      const dateValue = dateEl.value;
+      const readableDate = dateValue ? new Date(dateValue).toLocaleDateString('ar-EG') : new Date().toLocaleDateString('ar-EG');
+
+      if (!title || !content) {
+        alert('من فضلك أدخل عنوان ومحتوى للمقال');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = editId ? 'جاري التحديث...' : 'جاري النشر...';
+
+      try {
+        if (editId) {
+          // تحديث
+          await db.collection('articles').doc(editId).update({
+            title,
+            image,
+            content,
+            date: readableDate,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          editId = null;
+          submitBtn.innerText = '➕ نشر المقال';
+          alert('تم تحديث المقال ✅');
+        } else {
+          // إضافة جديد
+          await db.collection('articles').add({
+            title,
+            image,
+            content,
+            date: readableDate,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          alert('تم إضافة المقال ✅');
+        }
+        clearForm();
+        loadArticles();
+      } catch (err) {
+        console.error(err);
+        alert('حصل خطأ، جرب مرة تانية');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    function clearForm() {
+      titleEl.value = '';
+      imageEl.value = '';
+      dateEl.value = '';
+      tinymce.get('article-content').setContent('');
+      imgPreview.src = '';
+      imgPreview.style.opacity = 0.35;
+      editId = null;
+      submitBtn.disabled = false;
+      submitBtn.innerText = '➕ نشر المقال';
+    }
+
+    // تحميل المقالات
+    async function loadArticles() {
+      articlesList.innerHTML = '<tr><td colspan="4" style="color:var(--muted)">... جارٍ التحميل</td></tr>';
+      try {
+        const snapshot = await db.collection('articles').orderBy('createdAt', 'desc').get();
+        const docs = snapshot.docs || [];
+        countArticles.innerText = docs.length;
+        if (docs.length === 0) {
+          articlesList.innerHTML = '<tr><td colspan="4" style="color:var(--muted)">لا توجد مقالات حتى الآن</td></tr>';
+          return;
+        }
+        articlesList.innerHTML = '';
+        docs.forEach(doc => {
+          const data = doc.data();
+          const id = doc.id;
+          const title = escapeHtml(data.title || 'بدون عنوان');
+          const date = escapeHtml(data.date || '');
+          const image = data.image || '';
+          const row = document.createElement('tr');
+
+          row.innerHTML = `
+            <td style="width:120px">
+              ${image ? `<img src="${escapeHtml(image)}" alt="img" style="width:100px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.03)">` : '<div style="width:100px;height:60px;background:rgba(255,255,255,0.02);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted)">لا صورة</div>'}
+            </td>
+            <td style="text-align:right"><strong>${title}</strong></td>
+            <td>${date}</td>
+            <td>
+              <button class="action-btn action-view" onclick="openArticleView('${id}')">عرض</button>
+              <button class="action-btn action-edit" onclick="startEdit('${id}')">تعديل</button>
+              <button class="action-btn action-delete" onclick="deleteArticle('${id}')">حذف</button>
+            </td>
+          `;
+          articlesList.appendChild(row);
+        });
+      } catch (err) {
+        console.error(err);
+        articlesList.innerHTML = '<tr><td colspan="4" style="color:var(--muted)">حدث خطأ أثناء تحميل المقالات</td></tr>';
+      }
+    }
+
+    // حذف مقال
+    async function deleteArticle(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا المقال؟')) return;
+      try {
+        await db.collection('articles').doc(id).delete();
+        alert('تم حذف المقال ✅');
+        loadArticles();
+      } catch (err) {
+        console.error(err);
+        alert('حدث خطأ أثناء الحذف');
+      }
+    }
+
+    // بدء التعديل: تحميل محتوى المقال إلى الفورم
+    async function startEdit(id) {
+      try {
+        const doc = await db.collection('articles').doc(id).get();
+        if (!doc.exists) { alert('المقال غير موجود'); return; }
+        const data = doc.data();
+        titleEl.value = data.title || '';
+        imageEl.value = data.image || '';
+        dateEl.value = data.date ? formatInputDate(data.date) : '';
+        tinymce.get('article-content').setContent(data.content || '');
+        imgPreview.src = data.image || '';
+        imgPreview.style.opacity = data.image ? 1 : 0.35;
+        editId = id;
+        submitBtn.innerText = '⬆️ تحديث المقال';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        alert('حدث خطأ أثناء جلب المقال');
+      }
+    }
+
+    // فتح عرض المقال (يفتح صفحة جديدة مع id في الرابط)
+    function openArticleView(id) {
+      // توقع أن لديك صفحة blog-post.html تقبل ?id=<id>
+      const url = `post.html?id=${encodeURIComponent(id)}`;
+      window.open(url, '_blank');
+    }
+
+    // helper: تحويل "dd/mm/yyyy" إلى قيمة input[type=date] (yyyy-mm-dd) إن وُجدت
+    function formatInputDate(displayDate) {
+      // نحاول قراءة التاريخ حسب locale ar-EG أو iso
+      // إذا كان بصيغة dd/mm/yyyy
+      if (!displayDate) return '';
+      const parts = displayDate.split('/');
+      if (parts.length === 3) {
+        const [d, m, y] = parts;
+        // ممكن يكون سنة قصيرة أو كاملة؛ نفترض y هي 4 أرقام
+        return `${y}-${pad(m)}-${pad(d)}`;
+      }
+      // حاول parse iso
+      const dt = new Date(displayDate);
+      if (!isNaN(dt)) {
+        const yyyy = dt.getFullYear();
+        const mm = pad(dt.getMonth() + 1);
+        const dd = pad(dt.getDate());
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return '';
+    }
+    function pad(v) { v = String(v); return v.length===1 ? '0'+v : v; }
+
+    // escape HTML (أمان بسيط للعرض)
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/[&<>"'`=\/]/g, function (s) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+          '/': '&#47;',
+          '`': '&#96;',
+          '=': '&#61;'
+        })[s];
+      });
+    }
+
+    // حالة الاتصال: اختبار بسيط بقراءة عدد المقالات
+    async function checkStatus() {
+      try {
+        const snapshot = await db.collection('articles').limit(1).get();
+        statusMsg.innerText = 'متصل بقاعدة البيانات';
+        statusMsg.style.color = 'var(--primary)';
+      } catch (err) {
+        statusMsg.innerText = 'خطأ في الاتصال بقاعدة البيانات';
+        statusMsg.style.color = 'var(--danger)';
+      }
+    }
+
+    // تشغيل عند البداية
+    (function init() {
+      imgPreview.style.opacity = 0.35;
+      loadArticles();
+      checkStatus();
+    })();
+
+  </script>
+</body>
+</html>

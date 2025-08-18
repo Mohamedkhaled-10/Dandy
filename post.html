@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عرض المقال | Dandy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+        <!-- Google Fonts: Cairo + Tajawal -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- أيقونات الموقع -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+
+  <style>
+/* ستايل موحد للكروت */
+.card {
+  background: var(--bg-panel);
+  color: var(--text);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* المقال */
+.post-container {
+  max-width: 850px;
+  margin: 8rem auto;
+  padding: 1.5rem;
+}
+.post-container img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+.post-container h1 {
+  margin: 0 0 1rem;
+  font-size: 2rem;
+}
+.post-container .date {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
+}
+.post-content {
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+/* مقالات مقترحة */
+.suggested {
+  margin: 4rem auto;
+  max-width: 1000px;
+}
+.suggested h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.suggested-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+.suggested-card {
+  overflow: hidden;
+  transition: transform 0.25s ease;
+}
+.suggested-card:hover { transform: translateY(-5px); }
+.suggested-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+.suggested-card .content {
+  padding: 1rem;
+}
+.suggested-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+.suggested-card a {
+  font-weight: bold;
+  color: var(--neon-cyan);
+  text-decoration: none;
+}
+.suggested-card a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav dir="rtl">
+  <div class="logo">
+    <img src="images/logo.png" alt="الشعار" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="#">المزيد ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="client-reviews.html">ثقة العملاء</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
+      </ul>
+    </li>
+  </ul>
+  <div class="hamburger" aria-label="القائمة">
+    <span class="line"></span>
+    <span class="line"></span>
+    <span class="line"></span>
+  </div>
+</nav>
+
+
+<!-- Mobile Menu -->
+<div class="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
+</div>
+
+<!-- المقال -->
+<section class="post-container card" id="postContainer">
+  <img id="postImage" src="" alt="صورة المقال">
+  <h1 id="postTitle">...</h1>
+  <p class="date" id="postDate"></p>
+  <div class="post-content" id="postContent"></div>
+</section>
+
+<!-- مقالات مقترحة -->
+<section class="suggested">
+  <h2>📌 مقالات مقترحة</h2>
+  <div class="suggested-grid" id="suggestedContainer"></div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col footer-social">
+      <h4>تابعينا</h4>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-whatsapp"></i></a>
+      </div>
+
+      <!-- روابط الصفحات -->
+      <div class="footer-links">
+        <a href="privacy-policy.html">سياسة الخصوصية</a>
+        <span>|</span>
+        <a href="terms.html">الشروط والأحكام</a>
+      </div>
+
+      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const postId = urlParams.get("id");
+
+  async function loadPost() {
+    if (!postId) return;
+    const doc = await db.collection("articles").doc(postId).get();
+    if (doc.exists) {
+      const data = doc.data();
+      document.getElementById("postImage").src = data.image || "images/default.jpg";
+      document.getElementById("postTitle").textContent = data.title;
+      document.getElementById("postDate").textContent = "📅 " + data.date;
+      document.getElementById("postContent").innerHTML = data.content;
+    }
+  }
+
+  async function loadSuggested() {
+    const container = document.getElementById("suggestedContainer");
+    const snapshot = await db.collection("articles").limit(3).get();
+    snapshot.forEach(doc => {
+      if (doc.id !== postId) {
+        const d = doc.data();
+        container.innerHTML += `
+          <div class="suggested-card card">
+            <img src="${d.image || 'images/default.jpg'}" alt="${d.title}">
+            <div class="content">
+              <h3>${d.title}</h3>
+              <a href="post.html?id=${doc.id}">اقرئي المزيد</a>
+            </div>
+          </div>`;
+      }
+    });
+  }
+
+  loadPost();
+  loadSuggested();
+</script>
+
+<!-- Mobile menu toggle -->
+<script>
+  const mobileNav = document.querySelector(".hamburger");
+  const navbarSide = document.querySelector(".menubar");
+
+  const toggleNav = () => {
+    navbarSide.classList.toggle("active");
+    mobileNav.classList.toggle("hamburger-active");
+  };
+
+  mobileNav.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleNav();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (
+      navbarSide.classList.contains("active") &&
+      !navbarSide.contains(e.target) &&
+      !mobileNav.contains(e.target)
+    ) {
+      navbarSide.classList.remove("active");
+      mobileNav.classList.remove("hamburger-active");
+    }
+  });
+</script>
+
+<!-- Hide/Show navbar on scroll -->
+<script>
+let lastScrollTop = 0;
+const nav = document.querySelector('nav');
+const navHeight = nav.offsetHeight;
+
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY || document.documentElement.scrollTop;
+  if (scrollTop > lastScrollTop) {
+    nav.style.top = `-${navHeight}px`;
+  } else {
+    nav.style.top = `20px`;
+  }
+  lastScrollTop = scrollTop;
+});
+</script>
+</body>
+</html>
