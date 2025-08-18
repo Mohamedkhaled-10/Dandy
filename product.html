@@ -262,6 +262,9 @@
         <p id="product-desc">وصف المنتج</p>
         <div class="price" id="product-price">السعر</div>
         <div class="buttons">
+  <a class="btn-order" id="add-to-cart-btn">
+    <i class="fas fa-shopping-cart"></i> أضف للسلة
+  </a>
   <a class="btn-whatsapp" id="whatsapp-link" target="_blank">
     <i class="fab fa-whatsapp"></i> تواصلي عبر واتساب
   </a>
@@ -440,9 +443,71 @@ db.ref("products/" + id).once("value").then(snapshot => {
 });
 </script>
 
+<script>
+const addToCartBtn = document.getElementById("add-to-cart-btn");
 
+// جلب بيانات المنتج من الصفحة
+const productData = () => ({
+  id: id, // معرف المنتج من URL
+  name: document.getElementById("product-title")?.textContent || '',
+  price: document.getElementById("product-price")?.textContent || '',
+  image: document.getElementById("product-img")?.src || ''
+});
+
+addToCartBtn.addEventListener("click", () => {
+  // جلب السلة الحالية من LocalStorage
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  const product = productData();
+
+  // تحقق لو المنتج موجود بالفعل، نزود الكمية
+  const existingIndex = cart.findIndex(item => item.id === product.id);
+  if(existingIndex !== -1){
+    cart[existingIndex].quantity += 1;
+  } else {
+    product.quantity = 1;
+    cart.push(product);
+  }
+
+  // حفظ السلة مرة ثانية
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  alert(`${product.name} تم إضافته إلى السلة!`);
+});
+</script>
+  <script>
+  // تحديث عدد العناصر في البادج باستخدام localStorage (توقّع: السلة مخزنة كمصفوفة JSON في key 'cart')
+  function updateCartCount(){
+    try{
+      const raw = localStorage.getItem('cart') || '[]';
+      const cart = JSON.parse(raw);
+      const count = Array.isArray(cart) ? cart.reduce((s,i)=>s + (i.quantity? Number(i.quantity):1), 0) : 0;
+      document.getElementById('cart-count').textContent = count;
+    }catch(e){
+      document.getElementById('cart-count').textContent = 0;
+      console.warn('cart-count update error', e);
+    }
+  }
+
+  // عند التحميل
+  document.addEventListener('DOMContentLoaded', updateCartCount);
+
+  // إذا السلة تتحدث من نافذة/تبويب تاني -> نسمع حدث storage
+  window.addEventListener('storage', (e) => {
+    if(e.key === 'cart') updateCartCount();
+  });
+
+  // لو نظام السلة عندك مختلف (مثلاً Firebase أو cookie)، عدّل وظيفة updateCartCount() لتناسب مصدر البيانات لديك.
+</script>
+
+<!-- ===== Floating Cart Button (paste before </body>) ===== -->
+<a href="cart.html" class="floating-cart" aria-label="سلة التسوق">
+  <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
+  <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+</a>
 </body>
 </html>
+
 
 
 
