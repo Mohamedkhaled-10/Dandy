@@ -359,7 +359,38 @@ window.addEventListener('scroll', function () {
   });
 </script>
 
+  <script>
+  // تحديث عدد العناصر في البادج باستخدام localStorage (توقّع: السلة مخزنة كمصفوفة JSON في key 'cart')
+  function updateCartCount(){
+    try{
+      const raw = localStorage.getItem('cart') || '[]';
+      const cart = JSON.parse(raw);
+      const count = Array.isArray(cart) ? cart.reduce((s,i)=>s + (i.quantity? Number(i.quantity):1), 0) : 0;
+      document.getElementById('cart-count').textContent = count;
+    }catch(e){
+      document.getElementById('cart-count').textContent = 0;
+      console.warn('cart-count update error', e);
+    }
+  }
+
+  // عند التحميل
+  document.addEventListener('DOMContentLoaded', updateCartCount);
+
+  // إذا السلة تتحدث من نافذة/تبويب تاني -> نسمع حدث storage
+  window.addEventListener('storage', (e) => {
+    if(e.key === 'cart') updateCartCount();
+  });
+
+  // لو نظام السلة عندك مختلف (مثلاً Firebase أو cookie)، عدّل وظيفة updateCartCount() لتناسب مصدر البيانات لديك.
+</script>
+
+<!-- ===== Floating Cart Button (paste before </body>) ===== -->
+<a href="cart.html" class="floating-cart" aria-label="سلة التسوق">
+  <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
+  <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+</a>
 </body>
 </html>
+
 
 
