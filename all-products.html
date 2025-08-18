@@ -220,36 +220,31 @@ body {
 </head>
 <body>
 
- <!-- Navigation -->
+<!-- Navigation -->
 <nav dir="rtl">
   <div class="logo">
     <img src="images/logo.png" alt="الشعار" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li>
-      <a href="index.html">الرئيسية</a>
-    </li>
-    <li>
-      <a href="#">المنتجات</a>
-    </li>
-    <li>
-      <a href="special-offers.html">العروض</a>
-    </li>
-     <li>
-      <a href="client-reviews.html">ثقة العملاء</a>
-    </li>
-    <li>
-      <a href="about-us.html">من نحن</a>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="#">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="#">المزيد ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="client-reviews.html">ثقة العملاء</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
+      </ul>
     </li>
   </ul>
-  <div class="hamburger">
+  <div class="hamburger" aria-label="القائمة">
     <span class="line"></span>
     <span class="line"></span>
     <span class="line"></span>
   </div>
 </nav>
-
 <!-- Mobile Menu -->
 <div class="menubar" dir="rtl" aria-hidden="true">
   <ul>
@@ -499,3 +494,4 @@ document.querySelectorAll('a[href="#productContainer"]').forEach(link => {
 
 </body>
 </html>
+
