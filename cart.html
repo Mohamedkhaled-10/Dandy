@@ -275,16 +275,30 @@ function renderCart(){
 renderCart();
 
 
-// إظهار وإخفاء الفورم
+// إظهار وإخفاء الفورم مع تنويه قبل إتمام الشراء
 checkoutBtn.addEventListener("click", () => {
   if(cart.length === 0){
     alert("سلتك فارغة!");
     return;
   }
-  document.getElementById("order-form-container").style.display = 'flex';
+
+  const proceed = confirm(
+    "تنويه مهم:\n\n" +
+    "يرجى الاحتفاظ بنسخة من الفاتورة أو كود الفاتورة، فقد تحتاجها للتواصل مع التاجر أو لمراجعة الطلب.\n" +
+    "كما ننصح بالاحتفاظ برابط الفاتورة.\n\n" +
+    "اضغط 'موافق' للمتابعة وفتح نموذج الطلب."
+  );
+
+  if(proceed){
+    document.getElementById("order-form-container").style.display = 'flex';
+  }
 });
+
+// إغلاق الفورم
 const closeForm = document.getElementById("close-form");
-closeForm.addEventListener("click", ()=> document.getElementById("order-form-container").style.display = 'none');
+closeForm.addEventListener("click", () => {
+  document.getElementById("order-form-container").style.display = 'none';
+});
 
 // إرسال الطلب
 const orderForm = document.getElementById("order-form");
@@ -372,3 +386,4 @@ window.addEventListener('scroll', function () {
 </script>
 </body>
 </html>
+
