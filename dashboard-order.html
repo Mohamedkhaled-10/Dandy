@@ -116,19 +116,8 @@ tbody tr:hover{background:#f9fafb;}
 </section>
 </div>
   
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script>
-firebase.initializeApp(firebaseConfig);
-
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) {
-    // لو المستخدم مش مسجل دخول → يرجع على صفحة تسجيل الدخول
-    window.location.href = "login.html";
-  }
-});
-</script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
 const firebaseConfig = {
@@ -141,18 +130,33 @@ const firebaseConfig = {
   appId: "1:454972972842:web:fedc5e92e258a06ca08853"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const tableBody = document.getElementById("orders-table");
-const searchInput = document.getElementById("search-orders");
-const filterSelect = document.getElementById("filter-status");
-const emptyState = document.getElementById('empty');
-const totalCount = document.getElementById('total-count');
-const countNew = document.getElementById('count-new');
-const countContact = document.getElementById('count-contact');
-const countDone = document.getElementById('count-done');
 
-function esc(text){ return text == null ? '' : String(text); }
+// ✅ التحقق من تسجيل الدخول
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    // لو مش مسجل دخول → يرجع على صفحة تسجيل الدخول
+    window.location.href = "login.html";
+  } else {
+    console.log("✅ المستخدم مسجل دخول:", user.email);
+    // هنا يبدأ تحميل الطلبات عادي
+    startOrders();
+  }
+});
 
+// 🟢 هنا بنحط كود الطلبات كله
+function startOrders() {
+  const db = firebase.database();
+  const tableBody = document.getElementById("orders-table");
+  const searchInput = document.getElementById("search-orders");
+  const filterSelect = document.getElementById("filter-status");
+  const emptyState = document.getElementById('empty');
+  const totalCount = document.getElementById('total-count');
+  const countNew = document.getElementById('count-new');
+  const countContact = document.getElementById('count-contact');
+  const countDone = document.getElementById('count-done');
+
+  function esc(text){ return text == null ? '' : String(text); }
+  
 function renderOrderRow(key, order){
   const dateTime = order.date || new Date(order.timestamp || Date.now()).toLocaleString('ar-EG');
   const status = (order.status || 'جديد');
@@ -260,4 +264,5 @@ filterSelect.addEventListener('change',applyFilters);
 </script>
 </body>
 </html>
+
 
