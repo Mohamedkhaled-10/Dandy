@@ -306,16 +306,12 @@
 
   </div> <!-- end container -->
 
-<script>
-  // التحقق ان المستخدم جاي من dashboard.html فقط
-  if (localStorage.getItem("fromDashboard") !== "true") {
-    window.location.href = "dashboard.html"; 
-  } else {
-    // نمسح العلامة بعد ما الصفحة تفتح عشان ممنوع إعادة الاستخدام
-    window.addEventListener("load", () => {
-      localStorage.removeItem("fromDashboard");
-    });
-  }
+  <script>
+// التحقق من مصدر الدخول للصفحة
+if (document.referrer.indexOf("dashboard.html") === -1) {
+  // لو اللي جاي مش من dashboard.html → رجعه للداشبورد
+  window.location.href = "dashboard.html";
+}
 </script>
 
 
@@ -599,6 +595,7 @@
   </script>
 </body>
 </html>
+
 
 
 
