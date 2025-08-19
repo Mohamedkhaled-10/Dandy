@@ -9,42 +9,52 @@
 
 <url>
   <loc>https://dandy-ebon.vercel.app/</loc>
-  <lastmod>2025-08-16T12:02:05+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:22+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/all-products.html</loc>
-  <lastmod>2025-08-16T12:02:06+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:22+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/special-offers.html</loc>
-  <lastmod>2025-08-16T12:02:06+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:23+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/blog.html</loc>
+  <lastmod>2025-08-19T12:26:23+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/client-reviews.html</loc>
-  <lastmod>2025-08-16T12:02:06+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:23+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/about-us.html</loc>
-  <lastmod>2025-08-16T12:02:06+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:23+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/privacy-policy.html</loc>
-  <lastmod>2025-08-16T12:02:06+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:23+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/terms.html</loc>
-  <lastmod>2025-08-16T12:02:06+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:24+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/cart.html</loc>
+  <lastmod>2025-08-19T12:26:24+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/index.html</loc>
-  <lastmod>2025-08-16T12:02:07+00:00</lastmod>
+  <lastmod>2025-08-19T12:26:24+00:00</lastmod>
   <priority>0.64</priority>
 </url>
 
