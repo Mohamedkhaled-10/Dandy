@@ -158,12 +158,18 @@ footer {
     <h2 style="text-align:center; margin-bottom:1.5rem; font-family:'Tajawal', sans-serif; color: #ff0077;">إتمام الشراء</h2>
     
     <form id="order-form" style="display:flex; flex-direction:column; gap:1rem;">
-      <input type="text" name="name" placeholder="الاسم" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;"/>
-      <input type="email" name="email" placeholder="البريد الإلكتروني" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;"/>
-      <input type="tel" name="phone" placeholder="رقم الهاتف" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;"/>
-      <input type="text" name="country" placeholder="الدولة" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;"/>
-      <input type="text" name="city" placeholder="المدينة" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;"/>
-      <input type="text" name="address" placeholder="العنوان" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;"/>
+      <input type="text" name="name" placeholder="الاسم" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;" />
+      
+      <input type="email" name="email" placeholder="البريد الإلكتروني" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;" />
+      
+      <input type="tel" name="phone" placeholder="رقم الهاتف" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;" />
+      
+      <!-- الدولة ثابتة على مصر -->
+      <input type="text" name="country" value="مصر" readonly style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%; background:#f0f0f0;" />
+      
+      <input type="text" name="city" placeholder="المدينة" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;" />
+      
+      <input type="text" name="address" placeholder="العنوان" required style="padding:0.6rem; border-radius:8px; border:1px solid #ccc; width:100%;" />
       
       <button type="submit" style="background:#e91e63; color:white; border:none; padding:0.7rem; border-radius:25px; font-size:1rem; cursor:pointer; margin-top:0.5rem;">
         إرسال الطلب
@@ -421,8 +427,59 @@ closeForm.addEventListener("click", () => {
 });
 
 </script>
+  <script>
+  // إظهار وإخفاء الفورم
+  const checkoutBtn = document.getElementById("checkout-btn"); // تأكد أن لديك زر بهذا الـ id
+  const orderFormContainer = document.getElementById("order-form-container");
+  const closeForm = document.getElementById("close-form");
+
+  checkoutBtn.addEventListener("click", () => {
+    orderFormContainer.style.display = 'flex';
+  });
+
+  closeForm.addEventListener("click", () => {
+    orderFormContainer.style.display = 'none';
+  });
+
+  // التحقق من صحة البيانات قبل الإرسال
+  const orderForm = document.getElementById("order-form");
+
+  orderForm.addEventListener("submit", function(e){
+    e.preventDefault(); // منع الإرسال الافتراضي
+    
+    const name = this.name.value.trim();
+    const email = this.email.value.trim();
+    const phone = this.phone.value.trim();
+    const city = this.city.value.trim();
+    const address = this.address.value.trim();
+    
+    // التحقق من الاسم (أحرف ومسافات فقط)
+    if(!/^[\u0621-\u064Aa-zA-Z\s]{2,}$/.test(name)){
+      alert("الرجاء إدخال اسم صحيح (أحرف ومسافات فقط)");
+      return;
+    }
+
+    // التحقق من رقم الهاتف المصري
+    if(!/^01[0125][0-9]{8}$/.test(phone)){
+      alert("الرجاء إدخال رقم هاتف مصري صحيح (10 أرقام يبدأ بـ 010، 011، 012، أو 015)");
+      return;
+    }
+
+    // التحقق من باقي الحقول
+    if(!city || !address){
+      alert("الرجاء تعبئة جميع الحقول المطلوبة");
+      return;
+    }
+
+    // إذا كان كل شيء صحيح، يمكن هنا إرسال البيانات للفايبربيز أو أي معالجة أخرى
+    alert("تم إرسال الطلب بنجاح!");
+    orderForm.reset();
+    orderFormContainer.style.display = 'none';
+  });
+</script>
 </body>
 </html>
+
 
 
 
