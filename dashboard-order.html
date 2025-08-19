@@ -115,7 +115,15 @@ tbody tr:hover{background:#f9fafb;}
   <div id="empty" class="empty" style="display:none">لا توجد طلبات لعرضها الآن.</div>
 </section>
 </div>
-  
+
+  <script>
+// التحقق من مصدر الدخول للصفحة
+if (document.referrer.indexOf("dashboard.html") === -1) {
+  // لو اللي جاي مش من dashboard.html → رجعه للداشبورد
+  window.location.href = "dashboard.html";
+}
+</script>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
@@ -249,6 +257,7 @@ filterSelect.addEventListener('change',applyFilters);
 </script>
 </body>
 </html>
+
 
 
 
