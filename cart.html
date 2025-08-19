@@ -131,7 +131,24 @@ body {
 footer {
   margin-top:auto;
   padding:2rem 1rem;
-}  </style>
+}
+
+.remove-btn {
+  background: #e53935;       /* أحمر واضح */
+  color: #fff;               /* كتابة بيضاء */
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.remove-btn:hover {
+  background: #c62828;      /* أحمر أغمق عند الـ hover */
+}
+
+</style>
 </head>
 <body>
 
@@ -386,7 +403,9 @@ function renderCart(){
         <td>${formatCurrency(price)}</td>
         <td><input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="qty-input"></td>
         <td>${formatCurrency(price*item.quantity)}</td>
-        <td style="text-align:center;"><button class="remove-btn" data-id="${item.id}">حذف</button></td>
+<td style="text-align:center;">
+  <button class="remove-btn" data-id="${item.id}">حذف</button>
+</td>
       `;
       cartItemsEl.appendChild(tr);
     }
@@ -571,3 +590,4 @@ orderForm.addEventListener('submit', async (e)=>{
 </script>
 </body>
 </html>
+
