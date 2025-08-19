@@ -172,6 +172,21 @@ footer {
   </div>
 </div>
 
+<!-- نافذة تنويه قبل إتمام الشراء -->
+<div id="notice-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:10000; padding:1rem;">
+  <div style="background:white; padding:2rem; border-radius:15px; max-width:500px; width:100%; text-align:center; 
+              box-shadow:0 8px 20px rgba(0,0,0,0.3); position:relative; font-family:'Tajawal', sans-serif;">
+    <span id="close-notice" style="position:absolute; top:10px; left:10px; cursor:pointer; font-size:1.5rem; font-weight:bold; color:#e91e63;">×</span>
+    <h2 style="color:#e91e63; margin-bottom:1rem;">تنويه مهم</h2>
+    <p style="line-height:1.6; margin-bottom:1.5rem;">
+      يرجى الاحتفاظ بنسخة من الفاتورة أو كود الفاتورة، فقد تحتاجها للتواصل مع التاجر أو لمراجعة الطلب.<br>
+      كما ننصح بالاحتفاظ برابط الفاتورة.
+    </p>
+    <button id="proceed-order" style="background:#e91e63; color:white; border:none; padding:0.7rem 1.5rem;
+        border-radius:25px; font-size:1rem; cursor:pointer;">متابعة وفتح نموذج الطلب</button>
+  </div>
+</div>
 
 <!-- Footer -->
 <footer>
@@ -384,6 +399,39 @@ window.addEventListener('scroll', function () {
   lastScrollTop = scrollTop;
 });
 </script>
+<script>
+  // المودال والتنويه
+const noticeModal = document.getElementById("notice-modal");
+const closeNotice = document.getElementById("close-notice");
+const proceedOrder = document.getElementById("proceed-order");
+
+// فتح المودال عند الضغط على "إتمام الشراء"
+checkoutBtn.addEventListener("click", () => {
+  if(cart.length === 0){
+    alert("سلتك فارغة!");
+    return;
+  }
+  noticeModal.style.display = 'flex';
+});
+
+// إغلاق نافذة التنويه
+closeNotice.addEventListener("click", () => {
+  noticeModal.style.display = 'none';
+});
+
+// عند الضغط على متابعة، يغلق المودال ويفتح الفورم
+proceedOrder.addEventListener("click", () => {
+  noticeModal.style.display = 'none';
+  document.getElementById("order-form-container").style.display = 'flex';
+});
+
+// إغلاق الفورم نفسه
+closeForm.addEventListener("click", () => {
+  document.getElementById("order-form-container").style.display = 'none';
+});
+
+</script>
 </body>
 </html>
+
 
