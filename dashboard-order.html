@@ -1,379 +1,250 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة تحكم الطلبات | Dandy (Dark)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root{
-      /* dark / high-contrast palette */
-      --bg: #071023;          /* deep navy background */
-      --panel: #0f1724;       /* card / panel */
-      --muted: #9aa6b2;       /* muted labels */
-      --accent: #34d399;      /* teal-green accent */
-      --accent-2: #06b6d4;    /* bright cyan accent */
-      --success: #10b981;     /* success */
-      --warning: #f59e0b;     /* amber */
-      --neutral: #94a3b8;     /* neutral */
-      --danger: #fb7185;      /* red/pink for delete */
-      --glass: rgba(255,255,255,0.03);
-      --text: #e6f0f6;        /* main text on dark */
-      --muted-dark: rgba(255,255,255,0.06);
-      --border: rgba(255,255,255,0.04);
-    }
-
-    /* Reset & base */
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: 'Tajawal', sans-serif;
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(6,11,18,0.6), transparent 10%), linear-gradient(180deg,var(--bg) 0%, #051022 100%);
-      color:var(--text);
-      padding:1rem;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      direction:rtl;
-      line-height:1.5;
-    }
-
-    .container{max-width:1200px;margin:0 auto}
-
-    /* Header layout: responsive grid */
-    .header-grid{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1rem;margin-bottom:1rem}
-
-    /* title */
-    h1{font-size:1.25rem;color:var(--accent);margin:0;display:flex;align-items:center;gap:0.6rem}
-    h1 .logo{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04202a;font-weight:800;box-shadow:0 6px 18px rgba(6,16,22,0.6)}
-
-    /* controls container (center column) */
-    .controls-grid{display:flex;gap:0.9rem;align-items:center;justify-content:center}
-
-    /* individual control styles */
-    .control-item{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid var(--border);padding:0.55rem;border-radius:12px;min-width:120px;color:var(--text);display:flex;align-items:center}
-
-    .search-wrapper{display:flex;align-items:center;gap:0.6rem;background:transparent;border-radius:12px;padding:0.35rem 0.5rem;border:1px solid rgba(255,255,255,0.03);min-width:320px;max-width:640px;width:100%}
-    .search-wrapper .fa-magnifying-glass{color:var(--muted)}
-    .search-wrapper input{background:transparent;border:none;color:var(--text);outline:none;font-size:0.95rem;width:100%}
-    ::placeholder{color:rgba(230,240,246,0.45)}
-
-    .select-wrap{min-width:160px}
-    .select-wrap select{background:transparent;border:none;color:var(--text);outline:none;font-size:0.95rem;width:100%}
-
-    /* stats (right column) */
-    .stats{display:flex;gap:0.6rem;align-items:center;justify-content:flex-end}
-    .stat{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:0.45rem 0.7rem;border-radius:12px;font-size:0.88rem;color:var(--muted);display:flex;gap:0.5rem;align-items:center;border:1px solid var(--border)}
-    .stat strong{color:var(--text)}
-
-    /* small helper: compact stats when space is limited */
-    .stat.compact{padding:0.35rem 0.5rem;font-size:0.82rem}
-
-    /* card & table */
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.007));border-radius:14px;padding:0.6rem;box-shadow:0 10px 30px rgba(2,6,12,0.6);overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-    table{width:100%;border-collapse:collapse;color:var(--text)}
-    thead th{background:transparent;padding:0.9rem;font-weight:700;font-size:0.95rem;text-align:center;color:var(--muted)}
-    tbody tr{border-bottom:1px solid rgba(255,255,255,0.03)}
-    td{padding:0.85rem;text-align:center;font-size:0.95rem}
-    tbody tr:hover{background:linear-gradient(90deg, rgba(20,40,50,0.12), transparent)}
-
-    /* status badges */
-    .badge{display:inline-block;padding:0.28rem 0.68rem;border-radius:999px;font-weight:700;font-size:0.78rem}
-    .badge.new{background:rgba(16,185,129,0.12);color:var(--success);border:1px solid rgba(16,185,129,0.08)}
-    .badge.contact{background:rgba(245,158,11,0.08);color:var(--warning);border:1px solid rgba(245,158,11,0.06)}
-    .badge.done{background:rgba(148,163,184,0.06);color:var(--neutral);border:1px solid rgba(148,163,184,0.04)}
-
-    .actions button{margin:0 6px;padding:0.5rem 0.7rem;border-radius:10px;border:1px solid transparent;cursor:pointer;background:transparent;font-size:0.9rem;color:var(--text);backdrop-filter:blur(4px)}
-    .actions button:hover{background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.03)}
-
-    .btn-delete{background:linear-gradient(90deg, rgba(251,113,133,0.08), rgba(251,113,133,0.04));color:var(--danger);border:1px solid rgba(251,113,133,0.12);padding:0.5rem 0.65rem;border-radius:10px}
-    .btn-delete i{width:16px;text-align:center}
-
-    /* rows as card style on all sizes (keeps mobile-like stacked info with higher contrast) */
-    thead{display:none}
-    table, tbody, tr, td{display:block;width:100%}
-    tbody tr{margin-bottom:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.03);overflow:hidden;padding:0;background:linear-gradient(180deg, rgba(255,255,255,0.007), rgba(255,255,255,0.003))}
-    td{padding:0.9rem 1rem;text-align:right;position:relative;border-bottom:1px dashed rgba(255,255,255,0.02)}
-    td::before{content:attr(data-label);display:inline-block;font-weight:700;color:var(--muted);width:120px}
-    .actions button, .btn-delete{padding:0.7rem 1rem;font-size:0.95rem}
-
-    /* responsive rules */
-    @media (max-width:980px){
-      /* stack header into 2 rows: title + controls */
-      .header-grid{grid-template-columns:1fr;gap:0.6rem}
-      .controls-grid{flex-direction:column;align-items:stretch}
-      .search-wrapper{min-width:100%;max-width:100%}
-      .stats{justify-content:flex-start}
-      .stat{flex:1}
-    }
-
-    @media (max-width:720px){
-      td::before{width:95px}
-      .search-wrapper{min-width:100%}
-      .select-wrap{min-width:120px}
-      .stat{display:none} /* hide expanded stats on tiny phones to save space */
-      .stat.compact{display:flex}
-    }
-
-    @media (max-width:420px){
-      td::before{width:90px;font-size:0.88rem}
-      h1{font-size:1.05rem}
-      .stat{font-size:0.82rem;padding:0.35rem 0.5rem}
-    }
-
-    /* focus styles */
-    .search-wrapper:focus-within{box-shadow:0 8px 24px rgba(6,16,22,0.6);border-color:rgba(6,182,212,0.12)}
-
-    /* empty state */
-    .empty{padding:1.25rem;text-align:center;color:var(--muted)}
-
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم الطلبات | Dandy</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --bg:#f5f7fa;
+  --panel:#ffffff;
+  --text:#1e293b;
+  --muted:#64748b;
+  --accent:#3b82f6;
+  --success:#10b981;
+  --warning:#f59e0b;
+  --danger:#ef4444;
+  --border:#e2e8f0;
+  --shadow: rgba(0,0,0,0.1);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);}
+.container{max-width:1400px;margin:0 auto;padding:2rem;display:flex;flex-direction:column;gap:2rem;}
+header{display:flex;flex-direction:column;gap:1.5rem;}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+h1{font-size:2rem;margin:0;color:var(--accent);display:flex;align-items:center;gap:0.7rem;}
+h1 .logo{display:flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:12px;background:var(--accent);color:white;font-weight:700;font-size:1.3rem;box-shadow:0 4px 12px var(--shadow);}
+.controls{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+.search-wrapper{flex:1;display:flex;align-items:center;gap:0.5rem;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:0.7rem 0.8rem;transition:all 0.2s;}
+.search-wrapper:hover{border-color:var(--accent);}
+.search-wrapper input{flex:1;border:none;background:transparent;font-size:1rem;color:var(--text);outline:none;}
+.select-wrap select{padding:0.6rem 0.9rem;border-radius:12px;border:1px solid var(--border);background:var(--panel);font-size:1rem;color:var(--text);}
+.stats{display:flex;gap:1.2rem;flex-wrap:wrap;}
+.stat{background:var(--panel);padding:0.6rem 0.9rem;border-radius:12px;border:1px solid var(--border);font-size:1rem;display:flex;align-items:center;gap:0.5rem;box-shadow:0 2px 8px var(--shadow);}
+.stat strong{color:var(--text);}
+.card{background:var(--panel);border-radius:18px;padding:1.2rem;box-shadow:0 10px 28px var(--shadow);overflow-x:auto;}
+table{width:100%;border-collapse:separate;border-spacing:0 0.8rem;}
+thead th{padding:1rem 1.2rem;font-weight:700;color:var(--muted);border-bottom:2px solid var(--border);text-align:center;}
+tbody tr{background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 12px var(--shadow);}
+td{padding:1rem 1.2rem;text-align:center;font-size:1rem;vertical-align:middle;}
+tbody tr:hover{background:#f9fafb;}
+.badge{padding:0.4rem 0.9rem;border-radius:999px;font-weight:600;font-size:0.85rem;display:inline-block;}
+.badge.new{background:#d1fae5;color:var(--success);}
+.badge.contact{background:#fef3c7;color:var(--warning);}
+.badge.done{background:#e2e8f0;color:var(--muted);}
+.actions button{margin:0 3px;padding:0.55rem 1rem;border:none;border-radius:10px;cursor:pointer;font-size:0.9rem;transition:all 0.2s;font-weight:600;}
+.actions button:hover{transform:translateY(-2px);}
+.btn-delete{background:#fee2e2;color:var(--danger);}
+.empty{padding:1.2rem;text-align:center;color:var(--muted);font-size:1rem;}
+.product-list{display:flex;flex-direction:column;gap:0.4rem;}
+.product-item{background:#f8fafc;border:1px solid var(--border);padding:0.5rem 0.8rem;border-radius:10px;font-size:0.9rem;text-align:right;}
+@media(max-width:768px){
+  .header-top{flex-direction:column;align-items:flex-start;}
+  .controls{flex-direction:column;align-items:stretch;}
+  table,thead,tbody,tr,td{display:block;width:100%;}
+  thead{display:none;}
+  td{padding:0.9rem 1rem;text-align:right;border-bottom:1px solid var(--border);}
+  td::before{content:attr(data-label);display:block;font-weight:600;color:var(--muted);margin-bottom:0.3rem;}
+  tbody tr{margin-bottom:1rem;background:var(--panel);border-radius:14px;box-shadow:0 6px 16px var(--shadow);}
+  .actions button,.btn-delete{width:100%;margin:0.3rem 0;}
+  td[data-label="المنتج"] .product-list{margin-top:0.5rem;}
+}
+</style>
 </head>
 <body>
-  <div class="container">
-    <header class="header-grid">
-      <div>
-        <h1><span class="logo">D</span> لوحة تحكم الطلبات</h1>
-      </div>
-
-      <div class="controls-grid">
-        <div class="search-wrapper">
-          <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
-          <input id="search-orders" type="text" placeholder="ابحث بالاسم، الهاتف، المنتج أو كود الفاتورة">
-        </div>
-
-        <div class="select-wrap">
-          <select id="filter-status">
-            <option value="">عرض كل الحالات</option>
-            <option value="جديد">جديد</option>
-            <option value="تم التواصل">تم التواصل</option>
-            <option value="مكتمل">مكتمل</option>
-          </select>
-        </div>
-
-        <!-- compact stats (visible on small screens) -->
-        <div class="stats">
-          <div class="stat compact">إجمالي: <strong id="total-count">0</strong></div>
-          <div class="stat compact">جدد: <strong id="count-new">0</strong></div>
-          <div class="stat compact">تواصل: <strong id="count-contact">0</strong></div>
-          <div class="stat compact">مكتمل: <strong id="count-done">0</strong></div>
-        </div>
-      </div>
-
-      <!-- full stats column (desktop) -->
-      <div class="stats" aria-hidden="false">
-        <div class="stat">إجمالي: <strong id="total-count-desktop">0</strong></div>
-        <div class="stat">جدد: <strong id="count-new-desktop">0</strong></div>
-        <div class="stat">تواصل: <strong id="count-contact-desktop">0</strong></div>
-        <div class="stat">مكتمل: <strong id="count-done-desktop">0</strong></div>
-      </div>
-    </header>
-
-    <section class="card">
-      <table aria-live="polite">
-        <thead>
-          <tr>
-            <th>كود الفاتورة</th>
-            <th>العميل</th>
-            <th>الهاتف</th>
-            <th class="hide-mobile">الإيميل</th>
-            <th>العنوان</th>
-            <th>المدينة</th>
-            <th>الدولة</th>
-            <th>المنتج</th>
-            <th>التاريخ</th>
-            <th>الحالة</th>
-            <th>تحديث الحالة</th>
-            <th>حذف</th>
-          </tr>
-        </thead>
-        <tbody id="orders-table"></tbody>
-      </table>
-      <div id="empty" class="empty" style="display:none">لا توجد طلبات لعرضها الآن.</div>
-    </section>
-
+<div class="container">
+<header>
+  <div class="header-top">
+    <h1><span class="logo">D</span> لوحة تحكم الطلبات</h1>
+    <div class="stats">
+      <div class="stat">إجمالي: <strong id="total-count">0</strong></div>
+      <div class="stat">جدد: <strong id="count-new">0</strong></div>
+      <div class="stat">تواصل: <strong id="count-contact">0</strong></div>
+      <div class="stat">مكتمل: <strong id="count-done">0</strong></div>
+    </div>
   </div>
+  <div class="controls">
+    <div class="search-wrapper">
+      <i class="fa fa-magnifying-glass"></i>
+      <input id="search-orders" type="text" placeholder="ابحث بالاسم، الهاتف، المنتج أو كود الفاتورة">
+    </div>
+    <div class="select-wrap">
+      <select id="filter-status">
+        <option value="">عرض كل الحالات</option>
+        <option value="جديد">جديد</option>
+        <option value="تم التواصل">تم التواصل</option>
+        <option value="مكتمل">مكتمل</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<section class="card">
+  <table aria-live="polite">
+    <thead>
+      <tr>
+        <th>كود الفاتورة</th>
+        <th>العميل</th>
+        <th>الهاتف</th>
+        <th>الإيميل</th>
+        <th>العنوان</th>
+        <th>المحافظة</th>
+        <th>المدينة</th>
+        <th>الدولة</th>
+        <th>المنتج</th>
+        <th>التاريخ</th>
+        <th>الحالة</th>
+        <th>تحديث الحالة</th>
+        <th>حذف</th>
+      </tr>
+    </thead>
+    <tbody id="orders-table"></tbody>
+  </table>
+  <div id="empty" class="empty" style="display:none">لا توجد طلبات لعرضها الآن.</div>
+</section>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  if (!document.referrer.includes("dashboard.html")) {
-    // لو مش جاي من صفحة الداشبورد يرجع للداشبورد
-    window.location.href = "dashboard.html";
-  }
-</script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+  authDomain: "dandy-562fc.firebaseapp.com",
+  databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "dandy-562fc",
+  storageBucket: "dandy-562fc.appspot.com",
+  messagingSenderId: "454972972842",
+  appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const tableBody = document.getElementById("orders-table");
+const searchInput = document.getElementById("search-orders");
+const filterSelect = document.getElementById("filter-status");
+const emptyState = document.getElementById('empty');
+const totalCount = document.getElementById('total-count');
+const countNew = document.getElementById('count-new');
+const countContact = document.getElementById('count-contact');
+const countDone = document.getElementById('count-done');
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.appspot.com",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    };
+function esc(text){ return text == null ? '' : String(text); }
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const tableBody = document.getElementById("orders-table");
-    const ordersTableEl = document.querySelector('section.card > table');
-    const searchInput = document.getElementById("search-orders");
-    const filterSelect = document.getElementById("filter-status");
-    const emptyState = document.getElementById('empty');
-
-    // desktop stats elements (mirrors compact ones)
-    const totalCount = document.getElementById('total-count');
-    const countNew = document.getElementById('count-new');
-    const countContact = document.getElementById('count-contact');
-    const countDone = document.getElementById('count-done');
-    const totalCountDesktop = document.getElementById('total-count-desktop');
-    const countNewDesktop = document.getElementById('count-new-desktop');
-    const countContactDesktop = document.getElementById('count-contact-desktop');
-    const countDoneDesktop = document.getElementById('count-done-desktop');
-
-    function esc(text){ return text == null ? '' : String(text); }
-
-    function renderOrderRow(key, order){
+function renderOrderRow(key, order){
   const dateTime = order.date || new Date(order.timestamp || Date.now()).toLocaleString('ar-EG');
   const status = (order.status || 'جديد');
   const statusClass = status === 'مكتمل' ? 'done' : (status === 'تم التواصل' ? 'contact' : 'new');
 
-  // المنتجات
   let productsHTML = '';
   if(order.products && order.products.length){
     productsHTML = '<table style="width:100%;border-collapse:collapse;color:var(--text)">';
     productsHTML += '<tr style="background:rgba(255,255,255,0.02);font-weight:600"><td>المنتج</td><td>الكمية</td><td>السعر</td></tr>';
-
     order.products.forEach(p=>{
-      let priceNum = 0;
-      try{ priceNum = parseFloat(String(p.price||'').replace(/[^0-9.-]+/g,"") ) || 0;}catch(e){priceNum=0}
-      let displayPrice = priceNum.toFixed(2) + ' EGP';
+      let priceNum = parseFloat(String(p.price||'').replace(/[^0-9.-]+/g,""))||0;
+      let displayPrice = priceNum.toFixed(2)+' EGP';
       if(p.onSale && p.offer){
-        const discount = (priceNum * parseFloat(p.offer)/100);
+        const discount = priceNum * parseFloat(p.offer)/100;
         const finalPrice = priceNum - discount;
         displayPrice = `${priceNum.toFixed(2)} EGP - خصم ${p.offer}% = ${finalPrice.toFixed(2)} EGP`;
       }
-      productsHTML += `<tr>
-        <td>${esc(p.name)}</td>
-        <td>${esc(p.quantity || 1)}</td>
-        <td>${esc(displayPrice)}</td>
-      </tr>`;
+      productsHTML += `<tr><td>${esc(p.name)}</td><td>${esc(p.quantity||1)}</td><td>${esc(displayPrice)}</td></tr>`;
     });
     productsHTML += '</table>';
-  } else {
-    productsHTML = '-';
-  }
+  }else{ productsHTML='-'; }
 
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td data-label="كود الفاتورة">${esc(order.invoiceCode || key)}</td>
-    <td data-label="العميل">${esc(order.name || '-')}</td>
-    <td data-label="الهاتف">${esc(order.phone || '-')}</td>
-    <td data-label="الإيميل" data-hide-mobile>${esc(order.email || '-')}</td>
-    <td data-label="العنوان">${esc(order.address || '-')}</td>
-    <td data-label="المدينة">${esc(order.city || '-')}</td>
-    <td data-label="الدولة">${esc(order.country || '-')}</td>
-    <td data-label="المنتج">${productsHTML}</td>
-    <td data-label="التاريخ">${esc(dateTime)}</td>
-    <td class="status" data-label="الحالة"><span id="status-${key}" class="badge ${statusClass}">${esc(status)}</span></td>
-    <td data-label="تحديث الحالة" class="actions">
-      <button onclick="updateStatus('${key}','جديد')">جديد</button>
-      <button onclick="updateStatus('${key}','تم التواصل')">تم التواصل</button>
-      <button onclick="updateStatus('${key}','مكتمل')">مكتمل</button>
-    </td>
-    <td data-label="حذف"><button class="btn-delete" onclick="deleteOrder('${key}')"><i class="fa fa-trash"></i></button></td>
-  `;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td data-label="كود الفاتورة">${esc(order.invoiceCode||key)}</td>
+  <td data-label="العميل">${esc(order.name||'-')}</td>
+  <td data-label="الهاتف">${esc(order.phone||'-')}</td>
+  <td data-label="الإيميل">${esc(order.email||'-')}</td>
+  <td data-label="العنوان">${esc(order.address||'-')}</td>
+  <td data-label="المحافظة">${esc(order.governorate||'-')}</td>
+  <td data-label="المدينة">${esc(order.city||'-')}</td>
+  <td data-label="الدولة">${esc(order.country||'-')}</td>
+  <td data-label="المنتج">${productsHTML}</td>
+  <td data-label="التاريخ">${esc(dateTime)}</td>
+  <td class="status" data-label="الحالة"><span id="status-${key}" class="badge ${statusClass}">${esc(status)}</span></td>
+  <td data-label="تحديث الحالة" class="actions">
+    <button onclick="updateStatus('${key}','جديد')">جديد</button>
+    <button onclick="updateStatus('${key}','تم التواصل')">تم التواصل</button>
+    <button onclick="updateStatus('${key}','مكتمل')">مكتمل</button>
+  </td>
+  <td data-label="حذف"><button class="btn-delete" onclick="deleteOrder('${key}')"><i class="fa fa-trash"></i></button></td>`;
   return tr;
 }
 
+let ordersStore={};
+db.ref('orders').on('value', snapshot=>{
+  ordersStore={};
+  snapshot.forEach(child=>{ordersStore[child.key]=child.val();});
+  refreshTable();
+});
 
+function refreshTable(){
+  tableBody.innerHTML='';
+  const keys=Object.keys(ordersStore);
+  if(!keys.length){emptyState.style.display='block';tableBody.parentElement.style.display='none';updateCounts();return;}
+  emptyState.style.display='none';tableBody.parentElement.style.display='';
+  keys.forEach(k=>tableBody.appendChild(renderOrderRow(k,ordersStore[k])));
+  applyFilters();
+  updateCounts();
+}
 
-    let ordersStore = {};
+function updateStatus(orderId,status){
+  db.ref('orders/'+orderId).update({status})
+  .then(()=>{
+    const el=document.getElementById(`status-${orderId}`);
+    if(el){el.textContent=status;el.className='badge '+(status==='مكتمل'?'done':(status==='تم التواصل'?'contact':'new'));}
+    if(ordersStore[orderId]) ordersStore[orderId].status=status;
+    updateCounts();
+  }).catch(err=>console.error(err));
+}
 
-    db.ref('orders').on('value', snapshot => {
-      ordersStore = {};
-      snapshot.forEach(child => { ordersStore[child.key] = child.val(); });
-      refreshTable();
-    });
+function deleteOrder(orderId){
+  if(confirm('هل أنت متأكد من حذف هذا الطلب؟')){
+    db.ref('orders/'+orderId).remove().catch(err=>console.error(err));
+  }
+}
 
-    function refreshTable(){
-      tableBody.innerHTML = '';
-      const keys = Object.keys(ordersStore);
-      if(!keys.length){ emptyState.style.display = 'block'; ordersTableEl.style.display = 'none'; updateCounts(); return; }
-      emptyState.style.display = 'none'; ordersTableEl.style.display = '';
+function applyFilters(){
+  const searchText=searchInput.value.trim().toLowerCase();
+  const statusFilter=filterSelect.value.trim().toLowerCase();
+  const rows=tableBody.querySelectorAll('tr');
+  rows.forEach(row=>{
+    const rowText=row.textContent.toLowerCase();
+    const statusEl=row.querySelector('[id^="status-"]');
+    const rowStatus=statusEl?statusEl.textContent.toLowerCase():'';
+    const matchesSearch=!searchText||rowText.includes(searchText);
+    const matchesStatus=!statusFilter||rowStatus===statusFilter;
+    row.style.display=(matchesSearch&&matchesStatus)?'':'none';
+  });
+  updateCounts();
+}
 
-      keys.forEach(k => tableBody.appendChild(renderOrderRow(k, ordersStore[k])));
-      applyFilters();
-      updateCounts();
-    }
+function updateCounts(){
+  const all=Object.keys(ordersStore).length;
+  let nNew=0,nContact=0,nDone=0;
+  Object.values(ordersStore).forEach(o=>{
+    const s=o.status||'جديد';
+    if(s==='جديد') nNew++; else if(s==='تم التواصل') nContact++; else if(s==='مكتمل') nDone++;
+  });
+  totalCount.textContent=all; countNew.textContent=nNew; countContact.textContent=nContact; countDone.textContent=nDone;
+}
 
-    function updateStatus(orderId, status){
-      db.ref('orders/' + orderId).update({status})
-        .then(()=>{
-          const el = document.getElementById(`status-${orderId}`);
-          if(el){
-            el.textContent = status;
-            el.className = 'badge ' + (status === 'مكتمل' ? 'done' : (status === 'تم التواصل' ? 'contact' : 'new'));
-          }
-          if(ordersStore[orderId]) ordersStore[orderId].status = status;
-          updateCounts();
-        })
-        .catch(err=>console.error(err));
-    }
-
-    function deleteOrder(orderId){
-      if(confirm('هل أنت متأكد من حذف هذا الطلب؟')){
-        db.ref('orders/' + orderId).remove()
-          .catch(err=>console.error(err));
-      }
-    }
-
-    function applyFilters(){
-      const searchText = searchInput.value.trim().toLowerCase();
-      const statusFilter = filterSelect.value.trim().toLowerCase();
-      const rows = tableBody.querySelectorAll('tr');
-
-      rows.forEach(row => {
-        const rowText = row.textContent.toLowerCase();
-        const statusEl = row.querySelector('[id^="status-"]');
-        const rowStatus = statusEl ? statusEl.textContent.toLowerCase() : '';
-
-        const matchesSearch = !searchText || rowText.includes(searchText);
-        const matchesStatus = !statusFilter || rowStatus === statusFilter;
-
-        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-      });
-
-      updateCounts();
-    }
-
-    function updateCounts(){
-      const all = Object.keys(ordersStore).length;
-      let nNew=0,nContact=0,nDone=0;
-      Object.values(ordersStore).forEach(o=>{
-        const s = (o.status||'جديد');
-        if(s==='جديد') nNew++;
-        else if(s==='تم التواصل') nContact++;
-        else if(s==='مكتمل') nDone++;
-      });
-      // update both compact and desktop counters
-      const setText = (el, val)=>{ if(el) el.textContent = val };
-      setText(totalCount, all); setText(totalCountDesktop, all);
-      setText(countNew, nNew); setText(countNewDesktop, nNew);
-      setText(countContact, nContact); setText(countContactDesktop, nContact);
-      setText(countDone, nDone); setText(countDoneDesktop, nDone);
-    }
-
-    let searchTimeout = null;
-    searchInput.addEventListener('input', ()=>{ clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 260); });
-    filterSelect.addEventListener('change', applyFilters);
-
-  </script>
+let searchTimeout=null;
+searchInput.addEventListener('input',()=>{clearTimeout(searchTimeout);searchTimeout=setTimeout(applyFilters,260);});
+filterSelect.addEventListener('change',applyFilters);
+</script>
 </body>
 </html>
-
-
-
-
