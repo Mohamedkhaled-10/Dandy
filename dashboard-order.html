@@ -115,6 +115,18 @@ tbody tr:hover{background:#f9fafb;}
   <div id="empty" class="empty" style="display:none">لا توجد طلبات لعرضها الآن.</div>
 </section>
 </div>
+  
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp(firebaseConfig);
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    // لو المستخدم مش مسجل دخول → يرجع على صفحة تسجيل الدخول
+    window.location.href = "login.html";
+  }
+});
+</script>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -248,3 +260,4 @@ filterSelect.addEventListener('change',applyFilters);
 </script>
 </body>
 </html>
+
