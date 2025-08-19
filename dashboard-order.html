@@ -128,29 +128,6 @@
     /* empty state */
     .empty{padding:1.25rem;text-align:center;color:var(--muted)}
 
-    /* نسخة الموبايل */
-.stats.compact {
-  display: flex; /* أو inline-flex حسب التنسيق */
-}
-
-/* نسخة الكمبيوتر مخفية على الموبايل */
-.stats[aria-hidden="false"] {
-  display: none;
-}
-
-/* عند الشاشات الكبيرة */
-@media (min-width: 700px) {
-  /* إخفاء النسخة الصغيرة */
-  .stats.compact {
-    display: none;
-  }
-  /* إظهار النسخة الكاملة */
-  .stats[aria-hidden="false"] {
-    display: flex; /* أو block حسب التنسيق */
-  }
-}
-
-
   </style>
 </head>
 <body>
@@ -184,14 +161,7 @@
         </div>
       </div>
 
-      <!-- full stats column (desktop) -->
-      <div class="stats" aria-hidden="false">
-        <div class="stat">إجمالي: <strong id="total-count-desktop">0</strong></div>
-        <div class="stat">جدد: <strong id="count-new-desktop">0</strong></div>
-        <div class="stat">تواصل: <strong id="count-contact-desktop">0</strong></div>
-        <div class="stat">مكتمل: <strong id="count-done-desktop">0</strong></div>
-      </div>
-    </header>
+
 
     <section class="card">
       <table aria-live="polite">
@@ -396,5 +366,6 @@
   </script>
 </body>
 </html>
+
 
 
