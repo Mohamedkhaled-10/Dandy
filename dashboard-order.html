@@ -128,6 +128,29 @@
     /* empty state */
     .empty{padding:1.25rem;text-align:center;color:var(--muted)}
 
+    /* نسخة الموبايل */
+.stats.compact {
+  display: flex; /* أو inline-flex حسب التنسيق */
+}
+
+/* نسخة الكمبيوتر مخفية على الموبايل */
+.stats[aria-hidden="false"] {
+  display: none;
+}
+
+/* عند الشاشات الكبيرة */
+@media (min-width: 700px) {
+  /* إخفاء النسخة الصغيرة */
+  .stats.compact {
+    display: none;
+  }
+  /* إظهار النسخة الكاملة */
+  .stats[aria-hidden="false"] {
+    display: flex; /* أو block حسب التنسيق */
+  }
+}
+
+
   </style>
 </head>
 <body>
@@ -373,4 +396,5 @@
   </script>
 </body>
 </html>
+
 
