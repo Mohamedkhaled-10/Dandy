@@ -78,13 +78,14 @@
           <div style="color:var(--muted);">الإيميل: <span id="cust-email">-</span></div>
         </div>
 
-        <div class="field">
-          <h4>تفاصيل الشحن</h4>
-          <p id="cust-address">-</p>
-          <div style="color:var(--muted);margin-top:0.45rem">المنطقة: <span id="cust-city">-</span></div>
-          <div style="color:var(--muted);">الدولة: <span id="cust-country">-</span></div>
-        </div>
+      <div class="field">
+        <h4>تفاصيل الشحن</h4>
+        <p id="cust-address">-</p>
+        <div style="color:var(--muted);margin-top:0.45rem">المحافظة: <span id="cust-governorate">-</span></div>
+        <div style="color:var(--muted);">المنطقة: <span id="cust-city">-</span></div>
+        <div style="color:var(--muted);">الدولة: <span id="cust-country">-</span></div>
       </div>
+
 
       <div class="items">
         <table>
@@ -112,11 +113,17 @@
         </div>
       </div>
 
-      <div class="note">سترى هنا حالة طلبك تتحدَّث تلقائياً عندما يقوم فريق الدعم بتحديثها. رمز الفاتورة مفيد للمتابعة مع خدمة العملاء.</div>
-    </div>
+      <div class="note">
+  ستجد هنا حالة طلبك تتحدَّث تلقائياً عندما يقوم فريق الدعم بتحديثها. رمز الفاتورة مفيد للمتابعة مع خدمة العملاء.
+  <br><br>
+  <strong style="color:#d97706">تنويه:</strong> سعر الشحن يختلف حسب المحافظة وسيُضاف عند تأكيد الطلب.
+</div>
+
 
     <div style="text-align:center;margin-top:1rem;color:var(--muted);font-size:0.92rem">للاستعلام أو التعديل راسلنا عبر واتساب أو احتفظ برقم الفاتورة.</div>
   </div>
+
+  
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -146,6 +153,7 @@
     const custEmail = document.getElementById('cust-email');
     const custAddress = document.getElementById('cust-address');
     const custCity = document.getElementById('cust-city');
+    const custGovernorate = document.getElementById('cust-governorate');
     const custCountry = document.getElementById('cust-country');
     const itemsBody = document.getElementById('items-body');
     const totalAmount = document.getElementById('total-amount');
@@ -163,6 +171,7 @@
       custPhone.textContent = order.phone || '-';
       custEmail.textContent = order.email || '-';
       custAddress.textContent = order.address || '-';
+      custGovernorate.textContent = order.governorate || '-';
       custCity.textContent = order.city || '-';
       custCountry.textContent = order.country || '-';
 
@@ -237,4 +246,3 @@
   </script>
 </body>
 </html>
-
