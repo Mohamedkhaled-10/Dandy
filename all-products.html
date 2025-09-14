@@ -408,7 +408,7 @@ db.ref("products").on("value", snapshot => {
   <img src="${data.image}" alt="${data.name}">
   <div>
     <h3>${data.name}</h3>
-    <a href="product.html?id=${child.key}">تواصلي الآن <i class="fas fa-arrow-left"></i></a>
+    <a href="product.html?id=${child.key}">شراء<i class="fas fa-arrow-left"></i></a>
   </div>
 `;
 
@@ -524,6 +524,7 @@ document.querySelectorAll('a[href="#productContainer"]').forEach(link => {
 </a>
 </body>
 </html>
+
 
 
 
