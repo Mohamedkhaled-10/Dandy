@@ -726,3 +726,40 @@ footer {
     .cart-count{ top:-6px; right:-6px; min-width:18px; height:18px; font-size:11px; }
   }
 
+/* === تحسين عرض صور آراء العملاء فقط === */
+#testimonial-images .testimonial-card {
+  overflow: hidden; /* يمنع أي امتداد خارج الإطار */
+}
+
+#testimonial-images .testimonial-card > a {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+}
+
+/* طول ثابت متجاوب للصور، وملء الإطار مع قص الحواف */
+#testimonial-images .testimonial-img {
+  width: 100%;
+  height: 220px;           /* ارتفاع افتراضي للموبايل */
+  object-fit: cover;       /* يملأ الإطار ويقص الحواف بشكل نظيف */
+  object-position: center; /* يركّز الصورة على الوسط */
+  display: block;
+  transition: transform .35s ease; /* تأثير بسيط عند التحويم */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* تكبير لطيف عند التحويم يحسّن الشكل بدون تغيير DOM */
+#testimonial-images .testimonial-card:hover .testimonial-img,
+#testimonial-images .testimonial-card:focus-within .testimonial-img {
+  transform: scale(1.05);
+}
+
+/* ارتفاعات أكبر على الشاشات العريضة */
+@media (min-width: 768px) {
+  #testimonial-images .testimonial-img { height: 260px; }
+}
+@media (min-width: 1200px) {
+  #testimonial-images .testimonial-img { height: 320px; }
+}
+
