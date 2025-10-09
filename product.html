@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تفاصيل المنتج | Dandy</title>
+  <meta name="description" content="">
+
+  <!-- Open Graph / Social preview (سيتم تحديثها ديناميكياً من الجافاسكربت) -->
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="">
+  <meta property="og:url" content="">
+  <meta name="twitter:title" content="">
+  <meta name="twitter:description" content="">
+  <meta name="twitter:image" content="">
+
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css" />
@@ -202,7 +213,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag(){dataLayer.push(arguments);} 
     gtag('js', new Date());
     gtag('config', 'G-NH8NG47PDV');
   </script>
@@ -364,23 +375,82 @@ window.addEventListener('scroll', function () {
 
   const container = document.querySelector(".container");
 
+  // دالة مساعدة لتحديث الميتا تاجز و title
+  function updateMetaTag(selector, attrName, value) {
+    try {
+      let meta = document.querySelector(selector);
+      if (meta) {
+        meta.setAttribute(attrName, value || '');
+      } else {
+        // لو مش موجود ننشئه (نستخدم attribute المناسب - property أو name)
+        meta = document.createElement('meta');
+        if (selector.startsWith('meta[property')) {
+          // توقع الشكل: meta[property="og:title"]
+          const prop = selector.match(/property="([^"]+)"/);
+          if (prop) meta.setAttribute('property', prop[1]);
+        } else if (selector.startsWith('meta[name')) {
+          const nm = selector.match(/name="([^"]+)"/);
+          if (nm) meta.setAttribute('name', nm[1]);
+        }
+        meta.setAttribute(attrName, value || '');
+        document.head.appendChild(meta);
+      }
+    } catch (e) {
+      console.warn('updateMetaTag error', e);
+    }
+  }
+
   db.ref("products/" + id).once("value").then(snapshot => {
     if (snapshot.exists()) {
       const product = snapshot.val();
-      document.getElementById("product-img").src = product.image;
-      document.getElementById("product-title").textContent = product.name;
+      document.getElementById("product-img").src = product.image || '';
+      document.getElementById("product-title").textContent = product.name || 'اسم المنتج';
       document.getElementById("product-desc").textContent = product.description || "لا يوجد وصف متاح.";
       document.getElementById("product-price").textContent = product.price || "السعر غير متوفر";
-      const productName = encodeURIComponent(product.name);
-const whatsappNumber = product.whatsapp?.replace(/\D/g, ""); // يحذف أي رموز من الرقم
 
-const whatsappMessage = `مرحبًا، أود الاستفسار عن المنتج التالي: ${product.name}`;
-const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+      // ---- 1) غيّر تايتل التاب
+      try {
+        document.title = `${product.name || 'منتج'} — DANDY`;
+      } catch (e) { console.warn('title update error', e); }
 
-document.getElementById("whatsapp-link").href = whatsappLink;
+      // ---- 2) حدّث meta tags في الهيد ديناميكياً
+      const desc = product.description || '';
+      const image = product.image || '';
+      const pageURL = `${location.origin}${location.pathname}?id=${encodeURIComponent(id)}`;
 
+      // meta description
+      updateMetaTag('meta[name="description"]', 'content', desc);
+
+      // OG
+      updateMetaTag('meta[property="og:title"]', 'content', product.name || '');
+      updateMetaTag('meta[property="og:description"]', 'content', desc);
+      updateMetaTag('meta[property="og:image"]', 'content', image);
+      updateMetaTag('meta[property="og:url"]', 'content', pageURL);
+
+      // Twitter
+      updateMetaTag('meta[name="twitter:title"]', 'content', product.name || '');
+      updateMetaTag('meta[name="twitter:description"]', 'content', desc);
+      updateMetaTag('meta[name="twitter:image"]', 'content', image);
+
+      // ربط أزرار التواصل
+      const whatsappNumber = (product.whatsapp || '').replace(/\D/g, ""); // يحذف أي رموز من الرقم
+      const whatsappMessage = `مرحبًا، أود الاستفسار عن المنتج التالي: ${product.name || ''}`;
+      const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}` : `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
+
+      document.getElementById("whatsapp-link").href = whatsappLink;
       document.getElementById("facebook-link").href = product.facebook || "#";
       document.getElementById("instagram-link").href = product.instagram || "#";
+
+      // تحديث روابط المشاركة داخل صندوق المشاركة
+      const shareURL = `${location.origin}/api/product?id=${encodeURIComponent(id)}`;
+      const whatsappShare = document.getElementById('share-whatsapp');
+      const facebookShare = document.getElementById('share-facebook');
+      const instagramShare = document.getElementById('share-instagram');
+
+      if (whatsappShare) whatsappShare.href = `https://wa.me/?text=${encodeURIComponent(product.name + '\n' + shareURL)}`;
+      if (facebookShare) facebookShare.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareURL)}`;
+      if (instagramShare) instagramShare.href = product.instagram || 'https://www.instagram.com/dandy_skincare_cosmotics/';
+
     } else {
       container.innerHTML = '<p style="text-align:center; font-size:1.2rem">المنتج غير موجود.</p>';
     }
@@ -429,23 +499,6 @@ if (shareToggle) {
   });
 }
 
-db.ref("products/" + id).once("value").then(snapshot => {
-  if (snapshot.exists()) {
-    const product = snapshot.val();
-
-    // نولّد رابط المشاركة الديناميكي (اللي فيه OG tags)
-    const shareURL = `${location.origin}/api/product?id=${encodeURIComponent(id)}`;
-
-    // واتساب
-    whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(product.name)}%0A${shareURL}`;
-
-    // فيسبوك
-    facebookBtn.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareURL)}`;
-
-    // إنستجرام (توجيه للحساب الرسمي)
-    instagramBtn.href = "https://www.instagram.com/dandy_skincare_cosmotics/";
-  }
-});
 </script>
 
 <script>
@@ -512,14 +565,3 @@ addToCartBtn.addEventListener("click", () => {
 </a>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
