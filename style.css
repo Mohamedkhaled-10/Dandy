@@ -287,7 +287,7 @@ nav ul li.dropdown.active .dropdown-menu {
 }
 .hero-text h2{
   font-size:2.6rem; margin: 7rem 0 14px;
-  background: linear-gradient(90deg, var(--pink-300), var(--neon-cyan));
+  background: linear-gradient(90deg, #ff2ec4, #9b184f);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
 .hero-text p{ color:var(--muted); line-height:1.9; margin:0 0 18px; }
@@ -608,3 +608,4 @@ footer {
   .product .product-info h3 { font-size: 1rem; }
   .product .product-price { font-size: 1rem; }
 }
+
