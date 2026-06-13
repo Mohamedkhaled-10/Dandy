@@ -630,14 +630,28 @@
         console.warn(e);
       }
 
-      // Connect Support Channels with customizable templates
-      const cleanPhone = (product.whatsapp || '⁦201038941005').replace(/\D/g, "");
-      const whatsappMsg = `Hi Dandy Beauty, I would like to inquire about this product:\n- Product Name: ${product.name}\n- Link: ${pageURL}`;
-      
-      document.getElementById("whatsapp-link").href = `https://wa.me/${cleanPhone ? cleanPhone : '⁦201038941005⁩'}?text=${encodeURIComponent(whatsappMsg)}`;
-      document.getElementById("facebook-link").href = product.facebook || "https://www.facebook.com/profile.php?id=61563039704396";
-      document.getElementById("instagram-link").href = product.instagram || "https://www.instagram.com/dandy_skincare_cosmotics";
+// Connect Support Channels with customizable templates
 
+const cleanPhone = (product.whatsapp || "201038941005").replace(/\D/g, "");
+
+const whatsappMsg = `Hi Dandy Beauty, I would like to inquire about this product:
+- Product Name: ${product.name}
+- Link: ${pageURL}`;
+
+const whatsappLink = document.getElementById("whatsapp-link");
+const facebookLink = document.getElementById("facebook-link");
+const instagramLink = document.getElementById("instagram-link");
+
+// WhatsApp
+whatsappLink.href = `https://wa.me/${cleanPhone || "201038941005"}?text=${encodeURIComponent(whatsappMsg)}`;
+
+// Facebook
+facebookLink.href = product.facebook || "https://www.facebook.com/profile.php?id=61563039704396";
+
+// Instagram
+instagramLink.href = product.instagram || "https://www.instagram.com/dandy_skincare_cosmotics";
+
+      
       // Connect Shares
       const shareURL = window.location.origin + `/product.html?id=${encodeURIComponent(id)}`;
       const whatsappShare = document.getElementById('share-whatsapp');
