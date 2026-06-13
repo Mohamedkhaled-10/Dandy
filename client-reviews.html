@@ -1,176 +1,118 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>آراء العملاء | Dandy</title>
+  <title>ثقة عميلاتنا وآراء الحبيبات في المتجر | Dandy Beauty</title>
 
-  <!-- أيقونات -->
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
-  <link rel="manifest" href="images/fav-icons/site.webmanifest">
-
-  <!-- خطوط -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
   <!-- GLightbox CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="DANDY | ثقة العملاء">
-  <meta property="og:description" content="آراء العملاء في منتجاتنا">
-  <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
-  <meta property="og:image:type" content="image/webp">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-
-  <link rel="stylesheet" href="style.css" />
-
   <style>
-    .testimonials-container {
-      padding: 3rem 1rem;
-      background: var(--secondary-color);
-      font-family: 'Tajawal', sans-serif;
-    }
-    .testimonials-container h2 {
+    .reviews-hero {
+      padding: 130px 0 40px;
       text-align: center;
-      color: var(--accent-color);
-      margin-bottom: 2rem;
-      font-size: 2rem;
-      margin: 5rem;
     }
 
-    #testimonial-images,
-    #testimonial-videos {
+    .gallery-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 30px;
+      text-align: center;
+      position: relative;
+    }
+
+    .gallery-title::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: var(--color-blush);
+      border-radius: 9px;
+    }
+
+    .gallery-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-      padding: 0 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 50px;
     }
 
-    @media (min-width: 768px) {
-      #testimonial-images {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      #testimonial-videos {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    .testimonial-card {
-      background: #fff;
-      border-radius: 20px;
+    .review-capsule {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
       overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .testimonial-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-smooth);
     }
 
-    .testimonial-img {
+    .review-capsule:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-blush);
+    }
+
+    .review-capsule img {
       width: 100%;
-      display: block;
+      height: 340px;
       object-fit: cover;
-      height: auto;
+      display: block;
+      transition: var(--transition-smooth);
     }
 
-    .testimonial-video {
+    .review-capsule:hover img {
+      transform: scale(1.03);
+    }
+
+    .video-thumbnail-play {
+      background: #111;
       width: 100%;
-      height: 280px;
-      background: #000;
+      height: 340px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-size: 2rem;
+      color: #fff;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .video-thumbnail-play i {
+      font-size: 3.5rem;
+      color: var(--color-blush);
+      margin-bottom: 12px;
+      transition: var(--transition-fast);
+    }
+
+    .review-capsule:hover .video-thumbnail-play i {
+      transform: scale(1.1);
     }
   </style>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.appspot.com",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const imageSection = document.getElementById("testimonial-images");
-    const videoSection = document.getElementById("testimonial-videos");
-
-    const testimonialsRef = ref(db, 'testimonials');
-
-    onValue(testimonialsRef, (snapshot) => {
-      const data = snapshot.val();
-      imageSection.innerHTML = '';
-      videoSection.innerHTML = '';
-      Object.values(data).forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'testimonial-card';
-
-        if (item.type === 'image') {
-          const link = document.createElement('a');
-          link.href = item.url;
-          link.className = 'glightbox';
-          link.setAttribute('data-gallery', 'testimonial-images');
-          link.setAttribute('data-title', 'رأي عميل');
-
-          const img = document.createElement('img');
-          img.src = item.url;
-          img.alt = "رأي عميل";
-          img.className = 'testimonial-img';
-
-          link.appendChild(img);
-          card.appendChild(link);
-          imageSection.appendChild(card);
-        } else if (item.type === 'video') {
-          const link = document.createElement('a');
-          link.href = item.url;
-          link.className = 'glightbox';
-          link.setAttribute('data-gallery', 'testimonial-videos');
-          link.setAttribute('data-type', 'video');
-          link.setAttribute('data-title', 'رأي عميل');
-
-          const thumb = document.createElement('div');
-          thumb.className = 'testimonial-video';
-          thumb.innerHTML = '<i class="fas fa-play-circle" style="font-size: 3rem;"></i>';
-
-          link.appendChild(thumb);
-          card.appendChild(link);
-          videoSection.appendChild(card);
-        }
-      });
-
-      // إعادة تهيئة lightbox بعد تحديث العناصر
-      if (window.GLightbox) {
-        GLightbox({ selector: '.glightbox' });
-      }
-    });
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
   </script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360388796897231"
-     crossorigin="anonymous"></script>
 </head>
-
 <body>
+
 <!-- Navigation -->
-<nav dir="rtl">
-  <div class="logo">
-    <img src="images/logo.png" alt="الشعار" />
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
@@ -179,31 +121,30 @@
     <li><a href="special-offers.html">العروض</a></li>
     <li><a href="blog.html">المقالات</a></li>
     <li class="dropdown">
-      <a href="#">المزيد ▾</a>
+      <a href="javascript:void(0)" class="active">المزيد ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="#">ثقة العملاء</a></li>
+        <li><a href="client-reviews.html">ثقة العملاء</a></li>
         <li><a href="about-us.html">من نحن</a></li>
       </ul>
     </li>
   </ul>
-  <div class="hamburger" aria-label="القائمة">
-    <span class="line"></span>
-    <span class="line"></span>
-    <span class="line"></span>
-  </div>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
 
-  <!-- Mobile Menu -->
-<div class="menubar" dir="rtl" aria-hidden="true">
+<!-- Mobile Menu -->
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
     <li><a href="all-products.html">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="#">ثقة العملاء</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
     <li><a href="blog.html">المقالات</a></li>
     <li><a href="about-us.html">من نحن</a></li>
   </ul>
-
   <div class="side-bottom-links">
     <a href="privacy-policy.html">سياسة الخصوصية</a>
     <span>|</span>
@@ -211,123 +152,202 @@
   </div>
 </div>
 
-  <section class="testimonials-container">
-    <h2>آراء العملاء (صور)</h2>
-    <div id="testimonial-images"></div>
+<!-- Header Reviews -->
+<section class="reviews-hero container">
+  <div class="section-header">
+    <span class="sub">تجارب سيداتنا الحبيبات</span>
+    <h2>ثقتكِ هي رأس مالنا الحقيقي</h2>
+    <p style="color: var(--color-muted); max-width: 630px; margin: 10px auto 0;">نسعد دائماً بتلقي صور وفيديوهات لنتائج داندي المذهلة على شعركن وبشرتكن البهية. تصفحي أدلة النقاء والتغيير الفارق.</p>
+  </div>
+</section>
 
-    <h2 style="margin-top: 4rem;">آراء العملاء (فيديوهات)</h2>
-    <div id="testimonial-videos"></div>
-  </section>
+<!-- Reviews Lists grids -->
+<section class="container" style="padding-bottom: 80px;">
+  <h2 class="gallery-title" style="font-family:'Cairo', sans-serif; margin-bottom: 40px;">📸 آراء وتجارب بالصور الموثقة</h2>
+  <div class="gallery-grid" id="testimonial-images">
+    <!-- Testimonial cards loaded dynamically -->
+    <p style="text-align: center; grid-column:1/-1; color:var(--color-muted);">جاري جمع معرض الصور السعيدة...</p>
+  </div>
+
+  <h2 class="gallery-title" style="font-family:'Cairo', sans-serif; margin-top: 60px; margin-bottom: 40px;">🎬 آراء وتجارب بالفيديو والكلمة الصادقة</h2>
+  <div class="gallery-grid" id="testimonial-videos">
+    <!-- Testimonial videos loaded dynamically -->
+    <p style="text-align: center; grid-column:1/-1; color:var(--color-muted);">جاري تمهيد معرض الفيديو الملهم...</p>
+  </div>
+</section>
 
 <!-- Footer -->
 <footer>
-  <div class="footer-grid">
-    <div class="footer-col footer-social">
-      <h4>تابعينا</h4>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
-      </div>
-
-      <!-- روابط الصفحات -->
-      <div class="footer-links">
-        <a href="privacy-policy.html">سياسة الخصوصية</a>
-        <span>|</span>
-        <a href="terms.html">الشروط والأحكام</a>
-      </div>
-
-      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
     </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
+        <li><a href="terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
   </div>
 </footer>
 
-  <!-- GLightbox JS -->
-  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-  <script>
-    const lightbox = GLightbox({
-      selector: '.glightbox'
-    });
-  </script>
+<!-- Floating Actions -->
+<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+  <span class="cart-count" id="cart-count">0</span>
+  <i class="fas fa-shopping-cart"></i>
+</a>
 
-  <script>
-    const mobileNav = document.querySelector(".hamburger");
-    const navbar = document.querySelector(".menubar");
+<!-- GLightbox JS plugin -->
+<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
-    const toggleNav = () => {
-      navbar.classList.toggle("active");
-      mobileNav.classList.toggle("hamburger-active");
-    };
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    mobileNav.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleNav();
-    });
+  // Realtime Database config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
 
-    document.addEventListener("click", (e) => {
-      if (
-        navbar.classList.contains("active") &&
-        !navbar.contains(e.target) &&
-        !mobileNav.contains(e.target)
-      ) {
-        navbar.classList.remove("active");
-        mobileNav.classList.remove("hamburger-active");
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const imageSection = document.getElementById("testimonial-images");
+  const videoSection = document.getElementById("testimonial-videos");
+
+  const testimonialsRef = ref(db, 'testimonials');
+
+  onValue(testimonialsRef, (snapshot) => {
+    const data = snapshot.val();
+    imageSection.innerHTML = '';
+    videoSection.innerHTML = '';
+
+    if (!data) {
+      imageSection.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);">لم يتم الرفع بعد. داندي تسعد بآرائكن دوماً.</p>';
+      videoSection.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);">لم يتم الرفع بعد.</p>';
+      return;
+    }
+
+    Object.values(data).forEach(item => {
+      const capsule = document.createElement('div');
+      capsule.className = 'review-capsule';
+
+      if (item.type === 'image') {
+        const link = document.createElement('a');
+        link.href = item.url;
+        link.className = 'glightbox';
+        link.setAttribute('data-gallery', 'testimonial-images');
+        link.setAttribute('data-title', 'نتائج داندي وبشرة بهية فريدة');
+
+        const img = document.createElement('img');
+        img.src = item.url;
+        img.alt = "رأي عميلة بالمنتج";
+        img.loading = "lazy";
+
+        link.appendChild(img);
+        capsule.appendChild(link);
+        imageSection.appendChild(capsule);
+      } else if (item.type === 'video') {
+        const link = document.createElement('a');
+        link.href = item.url;
+        link.className = 'glightbox';
+        link.setAttribute('data-gallery', 'testimonial-videos');
+        link.setAttribute('data-type', 'video');
+        link.setAttribute('data-title', 'عنايتي اليومية مع Dandy');
+
+        const thumb = document.createElement('div');
+        thumb.className = 'video-thumbnail-play';
+        thumb.innerHTML = `
+          <i class="fas fa-play-circle"></i>
+          <span style="font-weight:700; font-size:0.9rem;">اضغطي لمشاهدة الفيديو</span>
+        `;
+
+        link.appendChild(thumb);
+        capsule.appendChild(link);
+        videoSection.appendChild(capsule);
       }
     });
-  </script>
-  <script>
 
-      // إخفاء وظهور شريط التنقل
-  let lastScrollTop = 0;
-const nav = document.querySelector('nav');
-const navHeight = nav.offsetHeight; // ارتفاع الناف بار
+    // Refresh Lightbox observers
+    if (window.GLightbox) {
+      GLightbox({ selector: '.glightbox' });
+    }
+  });
+</script>
 
-window.addEventListener('scroll', function () {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  
-  if (scrollTop > lastScrollTop) {
-    // نازل
-    nav.style.top = `-${navHeight}px`; // يخفيه فوق
-  } else {
-    // طالع
-    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
-  }
-
-  lastScrollTop = scrollTop;
-});
-
-  </script>
-
-  <script>
-  // تحديث عدد العناصر في البادج باستخدام localStorage (توقّع: السلة مخزنة كمصفوفة JSON في key 'cart')
+<script>
+  // Floating Cart Badge counter
   function updateCartCount(){
-    try{
+    try {
       const raw = localStorage.getItem('cart') || '[]';
       const cart = JSON.parse(raw);
-      const count = Array.isArray(cart) ? cart.reduce((s,i)=>s + (i.quantity? Number(i.quantity):1), 0) : 0;
+      const count = Array.isArray(cart) ? cart.reduce((s, i) => s + (i.quantity ? Number(i.quantity) : 1), 0) : 0;
       document.getElementById('cart-count').textContent = count;
-    }catch(e){
+    } catch(e) {
       document.getElementById('cart-count').textContent = 0;
-      console.warn('cart-count update error', e);
     }
   }
 
-  // عند التحميل
   document.addEventListener('DOMContentLoaded', updateCartCount);
 
-  // إذا السلة تتحدث من نافذة/تبويب تاني -> نسمع حدث storage
-  window.addEventListener('storage', (e) => {
-    if(e.key === 'cart') updateCartCount();
-  });
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
 
-  // لو نظام السلة عندك مختلف (مثلاً Firebase أو cookie)، عدّل وظيفة updateCartCount() لتناسب مصدر البيانات لديك.
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
 </script>
 
-<!-- ===== Floating Cart Button (paste before </body>) ===== -->
-<a href="cart.html" class="floating-cart" aria-label="سلة التسوق">
-  <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
-  <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-</a>
-  
 </body>
 </html>

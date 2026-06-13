@@ -1,248 +1,738 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>فاتورة الطلب | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل ومتابعة الفاتورة | Dandy Beauty</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <meta name="robots" content="noindex">
+
   <style>
-    :root{
-      --bg: #fbfdff;
-      --panel: #ffffff;
-      --muted: #6b7280;
-      --accent: #6b8ea3;
-      --accent-2: #9fb6c8;
-      --success: #4caf84;
-      --warning: #f2b94f;
-      --danger: #ea6b6b;
-      --text: #0b1220;
+    .invoice-section {
+      padding: 130px 0 80px;
     }
-    *{box-sizing:border-box}
-    body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);margin:0;padding:1rem}
-    .wrap{max-width:900px;margin:0 auto}
-    .card{background:var(--panel);border-radius:12px;padding:1rem 1.1rem;box-shadow:0 8px 24px rgba(11,18,32,0.05)}
-    header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.8rem}
-    h1{margin:0;font-size:1.1rem;color:var(--accent)}
-    .invoice-meta{display:flex;gap:0.6rem;align-items:center}
-    .badge{padding:0.25rem 0.6rem;border-radius:999px;font-weight:700;font-size:0.85rem}
-    .badge.new{background:rgba(76,175,132,0.12);color:var(--success)}
-    .badge.contact{background:rgba(242,185,79,0.1);color:var(--warning)}
-    .badge.done{background:rgba(148,163,184,0.06);color:var(--muted)}
 
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.8rem}
-    .field{background:rgba(11,18,32,0.02);padding:0.8rem;border-radius:8px}
-    .field h4{margin:0 0 0.25rem 0;font-size:0.86rem;color:var(--muted)}
-    .field p{margin:0;font-weight:700}
+    .invoice-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 40px;
+      box-shadow: var(--shadow-lg);
+      max-width: 800px;
+      margin: 0 auto;
+    }
 
-    .items{margin-top:1rem;border-radius:8px;overflow:hidden}
-    .items table{width:100%;border-collapse:collapse}
-    .items th,.items td{padding:0.7rem;text-align:center;border-bottom:1px solid rgba(11,18,32,0.04)}
-    .items th{background:transparent;color:var(--muted);font-weight:700}
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px dashed var(--border-light);
+      padding-bottom: 24px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
 
-    .actions{display:flex;gap:0.6rem;justify-content:flex-end;margin-top:1rem}
-    .btn{background:var(--accent);color:white;padding:0.6rem 0.8rem;border-radius:10px;text-decoration:none;display:inline-flex;gap:0.6rem;align-items:center}
-    .btn.secondary{background:transparent;border:1px solid rgba(11,18,32,0.06);color:var(--text)}
+    .invoice-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--color-primary);
+    }
 
-    .note{margin-top:1rem;color:var(--muted);font-size:0.92rem}
+    .invoice-code-tag {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--color-blush);
+      background: var(--color-gold-cream);
+      padding: 4px 14px;
+      border-radius: 99px;
+      margin-top: 4px;
+      display: inline-block;
+    }
 
-    @media (max-width:700px){
-      .grid{grid-template-columns:1fr}
-      header{flex-direction:column;align-items:flex-start;gap:0.6rem}
-      .actions{justify-content:stretch;flex-direction:column}
-      .btn{width:100%;justify-content:center}
-      .items th,.items td{text-align:right}
+    .invoice-badge-status {
+      display: inline-block;
+      padding: 6px 14px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: 99px;
+    }
+
+    .status-new { background: rgba(60, 119, 90, 0.1); color: var(--color-success); border: 1px solid rgba(60, 119, 90, 0.2); }
+    .status-contact { background: rgba(194, 136, 52, 0.1); color: var(--color-warning); border: 1px solid rgba(194, 136, 52, 0.2); }
+    .status-done { background: var(--color-surface-soft); color: var(--color-muted); border: 1px solid var(--border-light); }
+
+    .invoice-coords {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .coord-card {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      padding: 20px;
+    }
+
+    .coord-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--color-primary);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding-bottom: 6px;
+    }
+
+    .coord-card p {
+      font-size: 0.95rem;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0 30px;
+    }
+
+    .invoice-table th {
+      text-align: right;
+      padding: 10px;
+      background: var(--color-surface-soft);
+      color: var(--color-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .invoice-table td {
+      padding: 14px 10px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .invoice-table img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-left: 10px;
+      vertical-align: middle;
+      border: 1px solid var(--border-light);
+    }
+
+    .bill-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border-light);
+      padding-top: 20px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .invoice-action-pills {
+      display: flex;
+      gap: 10px;
+    }
+
+    .invoice-action-pills .i-btn {
+      padding: 10px 20px;
+      border-radius: 99px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .i-btn-print { background: var(--color-surface-soft); border: 1px solid var(--border-light); color: var(--color-primary); }
+    .i-btn-wp { background: #25D366; color: #fff; }
+    .i-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+
+    @media (max-width: 600px) {
+      .invoice-coords {
+        grid-template-columns: 1fr;
+      }
+      .invoice-panel {
+        padding: 20px;
+      }
+      .bill-summary {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .invoice-action-pills {
+        width: 100%;
+      }
+      .invoice-action-pills .i-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    /* Status Timeline Tracker styling */
+    .timeline-container {
+      margin: 30px 0 40px;
+      position: relative;
+    }
+
+    .timeline-steps {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      flex-wrap: nowrap;
+      padding: 20px 0;
+    }
+
+    .timeline-steps::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      right: 10%;
+      height: 4px;
+      background: var(--border-light);
+      z-index: 1;
+      transform: translateY(-50%);
+    }
+
+    .timeline-progress-bar {
+      position: absolute;
+      top: 50%;
+      right: 10%;
+      height: 4px;
+      background: var(--color-success);
+      z-index: 2;
+      transform: translateY(-50%);
+      transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+      width: 0%;
+    }
+
+    .step-item {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .step-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--color-surface);
+      border: 2px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-muted);
+      font-size: 1rem;
+      font-weight: 700;
+      transition: var(--transition-smooth);
+    }
+
+    .step-item.active .step-circle {
+      background: var(--color-success);
+      color: #fff;
+      border-color: var(--color-success);
+      box-shadow: 0 0 16px rgba(60, 119, 90, 0.3);
+    }
+
+    .step-item.current .step-circle {
+      animation: pulse-success 2s infinite;
+    }
+
+    .step-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--color-muted);
+      text-align: center;
+      transition: var(--transition-fast);
+    }
+
+    .step-item.active .step-label {
+      color: var(--color-primary);
+    }
+
+    @keyframes pulse-success {
+      0% {
+        box-shadow: 0 0 0 0 rgba(60, 119, 90, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(60, 119, 90, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(60, 119, 90, 0);
+      }
+    }
+
+    .cancelled-banner {
+      background: rgba(184, 67, 79, 0.08);
+      border: 1px solid var(--color-danger);
+      color: var(--color-danger);
+      padding: 16px;
+      border-radius: var(--border-radius-sm);
+      text-align: center;
+      font-weight: 700;
+      margin: 20px 0;
+      display: none;
+    }
+
+    /* Clipboard Copy Action button styling */
+    .btn-copy-code {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--border-light);
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--color-primary);
+      margin-right: 8px;
+      transition: var(--transition-fast);
+      vertical-align: middle;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(197, 155, 109, 0.25);
+    }
+
+    .btn-copy-code:hover {
+      background: var(--color-blush-soft);
+      border-color: var(--color-blush);
+      color: var(--color-blush);
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card" id="invoice-card">
-      <header>
-        <div>
-          <h1>فاتورة الطلب</h1>
-          <div style="color:var(--muted);font-size:0.95rem;margin-top:0.25rem">رقم الفاتورة: <strong id="invoice-code">--</strong></div>
-        </div>
-        <div class="invoice-meta">
-          <div id="status-badge" class="badge new">جديد</div>
-          <div style="color:var(--muted);text-align:left;font-size:0.9rem" id="invoice-date">--</div>
-        </div>
-      </header>
 
-      <div class="grid">
-        <div class="field">
-          <h4>معلومات العميل</h4>
-          <p id="cust-name">-</p>
-          <div style="color:var(--muted);margin-top:0.45rem">الهاتف: <span id="cust-phone">-</span></div>
-          <div style="color:var(--muted);">الإيميل: <span id="cust-email">-</span></div>
-        </div>
+<!-- Navigation -->
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" class="active">روابط المساعدة ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
+        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> ثقة العملاء</a></li>
+        <li><a href="about-us.html"><i class="fas fa-star"></i> من نحن</a></li>
+      </ul>
+    </li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
+  </ul>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav>
 
-      <div class="field">
-        <h4>تفاصيل الشحن</h4>
-        <p id="cust-address">-</p>
-        <div style="color:var(--muted);margin-top:0.45rem">المحافظة: <span id="cust-governorate">-</span></div>
-        <div style="color:var(--muted);">المنطقة: <span id="cust-city">-</span></div>
-        <div style="color:var(--muted);">الدولة: <span id="cust-country">-</span></div>
-      </div>
-
-
-      <div class="items">
-        <table>
-          <thead>
-            <tr>
-              <th>المنتج</th>
-              <th>السعر</th>
-            </tr>
-          </thead>
-          <tbody id="items-body">
-            <tr><td colspan="2" style="padding:1rem;text-align:center;color:var(--muted)">لا توجد بيانات حتى الآن</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem">
-        <div>
-          <div style="font-size:0.95rem;color:var(--muted)">المجموع</div>
-          <div style="font-weight:800;font-size:1.1rem" id="total-amount">-</div>
-        </div>
-
-        <div class="actions">
-          <a class="btn secondary" id="print-btn"><i class="fa fa-print"></i>طباعة الفاتورة / PDF</a>
-          <a class="btn" id="share-whatsapp"><i class="fab fa-whatsapp"></i> مشاركة عبر واتساب</a>
-        </div>
-      </div>
-
-      <div class="note">
-  ستجد هنا حالة طلبك تتحدَّث تلقائياً عندما يقوم فريق الدعم بتحديثها. رمز الفاتورة مفيد للمتابعة مع خدمة العملاء.
-  <br><br>
-  <strong style="color:#d97706">تنويه:</strong> سعر الشحن يختلف حسب المحافظة وسيُضاف عند تأكيد الطلب.
+<!-- Mobile Menu -->
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> تتبع طلبكِ الفوري</a></li>
+    <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة والتسوق</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
 </div>
 
+<!-- Invoice Screen -->
+<section class="invoice-section container">
+  <div class="invoice-panel" id="invoiceCard">
+    
+    <header class="invoice-header">
+      <div>
+        <h1 class="invoice-title">فاتورة تأكيد وحجز الطلب</h1>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap;">
+          <div class="invoice-code-tag" id="invoiceCode" style="margin-top:0;">...جاري السحب</div>
+          <button class="btn-copy-code" onclick="copyInvoiceToClipboard()" id="btnCopyCode"><i class="fas fa-copy"></i> نسخ الكود</button>
+        </div>
+      </div>
+      <div style="text-align: left;">
+        <div id="statusBadge" class="invoice-badge-status status-new">جديد</div>
+        <div style="color: var(--color-muted); font-size: 0.9rem; margin-top: 6px;" id="invoiceDate">...</div>
+      </div>
+    </header>
 
-    <div style="text-align:center;margin-top:1rem;color:var(--muted);font-size:0.92rem">للاستعلام أو التعديل راسلنا عبر واتساب أو احتفظ برقم الفاتورة.</div>
+    <!-- Cancelled Warning -->
+    <div class="cancelled-banner" id="cancelledBanner">
+      <i class="fas fa-ban"></i> تم إلغاء هذه الفاتورة من قِبل المشرف أو بناء على طلب العميلة.
+    </div>
+
+    <!-- Live timeline tracker -->
+    <div class="timeline-container" id="timelineContainer">
+      <div class="timeline-steps">
+        <div class="timeline-progress-bar" id="timelineProgressBar"></div>
+        
+        <div class="step-item" id="step-new">
+          <div class="step-circle"><i class="fas fa-file-invoice"></i></div>
+          <div class="step-label">تم استلام الطلب</div>
+        </div>
+        
+        <div class="step-item" id="step-processing">
+          <div class="step-circle"><i class="fas fa-cog"></i></div>
+          <div class="step-label">قيد التجهيز</div>
+        </div>
+        
+        <div class="step-item" id="step-shipped">
+          <div class="step-circle"><i class="fas fa-truck-moving"></i></div>
+          <div class="step-label">جاري الشحن</div>
+        </div>
+        
+        <div class="step-item" id="step-delivered">
+          <div class="step-circle"><i class="fas fa-check-double"></i></div>
+          <div class="step-label">تم التوصيل</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="invoice-coords">
+      <div class="coord-card">
+        <h3>بيانات المستلم</h3>
+        <p>الاسم: <strong id="custName">...</strong></p>
+        <p style="margin-top: 8px;">الهاتف: <span id="custPhone">...</span></p>
+        <p>البريد: <span id="custEmail">...</span></p>
+      </div>
+      <div class="coord-card">
+        <h3>معلومات التوصيل</h3>
+        <p>المحافظة: <strong id="custGov">...</strong></p>
+        <p style="margin-top: 8px;">المدينة: <span id="custCity">...</span></p>
+        <p>العنوان بالتحديد: <span id="custAddress">...</span></p>
+      </div>
+    </div>
+
+    <!-- Details product lines -->
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>المستحضر المختار والكمية</th>
+          <th style="text-align: center;">إجمالي السعر</th>
+        </tr>
+      </thead>
+      <tbody id="itemsBody">
+        <tr>
+          <td colspan="2" style="text-align: center; color: var(--color-muted); padding: 24px;">جاري إعداد السطور...</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="bill-summary">
+      <div>
+        <span style="font-size: 0.9rem; color: var(--color-muted); font-weight: 700;">المجموع الكلي للمشتريات</span>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);" id="totalAmount">0.00 جنيه</div>
+      </div>
+      <div class="invoice-action-pills">
+        <button class="i-btn i-btn-print" id="print-btn"><i class="fas fa-print"></i> طباعة الفاتورة / PDF</button>
+        <button class="i-btn i-btn-wp" id="share-whatsapp"><i class="fab fa-whatsapp"></i> مشاركة بالواتساب</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; border-top: 1px dashed var(--border-light); padding-top: 20px;">
+      <p style="color: var(--color-muted); font-size: 0.9rem; line-height: 1.8;">
+        <strong style="color: var(--color-primary);">خطوة المتابعة والدعم المباشر:</strong>
+        ستتلقي تحديثات فورية على هذه الشاشة حالما يتبنى فريق المبيعات واللوجستيات شحن الطلب وتحديد القيمة الإجمالية شاملة رسوم الشحن للمحافظة المحددة.
+      </p>
+    </div>
+
   </div>
+</section>
 
+<!-- Footer -->
+<footer>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+    </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html font-heading">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> دليل المساعدة وهدايا داندي</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية والأمان</a></li>
+        <li><a href="terms.html">الشروط والأحكام العامة</a></li>
+      </ul>
+    </div>
+  </div>
   
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+  </div>
+</footer>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.appspot.com",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    const params = new URLSearchParams(window.location.search);
-    const invoiceParam = params.get('invoice');
-    const idParam = params.get('id');
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
 
-    const invoiceCodeEl = document.getElementById('invoice-code');
-    const statusBadge = document.getElementById('status-badge');
-    const invoiceDateEl = document.getElementById('invoice-date');
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-    const custName = document.getElementById('cust-name');
-    const custPhone = document.getElementById('cust-phone');
-    const custEmail = document.getElementById('cust-email');
-    const custAddress = document.getElementById('cust-address');
-    const custCity = document.getElementById('cust-city');
-    const custGovernorate = document.getElementById('cust-governorate');
-    const custCountry = document.getElementById('cust-country');
-    const itemsBody = document.getElementById('items-body');
-    const totalAmount = document.getElementById('total-amount');
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
 
-    function setStatusBadge(status){
-      statusBadge.textContent = status || 'جديد';
-      statusBadge.className = 'badge ' + (status === 'مكتمل' ? 'done' : (status === 'تم التواصل' ? 'contact' : 'new'));
-    }
-
-    function renderOrder(order, key){
-      invoiceCodeEl.textContent = order.invoiceCode || key || '-';
-      invoiceDateEl.textContent = order.timestamp ? new Date(order.timestamp).toLocaleString('ar-EG') : new Date().toLocaleString('ar-EG');
-
-      custName.textContent = order.name || '-';
-      custPhone.textContent = order.phone || '-';
-      custEmail.textContent = order.email || '-';
-      custAddress.textContent = order.address || '-';
-      custGovernorate.textContent = order.governorate || '-';
-      custCity.textContent = order.city || '-';
-      custCountry.textContent = order.country || '-';
-
-      itemsBody.innerHTML = '';
-      let total = 0;
-
-      if(order.products && order.products.length > 0){
-        order.products.forEach(p => {
-          const price = parseFloat(p.price.replace(/[^0-9.-]+/g,"")) || 0;
-          const quantity = parseInt(p.quantity) || 1;
-          let finalPrice = price;
-
-          let displayPrice = price.toFixed(2);
-          if(p.discount && !isNaN(p.discount)){
-            const discountAmount = (price * parseFloat(p.discount)) / 100;
-            finalPrice = price - discountAmount;
-            displayPrice = `${price.toFixed(2)} - خصم: ${p.discount}% = ${finalPrice.toFixed(2)}`;
-          }
-
-          total += finalPrice * quantity;
-
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td style="text-align:right">
-              <img src="${p.image}" style="width:50px;border-radius:5px;margin-left:8px;vertical-align:middle">
-              ${p.name} × ${quantity}
-            </td>
-            <td>${displayPrice}</td>
-          `;
-          itemsBody.appendChild(tr);
-        });
-
-        totalAmount.textContent = total.toFixed(2) + " جنيه";
-      } else {
-        itemsBody.innerHTML = '<tr><td colspan="2" style="padding:1rem;text-align:center;color:var(--muted)">لا توجد بيانات حتى الآن</td></tr>';
-        totalAmount.textContent = '-';
-      }
-
-      setStatusBadge(order.status || 'جديد');
-    }
-
-    function notFound(){
-      const card = document.getElementById('invoice-card');
-      card.innerHTML = '<p style="text-align:center;padding:2rem;color:var(--muted)">لم يتم العثور على الفاتورة المطلوبة. تأكد من رقم الفاتورة أو تواصل معنا.</p>';
-    }
-
-    if(idParam){
-      const ref = db.ref('orders/' + idParam);
-      ref.on('value', snap => {
-        if(snap.exists()) renderOrder(snap.val(), idParam);
-        else notFound();
-      });
-    } else if(invoiceParam){
-      const q = db.ref('orders').orderByChild('invoiceCode').equalTo(invoiceParam);
-      q.on('value', snap => {
-        if(snap.exists()){
-          let found = false;
-          snap.forEach(child => {
-            if(!found){ renderOrder(child.val(), child.key); found = true; }
-          });
-        } else notFound();
-      });
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
     } else {
-      notFound();
+      nav.classList.remove('scrolled');
     }
 
-    document.getElementById('print-btn').addEventListener('click', ()=> window.print());
-    document.getElementById('share-whatsapp').addEventListener('click', ()=>{
-      const text = `فاتورة طلب: ${invoiceCodeEl.textContent}%0Aاسم: ${custName.textContent}%0Aالهاتف: ${custPhone.textContent}%0Aحالة الطلب: ${statusBadge.textContent}%0A${window.location.href}`;
-      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
+
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
+</script>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const idParam = params.get('id');
+  const invoiceParam = params.get('invoice');
+
+  const invoiceCodeEl = document.getElementById('invoiceCode');
+  const statusBadge = document.getElementById('statusBadge');
+  const invoiceDateEl = document.getElementById('invoiceDate');
+
+  const custName = document.getElementById('custName');
+  const custPhone = document.getElementById('custPhone');
+  const custEmail = document.getElementById('custEmail');
+  const custGov = document.getElementById('custGov');
+  const custCity = document.getElementById('custCity');
+  const custAddress = document.getElementById('custAddress');
+  const itemsBody = document.getElementById('itemsBody');
+  const totalAmount = document.getElementById('totalAmount');
+
+  function setStatusBadge(status){
+    const s = status || 'جديد';
+    statusBadge.textContent = s;
+    statusBadge.className = 'invoice-badge-status ' + (s === 'مكتمل' ? 'status-done' : (s === 'تم التواصل' ? 'status-contact' : 'status-new'));
+    
+    // Also draw the visual timeline status smoothly
+    setTimelineStatus(s);
+  }
+
+  // Set the visual timeline steps explicitly based on status normalized match
+  function setTimelineStatus(status) {
+    const s = status || 'جديد';
+    
+    // Reset steps
+    document.getElementById('step-new').className = 'step-item';
+    document.getElementById('step-processing').className = 'step-item';
+    document.getElementById('step-shipped').className = 'step-item';
+    document.getElementById('step-delivered').className = 'step-item';
+    
+    document.getElementById('cancelledBanner').style.display = 'none';
+    document.getElementById('timelineContainer').style.display = 'block';
+
+    if (s === 'ملغي') {
+      document.getElementById('cancelledBanner').style.display = 'block';
+      document.getElementById('timelineContainer').style.display = 'none';
+      return;
+    }
+
+    const norm = getNormalizedStatus(s);
+
+    if (norm === 'new') {
+      document.getElementById('step-new').classList.add('active', 'current');
+      document.getElementById('timelineProgressBar').style.width = '0%';
+    } else if (norm === 'processing') {
+      document.getElementById('step-new').classList.add('active');
+      document.getElementById('step-processing').classList.add('active', 'current');
+      document.getElementById('timelineProgressBar').style.width = '33%';
+    } else if (norm === 'shipped') {
+      document.getElementById('step-new').classList.add('active');
+      document.getElementById('step-processing').classList.add('active');
+      document.getElementById('step-shipped').classList.add('active', 'current');
+      document.getElementById('timelineProgressBar').style.width = '66%';
+    } else if (norm === 'delivered') {
+      document.getElementById('step-new').classList.add('active');
+      document.getElementById('step-processing').classList.add('active');
+      document.getElementById('step-shipped').classList.add('active');
+      document.getElementById('step-delivered').classList.add('active');
+      document.getElementById('timelineProgressBar').style.width = '100%';
+    }
+  }
+
+  function getNormalizedStatus(s) {
+    if (s === 'جديد' || s === 'قيد الانتظار') return 'new';
+    if (s === 'تم التواصل' || s === 'قيد التجهيز' || s === 'قيد التحضير' || s === 'قيد المعالجة') return 'processing';
+    if (s === 'تم الشحن' || s === 'جاري الشحن' || s === 'جاري التوصيل' || s === 'شحن') return 'shipped';
+    if (s === 'مكتمل' || s === 'تم التوصيل' || s === 'واصل') return 'delivered';
+    return 'new';
+  }
+
+  window.copyInvoiceToClipboard = function() {
+    const code = invoiceCodeEl.textContent;
+    if (code && code !== '...جاري السحب') {
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('btnCopyCode');
+        btn.innerHTML = '<i class="fas fa-check"></i> تم النسخ!';
+        setTimeout(() => {
+          btn.innerHTML = '<i class="fas fa-copy"></i> نسخ الكود';
+        }, 2000);
+      });
+    }
+  };
+
+  // Bind order datasets dynamically
+  function drawOrder(order, key) {
+    invoiceCodeEl.textContent = order.invoiceCode || key || '-';
+    invoiceDateEl.textContent = order.timestamp ? new Date(order.timestamp).toLocaleString('ar-EG') : new Date().toLocaleString('ar-EG');
+
+    custName.textContent = order.name || '-';
+    custPhone.textContent = order.phone || '-';
+    custEmail.textContent = order.email || 'غير متوفر';
+    custAddress.textContent = order.address || '-';
+    custGov.textContent = order.governorate || '-';
+    custCity.textContent = order.city || '-';
+
+    itemsBody.innerHTML = '';
+    let total = 0;
+
+    if (order.products && order.products.length > 0) {
+      order.products.forEach(p => {
+        const price = parseFloat(p.price) || 0;
+        const quantity = parseInt(p.quantity) || 1;
+        let finalPrice = price;
+
+        let displayPriceText = price.toFixed(0) + " جنيه";
+        if (p.discount) {
+          const discountAmount = (price * parseFloat(p.discount)) / 100;
+          finalPrice = price - discountAmount;
+          displayPriceText = `${finalPrice.toFixed(0)} جنيه <span class="price-crossed" style="font-size:0.8rem; margin-right:4px;">${price.toFixed(0)}</span>`;
+        }
+
+        total += finalPrice * quantity;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+            <strong>${p.name}</strong> × ${quantity}
+          </td>
+          <td style="text-align: center; font-weight:800; color:var(--color-blush);">${displayPriceText}</td>
+        `;
+        itemsBody.appendChild(tr);
+      });
+
+      totalAmount.textContent = total.toFixed(0) + " جنيه";
+    } else {
+      itemsBody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--color-muted);padding:20px;">حقيبة فواتير مفرغة.</td></tr>';
+      totalAmount.textContent = '0.00 جنيه';
+    }
+
+    setStatusBadge(order.status || 'جديد');
+  }
+
+  function orderError() {
+    document.getElementById('invoiceCard').innerHTML = `
+      <div style="text-align:center; padding:40px 10px;">
+        <i class="fas fa-exclamation-circle" style="font-size:3.5rem; color:var(--color-danger); margin-bottom:16px;"></i>
+        <h2 style="font-family:'Cairo', sans-serif;">لم يتم العثور على الفاتورة المطلوبة</h2>
+        <p style="color:var(--color-muted); margin-top:8px;">نرجو التحقق من كود الفاتورة أو التواصل مع المشرف عبر قنوات الاتصال.</p>
+        <a href="index.html" class="cta-btn" style="margin-top:20px; border-radius:99px; padding:12px 24px;">العودة للرئيسية</a>
+      </div>
+    `;
+  }
+
+  // Observer queries triggered continuously
+  if (idParam) {
+    const ref = db.ref('orders/' + idParam);
+    ref.on('value', snap => {
+      if(snap.exists()) drawOrder(snap.val(), idParam);
+      else orderError();
     });
-  </script>
+  } else if (invoiceParam) {
+    const query = db.ref('orders').orderByChild('invoiceCode').equalTo(invoiceParam);
+    query.on('value', snap => {
+      if (snap.exists()) {
+        let matched = false;
+        snap.forEach(child => {
+          if(!matched) { drawOrder(child.val(), child.key); matched = true; }
+        });
+      } else orderError();
+    });
+  } else {
+    orderError();
+  }
+
+  // Print PDF Trigger
+  document.getElementById('print-btn').addEventListener('click', () => window.print());
+
+  // WhatsApp share
+  document.getElementById('share-whatsapp').addEventListener('click', () => {
+    const wpInquiry = `مرحباً، أود مراجعة ومتابعة فاتورة طلبي:\n- كود الفاتورة: ${invoiceCodeEl.textContent}\n- المستلم: ${custName.textContent}\n- الحالة الحالية للطلب: ${statusBadge.textContent}\n- رابط المتابعة المباشر: ${window.location.href}`;
+    window.open(`https://wa.me/201067228170?text=${encodeURIComponent(wpInquiry)}`, '_blank');
+  });
+</script>
+
 </body>
 </html>

@@ -4,253 +4,289 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تفاصيل المنتج | Dandy</title>
-  <meta name="description" content="">
+  <meta name="description" content="تفاصيل وعروض منتج العناية بالبشرة والجمال الفخم من داندي.">
 
-  <!-- Open Graph / Social preview (سيتم تحديثها ديناميكياً من الجافاسكربت) -->
-  <meta property="og:title" content="">
-  <meta property="og:description" content="">
+  <!-- Open Graph -->
+  <meta property="og:title" content="منتج داندي للعناية الطبيعية">
+  <meta property="og:description" content="عناية طبيعية فائقة النقاء لبشرتك وشعرك.">
   <meta property="og:image" content="">
   <meta property="og:url" content="">
-  <meta name="twitter:title" content="">
-  <meta name="twitter:description" content="">
-  <meta name="twitter:image" content="">
 
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css" />
-
-    <!-- Google Fonts: Cairo + Tajawal -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
-  <style>
   
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 2rem;
-      flex: 1;
-      padding-top: 100px; /* علشان المحتوى ينزل تحت الناف بار */
-
+  <style>
+    /* High end detail column settings */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      margin-top: 50px;
     }
 
-    .product-detail {
+    .detail-image-box {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-md);
       display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+      overflow: hidden;
     }
 
-    .product-images {
-      flex: 1;
-      min-width: 300px;
-    }
-
-    .product-images img {
+    .detail-image-box img {
       width: 100%;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--border-radius-md);
+      transition: var(--transition-smooth);
     }
 
-    .product-info {
-      flex: 1;
-      min-width: 300px;
-    }
-
-    .product-info h1 {
-      color: var(--accent-color);
-      margin-bottom: 1rem;
-    }
-
-    .product-info p {
-      line-height: 1.8;
-      margin-bottom: 1rem;
-    }
-
-    .price {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #e91e63;
-      margin-bottom: 1rem;
-    }
-
-    .buttons {
+    .detail-info-box {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      justify-content: center;
     }
 
-    .buttons a {
-      display: inline-block;
-      padding: 0.75rem;
-      text-align: center;
-      border-radius: 30px;
-      color: white;
-      font-weight: bold;
+    .detail-info-box .p-category {
+      font-size: 0.9rem;
+      color: var(--color-gold);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .detail-info-box h1 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+
+    .detail-info-box .p-rating {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      color: var(--color-gold);
+      font-size: 0.9rem;
+    }
+
+    .detail-info-box .p-rating span {
+      color: var(--color-muted);
+    }
+
+    .detail-info-box .p-desc {
+      font-size: 1.1rem;
+      color: var(--color-text);
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+
+    .detail-info-box .price-section {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+      padding: 20px 0;
+      margin-bottom: 30px;
+    }
+
+    .detail-info-box .price-current {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--color-blush);
+    }
+
+    .detail-info-box .price-crossed {
+      font-size: 1.2rem;
+      color: var(--color-muted);
+      text-decoration: line-through;
+    }
+
+    .action-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      max-width: 480px;
+    }
+
+    .action-group .btn-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 24px;
+      border-radius: var(--border-radius-md);
+      font-weight: 700;
+      font-size: 1.05rem;
       text-decoration: none;
-      transition: transform 0.3s;
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-smooth);
     }
 
-    .buttons a:hover {
-      transform: scale(1.05);
+    .action-group .btn-cart {
+      background: var(--color-primary);
+      color: #fff;
     }
 
-    .btn-whatsapp {
-      background-color: #25D366;
+    .action-group .btn-cart:hover {
+      background: var(--color-blush);
+      box-shadow: 0 10px 24px rgba(217, 141, 153, 0.25);
+      transform: translateY(-2px);
     }
 
-    .btn-facebook {
-      background-color: #0066ff;
+    .action-group .btn-wa {
+      background: #25D366;
+      color: #fff;
     }
-    .btn-instagram {
-  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: transform 0.3s ease;
-}
 
-.btn-instagram:hover {
-  transform: scale(1.05);
-}
+    .action-group .btn-wa:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
 
-    .share-container {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  margin-top: 20px;
-}
+    .social-direct-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
 
-.btn-share-main {
-  background-color: var(--accent-color);
- font-size: 24px;
-  color: white;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  box-shadow: var(--hover-shadow);
-  z-index: 3;
-  position: relative;
-}
+    .social-direct-box .btn-s {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 700;
+      padding: 12px;
+      border-radius: var(--border-radius-sm);
+      text-decoration: none;
+      color: #fff;
+      font-size: 0.9rem;
+      transition: var(--transition-fast);
+    }
 
-.share-options {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 60px;
-  width: 0;
-  border-radius: 50px;
-  overflow: hidden;
-  background: linear-gradient(to left, #25D366, #0066ff, #cc2366);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0;
-  opacity: 0;
-  transition: width 0.5s ease, opacity 0.3s ease;
-  z-index: 2;
-}
+    .social-direct-box .btn-fb { background: #1877F2; }
+    .social-direct-box .btn-ig { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+    .social-direct-box .btn-s:hover { opacity: 0.95; transform: scale(1.02); }
 
-.share-options a {
-  flex: 1;
-  text-align: end;
-  color: white;
-  font-size: 20px;
-  text-decoration: none;
-  transition: transform 0.3s ease;
-}
+    /* Share drawer */
+    .detail-share-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 24px;
+    }
 
-.share-options a:hover {
-  transform: scale(1.3);
-}
+    .share-pill {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--border-light);
+      padding: 8px 18px;
+      border-radius: 99px;
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      position: relative;
+    }
 
-.share-container.active .share-options {
-  width: 300px;
-  opacity: 1;
-  padding: 0 10px;
-}
+    .pop-options {
+      position: absolute;
+      top: 125%;
+      right: 0;
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-lg);
+      border-radius: var(--border-radius-md);
+      padding: 12px;
+      display: flex;
+      gap: 14px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: var(--transition-smooth);
+      z-index: 5;
+    }
 
-.btn-order {
-  background-color: #ff9800;
-}
-.btn-order:hover {
-  transform: scale(1.05);
-}
+    .share-pill.active .pop-options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
 
-    @media (max-width: 768px) {
-      .product-detail {
-        flex-direction: column;
+    .pop-options a {
+      color: var(--color-primary);
+      font-size: 1.25rem;
+      transition: var(--transition-fast);
+    }
+
+    .pop-options a:hover {
+      color: var(--color-blush);
+      transform: scale(1.15);
+    }
+
+    @media (max-width: 980px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .detail-image-box {
+        max-width: 520px;
+        width: 100%;
+        margin: 0 auto;
       }
     }
-
   </style>
 
-    <!-- أيقونة المتصفح الأساسية -->
-<link rel="icon" type="image/x-icon" href="images/favicon.ico">
-
-<!-- أيقونات مختلفة لحجم متعدد -->
-<link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-
-<!-- أيقونة خاصة بأجهزة Apple -->
-<link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
-
-<!-- ملف Web Manifest لتعريف الأيقونات على أنظمة التشغيل -->
-<link rel="manifest" href="images/fav-icons/site.webmanifest">
-
-    <!-- Google tag (gtag.js) -->
+  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);} 
+    function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-NH8NG47PDV');
   </script>
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360388796897231"
-     crossorigin="anonymous"></script>
-  
 </head>
 <body>
+
 <!-- Navigation -->
-<nav dir="rtl">
-  <div class="logo">
-    <img src="images/logo.png" alt="الشعار" />
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="all-products.html" class="active">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="blog.html font-heading">المقالات</a></li>
     <li class="dropdown">
-      <a href="#">المزيد ▾</a>
+      <a href="javascript:void(0)">المزيد ▾</a>
       <ul class="dropdown-menu">
         <li><a href="client-reviews.html">ثقة العملاء</a></li>
-        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="about-us.html font-heading">من نحن</a></li>
       </ul>
     </li>
   </ul>
-  <div class="hamburger" aria-label="القائمة">
-    <span class="line"></span>
-    <span class="line"></span>
-    <span class="line"></span>
-  </div>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
     <li><a href="all-products.html">المنتجات</a></li>
@@ -259,7 +295,6 @@
     <li><a href="blog.html">المقالات</a></li>
     <li><a href="about-us.html">من نحن</a></li>
   </ul>
-
   <div class="side-bottom-links">
     <a href="privacy-policy.html">سياسة الخصوصية</a>
     <span>|</span>
@@ -267,95 +302,120 @@
   </div>
 </div>
 
+<!-- Product Details Frame -->
+<main class="container" style="padding-top: 130px; padding-bottom: 60px;">
+  <div class="detail-grid" id="detailFrame">
+    <!-- Interactive structural display -->
+    <div class="detail-image-box">
+      <img id="product-img" src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="...جاري التحميل">
+    </div>
 
-  <div class="container">
-    <div class="product-detail">
-      <div class="product-images">
-        <img id="product-img" src="" alt="صورة المنتج">
+    <div class="detail-info-box">
+      <span class="p-category" id="product-category">مجموعة العناية المتميزة</span>
+      <h1 id="product-title">...تحميل الاسم</h1>
+      
+      <div class="p-rating">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star-half-alt"></i>
+        <span>(4.9 تقعيد) · 92 مراجعة من المشترين المستقلين</span>
       </div>
-      <div class="product-info">
-        <h1 id="product-title">اسم المنتج</h1>
-        <p id="product-desc">وصف المنتج</p>
-        <div class="price" id="product-price">السعر</div>
-        <div class="buttons">
-  <a class="btn-order" id="add-to-cart-btn">
-    <i class="fas fa-shopping-cart"></i> أضف للسلة
-  </a>
-  <a class="btn-whatsapp" id="whatsapp-link" target="_blank">
-    <i class="fab fa-whatsapp"></i> تواصلي عبر واتساب
-  </a>
-  <a class="btn-facebook" id="facebook-link" target="_blank">
-    <i class="fab fa-facebook"></i> تواصلي عبر فيسبوك
-  </a>
-  <a class="btn-instagram" id="instagram-link" href="" target="_blank">
-    <i class="fab fa-instagram"></i> تواصلي عبر انستجرام
-  </a>
-  <div class="share-container">
-  <div class="btn-share-main" id="share-toggle">
-    <i class="fas fa-share-alt"></i>
-  </div>
-  <div class="share-options">
-    <a id="share-whatsapp" target="_blank"><i class="fab fa-whatsapp"></i></a>
-    <a id="share-facebook" target="_blank"><i class="fab fa-facebook-f"></i></a>
-    <a id="share-instagram" target="_blank"><i class="fab fa-instagram"></i></a>
-  </div>
-</div>
-</div>
+
+      <p class="p-desc" id="product-desc">جاري سحب التفاصيل والوصف الحصري من المخدم...</p>
+
+      <div class="price-section">
+        <span class="price-current" id="product-price">... جنيه</span>
+        <span id="price-old-wrapper"></span>
       </div>
+
+      <!-- Action capsules -->
+      <div class="action-group">
+        <button class="btn-action btn-cart" id="add-to-cart-btn">
+          <i class="fas fa-shopping-basket"></i> أضيفي إلى حقيبة التسوق الخاصة بكِ
+        </button>
+        
+        <a class="btn-action btn-wa" id="whatsapp-link" target="_blank">
+          <i class="fab fa-whatsapp"></i> استشارة وتواصل فوري عبر الواتساب
+        </a>
+
+        <!-- Additional instant support portals -->
+        <div class="social-direct-box">
+          <a class="btn-s btn-fb" id="facebook-link" target="_blank">
+            <i class="fab fa-facebook"></i> فيسبوك مسنجر
+          </a>
+          <a class="btn-s btn-ig" id="instagram-link" target="_blank">
+            <i class="fab fa-instagram"></i> انستجرام دايركت
+          </a>
+        </div>
+      </div>
+
+      <!-- Share option pill -->
+      <div class="detail-share-area">
+        <div class="share-pill" id="share-toggle">
+          <i class="fas fa-share-alt"></i> مشاركة هذا المستحضر مع صديقتكِ
+          <div class="pop-options">
+            <a id="share-whatsapp" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a id="share-facebook" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a id="share-instagram" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
+</main>
 
 <!-- Footer -->
 <footer>
-  <div class="footer-grid">
-    <div class="footer-col footer-social">
-      <h4>تابعينا</h4>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
-      </div>
-
-      <!-- روابط الصفحات -->
-      <div class="footer-links">
-        <a href="privacy-policy.html">سياسة الخصوصية</a>
-        <span>|</span>
-        <a href="terms.html">الشروط والأحكام</a>
-      </div>
-
-      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
     </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
+        <li><a href="terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
   </div>
 </footer>
 
-  <script>
-    // إخفاء وظهور شريط التنقل
-  let lastScrollTop = 0;
-const nav = document.querySelector('nav');
-const navHeight = nav.offsetHeight; // ارتفاع الناف بار
+<!-- Floating Actions -->
+<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+  <span class="cart-count" id="cart-count">0</span>
+  <i class="fas fa-shopping-cart"></i>
+</a>
 
-window.addEventListener('scroll', function () {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  
-  if (scrollTop > lastScrollTop) {
-    // نازل
-    nav.style.top = `-${navHeight}px`; // يخفيه فوق
-  } else {
-    // طالع
-    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
-  }
-
-  lastScrollTop = scrollTop;
-});
-
-  </script>
-
-
-  <!-- Firebase SDK -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
+  // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
     authDomain: "dandy-562fc.firebaseapp.com",
@@ -368,24 +428,70 @@ window.addEventListener('scroll', function () {
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
+  // Floating Cart Badge counter
+  function updateCartCount(){
+    try {
+      const raw = localStorage.getItem('cart') || '[]';
+      const cart = JSON.parse(raw);
+      const count = Array.isArray(cart) ? cart.reduce((s, i) => s + (i.quantity ? Number(i.quantity) : 1), 0) : 0;
+      document.getElementById('cart-count').textContent = count;
+    } catch(e) {
+      document.getElementById('cart-count').textContent = 0;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', updateCartCount);
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'cart') updateCartCount();
+  });
+
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
+
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
 </script>
+
 <script>
-    const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
+  let loadedProduct = null;
 
-  const container = document.querySelector(".container");
+  const detailFrame = document.getElementById("detailFrame");
 
-  // دالة مساعدة لتحديث الميتا تاجز و title
+  // Helper function to update SEO parameters dynamically
   function updateMetaTag(selector, attrName, value) {
     try {
       let meta = document.querySelector(selector);
       if (meta) {
         meta.setAttribute(attrName, value || '');
       } else {
-        // لو مش موجود ننشئه (نستخدم attribute المناسب - property أو name)
         meta = document.createElement('meta');
         if (selector.startsWith('meta[property')) {
-          // توقع الشكل: meta[property="og:title"]
           const prop = selector.match(/property="([^"]+)"/);
           if (prop) meta.setAttribute('property', prop[1]);
         } else if (selector.startsWith('meta[name')) {
@@ -396,172 +502,134 @@ window.addEventListener('scroll', function () {
         document.head.appendChild(meta);
       }
     } catch (e) {
-      console.warn('updateMetaTag error', e);
+      console.warn(e);
     }
   }
 
+  // Fetch product data from Firebase Realtime Database
   db.ref("products/" + id).once("value").then(snapshot => {
     if (snapshot.exists()) {
       const product = snapshot.val();
+      loadedProduct = product;
+      loadedProduct.id = id; // Store key directly
+
       document.getElementById("product-img").src = product.image || '';
       document.getElementById("product-title").textContent = product.name || 'اسم المنتج';
       document.getElementById("product-desc").textContent = product.description || "لا يوجد وصف متاح.";
-      document.getElementById("product-price").textContent = product.price || "السعر غير متوفر";
+      document.getElementById("product-category").textContent = product.category || "تشكيلة فاخرة";
+      
+      const priceRaw = parseFloat(product.price) || 0;
+      document.getElementById("product-price").textContent = priceRaw + " جنيه";
 
-      // ---- 1) غيّر تايتل التاب
+      if (product.onSale && product.discount) {
+        const discountPercent = parseFloat(product.discount) || 0;
+        const oldPrice = priceRaw / (1 - (discountPercent/100));
+        document.getElementById("price-old-wrapper").innerHTML = `<span class="price-crossed">${oldPrice.toFixed(0)} جنيه</span> <span class="badge-discount" style="position:static; margin-right:10px;">وفرتي ${product.discount}%</span>`;
+      }
+
+      // Update browser tab name
       try {
-        document.title = `${product.name || 'منتج'} — DANDY`;
-      } catch (e) { console.warn('title update error', e); }
+        document.title = `${product.name} | متجر Dandy`;
+      } catch (e) {}
 
-      // ---- 2) حدّث meta tags في الهيد ديناميكياً
+      // Update OG metadata safely
       const desc = product.description || '';
       const image = product.image || '';
-      const pageURL = `${location.origin}${location.pathname}?id=${encodeURIComponent(id)}`;
+      const pageURL = window.location.href;
 
-      // meta description
       updateMetaTag('meta[name="description"]', 'content', desc);
-
-      // OG
       updateMetaTag('meta[property="og:title"]', 'content', product.name || '');
       updateMetaTag('meta[property="og:description"]', 'content', desc);
       updateMetaTag('meta[property="og:image"]', 'content', image);
       updateMetaTag('meta[property="og:url"]', 'content', pageURL);
 
-      // Twitter
-      updateMetaTag('meta[name="twitter:title"]', 'content', product.name || '');
-      updateMetaTag('meta[name="twitter:description"]', 'content', desc);
-      updateMetaTag('meta[name="twitter:image"]', 'content', image);
+      // Connect Support Channels with customizable templates
+      const cleanPhone = (product.whatsapp || '201067228170').replace(/\D/g, "");
+      const whatsappMsg = `مرحباً داندي، أود الاستفسار وحجز المنتج التالي من فضلكِ:\n- اسم المنتج: ${product.name}\n- رابط التفاصيل: ${pageURL}`;
+      
+      document.getElementById("whatsapp-link").href = `https://wa.me/${cleanPhone ? cleanPhone : '201067228170'}?text=${encodeURIComponent(whatsappMsg)}`;
+      document.getElementById("facebook-link").href = product.facebook || "https://www.facebook.com/profile.php?id=61563039704396";
+      document.getElementById("instagram-link").href = product.instagram || "https://www.instagram.com/dandy_skincare_cosmotics";
 
-      // ربط أزرار التواصل
-      const whatsappNumber = (product.whatsapp || '').replace(/\D/g, ""); // يحذف أي رموز من الرقم
-      const whatsappMessage = `مرحبًا، أود الاستفسار عن المنتج التالي: ${product.name || ''}`;
-      const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}` : `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
-
-      document.getElementById("whatsapp-link").href = whatsappLink;
-      document.getElementById("facebook-link").href = product.facebook || "#";
-      document.getElementById("instagram-link").href = product.instagram || "#";
-
-      // تحديث روابط المشاركة داخل صندوق المشاركة
-      const shareURL = `${location.origin}/api/product?id=${encodeURIComponent(id)}`;
+      // Connect Shares
+      const shareURL = window.location.origin + `/product.html?id=${encodeURIComponent(id)}`;
       const whatsappShare = document.getElementById('share-whatsapp');
       const facebookShare = document.getElementById('share-facebook');
       const instagramShare = document.getElementById('share-instagram');
 
       if (whatsappShare) whatsappShare.href = `https://wa.me/?text=${encodeURIComponent(product.name + '\n' + shareURL)}`;
       if (facebookShare) facebookShare.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareURL)}`;
-      if (instagramShare) instagramShare.href = product.instagram || 'https://www.instagram.com/dandy_skincare_cosmotics/';
+      if (instagramShare) instagramShare.href = product.instagram || 'https://www.instagram.com/dandy_skincare_cosmotics';
 
     } else {
-      container.innerHTML = '<p style="text-align:center; font-size:1.2rem">المنتج غير موجود.</p>';
+      detailFrame.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:60px 0;"><i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-gold);margin-bottom:14px;"></i><p style="font-size:1.2rem;font-weight:700;">المستحضر الذي تبحثين عنه غير متوفر، تصفحي باقي المجموعات.</p></div>';
     }
   }).catch(error => {
-    container.innerHTML = '<p style="text-align:center; font-size:1.2rem">حدث خطأ أثناء تحميل المنتج.</p>';
-    console.error(error);
+    detailFrame.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:60px 0;">حدث خطأ أثناء تحميل تفاصيل المنتج. يرجى المحاولة لاحقاً.</p>';
   });
-</script>
 
-<script>
-const mobileNav = document.querySelector(".hamburger");
-const navbar = document.querySelector(".menubar");
-
-const toggleNav = () => {
-  navbar.classList.toggle("active");
-  mobileNav.classList.toggle("hamburger-active");
-};
-
-mobileNav.addEventListener("click", (e) => {
-  e.stopPropagation(); // علشان الضغطة على الزر ما تعتبرش ضغطة على document
-  toggleNav();
-});
-
-// لما المستخدم يضغط في أي مكان في الصفحة
-document.addEventListener("click", (e) => {
-  // لو القائمة مفتوحة والضغط مش جوه القائمة ولا زر الهمبرجر
-  if (
-    navbar.classList.contains("active") &&
-    !navbar.contains(e.target) &&
-    !mobileNav.contains(e.target)
-  ) {
-    navbar.classList.remove("active");
-    mobileNav.classList.remove("hamburger-active");
-  }
-});
-</script>
-<script>
-const shareToggle = document.getElementById("share-toggle");
-const whatsappBtn = document.getElementById("share-whatsapp");
-const facebookBtn = document.getElementById("share-facebook");
-const instagramBtn = document.getElementById("share-instagram");
-
-if (shareToggle) {
-  shareToggle.addEventListener("click", () => {
-    document.querySelector(".share-container").classList.toggle("active");
-  });
-}
-
-</script>
-
-<script>
-const addToCartBtn = document.getElementById("add-to-cart-btn");
-
-// جلب بيانات المنتج من الصفحة
-const productData = () => ({
-  id: id, // معرف المنتج من URL
-  name: document.getElementById("product-title")?.textContent || '',
-  price: document.getElementById("product-price")?.textContent || '',
-  image: document.getElementById("product-img")?.src || ''
-});
-
-addToCartBtn.addEventListener("click", () => {
-  // جلب السلة الحالية من LocalStorage
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  const product = productData();
-
-  // تحقق لو المنتج موجود بالفعل، نزود الكمية
-  const existingIndex = cart.findIndex(item => item.id === product.id);
-  if(existingIndex !== -1){
-    cart[existingIndex].quantity += 1;
-  } else {
-    product.quantity = 1;
-    cart.push(product);
+  // Share overlay popup toggle
+  const shareToggle = document.getElementById("share-toggle");
+  if (shareToggle) {
+    shareToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      shareToggle.classList.toggle("active");
+    });
+    document.addEventListener("click", () => {
+      shareToggle.classList.remove("active");
+    });
   }
 
-  // حفظ السلة مرة ثانية
-  localStorage.setItem("cart", JSON.stringify(cart));
+  // Cart storage injection management
+  const addToCartBtn = document.getElementById("add-to-cart-btn");
+  addToCartBtn.addEventListener("click", () => {
+    if(!loadedProduct) return;
 
-  alert(`${product.name} تم إضافته إلى السلة!`);
-});
-</script>
-  <script>
-  // تحديث عدد العناصر في البادج باستخدام localStorage (توقّع: السلة مخزنة كمصفوفة JSON في key 'cart')
-  function updateCartCount(){
-    try{
-      const raw = localStorage.getItem('cart') || '[]';
-      const cart = JSON.parse(raw);
-      const count = Array.isArray(cart) ? cart.reduce((s,i)=>s + (i.quantity? Number(i.quantity):1), 0) : 0;
-      document.getElementById('cart-count').textContent = count;
-    }catch(e){
-      document.getElementById('cart-count').textContent = 0;
-      console.warn('cart-count update error', e);
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const productItem = {
+      id: id,
+      name: loadedProduct.name,
+      price: loadedProduct.price,
+      image: loadedProduct.image,
+      discount: loadedProduct.discount || null,
+      onSale: loadedProduct.onSale || false
+    };
+
+    const existIndex = cart.findIndex(item => item.id === productItem.id);
+    if(existIndex !== -1) {
+      cart[existIndex].quantity += 1;
+    } else {
+      productItem.quantity = 1;
+      cart.push(productItem);
     }
-  }
 
-  // عند التحميل
-  document.addEventListener('DOMContentLoaded', updateCartCount);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
 
-  // إذا السلة تتحدث من نافذة/تبويب تاني -> نسمع حدث storage
-  window.addEventListener('storage', (e) => {
-    if(e.key === 'cart') updateCartCount();
+    // Elegant non-blocking alerts
+    const alertDiv = document.createElement("div");
+    alertDiv.style.position = "fixed";
+    alertDiv.style.bottom = "100px";
+    alertDiv.style.left = "50%";
+    alertDiv.style.transform = "translateX(-50%)";
+    alertDiv.style.background = "var(--color-success)";
+    alertDiv.style.color = "#fff";
+    alertDiv.style.padding = "14px 28px";
+    alertDiv.style.borderRadius = "var(--border-radius-md)";
+    alertDiv.style.boxShadow = "var(--shadow-lg)";
+    alertDiv.style.zIndex = "1030";
+    alertDiv.style.fontWeight = "700";
+    alertDiv.style.textAlign = "center";
+    alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-left:8px;"></i> تم إضافته بنجاح لسلتكِ الفاخرة!`;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+      alertDiv.style.opacity = "0";
+      alertDiv.style.transition = "opacity 0.4s ease";
+      setTimeout(() => alertDiv.remove(), 400);
+    }, 2800);
   });
-
-  // لو نظام السلة عندك مختلف (مثلاً Firebase أو cookie)، عدّل وظيفة updateCartCount() لتناسب مصدر البيانات لديك.
 </script>
 
-<!-- ===== Floating Cart Button (paste before </body>) ===== -->
-<a href="cart.html" class="floating-cart" aria-label="سلة التسوق">
-  <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
-  <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-</a>
 </body>
 </html>

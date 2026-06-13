@@ -1,91 +1,174 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>من نحن | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <title>من نحن وعالمنا الفاخر | Dandy Beauty</title>
+  
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
 
-    <!-- Google Fonts: Cairo + Tajawal -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Premium elegant details grid styling */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 60px;
+      margin-top: 50px;
+      align-items: center;
+    }
 
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    .detail-image-box {
+      background: var(--color-gold-cream);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
 
-  <!-- أيقونة المتصفح الأساسية -->
-<link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    .detail-image-box:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-blush);
+    }
 
-<!-- أيقونات مختلفة لحجم متعدد -->
-<link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+    .detail-image-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--border-radius-md);
+      transition: var(--transition-smooth);
+    }
 
-<!-- أيقونة خاصة بأجهزة Apple -->
-<link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+    .detail-image-box img:hover {
+      transform: scale(1.03);
+    }
 
-<!-- ملف Web Manifest لتعريف الأيقونات على أنظمة التشغيل -->
-<link rel="manifest" href="images/fav-icons/site.webmanifest">
+    .detail-info-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10px;
+    }
 
-  <!-- Open Graph meta tags -->
-  <meta property="og:title" content="DANDY | من نحن">
-  <meta property="og:description" content="مرحباً بكم في Dandy، حيث يلتقي الجمال بالعناية، وتتحول التفاصيل الصغيرة إلى لحظات من الثقة والتألق.">
-  <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
-  <meta property="og:image:type" content="image/webp">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">  
+    .p-desc {
+      font-size: 1.15rem;
+      line-height: 1.85;
+      color: var(--color-muted);
+      margin-bottom: 24px;
+      text-align: justify;
+    }
+
+    .p-desc strong {
+      color: var(--color-primary);
+      font-weight: 800;
+    }
+
+    .p-category {
+      font-size: 1rem;
+      color: var(--color-gold);
+      font-weight: 700;
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .about-social-list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .about-social-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1rem;
+      color: var(--color-muted);
+    }
+
+    .about-social-list a {
+      color: var(--color-primary);
+      text-decoration: none;
+      font-weight: 700;
+      transition: var(--transition-fast);
+    }
+
+    .about-social-list a:hover {
+      color: var(--color-blush);
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .detail-image-box {
+        height: 340px;
+      }
+      .p-desc {
+        font-size: 1.05rem;
+      }
+    }
+  </style>
 
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-NH8NG47PDV');
-</script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3691498329769907"
-     crossorigin="anonymous"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 </head>
 <body>
 
 <!-- Navigation -->
-<nav dir="rtl">
-  <div class="logo">
-    <img src="images/logo.png" alt="الشعار" />
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
     <li><a href="all-products.html">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="blog.html font-heading">المقالات</a></li>
     <li class="dropdown">
-      <a href="#">المزيد ▾</a>
+      <a href="javascript:void(0)" class="active">المزيد ▾</a>
       <ul class="dropdown-menu">
         <li><a href="client-reviews.html">ثقة العملاء</a></li>
-        <li><a href="#">من نحن</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
       </ul>
     </li>
   </ul>
-  <div class="hamburger" aria-label="القائمة">
-    <span class="line"></span>
-    <span class="line"></span>
-    <span class="line"></span>
-  </div>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
+
 <!-- Mobile Menu -->
-<div class="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
     <li><a href="all-products.html">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="client-reviews.html font-heading">ثقة العملاء</a></li>
     <li><a href="blog.html">المقالات</a></li>
     <li><a href="about-us.html">من نحن</a></li>
   </ul>
-
   <div class="side-bottom-links">
     <a href="privacy-policy.html">سياسة الخصوصية</a>
     <span>|</span>
@@ -93,144 +176,124 @@
   </div>
 </div>
 
+<!-- Brand story container -->
+<main class="container" style="padding-top: 140px; padding-bottom: 80px;">
+  <div class="section-header" style="text-align: center; margin-bottom: 40px;">
+    <span class="sub">عالم داندي الفاخر</span>
+    <h2>من نحن وما يمثل جمالنا</h2>
+  </div>
 
-  <!-- ✅ قسم من نحن -->
-  <section class="products">
-    <h2>من نحن</h2>
-    <div style="max-width: 800px; margin: 0 auto; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); line-height: 1.8;">
-      <p>مرحباً بكم في <strong>Dandy</strong>، حيث يلتقي الجمال بالعناية، وتتحول التفاصيل الصغيرة إلى لحظات من الثقة والتألق.</p>
-      <p>نحن علامة متخصصة في تقديم مجموعة مختارة من مستحضرات التجميل ومنتجات العناية الشخصية، التي تهتم بجمالك الطبيعي وتعزز من إشراقتك اليومية. نفتخر بتوفير منتجات مختارة بعناية لتناسب كافة أنواع البشرة واحتياجاتها، لأننا نؤمن أن لكل بشرة جمالها الخاص الذي يستحق العناية والدلال.</p>
-      <p><strong>📍 نحن متواجدون في مدينة نصر، مصر.</strong></p>
-      <p>سواء كنتِ تبحثين عن منتج يعزز من إشراقتك أو عن لمسة نهائية تكمّل إطلالتك، نحن هنا لنقدّم لكِ ما تحتاجينه لتشعري بثقة أكثر وصحة داخلية تنعكس على مظهرك الخارجي.</p>
-      <p>ثقتكم تعني لنا الكثير، ونسعى دائماً لنكون جزءًا من قصتكم اليومية مع الجمال.</p>
+  <div class="detail-grid">
+    <div class="detail-image-box">
+      <img src="images/logo.png" alt="عالم داندي للجمال والنقاء الطبيعي">
+    </div>
 
-      <hr style="margin: 2rem 0;" />
+    <div class="detail-info-box">
+      <p class="p-desc">مرحباً بكم في <strong>Dandy</strong>، مأوى النقاء للعناصر والزيوت العضوية والجمال المتكامل، حيث يلتقي نبض دلال الطبيعة الفعالة مع ثقتكِ المستحقة لتشرق ملامحكِ وصحتك من جديد.</p>
+      
+      <p class="p-desc">نحن علامة متميزة ومتخصصة في انتقاء مستحضرات تجميلية حصرية، ورعايات جلدية وشعرية ناصعة. نؤمن بأن الحرفية تكمن في تقديم عناصر آمنة خالية من الكيماويات والملونات التجارية المؤذية، بمواصفات عالية تعيد لشعركِ الحيوية وتغذي مسامكِ بأمان دائم وسرور.</p>
+      
+      <p class="p-category"><i class="fas fa-map-marker-alt" style="color: var(--color-blush); margin-left:8px;"></i> مقرنا الدائم والفاخر: مدينة نصر، القاهرة، جمهورية مصر العربية.</p>
 
-      <p><strong>💕 لمتابعتنا:</strong></p>
-      <ul style="padding-right: 1.5rem;">
-        <li>إنستجرام: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
-        <li>فيسبوك: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">صفحتنا الرسمية</a></li>
-        <li>رقم التواصل: <a href="tel:01067228170">01067228170</a></li>
+      <hr style="margin: 25px 0; border: none; border-top: 1px dashed var(--border-light);" />
+
+      <h3 style="font-family:'Cairo', sans-serif; font-size:1.25rem; margin-bottom: 15px; color:var(--color-primary);"><i class="fas fa-heart" style="color:var(--color-blush); margin-left:8px;"></i> تواصل فوري ومتابعة ممتعة:</h3>
+      <ul class="about-social-list">
+        <li><i class="fab fa-instagram" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> إنستجرام الرسمي: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
+        <li><i class="fab fa-facebook" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> صفحة فيسبوك الرسمية للتواصل: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">شقيق المتجر داندي</a></li>
+        <li><i class="fab fa-whatsapp" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> الخط الهاتفي المعتمد للمبيعات: <a href="tel:01067228170">01067228170</a></li>
       </ul>
     </div>
-  </section>
+  </div>
+</main>
 
 <!-- Footer -->
 <footer>
-  <div class="footer-grid">
-    <div class="footer-col footer-social">
-      <h4>تابعينا</h4>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
-      </div>
-
-      <!-- روابط الصفحات -->
-      <div class="footer-links">
-        <a href="privacy-policy.html">سياسة الخصوصية</a>
-        <span>|</span>
-        <a href="terms.html">الشروط والأحكام</a>
-      </div>
-
-      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
     </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html font-heading">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
+        <li><a href="terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
   </div>
 </footer>
 
-  <!-- ✅ سكريبتات الموقع -->
-<script>
-  // إخفاء وظهور شريط التنقل
- let lastScrollTop = 0;
-const nav = document.querySelector('nav');
-const navHeight = nav.offsetHeight; // ارتفاع الناف بار
-
-window.addEventListener('scroll', function () {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  
-  if (scrollTop > lastScrollTop) {
-    // نازل
-    nav.style.top = `-${navHeight}px`; // يخفيه فوق
-  } else {
-    // طالع
-    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
-  }
-
-  lastScrollTop = scrollTop;
-});
-
-</script>
+<!-- Floating Actions -->
+<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+  <span class="cart-count" id="cart-count">0</span>
+  <i class="fas fa-shopping-cart"></i>
+</a>
 
 <script>
-  const searchForm = document.getElementById("search-form");
-  if (searchForm) {
-    searchForm.addEventListener("submit", function(e) {
-      e.preventDefault();
-      const query = document.getElementById("search-input").value.trim();
-      if (query) {
-        window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
-      }
-    });
-  }
-</script>
-
-  <script>
-const mobileNav = document.querySelector(".hamburger");
-const navbar = document.querySelector(".menubar");
-
-const toggleNav = () => {
-  navbar.classList.toggle("active");
-  mobileNav.classList.toggle("hamburger-active");
-};
-
-mobileNav.addEventListener("click", (e) => {
-  e.stopPropagation(); // علشان الضغطة على الزر ما تعتبرش ضغطة على document
-  toggleNav();
-});
-
-// لما المستخدم يضغط في أي مكان في الصفحة
-document.addEventListener("click", (e) => {
-  // لو القائمة مفتوحة والضغط مش جوه القائمة ولا زر الهمبرجر
-  if (
-    navbar.classList.contains("active") &&
-    !navbar.contains(e.target) &&
-    !mobileNav.contains(e.target)
-  ) {
-    navbar.classList.remove("active");
-    mobileNav.classList.remove("hamburger-active");
-  }
-});
-
-</script>
-<script>
-  // تحديث عدد العناصر في البادج باستخدام localStorage (توقّع: السلة مخزنة كمصفوفة JSON في key 'cart')
+  // Floating Cart Badge counter
   function updateCartCount(){
-    try{
+    try {
       const raw = localStorage.getItem('cart') || '[]';
       const cart = JSON.parse(raw);
-      const count = Array.isArray(cart) ? cart.reduce((s,i)=>s + (i.quantity? Number(i.quantity):1), 0) : 0;
+      const count = Array.isArray(cart) ? cart.reduce((s, i) => s + (i.quantity ? Number(i.quantity) : 1), 0) : 0;
       document.getElementById('cart-count').textContent = count;
-    }catch(e){
+    } catch(e) {
       document.getElementById('cart-count').textContent = 0;
-      console.warn('cart-count update error', e);
     }
   }
 
-  // عند التحميل
   document.addEventListener('DOMContentLoaded', updateCartCount);
 
-  // إذا السلة تتحدث من نافذة/تبويب تاني -> نسمع حدث storage
-  window.addEventListener('storage', (e) => {
-    if(e.key === 'cart') updateCartCount();
-  });
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
 
-  // لو نظام السلة عندك مختلف (مثلاً Firebase أو cookie)، عدّل وظيفة updateCartCount() لتناسب مصدر البيانات لديك.
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
 </script>
 
-<!-- ===== Floating Cart Button (paste before </body>) ===== -->
-<a href="cart.html" class="floating-cart" aria-label="سلة التسوق">
-  <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
-  <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-</a>
 </body>
 </html>

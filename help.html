@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دليل المساعدة وتسهيل التسوق | Dandy Beauty</title>
+
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    .help-section {
+      padding: 140px 0 80px;
+      min-height: 80vh;
+    }
+
+    .help-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Grid Layout for Help Sections */
+    .help-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 850px) {
+      .help-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+
+    /* Beautiful Cards */
+    .help-card {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      transition: var(--transition-smooth);
+    }
+
+    .help-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-blush);
+    }
+
+    .help-card-title {
+      font-family: 'Cairo', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px dashed var(--border-light);
+      padding-bottom: 12px;
+    }
+
+    .help-card-title i {
+      color: var(--color-blush);
+      font-size: 1.4rem;
+    }
+
+    /* Step-by-step beauty list */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    .step-item-guide {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .step-icon-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--color-blush-soft);
+      border: 1px solid var(--border-blush);
+      color: var(--color-blush);
+      font-weight: 800;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-text-guide h4 {
+      font-family: 'Tajawal', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .step-text-guide p {
+      font-size: 0.92rem;
+      color: var(--color-text);
+      line-height: 1.7;
+    }
+
+    /* Accordion FAQ */
+    .faq-item {
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-sm);
+      margin-bottom: 12px;
+      overflow: hidden;
+      background: var(--color-canvas);
+    }
+
+    .faq-question {
+      background: var(--color-surface);
+      padding: 16px 20px;
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--color-primary);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition-fast);
+      user-select: none;
+    }
+
+    .faq-question:hover {
+      background: var(--color-gold-cream);
+      color: var(--color-gold);
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 18px 20px;
+      border-top: 1px solid var(--border-light);
+      font-size: 0.92rem;
+      color: var(--color-text);
+      line-height: 1.7;
+      background: var(--color-surface);
+      animation: slideDown 0.25s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .faq-item.active .faq-answer {
+      display: block;
+    }
+
+    .faq-item.active .faq-question {
+      background: var(--color-blush-soft);
+      color: var(--color-blush);
+      border-bottom-color: var(--border-blush);
+    }
+
+    .faq-question i {
+      font-size: 0.8rem;
+      transition: transform 0.25s ease;
+    }
+
+    .faq-item.active .faq-question i {
+      transform: rotate(180deg);
+    }
+
+    /* Right hand quick tags sidebar */
+    .help-sidebar {
+      position: sticky;
+      top: 110px;
+      height: fit-content;
+    }
+
+    .sidebar-widget {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .widget-title {
+      font-family: 'Cairo', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      border-right: 3px solid var(--color-gold);
+      padding-right: 10px;
+    }
+
+    .quick-links-help {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .quick-links-help a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: var(--border-radius-sm);
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .quick-links-help a:hover {
+      background: var(--color-surface-soft);
+      color: var(--color-blush);
+      padding-right: 18px;
+    }
+
+    .support-btn-wa {
+      background: #25D366;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px;
+      border-radius: 99px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: var(--transition-smooth);
+      box-shadow: 0 6px 16px rgba(37, 211, 102, 0.2);
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .support-btn-wa:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(37, 211, 102, 0.35);
+    }
+
+    /* Highlight badge for CTA actions */
+    .badge-highlight {
+      background: var(--color-blush-soft);
+      color: var(--color-blush);
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 99px;
+      border: 1px solid var(--border-blush);
+    }
+  </style>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" class="active">المزيد ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="track-order.html"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
+        <li><a href="help.html" class="active"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
+        <li><a href="client-reviews.html">ثقة العملاء</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
+      </ul>
+    </li>
+  </ul>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="track-order.html"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
+    <li><a href="help.html" class="active"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
+</div>
+
+<section class="help-section container">
+  <div class="help-container">
+    
+    <!-- Hero banner style header -->
+    <div class="section-header" style="text-align: right; margin-bottom: 20px;">
+      <span class="sub">مركز العناية بالعميلات والمساعدة</span>
+      <h2>كيف نخدمكِ اليوم في متجر داندي؟</h2>
+      <p style="color:var(--color-muted); margin-top:8px; font-size:1.05rem;">أهلاً بكِ في دليل داندي المتكامل. لقد صممنا هذه الصفحة لتوضيح رحلة التسوق الآمن والشحن الفوري خطوة بخطوة لراحتكِ التامة.</p>
+    </div>
+
+    <!-- Quick Buttons for VIP users -->
+    <div style="background:var(--color-gold-cream); border:1px solid var(--border-light); padding:20px; border-radius:16px; margin:30px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h3 style="font-family:'Cairo',sans-serif; font-size:1.1rem; color:var(--color-primary);"><i class="fas fa-magic" style="color:var(--color-gold);"></i> تودين متابعة شحنتكِ السابقة الآن؟</h3>
+        <p style="font-size:0.88rem; color:var(--color-text); margin-top:4px;">يمكنكِ فحص حالة شحن الفاتورة مباشرة عبر رمز التتبع الخاص بكِ.</p>
+      </div>
+      <a href="track-order.html" class="cta-btn" style="padding:10px 24px; font-size:0.9rem; background:var(--color-blush); border-radius:99px;"><i class="fas fa-route"></i> تتبعي حالة طلبكِ فوراً</a>
+    </div>
+
+    <div class="help-grid">
+      
+      <!-- MAIN DETAILS LEFT -->
+      <div class="help-left">
+        
+        <!-- How to Buy Card -->
+        <div class="help-card" id="how-to-buy">
+          <div class="help-card-title">
+            <i class="fas fa-shopping-bag"></i> رحلة التسوق وحجز المستحضرات (كيفية الشراء)
+          </div>
+          <p style="font-size:0.95rem; line-height:1.7; margin-bottom:15px;">خطوات حجز مستحضرات التجميل والعناية بالبشرة العضوية من داندي سهلة للغاية ولا تحتاجين إلى تسجيل حساب:</p>
+          
+          <div class="step-list">
+            <div class="step-item-guide">
+              <div class="step-icon-num">١</div>
+              <div class="step-text-guide">
+                <h4>اختيار المستحضرات الساحرة</h4>
+                <p>تصفحي صفحة المنتجات، وعند إيجاد المستحضر المناسب لنوع بشرتكِ أو شعركِ، انقري لقراءة التفاصيل الكاملة وفوائده العضوية ثم اضغطي على زر "إضافة للسلة".</p>
+              </div>
+            </div>
+
+            <div class="step-item-guide">
+              <div class="step-icon-num">٢</div>
+              <div class="step-text-guide">
+                <h4>المراجعة وتعبئة بيانات الاستلام بدقة</h4>
+                <p>ادخلي لحقيبة التسوق، وراجعي المجموع والكميات. تابعي لإدخال بيانات رشيقة: اسمكِ بالكامل، المحافظة، والمنطقة بدقة لتمكين مندوب التوصيل المعتمد من تحديد وجهتكِ بسرعة.</p>
+              </div>
+            </div>
+
+            <div class="step-item-guide">
+              <div class="step-icon-num">٣</div>
+              <div class="step-text-guide">
+                <h4>تأكيد حجز الطلب وتسجيل الفاتورة</h4>
+                <p>بالضغط على زر "تأكيد وإرسال الطلب"، سيقوم السيرفر بحفظ المستحضرات مباشرة لكِ، وتوليد كود فاتورة حصري يبدأ بـ (DNY-XXXXXX). يرجى نسخ هذا الكود والاحتفاظ به للتتبع.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- What Happens After Checkout Card -->
+        <div class="help-card" id="after-checkout">
+          <div class="help-card-title">
+            <i class="fas fa-cogs"></i> ماذا يحدث بعد إكمال حجز الطلب؟
+          </div>
+          <p style="font-size:0.95rem; line-height:1.7; margin-bottom:15px;">نحن ندرك مدى شغفكِ للحصول على المستحضرات وبدء تجربة الإشراق التدريجية، إليكِ المسار الداخلي لتجهيز طلبكِ:</p>
+          
+          <div class="step-list">
+            <div class="step-item-guide">
+              <div class="step-icon-num"><i class="fas fa-file-invoice" style="font-size:0.75rem;"></i></div>
+              <div class="step-text-guide">
+                <h4>المرحلة الأولى: تأكيد الطلب وحجز المنتجات (جديد)</h4>
+                <p>بمجرد إرسال طلبكِ، يتم حجز المنتجات لتفادي نفاد كميتها من مخازن داندي، وتلقائياً يظهر في لوحة المشرف لتخصيص مندوب.</p>
+              </div>
+            </div>
+
+            <div class="step-item-guide">
+              <div class="step-icon-num"><i class="fas fa-magic" style="font-size:0.75rem;"></i></div>
+              <div class="step-text-guide">
+                <h4>المرحلة الثانية: التجهيز والمعاينة المعقمة (قيد التجهيز)</h4>
+                <p>يقوم خبراء التعبئة بجمع ومطابقة العبوات والتأكد من ملاءمة تاريخ الصلاحية وحالتها القياسية تحت ظروف فائقة التعقيم، وتغليفها بغلاف فاخر هدية لكِ.</p>
+              </div>
+            </div>
+
+            <div class="step-item-guide">
+              <div class="step-icon-num"><i class="fas fa-truck-moving" style="font-size:0.75rem;"></i></div>
+              <div class="step-text-guide">
+                <h4>المرحلة الثالثة: التسليم والشحن (جاري الشحن والاتصال)</h4>
+                <p>يسلم الطرد المغلق لشركة الشحن السريع المعتمدة لدينا. يقوم المندوب بالتواصل معكِ هاتفياً لتنسيق الساعة المناسبة والمريحة لكِ للاستلام باب المخرجات.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping and COD Card -->
+        <div class="help-card" id="shipping-cod">
+          <div class="help-card-title">
+            <i class="fas fa-truck"></i> سياسة الشحن والدفع الآمن نقداً عند الاستلام (COD)
+          </div>
+          <div class="step-text-guide" style="margin-bottom: 20px;">
+            <p style="font-size:0.95rem; line-height:1.7;">لتوفير أقصى درجات الطمأنينة والأمان لعميلاتنا المتميزات، اعتمدنا نظام <strong>الدفع الكامل نقداً عند استلام الشحنة (Cash on Delivery)</strong>:</p>
+          </div>
+          
+          <div style="background:rgba(46, 102, 72, 0.05); border:1px solid rgba(46, 102, 72, 0.12); border-radius:12px; padding:18px; margin-bottom:20px; color:var(--color-primary);">
+            <h4 style="font-weight:700; font-size:1rem; margin-bottom:6px; color:var(--color-success);"><i class="fas fa-heart"></i> افحصي وعايني مستحضركِ قبل الدفع!</h4>
+            <p style="font-size:0.9rem; line-height:1.6; margin:0;">يسعدنا دائماً وبكل فخر حث عميلاتنا على فحص الطرد المغلف في حضور مندوب التوصيل ومراجعة سلامته قبل تسليم القيمة النقدية لضمان تطابق الشحنة بنسبة 100%.</p>
+          </div>
+
+          <div class="step-list">
+            <div class="step-item-guide">
+              <div class="step-icon-num"><i class="fas fa-calendar-check" style="font-size:0.75rem;"></i></div>
+              <div class="step-text-guide">
+                <h4>مواعيد التوصيل الرسمية</h4>
+                <p>محافظات القاهرة والجيزة والأسكندرية: يتم التوصيل خلال 24 - 48 ساعة فقط. باقي محافظات الدلتا والصعيد: وتستغرق الشحنة من ٢ إلى ٤ أيام عمل بحد أقصى.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ Accordion Block -->
+        <div class="help-card" id="faq">
+          <div class="help-card-title">
+            <i class="fas fa-question-circle"></i> الأسئلة الشائعة والمتكررة لعميلات داندي
+          </div>
+          <p style="font-size:0.92rem; color:var(--color-muted); margin-bottom:18px;">إليكِ الإجابات الشافية والموثوقة عن الأسئلة الشائعة من عميلات متجرنا:</p>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span>هل كافة مستحضرات متجر داندي طبيعية وجلدية آمنة؟</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+              نعم بالتأكيد! نحرص في داندي على توريد وتقديم مستحضرات طبيعية ذات عيارات نقية 100%، خالية تماماً من البارابين، الفورمالديهايد، أو المواد الحافظة المسرطنة، ومختبرة من قِبل خبراء الجلد لضمان سلامتها الفائقة للبشرة الحساسة.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span>كيف يمكنني تفعيل الضمان والحصول على استبدال أو إرجاع؟</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+              ثقة ورضا عميلاتها هي سر نجاح عائلة داندي. في حال الرغبة في إرجاع أو استبدال أي مستحضر تالف أثناء الشحن أو لم ينل كامل رضاكِ، يرجى تزويد كود الفاتورة لفريق الدعم عبر الواتساب في غضون 14 يوماً من الاستلام وسنساعدكِ بكل أريحية وسرور في غضون 24 ساعة.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span>ما العمل إذا فقدتُ كود الفاتورة المخصص لتتبع طلبي؟</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+              لا تقلقي أبداً! يمكنكِ التواصل مباشرة مع فريق الدعم عبر الواتساب وتزويد الموظف بالاسم ثلاثياً ورقم الهاتف الذي استخدمتيه أثناء تسجيل الشحن، وسنقوم بسحب ملفكِ وتزويدكِ بالحالة الراهنة للشحنة وتفاصيل تجهيزها الفورية.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+              <span>ما هي رسوم التوصيل والشحن لمحافظات الصعيد والوجه القبلي؟</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+              رسوم الشحن ثابتة ومخفضة للغاية لدعم عميلات داندي وتتراوح بين 40 إلى 60 جنيهاً فقط حسب البعد الجغرافي للمحافظة، وتظهر لكِ بوضوح تام وتُنسق مع المندوب هاتفياً قبل خروجه.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR RIGHT -->
+      <div class="help-sidebar">
+        
+        <!-- Quick navigation anchors widget -->
+        <div class="sidebar-widget">
+          <div class="widget-title">فهرس الدليل السريع</div>
+          <div class="quick-links-help">
+            <a href="#how-to-buy"><i class="fas fa-shopping-bag"></i> كيفية الشراء من المتجر</a>
+            <a href="#after-checkout"><i class="fas fa-cogs"></i> مراحل معالجة طلبكِ</a>
+            <a href="#shipping-cod"><i class="fas fa-truck"></i> الشحن والدفع الآمن</a>
+            <a href="#faq"><i class="fas fa-question-circle"></i> الأسئلة المتكررة</a>
+          </div>
+        </div>
+
+        <!-- Direct support contact widget -->
+        <div class="sidebar-widget" style="background:var(--color-surface-soft);">
+          <div class="widget-title" style="border-right-color:var(--color-blush);">دعم السيدات المباشر</div>
+          <p style="font-size:0.85rem; color:var(--color-text); line-height:1.6; margin-top:10px;">فريق عميلات داندي متواجد لتلقي أي تساؤل خاص بملائمة المنتجات لطبيعة بشرتكِ أو معالجة الفواتير وحالات التوصيل هاتفياً وعبر محادثة فورية:</p>
+          <a href="https://wa.me/201067228170" target="_blank" class="support-btn-wa"><i class="fab fa-whatsapp"></i> تواصل واتساب مباشر</a>
+          <div style="font-size:0.75rem; text-align:center; margin-top:10px; color:var(--color-muted); font-weight:700;"><i class="fas fa-clock"></i> ساعات الدعم: يومياً من ٩ ص حتى ١٠ م</div>
+        </div>
+
+        <!-- Extra assurance check logo widget -->
+        <div class="sidebar-widget" style="text-align: center;">
+          <i class="fas fa-award" style="font-size:2.5rem; color:var(--color-gold); margin-bottom:10px;"></i>
+          <h4 style="font-family:'Cairo',sans-serif; font-size:1rem; color:var(--color-primary);">الالتزام المطلق بالجمال</h4>
+          <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">داندي ليست مجرد متجر، بل رحلة مخصصة تمكّن جمالكِ من التألق الطبيعي بثقة وراحة تامة.</p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+    </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية والأمان</a></li>
+        <li><a href="terms.html">الشروط والأحكام العامة</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+  </div>
+</footer>
+
+<!-- Floating Actions -->
+<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+  <span class="cart-count" id="cart-count">0</span>
+  <i class="fas fa-shopping-cart"></i>
+</a>
+
+<!-- Firebase SDK (required for analytics log and cart Badge counter) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Floating Cart Badge counter
+  function updateCartCount(){
+    try {
+      const raw = localStorage.getItem('cart') || '[]';
+      const cart = JSON.parse(raw);
+      const count = Array.isArray(cart) ? cart.reduce((s, i) => s + (i.quantity ? Number(i.quantity) : 1), 0) : 0;
+      document.getElementById('cart-count').textContent = count;
+    } catch(e) {
+      document.getElementById('cart-count').textContent = 0;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', updateCartCount);
+</script>
+
+<script>
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
+
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
+
+  // FAQ accordion interaction
+  function toggleFaq(btn) {
+    const parent = btn.parentElement;
+    parent.classList.toggle('active');
+  }
+</script>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>مدير المقالات والمدونة | لوحة داندي</title>
+  <title>مدير مخزن ومستحضرات الشحن | لوحة داندي</title>
   <meta name="robots" content="noindex, nofollow">
 
   <!-- Stylesheet -->
@@ -75,6 +75,22 @@
 
     .form-group-admin input:focus, .form-group-admin select:focus, .form-group-admin textarea:focus {
       border-color: var(--color-blush);
+    }
+
+    .chk-row {
+      display: flex;
+      gap: 20px;
+      margin: 16px 0;
+    }
+
+    .chk-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--color-primary);
+      cursor: pointer;
     }
 
     .admin-table {
@@ -159,77 +175,92 @@
   </div>
 </div>
 
-<!-- Main Section -->
+<!-- Main Workspace -->
 <section class="manager-section container">
   <div class="manager-layout">
     
-    <!-- Right Content Card Form -->
+    <!-- Right Form -->
     <div class="manager-card">
-      <h3><i class="far fa-edit"></i> إضافة / تعديل مقالة جمالية</h3>
+      <h3><i class="fas fa-box-open"></i> إضافة / تعديل مستحضر تجميلي</h3>
       
-      <form id="articleForm">
+      <form id="productForm">
         <input type="hidden" id="edit-id">
 
         <div class="form-group-admin" style="margin-bottom: 16px;">
-          <label for="a-title">عنوان المقالة الفاخر</label>
-          <input type="text" id="a-title" placeholder="على سبيل المثال: روتين شتوي متكامل لترطيب الشعر" required>
+          <label for="p-name">اسم المستحضر الكامل</label>
+          <input type="text" id="p-name" placeholder="مثال: كريم داندي لترطيب ونضارة المسام" required>
         </div>
 
         <div class="form-row">
           <div class="form-group-admin">
-            <label for="a-category">القسم والتصنيف</label>
-            <select id="a-category">
-              <option>روتين الجمال</option>
-              <option>أسرار البشرة</option>
-              <option>نضارة الجلد</option>
-              <option>تاج الشعر</option>
-              <option>العناية المتقدمة</option>
+            <label for="p-price">السعر الأساسي (جنيه)</label>
+            <input type="number" id="p-price" placeholder="مثال: 320" required>
+          </div>
+          <div class="form-group-admin">
+            <label for="p-discount">نسبة الخصم المئوية (%)</label>
+            <input type="number" id="p-discount" placeholder="اتركيه فارغاً إن لم يتوفرخصم" min="0" max="100">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group-admin">
+            <label for="p-category">فئة وتصنيف المنتج</label>
+            <select id="p-category">
+              <option>عناية بالشعر</option>
+              <option>عناية بالبشرة</option>
+              <option>الزيوت العضوية</option>
+              <option>مستحضرات النقاء</option>
             </select>
           </div>
           <div class="form-group-admin">
-            <label for="a-date">تاريخ المقالة المقروء</label>
-            <input type="text" id="a-date" placeholder="مثال: 12 يونيو 2026" required>
+            <label for="p-rating">التقييم الأصلي (من 5 نجوم)</label>
+            <input type="number" id="p-rating" placeholder="مثال: 5" min="1" max="5" required>
           </div>
         </div>
 
         <div class="form-group-admin" style="margin-bottom: 16px;">
-          <label for="a-image">رابط الصورة المميزة (عرض مقاس عريض)</label>
-          <input type="url" id="a-image" placeholder="https://unsplash.com/..." required>
+          <label for="p-image">رابط صورة المستحضر الثابتة</label>
+          <input type="url" id="p-image" placeholder="https://unsplash.com/... أو رابط مباشر آخر" required>
         </div>
 
         <div class="form-group-admin" style="margin-bottom: 16px;">
-          <label for="a-excerpt">مقتطف وموجز سطرين (يظهر بالبطاقة الرئيسية)</label>
-          <textarea id="a-excerpt" rows="2" placeholder="المس أهم الفوائد التي تغري القارئة بكلمات مقتضبة..." required></textarea>
+          <label for="p-description">الوصف التفصيلي الدقيق للمنتج وفوائده</label>
+          <textarea id="p-description" rows="4" placeholder="اكتبي المكونات وطريقة الاستخدام والمميزات الطبيعية المبهرة بشرح وافٍ..." required></textarea>
         </div>
 
-        <div class="form-group-admin" style="margin-bottom: 16px;">
-          <label for="a-content">المقال الكامل (يدعم HTML للتنسيقات وعناوين h2 h3 blockquote)</label>
-          <textarea id="a-content" rows="8" placeholder="اكتبي المقال مع استعمال أوسمة HTML مثل <h2> <h3> <p> لتنسيق نصوص فاخرة..." required></textarea>
+        <div class="chk-row">
+          <label class="chk-label">
+            <input type="checkbox" id="p-bestSeller"> تمييز كـ "الأكثر مبيعاً"
+          </label>
+          <label class="chk-label">
+            <input type="checkbox" id="p-onSale"> خاضع لـ "العروض الخاصة"
+          </label>
         </div>
 
         <div style="display: flex; gap: 10px;">
-          <button type="submit" class="btn" style="background:var(--color-blush); color:#fff; flex:1; padding:12px; border-radius:8px; border:none; font-weight:700; cursor:pointer;" id="saveBtn"><i class="fas fa-plus"></i> نشر المقالة الآن</button>
+          <button type="submit" class="btn" style="background:var(--color-blush); color:#fff; flex:1; padding:12px; border-radius:8px; border:none; font-weight:700; cursor:pointer;" id="saveBtn"><i class="fas fa-plus"></i> إضافة المستحضر للرفوف</button>
           <button type="button" class="btn" style="background:#fff; border:1px solid var(--border-light); color:var(--color-muted); padding:12px; border-radius:8px; display:none;" id="cancelEdit">إلغاء التعديل</button>
         </div>
       </form>
     </div>
 
-    <!-- Left Content Card List -->
+    <!-- Left list table -->
     <div class="manager-card" style="overflow-x: auto;">
-      <h3><i class="far fa-list-alt"></i> المقالات الحالية بالمدونة</h3>
+      <h3><i class="fas fa-boxes"></i> المنتجات المنشورة على المتجر</h3>
       
       <table class="admin-table">
         <thead>
           <tr>
-            <th>عنوان المقال</th>
-            <th>القسم</th>
-            <th>التاريخ</th>
+            <th>اسم المنتج</th>
+            <th>التصنيف</th>
+            <th>السعر الأصلي</th>
+            <th>الجمهور</th>
             <th style="text-align: center;">إجراءات</th>
           </tr>
         </thead>
-        <tbody id="articlesTableBody">
+        <tbody id="productsTableBody">
           <tr>
-            <td colspan="4" style="text-align: center; color: var(--color-muted); padding: 20px;">جاري جرد المقالات المنشورة...</td>
+            <td colspan="5" style="text-align: center; color: var(--color-muted); padding: 20px;">جاري سحب وجرد المستحضرات الحية...</td>
           </tr>
         </tbody>
       </table>
@@ -278,13 +309,14 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
   // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
     authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "dandy-562fc",
     storageBucket: "dandy-562fc.appspot.com",
     messagingSenderId: "454972972842",
@@ -293,14 +325,13 @@
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-  const db = firebase.firestore();
+  const db = firebase.database();
 
-  // Guard redirection checks
   auth.onAuthStateChanged(user => {
     if (!user) {
       window.location.href = 'login.html';
     } else {
-      loadArticlesAdmin();
+      loadProductsAdmin();
     }
   });
 
@@ -347,124 +378,130 @@
 </script>
 
 <script>
-  const articleForm = document.getElementById('articleForm');
-  const articlesTableBody = document.getElementById('articlesTableBody');
+  const productForm = document.getElementById('productForm');
+  const productsTableBody = document.getElementById('productsTableBody');
   const saveBtn = document.getElementById('saveBtn');
   const editIdEl = document.getElementById('edit-id');
   const cancelEditBtn = document.getElementById('cancelEdit');
 
-  let activeArticles = [];
+  let activeProducts = [];
 
-  // Load articles for operational dashboard table
-  async function loadArticlesAdmin() {
-    articlesTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--color-muted);">جاري تجميع المقالات...</td></tr>';
-    
-    try {
-      const snapshot = await db.collection('articles').orderBy('createdAt', 'desc').get();
-      articlesTableBody.innerHTML = '';
-      activeArticles = [];
+  // Load all products in Realtime Database inventory table
+  function loadProductsAdmin(){
+    db.ref('products').on('value', snap => {
+      productsTableBody.innerHTML = '';
+      activeProducts = [];
 
-      if(snapshot.empty) {
-        articlesTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--color-muted);">لا توجد مقالات منشورة بعد بالمدونة.</td></tr>';
+      if(!snap.exists()) {
+        productsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--color-muted);">المخزن مفرغ بالكامل من أي معروضات.</td></tr>';
         return;
       }
 
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        activeArticles.push({id: doc.id, ...d});
+      snap.forEach(child => {
+        const d = child.val();
+        activeProducts.push({id: child.key, ...d});
+
+        let pillFlagsText = '';
+        if(d.bestSeller) pillFlagsText += '<span style="background:rgba(217,141,153,0.1);color:var(--color-blush);padding:2px 8px;border-radius:99px;font-size:0.75rem;margin-left:4px;">مبيعاً</span>';
+        if(d.onSale) pillFlagsText += '<span style="background:rgba(180,140,50,0.1);color:var(--color-gold);padding:2px 8px;border-radius:99px;font-size:0.75rem;">خصم</span>';
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td style="font-weight:700;color:var(--color-primary);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.title || ''}</td>
-          <td><span style="background:var(--color-gold-cream);padding:4px 10px;border-radius:99px;font-size:0.8rem;">${d.category || 'العناية'}</span></td>
-          <td>${d.date || ''}</td>
+          <td style="font-weight:700;color:var(--color-primary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.name || ''}</td>
+          <td>${d.category || ''}</td>
+          <td style="font-weight:800;color:var(--color-blush);">${d.price || 0} جنيه</td>
+          <td>${pillFlagsText || '-'}</td>
           <td style="text-align:center;white-space:nowrap;">
-            <button class="action-badge-btn badge-btn-edit" onclick="startEdit('${doc.id}')"><i class="fas fa-edit"></i> تعديل</button>
-            <button class="action-badge-btn badge-btn-del" onclick="deleteArticle('${doc.id}')"><i class="fas fa-trash"></i> حذف</button>
+            <button class="action-badge-btn badge-btn-edit" onclick="startProductEdit('${child.key}')"><i class="fas fa-edit"></i> تعديل</button>
+            <button class="action-badge-btn badge-btn-del" onclick="deleteProduct('${child.key}')"><i class="fas fa-trash"></i></button>
           </td>
         `;
-        articlesTableBody.appendChild(tr);
+        productsTableBody.appendChild(tr);
       });
-
-    } catch(err) {
-      articlesTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--color-danger);">تعذر تحميل قائمة المقالات العتيدة.</td></tr>';
-    }
+    });
   }
 
   // Handle addition and edits submit
-  articleForm.addEventListener('submit', async (e) => {
+  productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const title = document.getElementById('a-title').value.trim();
-    const category = document.getElementById('a-category').value;
-    const date = document.getElementById('a-date').value.trim();
-    const image = document.getElementById('a-image').value.trim();
-    const excerpt = document.getElementById('a-excerpt').value.trim();
-    const content = document.getElementById('a-content').value.trim();
+    const name = document.getElementById('p-name').value.trim();
+    const price = parseFloat(document.getElementById('p-price').value) || 0;
+    const discount = parseFloat(document.getElementById('p-discount').value) || 0;
+    const category = document.getElementById('p-category').value;
+    const rating = parseFloat(document.getElementById('p-rating').value) || 5;
+    const image = document.getElementById('p-image').value.trim();
+    const description = document.getElementById('p-description').value.trim();
+    
+    const bestSeller = document.getElementById('p-bestSeller').checked;
+    const onSale = document.getElementById('p-onSale').checked;
     const editId = editIdEl.value;
 
     const payload = {
-      title,
+      name,
+      price,
+      discount: discount || '',
       category,
-      date,
+      rating,
       image,
-      excerpt,
-      content,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      description,
+      bestSeller,
+      onSale
     };
 
     try {
       if(editId) {
-        await db.collection('articles').doc(editId).update(payload);
-        alert('تم تعديل وحفظ المقالة بنجاح مذهل وطيب!');
+        await db.ref(`products/${editId}`).update(payload);
+        alert('تم تعديل وحفظ المستحضر التجميلي بأمان!');
       } else {
-        payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        await db.collection('articles').add(payload);
-        alert('تم نشر وتعميم المقالة الجديدة في المدونة الفاخرة!');
+        await db.ref('products').push().set(payload);
+        alert('تم إضافة المستحضر الجديد على قائمة الرفوف بالمتجر!');
       }
 
-      resetForm();
-      loadArticlesAdmin();
+      resetProductForm();
     } catch(err) {
-      alert('حدث خطأ أثناء إجراءات النشر. يرجى المحاولة لاحقاً.');
+      alert('خطأ أثناء حفظ المنتج. يرجى المحاولة لاحقاً.');
     }
   });
 
   // Start edit item trigger
-  window.startEdit = function(id) {
-    const item = activeArticles.find(a => a.id === id);
-    if(!item) return;
+  window.startProductEdit = function(key) {
+    const p = activeProducts.find(item => item.id === key);
+    if(!p) return;
 
-    document.getElementById('a-title').value = item.title || '';
-    document.getElementById('a-category').value = item.category || 'روتين الجمال';
-    document.getElementById('a-date').value = item.date || '';
-    document.getElementById('a-image').value = item.image || '';
-    document.getElementById('a-excerpt').value = item.excerpt || '';
-    document.getElementById('a-content').value = item.content || '';
-    
-    editIdEl.value = id;
-    saveBtn.innerHTML = '<i class="fas fa-check"></i> حفظ التعديلات الآن';
+    document.getElementById('p-name').value = p.name || '';
+    document.getElementById('p-price').value = p.price || '';
+    document.getElementById('p-discount').value = p.discount || '';
+    document.getElementById('p-category').value = p.category || 'عناية بالشعر';
+    document.getElementById('p-rating').value = p.rating || 5;
+    document.getElementById('p-image').value = p.image || '';
+    document.getElementById('p-description').value = p.description || '';
+
+    document.getElementById('p-bestSeller').checked = !!p.bestSeller;
+    document.getElementById('p-onSale').checked = !!p.onSale;
+
+    editIdEl.value = key;
+    saveBtn.innerHTML = '<i class="fas fa-check"></i> حفظ تعديلات المستحضر';
     cancelEditBtn.style.display = 'inline-block';
   };
 
   // Close editing layout
-  function resetForm(){
-    articleForm.reset();
+  function resetProductForm(){
+    productForm.reset();
     editIdEl.value = '';
-    saveBtn.innerHTML = '<i class="fas fa-plus"></i> نشر المقالة الآن';
+    saveBtn.innerHTML = '<i class="fas fa-plus"></i> إضافة المستحضر للرفوف';
     cancelEditBtn.style.display = 'none';
   }
-  cancelEditBtn.addEventListener('click', resetForm);
+  cancelEditBtn.addEventListener('click', resetProductForm);
 
-  // Delete matching article
-  window.deleteArticle = async function(id) {
-    if(!confirm('هل أنتِ واثقة ومؤكدة لإزالة هذا المقال نهائياً من ركن المدونة؟')) return;
+  // Delete specific product entry from db
+  window.deleteProduct = async function(key) {
+    if(!confirm('هل أنتِ موقنة بحذف هذا المستحضر التجميلي نهائياً من رفوف داندي؟')) return;
     try {
-      await db.collection('articles').doc(id).delete();
-      alert('تم حذف المقالة بنجاح.');
-      loadArticlesAdmin();
+      await db.ref(`products/${key}`).remove();
+      alert('تم حذف المنتج بنجاح.');
     } catch(err) {
-      alert('تعذر الحذف.');
+      alert('فشل الحذف.');
     }
   };
 </script>

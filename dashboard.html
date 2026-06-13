@@ -1,682 +1,367 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة التحكم | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لوحة التحكم الرئيسية والعمليات | Dandy Beauty</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    :root{
-      --bg: #0b0c10;
-      --panel: #12121a;
-      --muted:#9aa0b2;
-      --accent:#f8a5c2;
-      --accent-2:#f78fb6;
-      --success:#27ae60;
-      --danger:#e74c3c;
-      --card-radius:16px;
-      --gap:1rem;
-      --border: rgba(255,255,255,0.07);
-      --font-base: 16px;
-      --touch: 48px; /* حجم لمس مريح */
+    .dashboard-hero {
+      padding: 130px 0 40px;
+      text-align: right;
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%;}
-    body {
-      margin: 0;
-      font-family: 'Tajawal', sans-serif;
-      background: linear-gradient(180deg,var(--bg) 0%, #07070b 100%);
+    .operator-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 24px;
+      background: var(--color-gold-cream);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      margin-bottom: 40px;
+    }
+
+    .operator-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 99px;
+      background: var(--color-blush);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: #fff;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      font-size: var(--font-base);
-      line-height:1.5;
+      font-size: 1.5rem;
     }
 
-    /* Layout */
-    .app{
-      display:grid;
-      grid-template-columns: 300px 1fr;
-      gap: calc(var(--gap) + 0.5rem);
-      min-height:100vh;
-      padding:1rem;
+    /* Elegant Bento Grid for Admin Panels */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 80px;
     }
 
-    /* Sidebar */
-    .sidebar{
-      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
-      padding: 1.25rem;
-      border-radius: calc(var(--card-radius) + 4px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
-      color:var(--accent);
-      border:1px solid var(--border);
-      min-height:220px;
+    .bento-admin-card {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      text-align: right;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition-smooth);
     }
 
-    .brand{display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem}
-    .brand i{font-size:1.5rem}
-    .brand h2{margin:0;font-size:1.06rem}
-    .nav{margin-top:1rem}
-    .nav a{display:block;padding:0.85rem;border-radius:10px;color:var(--muted);text-decoration:none;margin-bottom:0.5rem;border:1px solid transparent}
-    .nav a.active, .nav a:hover{background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#111;border-color:rgba(255,255,255,0.03)}
-
-    .user-actions{margin-top:1.25rem;display:flex;gap:0.6rem;flex-wrap:wrap}
-    .btn{display:inline-block;padding:0.72rem 1rem;border-radius:12px;border:none;cursor:pointer;font-weight:800;font-size:0.98rem;min-height:var(--touch)}
-    .btn.primary{background:var(--accent);color:#111}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-
-    /* Topbar + Main */
-    .main{
-      padding:0.8rem 0.4rem;
-      display:flex;flex-direction:column;gap:var(--gap)
+    .bento-admin-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--color-blush);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: var(--transition-smooth);
     }
 
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:1rem}
-    .topbar h1{margin:0;color:var(--accent);font-size:1.35rem}
-
-    /* Cards & forms grid */
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:1rem;
-      align-items:start;
+    .bento-admin-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--color-blush);
     }
 
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
-      padding:1.25rem;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,0.55);
-      border:1px solid var(--border);
+    .bento-admin-card:hover::before {
+      transform: scaleY(1);
     }
 
-    /* Forms: improved spacing & typography */
-    form{display:block}
-    .form-row{margin-bottom:1rem}
-    form label{display:block;margin-bottom:0.5rem;color:var(--muted);font-weight:800;font-size:1.02rem}
-    form input, form select, form textarea{width:100%;padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:#0f1216;color:#fff;font-size:1.02rem}
-    form input::placeholder, form textarea::placeholder{color: #8f98a8}
-    form textarea{min-height:130px}
-    .actions{display:flex;gap:0.75rem;margin-top:0.9rem}
-    .actions .btn{flex:1}
-
-    /* Products list */
-    .products-panel{display:flex;flex-direction:column;gap:1rem}
-    .product-item{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem;border-radius:12px;border:1px solid var(--border);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));}
-    .product-left{display:flex;align-items:center;gap:1rem}
-    .product-left img{width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
-    .product-meta{display:flex;flex-direction:column}
-    .product-name{font-weight:900;color:var(--accent);font-size:1.08rem}
-    .product-price{color:var(--muted);font-size:1rem}
-
-    .control-group{display:flex;gap:0.6rem;align-items:center}
-    .control-group .btn{padding:0.6rem 0.9rem;font-size:0.98rem}
-
-    /* Table styling (improved) */
-    #productsTable{width:100%;border-collapse:collapse;background:transparent;margin-top:0.9rem}
-    #productsTable th, #productsTable td{padding:14px 14px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.04);font-size:1rem}
-    #productsTable thead th{background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#111;font-weight:800}
-    #productsTable tr:hover{background:rgba(255,255,255,0.02)}
-
-    .chip{display:inline-block;padding:0.28rem 0.6rem;border-radius:999px;font-size:0.95rem}
-    .chip.sale{background:rgba(39,174,96,0.12);color:var(--success)}
-    .chip.none{background:rgba(255,255,255,0.03);color:var(--muted)}
-
-    /* Modal (محسّن) */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:9999;padding:1rem}
-    .modal.show{display:flex}
-    .modal .modal-card{background:var(--panel);padding:1rem;border-radius:12px;min-width:320px;border:1px solid var(--border);box-shadow:0 18px 50px rgba(0,0,0,0.65);max-width:720px;width:100%;transform:translateY(12px);opacity:0;transition:transform 220ms cubic-bezier(.2,.9,.2,1),opacity 220ms ease}
-    .modal.show .modal-card{transform:translateY(0);opacity:1}
-    .modal .modal-card h4{margin:0 0 0.25rem 0;font-size:1.05rem}
-    .modal .modal-card p{margin:0;font-size:0.98rem}
-    @media (max-width:600px){
-      .modal .modal-card{max-width:420px;padding:0.9rem;border-radius:10px}
+    .bento-admin-icon {
+      font-size: 2.5rem;
+      color: var(--color-blush);
+      margin-bottom: 20px;
     }
 
-    /* Toolbar (الكارد الذي يحتوي الأزرار) */
-    .toolbar{padding:0.9rem;border-radius:12px;border:1px solid var(--border);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));display:flex;justify-content:space-between;align-items:center}
-
-    /* Responsive: mobile-first UX improvements */
-    @media (max-width:980px){
-      .app{grid-template-columns:1fr;}
-      .sidebar{order: -1;display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.8rem}
-      .brand h2{font-size:1rem}
-      .nav{display:flex;gap:0.5rem;overflow:auto}
-      .nav a{white-space:nowrap;padding:0.55rem 0.85rem;font-size:0.95rem}
-      .grid{grid-template-columns:1fr}
+    .bento-admin-card h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 10px;
     }
 
-    @media (max-width:600px){
-      :root{--font-base:15px}
-      body{padding-bottom:0.5rem}
-
-      /* make form fields bigger and spaced */
-      form label{font-size:1.04rem;margin-bottom:0.6rem}
-      form input, form select, form textarea{padding:1.05rem;font-size:1.04rem;border-radius:12px}
-
-      /* stack layout for products to be easy to scan */
-      .product-item{flex-direction:column;align-items:stretch;padding:0.95rem}
-      .product-left{gap:0.8rem}
-      .product-left img{width:84px;height:84px}
-      .control-group{width:100%;justify-content:space-between}
-      .control-group .btn{flex:1}
-
-      /* table becomes card-like with clear labels */
-      #productsTable thead{display:none}
-      #productsTable, #productsTable tbody, #productsTable tr, #productsTable td{display:block;width:100%}
-      #productsTable tr{margin-bottom:0.9rem;border-radius:12px;padding:0.85rem;border:1px solid rgba(255,255,255,0.04);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03))}
-      #productsTable td{Padding:10px 12px;position:relative;text-align:right}
-      #productsTable td::before{content:attr(data-label);position:absolute;left:12px;top:10px;font-weight:900;color:var(--muted);display:block}
-      #productsTable td img{width:56px;height:56px}
-
-      /* buttons full width for easier tapping */
-      .actions .btn, .control-group .btn{min-height:var(--touch);padding:0.75rem 1rem}
-      .actions{flex-direction:column}
-      .actions .btn{width:100%}
-
-      /* sidebar collapse to slim top bar */
-      .sidebar{display:flex;flex-direction:row;align-items:center;gap:0.5rem;padding:0.6rem;border-radius:10px}
-      .nav{display:none}
-
-      /* keep header compact */
-      .topbar h1{font-size:1.05rem}
+    .bento-admin-card p {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      flex: 1;
     }
 
-    /* utility */
-    .muted{color:var(--muted)}
-    a.link{color:var(--accent);text-decoration:none}
+    .bento-admin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-primary);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 16px;
+      transition: var(--transition-fast);
+    }
 
-    /* notification */
-    .toast{position:fixed;left:50%;transform:translateX(-50%);top:18px;background:var(--accent);color:#111;padding:0.8rem 1.1rem;border-radius:10px;z-index:999}
+    .bento-admin-card:hover .bento-admin-link {
+      color: var(--color-blush);
+    }
+
+    .btn-signout {
+      padding: 10px 24px;
+      background: var(--color-surface-soft);
+      border: 1px solid var(--border-light);
+      color: var(--color-primary);
+      font-weight: 700;
+      border-radius: 99px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: var(--transition-fast);
+    }
+
+    .btn-signout:hover {
+      background: var(--color-danger);
+      color: #fff;
+      border-color: var(--color-danger);
+    }
   </style>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar" aria-label="القائمة الجانبية">
-      <div class="brand"><i class="fa-solid fa-feather fa-lg"></i><h2>Dandy - لوحة التحكم</h2></div>
 
-      <nav class="nav" aria-label="روابط لوحة التحكم">
-        <a href="#products" class="active"><i class="fa-solid fa-box"></i> المنتجات</a>
-        <a href="#testimonials"><i class="fa-regular fa-star"></i> آراء العملاء</a>
-        <a href="#articles"><i class="fa-solid fa-pen-nib"></i> المقالات</a>
-      </nav>
+<!-- Navigation -->
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" class="active">لوحة التحكم ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="dashboard.html">الرئيسية اللوحة</a></li>
+        <li><a href="javascript:void(0)" id="signoutLink">تسجيل خروج</a></li>
+      </ul>
+    </li>
+  </ul>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav>
 
-      <div class="user-actions">
-        <button id="signOutBtn" class="btn ghost" title="تسجيل الخروج">تسجيل الخروج</button>
-        <button id="goArticles" class="btn primary">صفحة المقالات</button>
-        <button id="statsBtn" class="btn ghost">📊 إحصائيات</button>
-        <button id="ordersBtn" class="btn ghost">🧾 الطلبات</button>
-      </div>
+<!-- Mobile Menu -->
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="dashboard.html">اللوحة الرئيسية</a></li>
+  </ul>
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
+</div>
 
-      <hr style="margin:1rem 0;border-color:rgba(255,255,255,0.03)">
-
-      <div>
-        <label class="muted">🔗 توليد رابط واتساب سريع</label>
-        <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
-          <input id="waNumber" placeholder="مثال: 01012345678" style="flex:1;padding:0.6rem;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#0f1216;color:#fff"> 
-          <button id="waGen" class="btn primary">نسخ</button>
-        </div>
-        <p class="muted" style="font-size:0.85rem;margin-top:0.35rem">سيتم نسخ الرابط تلقائياً إلى الحافظة (إن أمكن)</p>
-      </div>
-
-    </aside>
-
-    <main class="main">
-      <div class="topbar">
-        <h1>لوحة التحكم - Dandy</h1>
-        <div style="display:flex;gap:0.75rem;align-items:center">
-          <div class="muted">المستخدم: <strong id="adminName">مدير</strong></div>
-        </div>
-      </div>
-
-      <section class="grid">
-        <!-- إضافة منتج -->
-        <div class="card" id="products">
-          <h3 style="color:var(--accent);margin-top:0">إضافة / تعديل منتج</h3>
-          <form id="productForm">
-            <label>اسم المنتج</label>
-            <input type="text" id="name" required placeholder="سيروم...">
-
-            <label>الفئة</label>
-            <select id="category" required>
-              <option value="منتجات الشعر">منتجات الشعر</option>
-              <option value="منتجات الجسم">منتجات الجسم</option>
-              <option value="منتجات العطور">منتجات العطور</option>
-            </select>
-
-            <label>رابط الصورة <a href="https://postimages.org/" target="_blank" class="link">🔗 رفع صورة</a></label>
-            <input type="url" id="image" placeholder="https://..." required>
-
-            <label>الوصف</label>
-            <textarea id="description" placeholder="تفاصيل المنتج"></textarea>
-
-            <label>السعر (بدون رموز)</label>
-            <input type="text" id="price" placeholder="مثال: 250" required>
-
-            <label>روابط التواصل</label>
-            <input type="url" id="whatsapp" placeholder="https://wa.me/...">
-            <input type="url" id="facebook" placeholder="رابط فيسبوك">
-            <input type="url" id="instagram" placeholder="رابط إنستجرام">
-
-            <div class="actions">
-              <button class="btn primary" type="submit">إضافة المنتج</button>
-              <button id="resetForm" type="button" class="btn ghost">تفريغ الحقول</button>
-            </div>
-          </form>
-
-          <!-- toolbar محسن -->
-          <div class="toolbar" style="margin-top:1rem;">
-            <div style="display:flex;align-items:center;gap:0.6rem">
-              <strong class="muted">المنتجات الحالية</strong>
-              <span class="muted" style="font-size:0.95rem">(إجمالي: <span id="productsCount">0</span>)</span>
-            </div>
-            <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
-              <button id="downloadExcel" class="btn ghost" title="تحميل ملف Excel">📥 تحميل Excel</button>
-              <button id="refreshProducts" class="btn ghost" title="تحديث">🔄 تحديث</button>
-            </div>
-          </div>
-
-          <div class="products-panel" id="productsList" style="margin-top:0.8rem"></div>
-
-        </div>
-
-        <!-- جدول وإدارة العروض -->
-        <div class="card">
-          <h3 style="color:var(--accent);margin-top:0">جدول المنتجات وإدارة العروض</h3>
-
-          <div style="overflow:auto;margin-top:0.6rem">
-            <table id="productsTable" aria-describedby="جدول المنتجات">
-              <thead>
-                <tr>
-                  <th>الصورة</th>
-                  <th>اسم المنتج</th>
-                  <th>السعر</th>
-                  <th>القسم</th>
-                  <th>الخصم الحالي</th>
-                  <th>الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- Testimonials -->
-      <section class="card" id="testimonials">
-        <h3 style="color:var(--accent);margin-top:0">آراء العملاء</h3>
-        <form id="testimonialForm" style="margin-top:0.6rem;display:flex;gap:0.6rem;flex-direction:column">
-          <label>نوع المحتوى</label>
-          <select id="testimonialType"><option value="image">صورة</option><option value="video">فيديو</option></select>
-          <label>رابط المحتوى</label>
-          <input id="testimonialUrl" type="url" placeholder="https://...">
-          <div style="display:flex;gap:0.5rem">
-            <button class="btn primary" type="submit">إضافة رأي</button>
-            <button id="clearTestimonials" type="button" class="btn ghost">تفريغ</button>
-          </div>
-        </form>
-
-        <div class="products-panel" id="testimonialList" style="margin-top:1rem"></div>
-      </section>
-
-      <!-- دليل الاستخدام + رابط المقالات -->
-      <section class="card" id="articles" style="margin-bottom:2rem">
-        <h3 style="color:var(--accent);margin-top:0">📘 دليل استخدام سريع</h3>
-        <ul class="muted" style="line-height:1.8;margin:0.6rem 0;padding-inline-start:1rem">
-          <li>أدخل اسم المنتج والسعر (السعر بالأرقام فقط).</li>
-          <li>رابط الصورة يجب أن يكون مباشرًا (https).</li>
-          <li>زر التحميل يُصدر ملف Excel يحتوي على اسم المنتج، الفئة والسعر.</li>
-        </ul>
-
-        <div style="margin-top:0.6rem;text-align:center">
-          <button id="openArticles" class="btn primary">اذهب لصفحة المقالات</button>
-        </div>
-      </section>
-
-      <!-- Modal لإدارة الخصم (محسّن) -->
-      <div id="discountModal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" tabindex="-1">
-        <div class="modal-card" role="document" aria-labelledby="discountTitle">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:0.6rem;margin-bottom:0.6rem">
-            <h4 id="discountTitle" style="margin:0;color:var(--accent)">تعيين نسبة الخصم</h4>
-            <button id="modalCloseX" class="btn ghost" aria-label="إغلاق">✖</button>
-          </div>
-          <p class="muted">أدخل قيمة الخصم بين 1 و 90 (بالأرقام فقط)</p>
-          <input id="discountInput" type="number" min="1" max="90" placeholder="مثال: 20" style="margin-top:0.6rem">
-          <div style="display:flex;gap:0.6rem;margin-top:0.8rem;justify-content:flex-end">
-            <button id="applyDiscount" class="btn primary">تطبيق</button>
-            <button id="closeModal" class="btn ghost">إلغاء</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="toastHolder"></div>
-
-    </main>
+<!-- Admin Dashboard Home Section -->
+<section class="dashboard-hero container">
+  <div class="section-header" style="text-align: right; margin-bottom: 24px;">
+    <span class="sub">مركز قيادة داندي الفاخر</span>
+    <h2>لوحة التحكم وعمليات المتجر اللحظية</h2>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <div class="operator-profile" id="operatorCard" style="display: none;">
+    <div class="operator-avatar" id="operatorInitials">D</div>
+    <div style="flex: 1;">
+      <h3 style="font-family:'Cairo', sans-serif; font-size:1.15rem; color:var(--color-primary);">مرحباً بكِ مجدداً، <strong id="operatorEmail">...</strong></h3>
+      <p style="color:var(--color-muted); font-size:0.9rem; margin-top:2px;">تم التحقق من بصمة المصادقة بنجاح. تمنياتنا لكِ بيوم عمل سعيد ومثمر.</p>
+    </div>
+    <div>
+      <button class="btn-signout" id="signOutBtn"><i class="fas fa-sign-out-alt"></i> مغادرة اللوحة</button>
+    </div>
+  </div>
 
-  <script>
-    // --- إعداد Firebase --- (احتفظت ببياناتك كما هي)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.appspot.com",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    };
+  <!-- Bento grid menus -->
+  <div class="dashboard-grid">
+    <!-- Orders Card -->
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-shopping-basket"></i></div>
+      <h3>إدارة وتوصيل الطلبات</h3>
+      <p>متابعة فواتير الحبيبات اللحظية، مراجعة وتجهيز الشحن، تغيير حالة كل طلب مع إرسال التنبيهات.</p>
+      <a href="dashboard-order.html" class="bento-admin-link">الانتقال لمدير الطلبات الفوري <i class="fas fa-arrow-left"></i></a>
+    </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <!-- Inventory Products Card -->
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-boxes"></i></div>
+      <h3>مخزن ومستحضرات المتجر</h3>
+      <p>تنظيم قائمة المنتجات في ثلاجة الشحن، تعديل أسعار المستحضرات، إضافة الخصومات الحصرية والتقييمات وصور المعاينة.</p>
+      <a href="dashboard-product.html" class="bento-admin-link">تسيير قائمة المستحضرات <i class="fas fa-arrow-left"></i></a>
+    </div>
 
-    // عناصر UI
-    const productForm = document.getElementById('productForm');
-    const productsList = document.getElementById('productsList');
-    const productsTableBody = document.querySelector('#productsTable tbody');
-    const testimonialForm = document.getElementById('testimonialForm');
-    const testimonialList = document.getElementById('testimonialList');
-    const downloadExcelBtn = document.getElementById('downloadExcel');
-    const refreshBtn = document.getElementById('refreshProducts');
-    const waGenBtn = document.getElementById('waGen');
-    const waNumberInput = document.getElementById('waNumber');
+    <!-- Editorial Blog Card -->
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-newspaper"></i></div>
+      <h3>إدارة المقالات والمدونة</h3>
+      <p>إعداد مقالات ترطيب الشعر والعناية بالبشرة، كتابة النصائح الحصرية، وتحرير العناوين والأوسمة والتصنيفات الجمالية.</p>
+      <a href="dashboard-blog.html" class="bento-admin-link">كتابة وتحرير المقالات الفخمة <i class="fas fa-arrow-left"></i></a>
+    </div>
 
-    // modal
-    const discountModal = document.getElementById('discountModal');
-    const discountInput = document.getElementById('discountInput');
-    const applyDiscountBtn = document.getElementById('applyDiscount');
-    const closeModalBtn = document.getElementById('closeModal');
-    let currentDiscountProductId = null;
+    <!-- Analytics Card -->
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-chart-line"></i></div>
+      <h3>الإحصائيات وسلامة المحطات</h3>
+      <p>أبعاد العمل الكاملة: معدل قراءة المقالات، حجم حجز السلال، ورصد أداء استقرار خوادم قواعد البيانات في داندي.</p>
+      <a href="statues.html" class="bento-admin-link">استعراض لوحة التحليلات والمقاييس <i class="fas fa-arrow-left"></i></a>
+    </div>
+  </div>
+</section>
 
-    // أدوات المساعدة
-    function toast(msg, time=2500){
-      const t = document.createElement('div');
-      t.className='toast'; t.innerText = msg;
-      document.getElementById('toastHolder').appendChild(t);
-      setTimeout(()=>t.remove(), time);
+<!-- Footer -->
+<footer>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+    </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
+        <li><a href="terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+  </div>
+</footer>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  const operatorCard = document.getElementById('operatorCard');
+  const operatorEmail = document.getElementById('operatorEmail');
+  const operatorInitials = document.getElementById('operatorInitials');
+  const signOutBtn = document.getElementById('signOutBtn');
+  const signoutLink = document.getElementById('signoutLink');
+
+  // Guard routing checks
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = 'login.html';
+    } else {
+      operatorCard.style.display = 'flex';
+      operatorEmail.textContent = user.email || 'Admin';
+      operatorInitials.textContent = (user.email ? user.email.charAt(0).toUpperCase() : 'A');
+    }
+  });
+
+  // Action logout triggers
+  async function performLogOut(){
+    try {
+      await auth.signOut();
+      window.location.href = 'login.html';
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  signOutBtn.addEventListener('click', performLogOut);
+  if(signoutLink) signoutLink.addEventListener('click', performLogOut);
+
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
+
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
     }
 
-    function safeNumber(value){
-      // ترجع null إذا لم يكن رقم صحيح
-      const n = Number(String(value).replace(/[^0-9.]/g,''));
-      return isFinite(n) && n!=='' ? n : null;
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
     }
+    lastScrollTop = scrollTop;
+  });
+</script>
 
-    // التحقق من تسجيل الدخول (حماية الصفحة)
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = 'login.html';
-      } else {
-        document.getElementById('adminName').innerText = user.displayName || (user.email || 'مدير');
-      }
-    });
-
-    // إضافة / تحديث منتج
-    productForm.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const category = document.getElementById('category').value;
-      const image = document.getElementById('image').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const priceRaw = document.getElementById('price').value.trim();
-      const whatsapp = document.getElementById('whatsapp').value.trim();
-      const facebook = document.getElementById('facebook').value.trim();
-      const instagram = document.getElementById('instagram').value.trim();
-
-      const price = safeNumber(priceRaw);
-      if (price === null) return toast('⚠️ السعر يجب أن يكون رقمًا صالحًا');
-
-      const newProductRef = db.ref('products').push();
-      newProductRef.set({
-        name, category, image, description, price, whatsapp, facebook, instagram,
-        onSale:false, discount:null, createdAt: Date.now()
-      }).then(()=>{
-        toast('✅ تم حفظ المنتج');
-        productForm.reset();
-      }).catch(err=>{
-        console.error(err); toast('❌ حدث خطأ عند الحفظ');
-      });
-    });
-
-    document.getElementById('resetForm').addEventListener('click',()=>productForm.reset());
-
-    // عرض المنتجات في الواجهة (قائمة وبجدول)
-    function renderProducts(snapshot){
-      productsList.innerHTML='';
-      productsTableBody.innerHTML='';
-
-      snapshot.forEach(child => {
-        const id = child.key; const data = child.val();
-
-        // قائمة بسيطة
-        const item = document.createElement('div'); item.className='product-item';
-        item.innerHTML = `
-          <div class="product-left">
-            <img src="${data.image || ''}" alt="${data.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=No+Image'">
-            <div class="product-meta">
-              <div class="product-name">${data.name}</div>
-              <div class="product-price">${data.price} EGP · ${data.category}</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:0.5rem;align-items:center">
-            <button class="btn ghost" data-action="edit" data-id="${id}">✏️ تعديل</button>
-            <button class="btn" data-action="delete" data-id="${id}" style="background:${'--'};border:1px solid rgba(255,255,255,0.03)">🗑️ حذف</button>
-          </div>
-        `;
-        productsList.appendChild(item);
-
-        // صف الجدول
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td data-label="الصورة"><img src="${data.image || ''}" style="width:50px;height:50px;object-fit:cover;border-radius:6px" onerror="this.onerror=null;this.src='https://via.placeholder.com/80?text=No'"/></td>
-          <td data-label="الاسم">${data.name}</td>
-          <td data-label="السعر">${data.price} EGP</td>
-          <td data-label="القسم">${data.category}</td>
-          <td data-label="الخصم">${data.onSale ? `<span class='chip sale'>خصم ${data.discount}%</span>` : `<span class='chip none'>لا يوجد</span>`}</td>
-          <td data-label="الإجراءات">
-            <div style="display:flex;gap:0.4rem;justify-content:center">
-              <button class="btn ghost" data-action="discount" data-id="${id}">🎯</button>
-              <button class="btn ghost" data-action="removeOffer" data-id="${id}">❌</button>
-            </div>
-          </td>
-        `;
-        productsTableBody.appendChild(tr);
-      });
-
-    }
-
-    // مستمع قاعدة بيانات لمنتجات - يحدث تلقائياً عند أي تغيير
-    db.ref('products').on('value', snapshot => {
-      if (!snapshot.exists()){
-        productsList.innerHTML='<div class="muted">لا توجد منتجات حتى الآن</div>';
-        productsTableBody.innerHTML='';
-        const countEl = document.getElementById('productsCount'); if(countEl) countEl.innerText = 0;
-        return;
-      }
-      renderProducts(snapshot);
-      const countEl = document.getElementById('productsCount'); if (countEl) countEl.innerText = snapshot.numChildren();
-    });
-
-    // تفويض الأحداث (حذف، تعديل، تعيين خصم)
-    document.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-      const action = btn.dataset.action; const id = btn.dataset.id;
-
-      if (action === 'delete'){
-        if (confirm('هل أنت متأكد من حذف المنتج؟')){
-          db.ref('products').child(id).remove().then(()=>toast('🗑️ تم الحذف'));
-        }
-      }
-
-      if (action === 'edit'){
-        // جلب بيانات المنتج لملأ الحقول (تحويل واجهة إلى وضع التعديل)
-        db.ref('products/'+id).once('value').then(snap => {
-          const data = snap.val();
-          if (!data) return toast('❌ المنتج غير موجود');
-          document.getElementById('name').value = data.name || '';
-          document.getElementById('category').value = data.category || '';
-          document.getElementById('image').value = data.image || '';
-          document.getElementById('description').value = data.description || '';
-          document.getElementById('price').value = data.price || '';
-          document.getElementById('whatsapp').value = data.whatsapp || '';
-          document.getElementById('facebook').value = data.facebook || '';
-          document.getElementById('instagram').value = data.instagram || '';
-
-          // بدل أن نضيف، سنقوم بتحديث عند الضغط على زر الإضافة إذا كان هناك معرف تعديل
-          productForm.dataset.editing = id;
-          toast('📝 يمكنك تعديل الحقول ثم الضغط على "إضافة المنتج" لحفظ التغييرات (سيتم التحديث)');
-        });
-      }
-
-      if (action === 'discount'){
-        // فتح المودال بطريقة محسّنة
-        currentDiscountProductId = id; discountInput.value = '';
-        discountModal.setAttribute('aria-hidden','false');
-        discountModal.classList.add('show');
-        setTimeout(()=>{
-          discountInput.focus();
-        },80);
-      }
-
-      if (action === 'removeOffer'){
-        db.ref('products/'+id).update({onSale:false, discount:null}).then(()=>toast('❌ تمت إزالة المنتج من العروض'));
-      }
-    });
-
-    // عند إرسال النموذج إذا كان في وضع تعديل
-    productForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const editingId = productForm.dataset.editing;
-      if (!editingId) return; // handled في إضافة
-
-      const updates = {
-        name: document.getElementById('name').value.trim(),
-        category: document.getElementById('category').value,
-        image: document.getElementById('image').value.trim(),
-        description: document.getElementById('description').value.trim(),
-        price: safeNumber(document.getElementById('price').value),
-        whatsapp: document.getElementById('whatsapp').value.trim(),
-        facebook: document.getElementById('facebook').value.trim(),
-        instagram: document.getElementById('instagram').value.trim(),
-      };
-
-      if (updates.price === null){ toast('⚠️ السعر غير صالح'); return; }
-
-      db.ref('products/'+editingId).update(updates).then(()=>{
-        toast('✅ تم تحديث المنتج');
-        delete productForm.dataset.editing;
-        productForm.reset();
-      }).catch(()=>toast('❌ فشل التحديث'));
-    });
-
-    // تطبيق الخصم
-    applyDiscountBtn.addEventListener('click', ()=>{
-      const val = Number(discountInput.value);
-      if (!currentDiscountProductId) return;
-      if (!Number.isInteger(val) || val < 1 || val > 90){ toast('⚠️ أدخل رقم صحيح بين 1 و 90'); return; }
-      db.ref('products/'+currentDiscountProductId).update({onSale:true,discount:val}).then(()=>{
-        toast('✅ تم تعيين الخصم');
-        discountModal.classList.remove('show');
-        discountModal.setAttribute('aria-hidden','true');
-        currentDiscountProductId = null;
-      }).catch(()=>toast('❌ فشل في تعيين الخصم'));
-    });
-
-    closeModalBtn.addEventListener('click', ()=>{ discountModal.classList.remove('show'); discountModal.setAttribute('aria-hidden','true'); currentDiscountProductId=null; });
-
-    // إغلاق عند الضغط على خلفية المودال
-    discountModal.addEventListener('click', (ev)=>{ if (ev.target === discountModal){ discountModal.classList.remove('show'); discountModal.setAttribute('aria-hidden','true'); currentDiscountProductId=null; } });
-    // زر إغلاق X
-    const modalX = document.getElementById('modalCloseX'); if (modalX) modalX.addEventListener('click', ()=>{ discountModal.classList.remove('show'); discountModal.setAttribute('aria-hidden','true'); currentDiscountProductId=null; });
-    // إغلاق بزر Esc
-    document.addEventListener('keydown', (ev)=>{ if (ev.key === 'Escape' && discountModal.classList.contains('show')){ discountModal.classList.remove('show'); discountModal.setAttribute('aria-hidden','true'); currentDiscountProductId=null; } });
-
-    // ===== Testimonials =====
-    testimonialForm.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const type = document.getElementById('testimonialType').value;
-      const url = document.getElementById('testimonialUrl').value.trim();
-      if (!url){ toast('⚠️ أدخل رابط المحتوى'); return; }
-      const newRef = db.ref('testimonials').push();
-      newRef.set({type,url}).then(()=>{ toast('✅ تم إضافة رأي'); testimonialForm.reset(); });
-    });
-
-    document.getElementById('clearTestimonials').addEventListener('click', ()=>{
-      if (confirm('هل تريد تفريغ جميع الآراء؟')){
-        db.ref('testimonials').remove().then(()=>toast('🗑️ تم التفريغ'));
-      }
-    });
-
-    db.ref('testimonials').on('value', snapshot => {
-      testimonialList.innerHTML='';
-      if (!snapshot.exists()) return testimonialList.innerHTML='<div class="muted">لا توجد آراء بعد</div>';
-      snapshot.forEach(child=>{
-        const {type,url} = child.val(); const id = child.key;
-        const div = document.createElement('div'); div.className='product-item';
-        div.innerHTML = `
-          <div class="product-left">
-            ${type==='image'? `<img src="${url}" alt="testimonial" onerror="this.onerror=null;this.src='https://via.placeholder.com/80'">` : `<video src="${url}" width="80" muted></video>`}
-            <div class="product-meta"><div class="product-name">${type==='image' ? 'صورة' : 'فيديو'}</div><div class="product-price muted">${url}</div></div>
-          </div>
-          <div style="display:flex;gap:0.5rem"><button class="btn ghost" data-action="deleteTestimonial" data-id="${id}">حذف</button></div>
-        `;
-        testimonialList.appendChild(div);
-      });
-    });
-
-    // حذف آراء بواسطة تفويض
-    document.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-action="deleteTestimonial"]');
-      if (!btn) return;
-      const id = btn.dataset.id;
-      if (confirm('هل تريد حذف هذا الرأي؟')){
-        db.ref('testimonials').child(id).remove().then(()=>toast('🗑️ تم الحذف'));
-      }
-    });
-
-    // تنزيل Excel
-    downloadExcelBtn.addEventListener('click', ()=>{
-      db.ref('products').once('value').then(snapshot=>{
-        const arr = [];
-        snapshot.forEach(child=>{ const p = child.val(); arr.push({"اسم المنتج":p.name, "الفئة":p.category, "السعر":p.price})});
-        const ws = XLSX.utils.json_to_sheet(arr);
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'المنتجات');
-        XLSX.writeFile(wb,'منتجات_Dandy.xlsx');
-      });
-    });
-
-    refreshBtn.addEventListener('click', ()=>{ toast('✅ تم التحديث'); /* listener already keeps it live */ });
-
-    // توليد رابط واتساب
-    waGenBtn.addEventListener('click', ()=>{
-      let num = waNumberInput.value.replace(/\D/g,'');
-      if (!num) return toast('⚠️ أدخل رقمًا');
-      // if starts with 0 -> assume Egyptian local number and convert to +2
-      if (num.startsWith('0')) num = '2'+num;
-      if (!num.startsWith('2')) num = num; // allow international
-      const link = `https://wa.me/${num}`;
-      navigator.clipboard.writeText(link).then(()=>{ toast('✅ تم نسخ الرابط'); document.getElementById('whatsapp').value = link; }).catch(()=>{ toast('✅ تم إنشاء الرابط (انسخه يدوياً)'); document.getElementById('whatsapp').value = link; });
-    });
-
-    // الانتقال لصفحات أخرى
-    document.getElementById('goArticles').addEventListener('click', ()=> window.location.href='dashboard-blog.html');
-    document.getElementById('openArticles').addEventListener('click', ()=> window.location.href='dashboard-blog.html');
-    document.getElementById('statsBtn').addEventListener('click', ()=> window.location.href='statues.html');
-    document.getElementById('ordersBtn').addEventListener('click', ()=> window.location.href='dashboard-order.html');
-
-    // تسجيل الخروج
-    document.getElementById('signOutBtn').addEventListener('click', ()=>{
-      firebase.auth().signOut().then(()=>{ window.location.href='login.html'; });
-    });
-
-  </script>
 </body>
 </html>

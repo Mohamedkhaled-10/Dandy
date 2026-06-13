@@ -1,148 +1,279 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>تسجيل الدخول | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"/>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  <title>تسجيل دخول الإدارة | Dandy Beauty</title>
+  <meta name="robots" content="noindex, nofollow">
 
-    body {
-      margin: 0;
-      font-family: 'Tajawal', sans-serif;
-      background-color: #121212;
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    .login-container {
+      min-height: 85vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      color: #fff;
-      padding: 1rem;
+      padding-top: 120px;
+      padding-bottom: 60px;
     }
 
-    .login-container {
-      background-color: #1e1e2e;
-      padding: 2rem;
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    .login-box {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 40px;
       width: 100%;
-      max-width: 400px;
-    }
-
-    .login-container h2 {
+      max-width: 440px;
+      box-shadow: var(--shadow-lg);
       text-align: center;
-      margin-bottom: 1.5rem;
-      color: #f8a5c2;
     }
 
-    input {
+    .login-box h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+
+    .login-box p {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      text-align: right;
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
       display: block;
-      width: 100%;
-      padding: 0.9rem 1rem;
-      margin-bottom: 1.2rem;
-      border: 1px solid #444;
-      border-radius: 12px;
-      background-color: #29293d;
-      color: #fff;
-      font-size: 1rem;
-      transition: 0.3s;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--color-primary);
+      font-size: 0.9rem;
     }
 
-    input:focus {
-      border-color: #f8a5c2;
-      background-color: #31314a;
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-sm);
+      font-size: 0.95rem;
       outline: none;
+      transition: var(--transition-fast);
     }
 
-    button {
+    .form-group input:focus {
+      border-color: var(--color-blush);
+      box-shadow: 0 0 0 3px rgba(217, 141, 153, 0.15);
+    }
+
+    .btn-login {
       width: 100%;
-      padding: 1rem;
-      background-color: #f8a5c2;
-      color: #1e1e2e;
-      font-weight: bold;
+      padding: 14px;
+      background: var(--color-blush);
+      color: #fff;
+      font-weight: 700;
       border: none;
-      border-radius: 12px;
+      border-radius: 99px;
+      font-size: 1rem;
       cursor: pointer;
-      font-size: 1.1rem;
-      transition: 0.3s ease;
+      box-shadow: 0 4px 12px rgba(217, 141, 153, 0.2);
+      transition: var(--transition-smooth);
     }
 
-    button:hover {
-      background-color: #f78fb6;
-    }
-
-    .error-message {
-      color: #ff6b81;
-      text-align: center;
-      margin-top: 1rem;
-    }
-
-    @media (max-width: 480px) {
-      .login-container {
-        padding: 1.5rem;
-      }
-
-      h2 {
-        font-size: 1.3rem;
-      }
-
-      input, button {
-        font-size: 1rem;
-      }
+    .btn-login:hover {
+      background: var(--color-primary);
     }
   </style>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3691498329769907"
-     crossorigin="anonymous"></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 </head>
 <body>
 
-  <div class="login-container">
-    <h2>تسجيل الدخول</h2>
-    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-    <input type="password" id="password" placeholder="كلمة المرور" required>
-    <button onclick="login()">دخول</button>
-    <div class="error-message" id="error"></div>
+<!-- Navigation -->
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <h1>DANDY</h1>
   </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html font-heading">المقالات</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" class="active">المزيد ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="client-reviews.html">ثقة العملاء</a></li>
+        <li><a href="about-us.html font-heading">من نحن</a></li>
+      </ul>
+    </li>
+  </ul>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- Mobile Menu -->
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="client-reviews.html">ثقة العملاء</a></li>
+    <li><a href="blog.html font-heading">المقالات</a></li>
+    <li><a href="about-us.html">من نحن</a></li>
+  </ul>
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
+</div>
+
+<!-- Login main wrapper -->
+<main class="login-container container">
+  <div class="login-box">
+    <i class="fas fa-user-shield" style="font-size:3rem; color:var(--color-blush); margin-bottom:16px;"></i>
+    <h2>الدخول للوحة العمليات</h2>
+    <p>مخصص لمشرفي وموظفي متجر داندي للتجميل</p>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="l-email">البريد الإلكتروني المعتمد</label>
+        <input type="email" id="l-email" placeholder="admin@dandy.com" required>
+      </div>
+
+      <div class="form-group" style="position: relative;">
+        <label for="l-pass">كلمة المرور الحزامية</label>
+        <input type="password" id="l-pass" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn-login" style="margin-top: 10px;">تسجيل الدخول الآمن</button>
+    </form>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+    </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
+        <li><a href="terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+  </div>
   
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.firebasestorage.app",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    };
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+  </div>
+</footer>
 
-    firebase.initializeApp(firebaseConfig);
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-      const errorDiv = document.getElementById("error");
-      errorDiv.innerText = "";
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
 
-      if (!email || !password) {
-        errorDiv.innerText = "يرجى إدخال البريد وكلمة المرور";
-        return;
-      }
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(() => {
-          window.location.href = "dashboard.html"; // غيره حسب اسم صفحة الداشبورد
-        })
-        .catch(error => {
-          errorDiv.innerText = "خطأ في تسجيل الدخول: " + error.message;
-        });
+  // Handle active states of navbar menu on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
     }
-  </script>
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
+
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
+
+  // Active check redirect if already signed in
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      window.location.href = 'dashboard.html';
+    }
+  });
+
+  // Handle secure submit login credentials
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('l-email').value.trim();
+    const password = document.getElementById('l-pass').value.trim();
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      // Automatic redirect triggers onAuthStateChanged above
+    } catch (err) {
+      alert('بينات الدخول خاطئة أو غير مسجلة! نرجو مراجعة مسؤول النظام للتحقق.');
+    }
+  });
+</script>
 
 </body>
 </html>

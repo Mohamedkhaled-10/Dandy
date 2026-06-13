@@ -1,72 +1,53 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>سياسة الخصوصية | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <title>سياسة الخصوصية والأمان | Dandy Beauty</title>
+  
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
 
-      <!-- Google Fonts: Cairo + Tajawal -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-
-    <!-- أيقونات الموقع -->
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
-  <link rel="manifest" href="images/fav-icons/site.webmanifest">
-
-
-<!-- Open Graph -->
-  <meta property="og:title" content="DANDY | سياسةالخصوصية">
-  <meta property="og:description" content="سياسة الخصوصية">
-  <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
-  <meta property="og:image:type" content="image/webp">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-
-  
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360388796897231"
-     crossorigin="anonymous"></script>
-
-  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 </head>
 <body>
 
 <!-- Navigation -->
-<nav dir="rtl">
-  <div class="logo">
-    <img src="images/logo.png" alt="الشعار" />
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
     <li><a href="all-products.html">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="blog.html font-heading">المقالات</a></li>
     <li class="dropdown">
-      <a href="#">المزيد ▾</a>
+      <a href="javascript:void(0)" class="active">المزيد ▾</a>
       <ul class="dropdown-menu">
         <li><a href="client-reviews.html">ثقة العملاء</a></li>
         <li><a href="about-us.html">من نحن</a></li>
       </ul>
     </li>
   </ul>
-  <div class="hamburger" aria-label="القائمة">
-    <span class="line"></span>
-    <span class="line"></span>
-    <span class="line"></span>
-  </div>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
     <li><a href="all-products.html">المنتجات</a></li>
@@ -75,146 +56,125 @@
     <li><a href="blog.html">المقالات</a></li>
     <li><a href="about-us.html">من نحن</a></li>
   </ul>
-
   <div class="side-bottom-links">
-    <a href="#">سياسة الخصوصية</a>
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
     <span>|</span>
     <a href="terms.html">الشروط والأحكام</a>
   </div>
 </div>
 
-<section class="products">
-  <h2>سياسة الخصوصية</h2>
-  <div style="max-width: 800px; margin: 0 auto; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); line-height: 1.9;">
-
-    <p>نرحب بك في <strong>Dandy</strong>. نحن نحترم خصوصية زوارنا ونسعى لأن تكون تجربتك آمنة وواضحة.</p>
-
-    <h3>جمع المعلومات</h3>
-    <p>قد نحتاج إلى بعض بياناتك الشخصية مثل الاسم، البريد الإلكتروني، رقم الهاتف، والعنوان. هذا ضروري فقط لغرض الشحن وتسليم المنتجات إليك.</p>
-    <p>نحن <strong>لا نقوم بتخزين هذه البيانات</strong> بعد إتمام الطلب، ولا نشاركها مع أي طرف ثالث.</p>
-
-    <h3>التواصل مع التاجر</h3>
-    <p>يمكنك التواصل مع التاجر مباشرة عبر وسائل الاتصال المعلنة (مثل واتساب أو الانستجرام). نحن لا نخزن أي رسائل أو بيانات عن المحادثات.</p>
-
-    <h3>أمان المعلومات</h3>
-    <p>نحرص على حماية بياناتك أثناء عملية الشحن والتواصل، لكنها لا تبقى مخزنة على الموقع بعد إتمام الطلب.</p>
-
-    <h3>تحديثات سياسة الخصوصية</h3>
-    <p>قد نقوم بتحديث هذه السياسة لتوضيح أي تغييرات في الموقع، وسيتم عرض أي تحديثات هنا.</p>
-
-    <hr style="margin: 2rem 0;" />
-    <p>📅 تاريخ آخر تحديث: <strong>19 أغسطس 2025</strong></p>
+<!-- Main Policy Card -->
+<main class="container" style="padding-top: 140px; padding-bottom: 80px;">
+  <div class="section-header" style="text-align: center; margin-bottom: 40px;">
+    <span class="sub">الحماية والأمان لخصوصيتكِ</span>
+    <h2>وثيقة سياسة الخصوصية العامة للزوار</h2>
   </div>
-</section>
 
+  <div class="product" style="text-align: right; max-width: 800px; margin: 0 auto; padding: 40px; animation: none; opacity: 1;">
+    <p class="p-desc" style="margin-bottom: 24px;">مرحباً بكم في منصة <strong>Dandy</strong> الإلكترومية. إننا نقدر اهتمامكم وثقتكم المطلقة بنضارة وخصوصية بياناتكم، ونسعى بكل وضوح لحماية سرية وحجم معلومات الزوار الأفاضل.</p>
 
+    <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-database" style="color:var(--color-blush)"></i> جمع وحفظ البيانات</h3>
+    <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">نحتاج فقط وبكل دقة إلى بيانات الشحن وتأكيد الطلب المتمثلة في: الاسم ثلاثياً، العنوان الجغرافي، رقم الهاتف، والبريد الإلكتروني لنتمكن من شحن طلبكِ بمنتهى السلاسة وباب المنزل.</p>
+    <p style="color: var(--color-muted); margin-bottom: 16px; font-size:0.95rem;">إننا نطمئن معاليكِ التزامنا الكامل **بعدم مشاركة أو بيع أي من هذه التفاصيل الحيوية** مع أي أطراف ثالثة تجارية خارجية بتاتاً.</p>
+
+    <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-lock" style="color:var(--color-blush)"></i> آليات الأمان والحماية</h3>
+    <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">نستخدم خوادم مستقرة وحزم اتصالات آمنة (SSL) تضمن سرية النقل اللحظي لمشترياتكم. كما نلجأ إلى منصات معتمدة لوساطة معالجة المدفوعات.</p>
+
+    <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-cookie-bite" style="color:var(--color-blush)"></i> ملفات الـ Cookies</h3>
+    <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">نطلق حزم كوكيز مؤقتة بهدف تحسين وتخصيص استعراض المتجر وتذكر عناصر الحقيبة المضافة دون تكليف الزوار بإعادة الاختيار.</p>
+
+    <hr style="margin: 30px 0; border: none; border-top: 1px dashed var(--border-light);" />
+    <p style="color: var(--color-muted); font-size: 0.9rem;">📅 تاريخ آخر تحديث واثق للبنود: <strong>12 يونيو 2026</strong></p>
+  </div>
+</main>
 
 <!-- Footer -->
 <footer>
-  <div class="footer-grid">
-    <div class="footer-col footer-social">
-      <h4>تابعينا</h4>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
-      </div>
-
-      <!-- روابط الصفحات -->
-      <div class="footer-links">
-        <a href="privacy-policy.html">سياسة الخصوصية</a>
-        <span>|</span>
-        <a href="terms.html">الشروط والأحكام</a>
-      </div>
-
-      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
     </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
+        <li><a href="terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
   </div>
 </footer>
 
-<!-- Hide/Show navbar on scroll -->
+<!-- Floating Actions -->
+<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+  <span class="cart-count" id="cart-count">0</span>
+  <i class="fas fa-shopping-cart"></i>
+</a>
+
 <script>
-let lastScrollTop = 0;
-const nav = document.querySelector('nav');
-const navHeight = nav.offsetHeight; // ارتفاع الناف بار
-
-window.addEventListener('scroll', function () {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  
-  if (scrollTop > lastScrollTop) {
-    // نازل
-    nav.style.top = `-${navHeight}px`; // يخفيه فوق
-  } else {
-    // طالع
-    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
-  }
-
-  lastScrollTop = scrollTop;
-});
-
-</script>
-
-<!-- Mobile menu toggle -->
-<script>
-  const mobileNav = document.querySelector(".hamburger");
-  const navbarSide = document.querySelector(".menubar");
-
-  const toggleNav = () => {
-    navbarSide.classList.toggle("active");
-    mobileNav.classList.toggle("hamburger-active");
-  };
-
-  mobileNav.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleNav();
-  });
-
-  document.addEventListener("click", (e) => {
-    if (
-      navbarSide.classList.contains("active") &&
-      !navbarSide.contains(e.target) &&
-      !mobileNav.contains(e.target)
-    ) {
-      navbarSide.classList.remove("active");
-      mobileNav.classList.remove("hamburger-active");
-    }
-  });
-</script>
-  <script>
-  // تحديث عدد العناصر في البادج باستخدام localStorage (توقّع: السلة مخزنة كمصفوفة JSON في key 'cart')
+  // Floating Cart Badge counter
   function updateCartCount(){
-    try{
+    try {
       const raw = localStorage.getItem('cart') || '[]';
       const cart = JSON.parse(raw);
-      const count = Array.isArray(cart) ? cart.reduce((s,i)=>s + (i.quantity? Number(i.quantity):1), 0) : 0;
+      const count = Array.isArray(cart) ? cart.reduce((s, i) => s + (i.quantity ? Number(i.quantity) : 1), 0) : 0;
       document.getElementById('cart-count').textContent = count;
-    }catch(e){
+    } catch(e) {
       document.getElementById('cart-count').textContent = 0;
-      console.warn('cart-count update error', e);
     }
   }
 
-  // عند التحميل
   document.addEventListener('DOMContentLoaded', updateCartCount);
 
-  // إذا السلة تتحدث من نافذة/تبويب تاني -> نسمع حدث storage
-  window.addEventListener('storage', (e) => {
-    if(e.key === 'cart') updateCartCount();
-  });
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
 
-  // لو نظام السلة عندك مختلف (مثلاً Firebase أو cookie)، عدّل وظيفة updateCartCount() لتناسب مصدر البيانات لديك.
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
 </script>
 
-<!-- ===== Floating Cart Button (paste before </body>) ===== -->
-<a href="cart.html" class="floating-cart" aria-label="سلة التسوق">
-  <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
-  <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-</a>
 </body>
 </html>
-
-
-
-
-
-

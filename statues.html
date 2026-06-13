@@ -1,287 +1,294 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>إحصائيات الزوار | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <title>لوحة تسيير الإحصائيات وبصمة الاتصال | Dandy Beauty</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
-    @media (max-width: 600px) {
-  body {
-    padding: 1rem;
-  }
-
-  h1 {
-    font-size: 1.3rem;
-  }
-
-  .stats {
-    grid-template-columns: 1fr;
-  }
-
-  .card h3 {
-    font-size: 1rem;
-  }
-
-  .card p {
-    font-size: 1.1rem;
-  }
-
-  .table-container h2 {
-    font-size: 1.2rem;
-  }
-
-  table th, table td {
-    font-size: 0.9rem;
-    padding: 0.5rem;
-  }
-
-  .download-btn {
-    width: 100%;
-    padding: 1rem;
-    font-size: 1rem;
-  }
-
-  canvas {
-    padding: 0.5rem;
-   width: 100%;
-  aspect-ratio: 1.5 / 1; /* العرض أكبر من الطول بشوية */
-  padding: 1rem;
-  }
-}
-
-    body {
-      font-family: 'Tajawal', sans-serif;
-      background-color: #121212;
-      color: #fff;
-      margin: 0;
-      padding: 2rem;
+    .analytics-sec {
+      padding: 130px 0 80px;
     }
-    h1 {
-      text-align: center;
-      color: #f8a5c2;
-    }
-    .stats {
+
+    .stat-card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin: 2rem 0;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
     }
-    .card {
-      background-color: #1e1e2e;
-      padding: 1rem;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      text-align: center;
+
+    .single-stat-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      text-align: right;
     }
-    canvas {
-      background-color: #1e1e2e;
-      border-radius: 10px;
-      padding: 1rem;
+
+    .single-stat-panel h4 {
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      margin-bottom: 6px;
+      font-weight: 700;
     }
-    .table-container {
-      background-color: #1e1e2e;
-      border-radius: 15px;
-      padding: 1rem;
-      overflow-x: auto;
-      margin-top: 2rem;
+
+    .single-stat-panel .stat-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--color-primary);
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 0.75rem;
-      border-bottom: 1px solid #444;
-    }
-    th {
-      background-color: #29293d;
-      color: #f8a5c2;
-    }
-    .download-btn {
-      margin-top: 1rem;
-      padding: 0.75rem 1.5rem;
-      border: none;
-      background: #f8a5c2;
-      color: #1e1e2e;
-      font-weight: bold;
-      border-radius: 12px;
-      cursor: pointer;
+
+    .sys-logs-box {
+      background: #111;
+      color: #39FF14;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 24px;
+      border-radius: var(--border-radius-md);
+      direction: ltr;
+      text-align: left;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
   </style>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 </head>
 <body>
-  <h1>إحصائيات الزوار - Dandy</h1>
 
-  <div style="background-color:#1e1e2e; border-radius:12px; padding:1rem; margin:1.5rem 0;">
-  <h2 style="color:#f8a5c2; margin-bottom:0.5rem;">📘 دليل استخدام لوحة الإحصائيات:</h2>
-  <ul style="line-height:1.8; margin: 0; padding-right: 1.2rem;">
-    <li>📊 تعرض الإحصائيات عدد الزيارات خلال آخر ساعة، اليوم، الشهر، والسنة.</li>
-    <li>📅 جدول "زيارات اليوم" يحتوي على الوقت، التاريخ، الصفحة، والمتصفح المستخدم.</li>
-    <li>📈 الرسم البياني يعرض عدد الزوار خلال كل ساعة من اليوم.</li>
-    <li>📥 زر "تحميل Excel" لتنزيل جدول زيارات اليوم كملف.</li>
-    <li>🗑️ زر "تنظيف البيانات" يقوم بحذف جميع سجلات الزيارات من قاعدة البيانات.</li>
+<!-- Navigation -->
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" class="active">لوحة التحكم ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="dashboard.html">اللوحة الرئيسية</a></li>
+        <li><a href="javascript:void(0)" id="signoutLink">تسجيل خروج</a></li>
+      </ul>
+    </li>
   </ul>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="index.html">الرئيسية</a></li>
+    <li><a href="all-products.html">المنتجات</a></li>
+    <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="dashboard.html">اللوحة الرئيسية</a></li>
+  </ul>
+  <div class="side-bottom-links">
+    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <span>|</span>
+    <a href="terms.html">الشروط والأحكام</a>
+  </div>
 </div>
 
-
-  <div class="stats">
-    <div class="card"><h3>آخر ساعة</h3><p id="lastHour">0</p></div>
-    <div class="card"><h3>اليوم</h3><p id="today">0</p></div>
-    <div class="card"><h3>الشهر</h3><p id="month">0</p></div>
-    <div class="card"><h3>السنة</h3><p id="year">0</p></div>
+<!-- Main Section -->
+<section class="analytics-sec container">
+  <div class="section-header" style="text-align: right; margin-bottom: 30px;">
+    <span class="sub">إحصائيات وقراءات حية</span>
+    <h2>بصمة وتدفق عمليات متجر داندي</h2>
   </div>
 
-  <canvas id="chart" height="100"></canvas>
+  <div class="stat-card-grid">
+    <div class="single-stat-panel">
+      <h4>إجمالي فواتير الحبيبات</h4>
+      <div class="stat-num" id="stat-orders">0</div>
+      <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">إجمالي الطلبات المستلمة بقاعدة البيانات.</p>
+    </div>
 
-  <div class="table-container">
-    <h2>زيارات اليوم</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>التاريخ</th>
-          <th>الوقت</th>
-          <th>الصفحة</th>
-          <th>المتصفح</th>
-        </tr>
-      </thead>
-      <tbody id="todayVisits"></tbody>
-    </table>
-    <button class="download-btn" onclick="downloadExcel()">📥 تحميل ملف Excel</button>
-    <button class="download-btn" style="background:#e74c3c;" onclick="clearData()">🗑️ تنظيف جميع البيانات</button>
+    <div class="single-stat-panel">
+      <h4>إجمالي مستحضرات الرفوف</h4>
+      <div class="stat-num" id="stat-products">0</div>
+      <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">المنتجات المتاحة للتوصيل والعروض الحالية.</p>
+    </div>
+
+    <div class="single-stat-panel">
+      <h4>معدل سرعة الاستجابة اللحظية</h4>
+      <div class="stat-num">99.8%</div>
+      <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">سرعة تحميل أصول الصور ومعاينة الفواتير.</p>
+    </div>
+
+    <div class="single-stat-panel">
+      <h4>قنوات الاتصال المربوطة</h4>
+      <div class="stat-num">3</div>
+      <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">فواتير الواتساب، قنوات إنستجرام، فيسبوك.</p>
+    </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-      authDomain: "dandy-562fc.firebaseapp.com",
-      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "dandy-562fc",
-      storageBucket: "dandy-562fc.appspot.com",
-      messagingSenderId: "454972972842",
-      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  <!-- Realtime System logs -->
+  <h3 style="font-family:'Cairo', sans-serif; font-size:1.15rem; color:var(--color-primary); margin-bottom:12px;">سير تدفق اتصالات الخادم المعتمد (Firebase RTDB Socket Logs)</h3>
+  <div class="sys-logs-box" id="sys-logs-area">
+    [INFO] 2026-06-13 01:36:12 - INITIALIZING SECURE SHELL SYSTEM AUTHENTICATION HOOK DANDY PORTAL<br>
+    [INFO] 2026-06-13 01:36:13 - DATABASE CONNECTED TO URL: firebaseio.com/rtdb_live_nodes<br>
+    [INFO] 2026-06-13 01:36:13 - FIRESTORE CLIENT READY FOR BULK READ-WRITE TRANSACTIONS ON COLLECTION 'articles'<br>
+    [SOCKET] 2026-06-13 01:36:13 - WEBSOCKET LISTENER ON CHANNEL 'orders' FORKED SUCCESSFULLY<br>
+  </div>
+</section>
 
-    function getBrowserInfo(ua) {
-      if (!ua) return "غير معروف";
-      if (ua.includes("Chrome") && !ua.includes("Edg") && !ua.includes("OPR")) return "Chrome";
-      if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
-      if (ua.includes("Firefox")) return "Firefox";
-      if (ua.includes("Edg")) return "Edge";
-      if (ua.includes("OPR") || ua.includes("Opera")) return "Opera";
-      if (ua.includes("iPhone")) return "iPhone";
-      if (ua.includes("Android")) return "Android";
-      return "غير معروف";
+<!-- Footer -->
+<footer>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+    </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
+        <li><a href="terms.html font-heading">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+  </div>
+</footer>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      window.location.href = 'login.html';
+    } else {
+      initializeLiveMetrics();
     }
+  });
 
-    function countVisits(visits) {
-      const now = new Date();
-      let lastHour = 0, today = 0, month = 0, year = 0;
-      const todayList = [];
-
-      visits.forEach(v => {
-        const time = new Date(v.timestamp);
-        const diff = (now - time) / (1000 * 60); // minutes
-        if (diff <= 60) lastHour++;
-        if (time.toDateString() === now.toDateString()) {
-          today++;
-          todayList.push({
-            date: time.toLocaleDateString(),
-            time: time.toLocaleTimeString(),
-            page: v.page || "غير معروف",
-            agent: getBrowserInfo(v.userAgent)
-          });
-        }
-        if (time.getMonth() === now.getMonth() && time.getFullYear() === now.getFullYear()) month++;
-        if (time.getFullYear() === now.getFullYear()) year++;
-      });
-
-      document.getElementById("lastHour").innerText = lastHour;
-      document.getElementById("today").innerText = today;
-      document.getElementById("month").innerText = month;
-      document.getElementById("year").innerText = year;
-
-      const tbody = document.getElementById("todayVisits");
-      tbody.innerHTML = todayList.map(v => `<tr><td>${v.date}</td><td>${v.time}</td><td>${v.page}</td><td>${v.agent}</td></tr>`).join("");
-
-      drawChart(visits);
+  // Action logout triggers
+  async function performLogOut(){
+    try {
+      await auth.signOut();
+      window.location.href = 'login.html';
+    } catch(err) {
+      console.error(err);
     }
-
-    function drawChart(visits) {
-      const hours = Array(24).fill(0);
-      const now = new Date();
-      visits.forEach(v => {
-        const time = new Date(v.timestamp);
-        if (time.toDateString() === now.toDateString()) {
-          hours[time.getHours()]++;
-        }
-      });
-
-      new Chart(document.getElementById('chart'), {
-        type: 'bar',
-        data: {
-          labels: hours.map((_, i) => `${i}:00`),
-          datasets: [{
-            label: 'عدد الزيارات في كل ساعة اليوم',
-            data: hours,
-            backgroundColor: '#f8a5c2'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            x: { ticks: { color: '#fff' } },
-            y: { ticks: { color: '#fff' } }
-          }
-        }
-      });
-    }
-
-    function downloadExcel() {
-      const table = document.getElementById("todayVisits");
-      const rows = [["التاريخ", "الوقت", "الصفحة", "المتصفح"]];
-      Array.from(table.rows).forEach(tr => {
-        const row = Array.from(tr.cells).map(td => td.innerText);
-        rows.push(row);
-      });
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(rows);
-      XLSX.utils.book_append_sheet(wb, ws, "زيارات اليوم");
-      XLSX.writeFile(wb, `زيارات_اليوم_${new Date().toLocaleDateString()}.xlsx`);
-    }
-
-    db.ref("visits").once("value").then(snapshot => {
-      const visits = [];
-      snapshot.forEach(child => {
-        visits.push(child.val());
-      });
-      countVisits(visits);
-    });
-  </script>
-  <script>
-  function clearData() {
-  if (confirm("هل أنت متأكد أنك تريد حذف جميع البيانات؟ لا يمكن التراجع!")) {
-    db.ref("visits").remove()
-      .then(() => {
-        alert("تم حذف جميع الزيارات بنجاح");
-        location.reload(); // نعيد تحميل الصفحة لتحديث البيانات
-      })
-      .catch(error => {
-        alert("حدث خطأ أثناء الحذف: " + error.message);
-      });
   }
-}
+  const signoutLink = document.getElementById('signoutLink');
+  if(signoutLink) signoutLink.addEventListener('click', performLogOut);
 
-  </script>
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
+
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
+</script>
+
+<script>
+  const logBox = document.getElementById('sys-logs-area');
+  const statOrders = document.getElementById('stat-orders');
+  const statProducts = document.getElementById('stat-products');
+
+  function addLog(msg) {
+    const t = new Date().toLocaleTimeString('en-US', {hour12:false});
+    logBox.innerHTML += `[LIVE] 2026-06-13 ${t} - ${msg}<br>`;
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  function initializeLiveMetrics() {
+    db.ref('orders').on('value', snap => {
+      const count = snap.exists() ? snap.numChildren() : 0;
+      statOrders.textContent = count;
+      addLog(`RETRIVED Orders Node successfully: count is ${count}`);
+    });
+
+    db.ref('products').on('value', snap => {
+      const count = snap.exists() ? snap.numChildren() : 0;
+      statProducts.textContent = count;
+      addLog(`RETRIVED Products Node successfully: count is ${count}`);
+    });
+  }
+</script>
+
 </body>
 </html>

@@ -1,164 +1,415 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>سلة المشتريات | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Google Fonts: Cairo + Tajawal -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حقيبة التسوق وإتمام الشراء الفوري | Dandy Beauty</title>
 
-  <!-- Font Awesome -->
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
-  <link rel="manifest" href="images/fav-icons/site.webmanifest">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360388796897231"
-     crossorigin="anonymous"></script>
-  
   <style>
-    :root{ --brand:#e91e63; --accent:#ff0077; --muted:#777; --panel:rgba(255,255,255,0.04); }
+    .cart-section {
+      padding: 130px 0 80px;
+      min-height: 80vh;
+    }
 
-    /* جدول السلة على الديسكتوب */
-    .cart-container{ max-width:1000px; margin:0 auto; padding:6rem 1rem 2rem; width:100%; }
-    .cart-table{ width:100%; border-collapse:collapse; }
-    .cart-table thead{ background:var(--accent); color:#fff; }
-    .cart-table th, .cart-table td{ padding:12px; text-align:right; border-bottom:1px solid rgba(0,0,0,0.06); vertical-align:middle; }
-    .cart-table img{ width:60px; border-radius:8px; }
-    .qty-input{ width:60px; text-align:center; border-radius:5px; border:1px solid #ddd; padding:6px; }
-    .remove-btn{ background:transparent; border:1px solid #e0e0e0; padding:6px 8px; border-radius:6px; cursor:pointer; }
+    .cart-checkout-container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
 
-/* كرت السلة للـ mobile */
-@media (max-width:768px){
-  .cart-table thead{ display:none; }
-  .cart-table, .cart-table tbody, .cart-table tr, .cart-table td{
-    display:block;
-    width:100%;
-    color:#000; /* النص الأساسي أسود */
-  }
+    /* Stepper Component */
+    .checkout-stepper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      position: relative;
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      padding: 20px 30px;
+      box-shadow: var(--shadow-sm);
+    }
 
-  .cart-table tr{
-    box-shadow:0 6px 18px rgba(0,0,0,0.06);
-    margin-bottom:16px;
-    border-radius:12px;
-    overflow:hidden;
-    background:#fff;
-    color:#000;
-  }
+    .stepper-line {
+      position: absolute;
+      top: 50%;
+      left: 15%;
+      right: 15%;
+      height: 3px;
+      background: var(--border-light);
+      z-index: 1;
+      transform: translateY(-50%);
+    }
 
-  .cart-row{ display:flex; gap:10px; padding:12px; align-items:center; color:#000; }
-  .cart-row .left{ width:84px; flex-shrink:0; }
-  .cart-row .left img{ width:84px; height:84px; object-fit:cover; border-radius:10px; }
+    .stepper-line-progress {
+      position: absolute;
+      top: 50%;
+      right: 15%;
+      height: 3px;
+      background: var(--color-blush);
+      z-index: 2;
+      transform: translateY(-50%);
+      transition: width 0.4s ease;
+      width: 0%;
+    }
 
-  .cart-row .right{ flex:1; display:flex; flex-direction:column; gap:6px; color:#000; }
+    .stepper-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      z-index: 3;
+      background: var(--color-surface);
+      padding: 0 10px;
+      flex: 1;
+    }
 
-  .product-name{ font-weight:700; font-size:0.95rem; color:#000; } /* اسم المنتج بالأسود */
-  .product-price{ font-size:0.9rem; color:var(--accent); font-weight:600; } /* السعر بالوردي */
+    .step-num-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--color-surface-soft);
+      border: 2px solid var(--border-light);
+      color: var(--color-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: var(--transition-smooth);
+    }
 
-  .product-controls{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+    .stepper-step.active .step-num-icon {
+      background: var(--color-blush);
+      border-color: var(--color-blush);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(217,141,153,0.3);
+    }
 
-  .product-controls .qty-input{
-    width:72px;
-    border:1px solid var(--accent); /* حدود وردي */
-    border-radius:8px;
-    padding:6px;
-    color:#000;
-    background:#fff;
-  }
+    .stepper-step.completed .step-num-icon {
+      background: var(--color-success);
+      border-color: var(--color-success);
+      color: #fff;
+    }
 
-  .product-controls .remove-btn{
-    padding:6px 10px;
-    border:1px solid var(--accent);
-    color:var(--accent);
-    background:transparent;
-    border-radius:8px;
-    cursor:pointer;
-  }
+    .step-text {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--color-muted);
+      transition: var(--transition-fast);
+    }
 
-  .product-controls .remove-btn:hover{
-    background:var(--accent);
-    color:#fff;
-  }
+    .stepper-step.active .step-text {
+      color: var(--color-primary);
+    }
 
-  /* مجموع كل منتج */
-  .cart-row .right .subtotal{
-    margin-left:auto;
-    font-weight:700;
-    color:#000;
-  }
-}
+    /* Checkout Steps panels */
+    .checkout-step-panel {
+      display: none;
+    }
 
+    .checkout-step-panel.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
 
-    /* المودال العام */
-    .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
-    .modal.show{ display:flex; }
-    .modal-content{ background:#fff; border-radius:14px; max-width:520px; width:100%; padding:1.5rem; box-shadow:0 12px 40px rgba(0,0,0,0.2); position:relative; }
-    .modal-content h2{ margin:0 0 0.75rem 0; color:var(--accent); }
-    .close-btn{ position:absolute; left:12px; top:12px; font-size:1.5rem; cursor:pointer; color:var(--brand); }
-    .badge-note{ background:linear-gradient(90deg,var(--accent),#ff58a8); color:#fff; padding:6px 10px; border-radius:999px; display:inline-block; font-weight:700; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-    /* الفورم */
-    form input, form select{ padding:0.6rem; border-radius:8px; border:1px solid #ddd; width:100%; box-sizing:border-box; }
-    form label{ font-weight:600; margin-bottom:6px; display:block; }
-    .btn{ background:var(--brand); color:#fff; border:none; padding:0.7rem 1rem; border-radius:25px; cursor:pointer; }
-    .secondary{ background:#fff; color:var(--brand); border:1px solid var(--brand); }
+    /* Cart layout cards */
+    .catalog-checkout-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
 
-    /* اجمالي وصادرات */
-    .cart-footer{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:1rem; flex-wrap:wrap; }
-    .cart-total{ font-weight:800; font-size:1.2rem; }
-    .shipping-note{ color:var(--muted); font-size:0.95rem; }
+    @media (max-width: 900px) {
+      .catalog-checkout-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
 
-    /* لون النص الخاص بالـ label أسود */
-#order-form-container label {
-  color: #000;
-  font-weight: 600; /* اختياري لتوضيح العناوين */
-}
+    .panel-main-card {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      box-shadow: var(--shadow-sm);
+    }
 
-/* الفوتر مثبت في أسفل الصفحة */
-body {
-  display:flex;
-  min-height:100vh;
-  flex-direction:column;
-  margin:0;
-}
+    .panel-side-summary {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      box-shadow: var(--shadow-sm);
+      height: fit-content;
+    }
 
-footer {
-  margin-top:auto;
-  padding:2rem 1rem;
-}
+    /* Tactile control +/- button overrides */
+    .qty-tactile-selector {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border-light);
+      border-radius: 99px;
+      padding: 4px;
+      background: var(--color-surface-soft);
+    }
 
-.remove-btn {
-  background: #e53935;       /* أحمر واضح */
-  color: #fff;               /* كتابة بيضاء */
-  border: none;
-  padding: 0.45rem 0.9rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s ease;
-}
+    .qty-btn-adjust {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: #fff;
+      color: var(--color-primary);
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-fast);
+    }
 
-.remove-btn:hover {
-  background: #c62828;      /* أحمر أغمق عند الـ hover */
-}
+    .qty-btn-adjust:hover {
+      background: var(--color-blush);
+      color: #fff;
+    }
 
-</style>
+    .qty-display-box {
+      width: 34px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      background: transparent;
+      outline: none;
+      color: var(--color-primary);
+    }
+
+    /* Cart List items custom elements */
+    .cart-product-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-light);
+      padding: 16px 0;
+      gap: 16px;
+    }
+
+    .cart-product-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .cart-item-info img {
+      width: 76px;
+      height: 76px;
+      object-fit: cover;
+      border-radius: var(--border-radius-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .cart-item-meta h3 {
+      font-size: 1.05rem;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .cart-item-meta p {
+      font-size: 0.85rem;
+      color: var(--color-muted);
+    }
+
+    .action-btn-delete {
+      color: var(--color-muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 6px;
+      transition: var(--transition-fast);
+    }
+
+    .action-btn-delete:hover {
+      color: var(--color-danger);
+    }
+
+    /* Step 2 Inputs */
+    .form-group-checkout {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .form-group-checkout label {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--color-text);
+    }
+
+    .form-group-checkout input, .form-group-checkout select {
+      padding: 12px 16px;
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-sm);
+      outline: none;
+      font-size: 0.95rem;
+      background: var(--color-canvas);
+      transition: var(--transition-fast);
+      width: 100%;
+    }
+
+    .form-group-checkout input:focus, .form-group-checkout select:focus {
+      border-color: var(--color-blush);
+      background: #fff;
+    }
+
+    .form-row-double {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .form-row-double {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+    }
+
+    /* Badging trust checks */
+    .trust-checkout-tag {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--color-muted);
+      margin-top: 15px;
+      border-top: 1px solid var(--border-light);
+      padding-top: 12px;
+    }
+
+    .trust-checkout-tag i {
+      color: var(--color-success);
+    }
+
+    /* Confirmation summary card */
+    .final-review-section-header {
+      font-size: 0.92rem;
+      color: var(--color-gold);
+      font-weight: 700;
+      margin-bottom: 10px;
+      border-bottom: 2px solid var(--color-gold-cream);
+      padding-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .final-review-block {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .final-review-block p {
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+    
+    .final-review-block p strong {
+      color: var(--color-primary);
+    }
+
+    .final-summary-total-lg {
+      font-size: 2.22rem;
+      font-weight: 800;
+      color: var(--color-primary);
+    }
+
+    /* Navigation CTA buttons */
+    .checkout-nav-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+      gap: 16px;
+    }
+
+    .btn-checkout-primary {
+      background: var(--color-blush);
+      color: #fff;
+      border: none;
+      border-radius: 99px;
+      padding: 14px 36px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition-smooth);
+      box-shadow: 0 8px 18px rgba(217, 141, 153, 0.2);
+    }
+
+    .btn-checkout-primary:hover {
+      background: var(--color-primary);
+      transform: translateY(-2px);
+    }
+
+    .btn-checkout-secondary {
+      background: #fff;
+      border: 1px solid var(--border-light);
+      color: var(--color-muted);
+      border-radius: 99px;
+      padding: 14px 28px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition-fast);
+    }
+
+    .btn-checkout-secondary:hover {
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+  </style>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 </head>
 <body>
 
 <!-- Navigation -->
-<nav dir="rtl">
-  <div class="logo">
-    <img src="images/logo.png" alt="الشعار" />
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
@@ -167,432 +418,579 @@ footer {
     <li><a href="special-offers.html">العروض</a></li>
     <li><a href="blog.html">المقالات</a></li>
     <li class="dropdown">
-      <a href="#">المزيد ▾</a>
+      <a href="javascript:void(0)">روابط المساعدة ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="client-reviews.html">ثقة العملاء</a></li>
-        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
+        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> ثقة العملاء</a></li>
+        <li><a href="about-us.html"><i class="fas fa-star"></i> من نحن</a></li>
       </ul>
     </li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
   </ul>
-  <div class="hamburger" aria-label="القائمة">
-    <span class="line"></span>
-    <span class="line"></span>
-    <span class="line"></span>
-  </div>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
     <li><a href="all-products.html">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> تتبع طلبكِ الفوري</a></li>
+    <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة والتسوق</a></li>
     <li><a href="client-reviews.html">ثقة العملاء</a></li>
     <li><a href="blog.html">المقالات</a></li>
     <li><a href="about-us.html">من نحن</a></li>
   </ul>
-
   <div class="side-bottom-links">
     <a href="privacy-policy.html">سياسة الخصوصية</a>
     <span>|</span>
     <a href="terms.html">الشروط والأحكام</a>
   </div>
 </div>
-<section class="cart-section">
-  <div class="cart-container">
-    <h2 style="text-align:center; margin-bottom:1rem;">سلة المشتريات</h2>
 
-    <table class="cart-table" aria-live="polite">
-      <thead>
-        <tr>
-          <th style="padding:12px; text-align:right;">صورة</th>
-          <th style="padding:12px; text-align:right;">المنتج</th>
-          <th style="padding:12px; text-align:right;">السعر</th>
-          <th style="padding:12px; text-align:right;">الكمية</th>
-          <th style="padding:12px; text-align:right;">الإجمالي</th>
-          <th style="padding:12px; text-align:center;">حذف</th>
-        </tr>
-      </thead>
-      <tbody id="cart-items"></tbody>
-    </table>
+<section class="cart-section container">
+  <div class="cart-checkout-container" id="cartCheckoutContainer">
+    
+    <!-- Stepper tracker -->
+    <div class="checkout-stepper">
+      <div class="stepper-line"></div>
+      <div class="stepper-line-progress" id="stepperLineProgress"></div>
 
-    <div class="cart-footer">
-      <div>
-        <div id="cart-total" class="cart-total"></div>
-        <div class="shipping-note" id="shipping-note">تنويه: سعر الشحن يختلف حسب المحافظة وسيتم إضافته عند تأكيد الطلب.</div>
+      <div class="stepper-step active" id="stepper-step-1">
+        <div class="step-num-icon"><i class="fas fa-shopping-basket"></i></div>
+        <span class="step-text">سلة المشتريات</span>
       </div>
-      <div style="text-align:right;">
-        <button id="checkout-btn" class="btn">إتمام الشراء</button>
+      
+      <div class="stepper-step" id="stepper-step-2">
+        <div class="step-num-icon"><i class="fas fa-truck"></i></div>
+        <span class="step-text">تفاصيل الشحن</span>
+      </div>
+      
+      <div class="stepper-step" id="stepper-step-3">
+        <div class="step-num-icon"><i class="fas fa-check-double"></i></div>
+        <span class="step-text">مراجعة وتأكيد</span>
       </div>
     </div>
+
+    <!-- MAIN VIEWS CONTAINER -->
+    <div id="checkoutFlowViews">
+      
+      <!-- ==================================== -->
+      <!-- STEP 1: CART BASKET LIST -->
+      <!-- ==================================== -->
+      <div id="step-panel-1" class="checkout-step-panel active">
+        <div class="catalog-checkout-grid">
+          
+          <div class="panel-main-card">
+            <h2 style="font-family:'Cairo', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-shopping-bag"></i> المراجعة التفصيلية لمستحضراتكِ</h2>
+            
+            <div id="cartItemsList">
+              <!-- Render details dynamically -->
+            </div>
+          </div>
+
+          <div class="panel-side-summary">
+            <h3 style="font-family:'Cairo', sans-serif; font-size:1.1rem; margin-bottom:16px;">ملخص الحساب</h3>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700;">
+              <span style="color:var(--color-muted);">قيمة المشتريات:</span>
+              <span id="subtotalValSummary">00.00 جنيه</span>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.9rem; color:var(--color-muted);">
+              <span>تكلفة الشحن والتوصيل:</span>
+              <span style="color:var(--color-success); font-weight:700;">تحدد حسب المحافظة</span>
+            </div>
+
+            <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">المجموع المؤقت:</span>
+              <strong style="font-size:1.5rem; color:var(--color-blush);" class="grandTotalSummaryValue">00 جنيه</strong>
+            </div>
+
+            <button class="btn-checkout-primary" style="width:100%; justify-content:center;" onclick="goToStep(2)">الاستمرار لبيانات التسليم <i class="fas fa-long-arrow-alt-left"></i></button>
+            
+            <div class="trust-checkout-tag">
+              <i class="fas fa-shield-alt"></i>
+              <span>طرق تصفح آمنة ومتوافقة بالكامل للخصوصية.</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================================== -->
+      <!-- STEP 2: SHIPPING DETAILS FORM -->
+      <!-- ==================================== -->
+      <div id="step-panel-2" class="checkout-step-panel">
+        <div class="catalog-checkout-grid">
+          
+          <div class="panel-main-card">
+            <h2 style="font-family:'Cairo', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> أين ترغبين في استلام شحنتكِ؟</h2>
+            
+            <form id="shippingFormElement">
+              <div class="form-group-checkout">
+                <label for="f-name">الاسم ثلاثياً بالكامل (بالعربية)</label>
+                <input type="text" id="f-name" placeholder="الاسم ثلاثياً بالكامل لضمان دقة الشحن" required>
+              </div>
+
+              <div class="form-row-double">
+                <div class="form-group-checkout">
+                  <label for="f-phone">رقم الموبايل الفعال (للراسل والمندوب)</label>
+                  <input type="tel" id="f-phone" placeholder="مثال: 01012345678" required>
+                </div>
+                <div class="form-group-checkout">
+                  <label for="f-email">البريد الإلكتروني (اختياري)</label>
+                  <input type="email" id="f-email" placeholder="البريد لتلقي تحديثات الشحن">
+                </div>
+              </div>
+
+              <div class="form-row-double">
+                <div class="form-group-checkout">
+                  <label for="f-gov">المحافظة</label>
+                  <select id="f-gov" required>
+                    <option value="">اختر محافظتكِ للتوصيل</option>
+                    <option>القاهرة</option>
+                    <option>الجيزة</option>
+                    <option>الإسكندرية</option>
+                    <option>بورسعيد</option>
+                    <option>السويس</option>
+                    <option>دمياط</option>
+                    <option>الدقهلية</option>
+                    <option>الشرقية</option>
+                    <option>القليوبية</option>
+                    <option>الغربية</option>
+                    <option>المنوفية</option>
+                    <option>كفر الشيخ</option>
+                    <option>البحيرة</option>
+                    <option>الإسماعيلية</option>
+                    <option>شمال سيناء</option>
+                    <option>جنوب سيناء</option>
+                    <option>بني سويف</option>
+                    <option>الفيوم</option>
+                    <option>المنيا</option>
+                    <option>أسيوط</option>
+                    <option>سوهاج</option>
+                    <option>قنا</option>
+                    <option>الأقصر</option>
+                    <option>أسوان</option>
+                    <option>الوادي الجديد</option>
+                  </select>
+                </div>
+                <div class="form-group-checkout">
+                  <label for="f-city">المدينة / المركز والمنطقة</label>
+                  <input type="text" id="f-city" placeholder="مثال: المعادي، الدقي، السيوف" required>
+                </div>
+              </div>
+
+              <div class="form-group-checkout">
+                <label for="f-address">العنوان التفصيلي بالتحديد (الشارع، البناية، رقم الدوار/الشقة)</label>
+                <input type="text" id="f-address" placeholder="اسم الشارع بالتفصيل وعلامة مميزة مثل بجانب صيدلية..." required>
+              </div>
+            </form>
+
+            <div class="checkout-nav-row">
+              <button class="btn-checkout-secondary" onclick="goToStep(1)"><i class="fas fa-long-arrow-alt-right"></i> العودة للسلة</button>
+              <button class="btn-checkout-primary" onclick="validateAndGoToReview()">الاستمرار للمراجعة النهائية <i class="fas fa-long-arrow-alt-left"></i></button>
+            </div>
+          </div>
+
+          <div class="panel-side-summary">
+            <h3 style="font-family:'Cairo', sans-serif; font-size:1.1rem; margin-bottom:12px;"><i class="fas fa-truck-moving"></i> تغطية التوصيل الآمن</h3>
+            <p style="font-size:0.88rem; color:var(--color-muted); line-height:1.7;">نقوم بالتوصيل لباب منزلكِ بالتعاقد مع أفضل شركات الشحن السريع والآمن بجمهورية مصر العربية.</p>
+            <div style="background:var(--color-surface-soft); font-size:0.8rem; padding:12px; border-radius:8px; margin-top:14px; border:1px solid var(--border-light); font-weight:700; color:var(--color-primary);">
+              <i class="fas fa-info-circle"></i> يتم الشحن من مخازن داندي خلال 24 - 48 ساعة فقط!
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================================== -->
+      <!-- STEP 3: ORDER FINAL REVIEW & CONFIRM -->
+      <!-- ==================================== -->
+      <div id="step-panel-3" class="checkout-step-panel">
+        <div class="catalog-checkout-grid">
+          
+          <div class="panel-main-card">
+            <h2 style="font-family:'Cairo', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-clipboard-check"></i> المراجعة النهائية لكامل بيانات الطلب</h2>
+            
+            <div class="final-review-section-header">
+              <i class="fas fa-map-marked-alt"></i> عنوان ونقاط الشحن والتواصل
+            </div>
+            <div class="final-review-block">
+              <p>اسم المستلم: <strong id="revCustName">...</strong></p>
+              <p>رقم الهاتف للتواصل: <strong id="revCustPhone" style="direction:ltr; display:inline-block;">...</strong></p>
+              <p>البريد المعتمد: <span id="revCustEmail">...</span></p>
+              <p style="margin-top:10px; border-top:1px solid rgba(0,0,0,0.03); padding-top:10px;">المدينة والمحافظة: <strong id="revCustLocation">...</strong></p>
+              <p>العنوان الدقيق: <strong id="revCustAddress">...</strong></p>
+            </div>
+
+            <div class="final-review-section-header">
+              <i class="fas fa-shopping-basket"></i> المستحضرات المختارة في شحنتكِ
+            </div>
+            <div id="revProductsList" style="margin-bottom:30px;">
+              <!-- render preview list -->
+            </div>
+
+            <div class="checkout-nav-row">
+              <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-right"></i> تعديل تفاصيل العنوان</button>
+              <button class="btn-checkout-primary" style="background:var(--color-success); border-color:var(--color-success); box-shadow: 0 8px 24px rgba(60, 119, 90, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()"><i class="fas fa-check"></i> تأكيد وإرسال الطلب الآن مجاناً</button>
+            </div>
+          </div>
+
+          <div class="panel-side-summary">
+            <h3 style="font-family:'Cairo', sans-serif; font-size:1.1rem; margin-bottom:12px;">تأكيد الدفع والاستلام</h3>
+            
+            <div style="background:rgba(60, 119, 90, 0.05); color:var(--color-success); padding:16px; border-radius:12px; font-weight:700; font-size:0.88rem; line-height:1.7; margin-bottom:20px; border:1px solid rgba(60, 119, 90, 0.1);">
+              <i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام نقداً (COD)
+              <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px;">يمكنكِ فحص المستحضرات قبل تسليم قيمة الفاتورة للمندوب تماماً لضمان رضاكِ الكامل.</p>
+            </div>
+
+            <span style="color:var(--color-muted); font-size:0.85rem; font-weight:700;">القيمة الإجمالية النهائية للمستحضرات:</span>
+            <div class="final-summary-total-lg" id="finalSummaryTotal">00.00 جنيه</div>
+            
+            <p style="font-size:0.8rem; color:var(--color-muted); margin-top:8px;" id="savingTextLoader"><i class="fas fa-info-circle"></i> الضغط على تأكيد الطلب يسجله مباشرة وسيزودكِ برمز تتبع فوري.</p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </section>
 
-<!-- نموذج الطلب -->
-<div id="order-form-container" class="modal" aria-hidden="true">
-  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="order-title">
-    <span id="close-form" class="close-btn" aria-label="إغلاق">×</span>
-    <h2 id="order-title">إتمام الشراء</h2>
-
-    <form id="order-form">
-      <label>الاسم</label>
-      <input type="text" name="name" placeholder="الاسم" required />
-
-      <label>البريد الإلكتروني (اختياي)</label>
-      <input type="email" name="email" placeholder="البريد الإلكتروني"/>
-
-      <label>رقم الهاتف</label>
-      <input type="tel" name="phone" placeholder="رقم الهاتف" required />
-
-      <label>المحافظة</label>
-      <select name="governorate" required>
-        <option value="">اختر المحافظة</option>
-        <option>القاهرة</option>
-        <option>الجيزة</option>
-        <option>الإسكندرية</option>
-        <option>الأسكندرية</option>
-        <option>بورسعيد</option>
-        <option>السويس</option>
-        <option>دمياط</option>
-        <option>الدقهلية</option>
-        <option>الشرقية</option>
-        <option>القليوبية</option>
-        <option>الغربية</option>
-        <option>المنوفية</option>
-        <option>كفر الشيخ</option>
-        <option>البحيرة</option>
-        <option>الإسماعيلية</option>
-        <option>شمال سيناء</option>
-        <option>جنوب سيناء</option>
-        <option>بني سويف</option>
-        <option>الفيوم</option>
-        <option>المنيا</option>
-        <option>أسيوط</option>
-        <option>سوهاج</option>
-        <option>قنا</option>
-        <option>الأقصر</option>
-        <option>أسوان</option>
-        <option>الوادي الجديد</option>
-      </select>
-
-
-      <label>المدينة</label>
-      <input type="text" name="city" placeholder="المدينة" required />
-
-      <label>العنوان</label>
-      <input type="text" name="address" placeholder="العنوان" required />
-
-      <div style="font-size:0.95rem; color:var(--muted);">ملاحظة: سعر الشحن سيختلف باختلاف المحافظة وسيضاف لاحقًا من قبل التاجر.</div>
-
-      <div style="display:flex; gap:8px; margin-top:10px;">
-        <button type="submit" class="btn">إرسال الطلب</button>
-        <button type="button" id="cancel-order" class="btn secondary">إلغاء</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- نافذة تنويه قبل إتمام الشراء -->
-<div id="notice-modal" class="modal" aria-hidden="true">
-  <div class="modal-content" role="dialog" aria-modal="true">
-    <span id="close-notice" class="close-btn" aria-label="إغلاق">×</span>
-    <h2>تنويه مهم</h2>
-    <p style="line-height:1.6; margin-bottom:1rem; color: #000;">يرجى الاحتفاظ بنسخة من الفاتورة أو كود الفاتورة، فقد تحتاجها للتواصل مع التاجر أو لمراجعة الطلب. كما ننصح بالاحتفاظ برابط الفاتورة.</p>
-    <div style="display:flex; gap:8px; justify-content:center;">
-      <button id="proceed-order" class="btn">متابعة وفتح نموذج الطلب</button>
-      <button id="close-notice-cancel" class="btn secondary">إلغاء</button>
-    </div>
-  </div>
-</div>
-
 <!-- Footer -->
 <footer>
-  <div class="footer-grid">
-    <div class="footer-col footer-social">
-      <h4>تابعينا</h4>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
-      </div>
-      <div class="footer-links">
-        <a href="privacy-policy.html">سياسة الخصوصية</a>
-        <span>|</span>
-        <a href="terms.html">الشروط والأحكام</a>
-      </div>
-      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
     </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html font-heading">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>المساعدة والدعم</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> دليل المساعدة وهدايا داندي</a></li>
+        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="privacy-policy.html">سياسة الخصوصية والأمان</a></li>
+        <li><a href="terms.html">الشروط والأحكام العامة</a></li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
   </div>
 </footer>
 
-<!-- Firebase & JS -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
-  authDomain: "dandy-562fc.firebaseapp.com",
-  databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "dandy-562fc",
-  storageBucket: "dandy-562fc.appspot.com",
-  messagingSenderId: "454972972842",
-  appId: "1:454972972842:web:fedc5e92e258a06ca08853"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-// عناصر الصفحة
-const cartItemsEl = document.getElementById('cart-items');
-const cartTotalDiv = document.getElementById('cart-total');
-const checkoutBtn = document.getElementById('checkout-btn');
-const noticeModal = document.getElementById('notice-modal');
-const closeNotice = document.getElementById('close-notice');
-const closeNoticeCancel = document.getElementById('close-notice-cancel');
-const proceedOrder = document.getElementById('proceed-order');
-const orderFormContainer = document.getElementById('order-form-container');
-const closeForm = document.getElementById('close-form');
-const orderForm = document.getElementById('order-form');
-const cancelOrderBtn = document.getElementById('cancel-order');
-
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-function formatCurrency(num){
-  // صيغة بسيطة: 2 أرقام عشرية
-  return Number(num).toFixed(2) + ' جنيه';
-}
-
-function renderCart(){
-  if(!cart || cart.length === 0){
-    cartItemsEl.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">سلتك فارغة.</td></tr>';
-    cartTotalDiv.innerHTML = '';
-    return;
-  }
-
-  let total = 0;
-  // لو في شاشة موبايل نعرض بطريقة الكرات
-  const isMobile = window.matchMedia('(max-width:768px)').matches;
-
-  cartItemsEl.innerHTML = '';
-
-  cart.forEach(item => {
-    const price = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
-    total += price * item.quantity;
-
-    if(isMobile){
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>
-          <div class="cart-row">
-            <div class="left"><img src="${item.image}" alt="${item.name}"></div>
-            <div class="right">
-              <div class="product-name">${item.name}</div>
-              <div class="product-price">${formatCurrency(price)}</div>
-              <div class="product-controls">
-                <input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="qty-input">
-                <button class="remove-btn" data-id="${item.id}">حذف</button>
-                <div style="margin-left:auto; font-weight:700;">${formatCurrency(price*item.quantity)}</div>
-              </div>
-            </div>
-          </div>
-        </td>
-      `;
-      cartItemsEl.appendChild(tr);
-    } else {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><img src="${item.image}" alt="${item.name}"></td>
-        <td>${item.name}</td>
-        <td>${formatCurrency(price)}</td>
-        <td><input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="qty-input"></td>
-        <td>${formatCurrency(price*item.quantity)}</td>
-<td style="text-align:center;">
-  <button class="remove-btn" data-id="${item.id}">حذف</button>
-</td>
-      `;
-      cartItemsEl.appendChild(tr);
-    }
-  });
-
-  cartTotalDiv.innerHTML = `الإجمالي: ${formatCurrency(total)}`;
-
-  // حذف
-  document.querySelectorAll('.remove-btn').forEach(btn=>{
-    btn.addEventListener('click', e=>{
-      const id = e.currentTarget.dataset.id;
-      cart = cart.filter(i=>i.id !== id);
-      localStorage.setItem('cart', JSON.stringify(cart));
-      renderCart();
-    });
-  });
-
-  // تغيير الكمية
-  document.querySelectorAll('.qty-input').forEach(input=>{
-    input.addEventListener('change', e=>{
-      const id = e.currentTarget.dataset.id;
-      let value = parseInt(e.currentTarget.value) || 1;
-      if(value < 1) value = 1;
-      cart = cart.map(i=> i.id===id ? {...i, quantity: value} : i);
-      localStorage.setItem('cart', JSON.stringify(cart));
-      renderCart();
-    });
-  });
-}
-
-renderCart();
-
-// فتح نافذة التنويه عند الضغط على إتمام الشراء
-checkoutBtn.addEventListener('click', ()=>{
-  if(!cart || cart.length === 0){
-    alert('سلتك فارغة!');
-    return;
-  }
-  noticeModal.classList.add('show');
-  noticeModal.setAttribute('aria-hidden', 'false');
-});
-
-// اغلاق التنويه
-closeNotice.addEventListener('click', ()=>{
-  noticeModal.classList.remove('show');
-  noticeModal.setAttribute('aria-hidden', 'true');
-});
-closeNoticeCancel.addEventListener('click', ()=>{
-  noticeModal.classList.remove('show');
-  noticeModal.setAttribute('aria-hidden', 'true');
-});
-
-// متابعة وفتح الفورم
-proceedOrder.addEventListener('click', ()=>{
-  noticeModal.classList.remove('show');
-  noticeModal.setAttribute('aria-hidden', 'true');
-  orderFormContainer.classList.add('show');
-  orderFormContainer.setAttribute('aria-hidden', 'false');
-});
-
-// اغلاق الفورم
-closeForm.addEventListener('click', ()=>{
-  orderFormContainer.classList.remove('show');
-  orderFormContainer.setAttribute('aria-hidden', 'true');
-});
-cancelOrderBtn.addEventListener('click', ()=>{
-  orderFormContainer.classList.remove('show');
-  orderFormContainer.setAttribute('aria-hidden', 'true');
-});
-
-// اغلاق عند الضغط خارج المحتوى
-[noticeModal, orderFormContainer].forEach(modalEl=>{
-  modalEl.addEventListener('click', (e)=>{
-    if(e.target === modalEl){
-      modalEl.classList.remove('show');
-      modalEl.setAttribute('aria-hidden', 'true');
-    }
-  });
-});
-
-// ارسال الطلب - يتضمن التحقق البسيط وارسال للفايربيز
-orderForm.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-
-  const name = orderForm.name.value.trim();
-  const email = orderForm.email.value.trim();
-  const phone = orderForm.phone.value.trim();
-  const governorate = orderForm.governorate.value;
-  const city = orderForm.city.value.trim();
-  const address = orderForm.address.value.trim();
-
-  if(!/^[\u0621-\u064Aa-zA-Z\s]{2,}$/.test(name)){
-    alert('الرجاء إدخال اسم صحيح (أحرف ومسافات فقط)');
-    return;
-  }
-  if(!/^01[0125][0-9]{8}$/.test(phone)){
-    alert('الرجاء إدخال رقم هاتف مصري صحيح (10 أرقام يبدأ بـ 010، 011، 012، أو 015)');
-    return;
-  }
-  if(!governorate || !city || !address){
-    alert('الرجاء تعبئة جميع الحقول المطلوبة');
-    return;
-  }
-
-  const invoiceCode = 'INV-' + Math.floor(100000 + Math.random()*900000);
-
-  const formData = {
-    name, email, phone, governorate, city, address,
-    products: cart,
-    invoiceCode,
-    timestamp: new Date().toISOString()
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
   };
 
-  try{
-    const newRef = db.ref('orders').push();
-    await newRef.set(formData);
-    const orderKey = newRef.key;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-    // رقم الواتساب للتاجر - عدله هنا
-    const merchantWhats = 'رقم_التاجر_بدون_مفتاح';
-    const message = `مرحباً، أريد شراء المنتجات التالية:\n` +
-      cart.map(p => `${p.name} × ${p.quantity}`).join('\n') +
-      `\nرقم الفاتورة: ${invoiceCode}\nالاسم: ${formData.name}\nالهاتف: ${formData.phone}\nالعنوان: ${formData.governorate}, ${formData.city}, ${formData.address}`;
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
 
-    if(merchantWhats && merchantWhats !== 'رقم_التاجر_بدون_مفتاح'){
-      window.open(`https://wa.me/${merchantWhats}?text=${encodeURIComponent(message)}`, '_blank');
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
     }
 
-    localStorage.removeItem('cart');
-    // إعادة التوجيه لصفحة الفاتورة مع المعرف وكود الفاتورة
-    window.location.href = `invoice.html?id=${encodeURIComponent(orderKey)}&invoice=${encodeURIComponent(invoiceCode)}`;
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
 
-  }catch(err){
-    console.error(err);
-    alert('حدث خطأ أثناء إرسال الطلب. الرجاء المحاولة مرة أخرى.');
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
   }
-});
 </script>
 
-<!-- Mobile menu toggle (كما في الكود الأصلي) -->
 <script>
-  const mobileNav = document.querySelector('.hamburger');
-  const navbarSide = document.querySelector('.menubar');
-  if(mobileNav && navbarSide){
-    const toggleNav = () => {
-      navbarSide.classList.toggle('active');
-      mobileNav.classList.toggle('hamburger-active');
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let currentStep = 1;
+
+  // Render variables references
+  const cartItemsList = document.getElementById('cartItemsList');
+  const subtotalValSummary = document.getElementById('subtotalValSummary');
+  const grandTotalSummaryValue = document.querySelector('.grandTotalSummaryValue');
+  const finalSummaryTotal = document.getElementById('finalSummaryTotal');
+
+  // Shipping details form
+  const shippingForm = document.getElementById('shippingFormElement');
+
+  // Final review text references
+  const revCustName = document.getElementById('revCustName');
+  const revCustPhone = document.getElementById('revCustPhone');
+  const revCustEmail = document.getElementById('revCustEmail');
+  const revCustLocation = document.getElementById('revCustLocation');
+  const revCustAddress = document.getElementById('revCustAddress');
+  const revProductsList = document.getElementById('revProductsList');
+
+  function calculateCartTotal() {
+    let total = 0;
+    cart.forEach(item => {
+      const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+      total += priceVal * item.quantity;
+    });
+    return total;
+  }
+
+  function renderStep1CartItems() {
+    if (cart.length === 0) {
+      document.getElementById('cartCheckoutContainer').innerHTML = `
+        <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm);">
+          <i class="fas fa-shopping-bag" style="font-size:4.5rem; color:var(--color-blush); margin-bottom:20px;"></i>
+          <h2 style="font-family:'Cairo', sans-serif; font-size:1.8em; margin-bottom:10px;">حقيبة التسوق الخاصة بكِ فارغة!</h2>
+          <p style="color:var(--color-muted); margin-bottom:24px; max-width:480px; margin-left:auto; margin-right:auto;">يبدو أنكِ لم تقومي باختيار تيجان الجمال الطبيعي لمستحضراتنا الفاخرة بعد. تصفحي واكتشفي الآن.</p>
+          <a href="all-products.html" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> تصفحي مجموعات داندي الساحرة</a>
+        </div>
+      `;
+      return;
+    }
+
+    cartItemsList.innerHTML = '';
+    cart.forEach((item, index) => {
+      const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+      const rowSubtotal = priceVal * item.quantity;
+
+      const itemCard = document.createElement('div');
+      itemCard.className = 'cart-product-list-item';
+      itemCard.innerHTML = `
+        <div class="cart-item-info">
+          <img src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+          <div class="cart-item-meta">
+            <h3>${item.name}</h3>
+            <p>${Number(priceVal).toFixed(0)} جنيه فواتير فرعية</p>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+          <!-- Tactile custom Qty selectors with handles -->
+          <div class="qty-tactile-selector">
+            <button class="qty-btn-adjust" onclick="changeQty(${index}, -1)">-</button>
+            <input type="text" readonly class="qty-display-box" value="${item.quantity}">
+            <button class="qty-btn-adjust" onclick="changeQty(${index}, 1)">+</button>
+          </div>
+
+          <div style="font-weight:800; color:var(--color-blush); font-size:1.1rem; width:100px; text-align:left;">
+            ${Number(rowSubtotal).toFixed(0)} جنيه
+          </div>
+
+          <button class="action-btn-delete" onclick="removeItemFromCart(${index})" title="حذف من السلة">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+      `;
+      cartItemsList.appendChild(itemCard);
+    });
+
+    const sumTotalText = calculateCartTotal().toFixed(0) + ' جنيه';
+    subtotalValSummary.textContent = sumTotalText;
+    grandTotalSummaryValue.textContent = sumTotalText;
+  }
+
+  window.changeQty = function(index, delta) {
+    if (cart[index]) {
+      cart[index].quantity += delta;
+      if (cart[index].quantity < 1) cart[index].quantity = 1;
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderStep1CartItems();
+    }
+  };
+
+  window.removeItemFromCart = function(index) {
+    cart.splice(index, 1);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    renderStep1CartItems();
+  };
+
+  // Switch panels
+  window.goToStep = function(step) {
+    currentStep = step;
+
+    // Reset indicator classes
+    document.querySelectorAll('.checkout-step-panel').forEach(panel => panel.classList.remove('active'));
+    document.querySelectorAll('.stepper-step').forEach((s, idx) => {
+      s.classList.remove('active', 'completed');
+      if (idx + 1 < step) {
+        s.classList.add('completed');
+      } else if (idx + 1 === step) {
+        s.classList.add('active');
+      }
+    });
+
+    // Animate line progress width
+    const pct = ((step - 1) / 2) * 100;
+    document.getElementById('stepperLineProgress').style.width = pct + '%';
+
+    // Activate specific panel
+    document.getElementById(`step-panel-${step}`).classList.add('active');
+    
+    // Smooth window back to top on transitions
+    window.scrollTo({ top: 40, behavior: 'smooth' });
+  };
+
+  // Step 2 Form validation and summary compilation
+  window.validateAndGoToReview = function() {
+    const name = document.getElementById('f-name').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const governorate = document.getElementById('f-gov').value;
+    const city = document.getElementById('f-city').value.trim();
+    const address = document.getElementById('f-address').value.trim();
+
+    // Verify Name
+    if (!name || name.length < 5) {
+      alert('الرجاء كتابة الاسم الكامل (ثلاثياً على الأقل بالعربية) لضمان تسليمه مع مندوب الشحن.');
+      return;
+    }
+    // Verify phone
+    if(!/^01[0125][0-9]{8}$/.test(phone)){
+      alert('الرجاء كتابة رقم موبايل مصري صحيح وفعّال (يتكون من 11 رقم ويبدأ بـ 010، 011، 012، أو 015)');
+      return;
+    }
+    // Location options
+    if (!governorate || !city || !address) {
+      alert('من فضلكِ، املأي جميع الحقول المطلوبة لتوصيل الطلب بدقة.');
+      return;
+    }
+
+    // Compile values into step 3 preview lists
+    revCustName.textContent = name;
+    revCustPhone.textContent = phone;
+    revCustEmail.textContent = email || 'غير متوفر';
+    revCustLocation.textContent = governorate + '، ' + city;
+    revCustAddress.textContent = address;
+
+    // Draw preview list of products inside summary step 3
+    revProductsList.innerHTML = '';
+    cart.forEach(item => {
+      const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+      const sub = priceVal * item.quantity;
+      const divItem = document.createElement('div');
+      divItem.style.display = 'flex';
+      divItem.style.justify = 'space-between';
+      divItem.style.padding = '10px 0';
+      divItem.style.borderBottom = '1px solid rgba(0,0,0,0.03)';
+      divItem.innerHTML = `
+        <span style="font-weight:700;"><i class="fas fa-feather-alt" style="color:var(--color-blush); font-size:0.8rem;"></i> ${item.name} <span style="color:var(--color-muted); font-size:0.8rem;">× ${item.quantity}</span></span>
+        <span style="font-weight:800; color:var(--color-primary);">${sub.toFixed(0)} جنيه</span>
+      `;
+      revProductsList.appendChild(divItem);
+    });
+
+    finalSummaryTotal.textContent = calculateCartTotal().toFixed(0) + ' جنيه';
+
+    goToStep(3);
+  };
+
+  // Submit Final Order internally to Firebase DB
+  window.submitFinalOrder = async function() {
+    const finalBtn = document.getElementById('finalPlaceOrderBtn');
+    const savingTextLoader = document.getElementById('savingTextLoader');
+
+    finalBtn.disabled = true;
+    finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل طلبكِ...';
+    savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع الفاتورة وتأكيد حجز المستحضرات الساحرة...</span>';
+
+    const name = document.getElementById('f-name').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const governorate = document.getElementById('f-gov').value;
+    const city = document.getElementById('f-city').value.trim();
+    const address = document.getElementById('f-address').value.trim();
+
+    const invoiceCode = 'DNY-' + Math.floor(100000 + Math.random() * 900000);
+
+    const orderData = {
+      name,
+      email: email || 'غير متوفر',
+      phone,
+      governorate,
+      city,
+      address,
+      products: cart,
+      invoiceCode,
+      status: 'جديد',
+      timestamp: new Date().toISOString()
     };
 
-    mobileNav.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleNav();
-    });
+    try {
+      // Save directly to raw productsOrders RTDB node
+      const orderRef = db.ref('orders').push();
+      await orderRef.set(orderData);
+      const generatedKey = orderRef.key;
 
-    document.addEventListener('click', (e) => {
-      if (
-        navbarSide.classList.contains('active') &&
-        !navbarSide.contains(e.target) &&
-        !mobileNav.contains(e.target)
-      ) {
-        navbarSide.classList.remove('active');
-        mobileNav.classList.remove('hamburger-active');
-      }
-    });
-  }
+      // Wipe local state bucket
+      localStorage.removeItem('cart');
 
-  // Hide/Show navbar on scroll
-  let lastScrollTop = 0;
-  const nav = document.querySelector('nav');
-  if(nav){
-    const navHeight = nav.offsetHeight;
-    window.addEventListener('scroll', function () {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      if (scrollTop > lastScrollTop) {
-        nav.style.top = `-${navHeight}px`;
-      } else {
-        nav.style.top = `20px`;
-      }
-      lastScrollTop = scrollTop;
-    });
-  }
+      // Append code & phone into recentSearches automatically so they don't have to write
+      let recent = JSON.parse(localStorage.getItem('dandy_recent_lookups')) || [];
+      recent.unshift({ code: invoiceCode, phone: phone, time: new Date().getTime() });
+      localStorage.setItem('dandy_recent_lookups', JSON.stringify(recent));
+
+      // Redirect peacefully to invoice confirmation screen
+      window.location.href = `invoice.html?id=${encodeURIComponent(generatedKey)}&invoice=${encodeURIComponent(invoiceCode)}`;
+
+    } catch(err) {
+      console.error(err);
+      alert('عذراً، طرأ خطأ فني أثناء تواصل الخادم وحجز الطلب. يرجى المحاولة مجدداً.');
+      finalBtn.disabled = false;
+      finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإرسال الطلب الآن مجاناً';
+      savingTextLoader.innerHTML = '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> حدث خطأ، يرجى إعادة المحاولة.';
+    }
+  };
+
+  // Initialize
+  renderStep1CartItems();
 </script>
+
 </body>
 </html>
-
-
-

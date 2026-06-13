@@ -1,261 +1,150 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>كل المنتجات | Dandy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جميع المنتجات | Dandy | التشكيلة الكاملة للعناية والجمال</title>
 
-      <!-- Google Fonts: Cairo + Tajawal -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* ===== Hero (Full Screen Neon Glass) ===== */
-
-body {
-  margin: 0;
-  padding-top: 0; /* شيل المسافة */
-}
-.hero-full {
-  position: relative;
-  min-height: 80vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  overflow: hidden;
-  margin-top: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-.hero-full .hero-bg {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.hero-full .hero-bg img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 1.2s ease-in-out;
-}
-
-.hero-full .hero-bg img.active {
-  opacity: 1;
-}
-
-.hero-full .hero-bg .overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(10,10,15,0.4), rgba(10,10,15,0.85));
-  backdrop-filter: var(--glass-blur);
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 700px;
-  padding: 0 1rem;
-}
-
-.hero-content h1 {
-  font-size: 2.8rem;
-  margin-bottom: 1rem;
-  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.hero-content p {
-  font-size: 1.1rem;
-  color: var(--muted);
-  margin-bottom: 1.8rem;
-}
-
-.hero-content .cta-btn {
-  display: inline-block;
-  padding: 0.75rem 1.8rem;
-  border-radius: 999px;
-  text-decoration: none;
-  font-weight: 800;
-  color: #0b0b12;
-  background: #fff;
-  position: relative;
-  transition: transform .2s ease, box-shadow .2s ease;
-  box-shadow: 0 8px 24px rgba(0,247,255,.18);
-}
-
-.hero-content .cta-btn::before {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: 999px;
-  z-index: -1;
-  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
-  filter: blur(6px);
-  opacity: .7;
-}
-
-.hero-content .cta-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(255,46,196,.2);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .hero-content h1 {
-    font-size: 2.1rem;
-  }
-  .hero-content p {
-    font-size: 1rem;
-  }
-}
-
+    /* Styling specialized checkboxes to look like premium tactile category pills */
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
-      margin: 2rem auto 3rem;
-      max-width: 800px;
+      gap: 12px;
+      margin: 40px auto;
       justify-content: center;
-    }
-
-    .filter-bar label {
-      background-color: var(--primary-color);
-      padding: 0.5rem 1rem;
-      border-radius: 30px;
-      cursor: pointer;
-      font-weight: bold;
-      color: var(--text-color);
-      transition: background 0.3s;
+      padding: 0 10px;
     }
 
     .filter-bar input[type="checkbox"] {
       display: none;
     }
 
+    .filter-bar label {
+      display: inline-block;
+      padding: 10px 24px;
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-weight: 700;
+      border: 1px solid var(--border-light);
+      border-radius: 99px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-fast);
+    }
+
     .filter-bar input[type="checkbox"]:checked + label {
-      background-color: var(--accent-color);
-      color: white;
+      background: var(--color-blush);
+      color: #fff;
+      border-color: var(--color-blush);
+      box-shadow: 0 6px 16px rgba(217, 141, 153, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .catalog-search-box {
+      max-width: 600px;
+      width: 90%;
+      margin: 30px auto 0;
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      border-radius: 99px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .catalog-search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 1rem;
+      direction: rtl;
+      font-family: inherit;
+    }
+
+    .catalog-search-box button {
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      outline: none;
+      border-radius: 99px;
+      padding: 12px 24px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .catalog-search-box button:hover {
+      background: var(--color-blush);
     }
 
     .product.hidden {
       display: none;
     }
-/* شبكة المنتجات */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2.5rem;
-  justify-items: center;
-  align-items: stretch;
-  padding: 0 1rem;
-}
-
-/* للشاشات المتوسطة والكبيرة */
-@media (min-width: 768px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 992px) {
-  .product-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1200px) {
-  .product-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
   </style>
 
-    <!-- أيقونة المتصفح الأساسية -->
-<link rel="icon" type="image/x-icon" href="images/favicon.ico">
-
-<!-- أيقونات مختلفة لحجم متعدد -->
-<link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-
-<!-- أيقونة خاصة بأجهزة Apple -->
-<link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
-
-<!-- ملف Web Manifest لتعريف الأيقونات على أنظمة التشغيل -->
-<link rel="manifest" href="images/fav-icons/site.webmanifest">
-
-  <!-- Open Graph meta tags -->
-  <meta property="og:title" content="كل المنتجات | Dandy">
-  <meta property="og:description" content="عندما يلتقي الجمال مع الطبيعة">
-  <meta property="og:image" content="https://i.postimg.cc/FzNdqsPZ/471044239-122130970658434656-6885246133959574692-n.jpg">
-  <meta property="og:image:type" content="image/webp">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://dandy-ebon.vercel.app/all-products.html">
-
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-NH8NG47PDV');
-</script>
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8360388796897231"
-     crossorigin="anonymous"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
 </head>
 <body>
 
 <!-- Navigation -->
-<nav dir="rtl">
-  <div class="logo">
-    <img src="images/logo.png" alt="الشعار" />
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='index.html'">
+    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="#">المنتجات</a></li>
+    <li><a href="all-products.html" class="active">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
     <li><a href="blog.html">المقالات</a></li>
     <li class="dropdown">
-      <a href="#">المزيد ▾</a>
+      <a href="javascript:void(0)">روابط المساعدة ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="client-reviews.html">ثقة العملاء</a></li>
-        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
+        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> ثقة العملاء</a></li>
+        <li><a href="about-us.html"><i class="fas fa-star"></i> من نحن</a></li>
       </ul>
     </li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
   </ul>
-  <div class="hamburger" aria-label="القائمة">
-    <span class="line"></span>
-    <span class="line"></span>
-    <span class="line"></span>
-  </div>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
+
 <!-- Mobile Menu -->
-<div class="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="#">المنتجات</a></li>
+    <li><a href="all-products.html" class="active">المنتجات</a></li>
     <li><a href="special-offers.html">العروض</a></li>
+    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> تتبع طلبكِ الفوري</a></li>
+    <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة والتسوق</a></li>
     <li><a href="client-reviews.html">ثقة العملاء</a></li>
     <li><a href="blog.html">المقالات</a></li>
     <li><a href="about-us.html">من نحن</a></li>
   </ul>
-
   <div class="side-bottom-links">
     <a href="privacy-policy.html">سياسة الخصوصية</a>
     <span>|</span>
@@ -263,109 +152,95 @@ body {
   </div>
 </div>
 
-
-  <!-- Hero -->
-<section class="hero hero-full">
-  <div class="hero-bg">
-    <img src="images/hero/pngwing.com (11).png" alt="عرض 1" class="active">
+<!-- Header Hero Catalog -->
+<section class="container" style="padding-top: 130px; text-align: center;">
+  <div class="section-header" style="margin-bottom: 20px;">
+    <span class="sub">مجموعاتنا الخاصة</span>
+    <h2>كتالوج داندي الفاخر</h2>
+    <p style="color: var(--color-muted); max-width: 600px; margin: 10px auto 0;">استكشفي أرقى منتجات الشعر، العناية بالبشرة والجسم، العطور الفرنسية والشرقية الطبيعية المختارة بذوقٍ رفيع خصيصاً لكِ.</p>
   </div>
-  <div class="hero-content">
-    <h1>اكتشفي الجمال الطبيعي</h1>
-    <p>منتجات طبيعية للعناية بالشعر والجسم تمنحك إشراقة لا مثيل لها</p>
-    <a href="#productContainer" class="cta-btn">تسوقي الآن</a>
+
+  <!-- Search widget inside catalog -->
+  <form id="search-form" class="catalog-search-box">
+    <input type="text" id="search-input" placeholder="ابحثي عن منتج للعناية بجمالك الطبيعي...">
+    <button type="submit"><i class="fas fa-search"></i> ابحثي الآن</button>
+  </form>
+</section>
+
+<!-- Filter System -->
+<section class="container">
+  <div class="filter-bar">
+    <input type="checkbox" id="filter1" data-category="منتجات الشعر">
+    <label for="filter1">🌿 العناية بالشعر</label>
+
+    <input type="checkbox" id="filter2" data-category="منتجات الجسم">
+    <label for="filter2">🧴 رعاية الجسم والبشرة</label>
+
+    <input type="checkbox" id="filter3" data-category="منتجات العطور">
+    <label for="filter3">🌸 عطور طبيعية فريدة</label>
   </div>
 </section>
 
-
-  <!-- Filters -->
-  <div class="filter-bar">
-    <input type="checkbox" id="filter1" data-category="منتجات الشعر">
-    <label for="filter1">منتجات الشعر</label>
-
-    <input type="checkbox" id="filter2" data-category="منتجات الجسم">
-    <label for="filter2">منتجات الجسم</label>
-
-    <input type="checkbox" id="filter3" data-category="منتجات العطور">
-    <label for="filter3">منتجات العطور</label>
-  </div>
-
-  <!-- Products -->
-  <section class="products">
-    <h2>كل المنتجات</h2>
+<!-- Product Catalog -->
+<section class="products" style="padding: 20px 0 80px;">
+  <div class="container">
     <div class="product-grid" id="productContainer">
-      <!-- كل المنتجات هتظهر هنا -->
+      <!-- Catalog content fetched dynamically -->
+      <p style="text-align: center; grid-column: 1/-1; color: var(--color-muted);">جاري تحميل مجموعتك الساحرة...</p>
     </div>
-  </section>
+  </div>
+</section>
 
 <!-- Footer -->
 <footer>
-  <div class="footer-grid">
-    <div class="footer-col footer-social">
-      <h4>تابعينا</h4>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/profile.php?id=61563039704396"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.instagram.com/dandy_skincare_cosmotics"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
-      </div>
-
-      <!-- روابط الصفحات -->
-      <div class="footer-links">
-        <a href="privacy-policy.html">سياسة الخصوصية</a>
-        <span>|</span>
-        <a href="terms.html">الشروط والأحكام</a>
-      </div>
-
-      <p class="rights">© 2025 Dandy. جميع الحقوق محفوظة.</p>
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
     </div>
+    <div class="footer-col">
+      <h4>روابط مفيدة</h4>
+      <ul style="margin: 0; padding: 0;">
+        <li><a href="index.html">الرئيسية</a></li>
+        <li><a href="all-products.html">كل المنتجات</a></li>
+        <li><a href="special-offers.html">العروض الخاصة</a></li>
+        <li><a href="blog.html">المدونة والمقالات</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+       <h4>المساعدة والدعم</h4>
+       <ul style="margin: 0; padding: 0;">
+         <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> دليل المساعدة وهدايا داندي</a></li>
+         <li><a href="about-us.html">من نحن</a></li>
+         <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+         <li><a href="privacy-policy.html">سياسة الخصوصية والأمان</a></li>
+         <li><a href="terms.html">الشروط والأحكام العامة</a></li>
+       </ul>
+     </div>
+  </div>
+  
+  <div class="footer-social">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
   </div>
 </footer>
 
-  <script>
-    const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
-    const products = document.querySelectorAll('.product');
+<!-- Floating Actions -->
+<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+  <span class="cart-count" id="cart-count">0</span>
+  <i class="fas fa-shopping-cart"></i>
+</a>
 
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        const activeFilters = Array.from(checkboxes)
-          .filter(chk => chk.checked)
-          .map(chk => chk.getAttribute('data-category'));
-
-        products.forEach(product => {
-          const category = product.getAttribute('data-category');
-          if (activeFilters.length === 0 || activeFilters.includes(category)) {
-            product.classList.remove('hidden');
-          } else {
-            product.classList.add('hidden');
-          }
-        });
-      });
-    });
-    // إخفاء وظهور شريط التنقل
-  let lastScrollTop = 0;
-const nav = document.querySelector('nav');
-const navHeight = nav.offsetHeight; // ارتفاع الناف بار
-
-window.addEventListener('scroll', function () {
-  const scrollTop = window.scrollY || document.documentElement.scrollTop;
-  
-  if (scrollTop > lastScrollTop) {
-    // نازل
-    nav.style.top = `-${navHeight}px`; // يخفيه فوق
-  } else {
-    // طالع
-    nav.style.top = `20px`; // يخليه نازل بمسافة ثابتة بدل 0
-  }
-
-  lastScrollTop = scrollTop;
-});
-
-  </script>
-
-  <!-- Firebase SDK -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
+  // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
     authDomain: "dandy-562fc.firebaseapp.com",
@@ -379,150 +254,156 @@ window.addEventListener('scroll', function () {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-const container = document.getElementById("productContainer");
-const urlParams = new URLSearchParams(window.location.search);
-const searchQuery = urlParams.get("search")?.toLowerCase() || "";
-  
-db.ref("products").on("value", snapshot => {
-  container.innerHTML = "";
-  snapshot.forEach(child => {
-    const data = child.val();
-    const name = data.name?.toLowerCase() || "";
-    const desc = data.description?.toLowerCase() || "";
-    const category = data.category?.toLowerCase() || "";
-
-    // فلترة حسب البحث
-    if (
-      !searchQuery ||
-      name.includes(searchQuery) ||
-      desc.includes(searchQuery) ||
-      category.includes(searchQuery)
-    ) {
-      const productEl = document.createElement("div");
-      productEl.className = "product";
-      productEl.setAttribute("data-category", data.category);
-     productEl.innerHTML = `
-  <img src="${data.image}" alt="${data.name}">
-  <div>
-    <h3>${data.name}</h3>
-    <a href="product.html?id=${child.key}">شراء<i class="fas fa-arrow-left"></i></a>
-  </div>
-`;
-
-      container.appendChild(productEl);
-    }
-  });
-
-  applyFilters(); // ← لازم تنفذها بعد ما تضيف المنتجات
-});
-
-function applyFilters() {
-  const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
-  const products = document.querySelectorAll('.product');
-
-  checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      const activeFilters = Array.from(checkboxes)
-        .filter(chk => chk.checked)
-        .map(chk => chk.getAttribute('data-category'));
-
-      products.forEach(product => {
-        const category = product.getAttribute('data-category');
-        if (activeFilters.length === 0 || activeFilters.includes(category)) {
-          product.classList.remove('hidden');
-        } else {
-          product.classList.add('hidden');
-        }
-      });
-    });
-  });
-}
-
-</script>
-
-  <script>
-const mobileNav = document.querySelector(".hamburger");
-const navbar = document.querySelector(".menubar");
-
-const toggleNav = () => {
-  navbar.classList.toggle("active");
-  mobileNav.classList.toggle("hamburger-active");
-};
-
-mobileNav.addEventListener("click", (e) => {
-  e.stopPropagation(); // علشان الضغطة على الزر ما تعتبرش ضغطة على document
-  toggleNav();
-});
-
-// لما المستخدم يضغط في أي مكان في الصفحة
-document.addEventListener("click", (e) => {
-  // لو القائمة مفتوحة والضغط مش جوه القائمة ولا زر الهمبرجر
-  if (
-    navbar.classList.contains("active") &&
-    !navbar.contains(e.target) &&
-    !mobileNav.contains(e.target)
-  ) {
-    navbar.classList.remove("active");
-    mobileNav.classList.remove("hamburger-active");
-  }
-});
-
-</script>
-<script>
-// تغيير الصور تلقائيًا في الـ Hero
-let heroImages = document.querySelectorAll(".hero-full .hero-bg img");
-let currentHero = 0;
-
-setInterval(() => {
-  heroImages[currentHero].classList.remove("active");
-  currentHero = (currentHero + 1) % heroImages.length;
-  heroImages[currentHero].classList.add("active");
-}, 5000); // كل 5 ثواني
-
-// تمرير سلس لقسم المنتجات
-document.querySelectorAll('a[href="#productContainer"]').forEach(link => {
-  link.addEventListener("click", function(e) {
-    e.preventDefault();
-    document.querySelector("#productContainer").scrollIntoView({
-      behavior: "smooth"
-    });
-  });
-});
-</script>
-<script>
-  // تحديث عدد العناصر في البادج باستخدام localStorage (توقّع: السلة مخزنة كمصفوفة JSON في key 'cart')
+  // Floating Cart Badge counter
   function updateCartCount(){
-    try{
+    try {
       const raw = localStorage.getItem('cart') || '[]';
       const cart = JSON.parse(raw);
-      const count = Array.isArray(cart) ? cart.reduce((s,i)=>s + (i.quantity? Number(i.quantity):1), 0) : 0;
+      const count = Array.isArray(cart) ? cart.reduce((s, i) => s + (i.quantity ? Number(i.quantity) : 1), 0) : 0;
       document.getElementById('cart-count').textContent = count;
-    }catch(e){
+    } catch(e) {
       document.getElementById('cart-count').textContent = 0;
-      console.warn('cart-count update error', e);
     }
   }
 
-  // عند التحميل
   document.addEventListener('DOMContentLoaded', updateCartCount);
-
-  // إذا السلة تتحدث من نافذة/تبويب تاني -> نسمع حدث storage
   window.addEventListener('storage', (e) => {
-    if(e.key === 'cart') updateCartCount();
+    if (e.key === 'cart') updateCartCount();
   });
 
-  // لو نظام السلة عندك مختلف (مثلاً Firebase أو cookie)، عدّل وظيفة updateCartCount() لتناسب مصدر البيانات لديك.
+  // Toggle Menubar drawer for mobile
+  function toggleNav() {
+    const menubar = document.getElementById("menubar");
+    const hamburger = document.querySelector(".hamburger");
+    menubar.classList.toggle("active");
+    hamburger.classList.toggle("change");
+  }
+
+  // Navigation hide / show on scroll
+  let lastScrollTop = 0;
+  const nav = document.getElementById('navbar');
+  const navHeight = nav.offsetHeight;
+
+  window.addEventListener('scroll', function () {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 80) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
+      nav.style.top = `-${navHeight + 20}px`;
+    } else {
+      nav.style.top = `20px`;
+    }
+    lastScrollTop = scrollTop;
+  });
 </script>
 
-<!-- ===== Floating Cart Button (paste before </body>) ===== -->
-<a href="cart.html" class="floating-cart" aria-label="سلة التسوق">
-  <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
-  <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-</a>
+<script>
+  const container = document.getElementById("productContainer");
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQuery = urlParams.get("search")?.toLowerCase() || "";
+  
+  if (searchQuery) {
+    document.getElementById("search-input").value = searchQuery;
+  }
+
+  // Fetch and build catalog cards dynamically from Firebase Realtime Database
+  db.ref("products").on("value", snapshot => {
+    container.innerHTML = "";
+    let matchFound = false;
+
+    if (!snapshot.exists()) {
+      container.innerHTML = `<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);">لا توجد أي منتجات متاحة بالكتالوج حالياً.</p>`;
+      return;
+    }
+
+    snapshot.forEach(child => {
+      const data = child.val();
+      const name = data.name?.toLowerCase() || "";
+      const desc = data.description?.toLowerCase() || "";
+      const category = data.category?.toLowerCase() || "";
+
+      // Match Search query
+      if (!searchQuery || name.includes(searchQuery) || desc.includes(searchQuery) || category.includes(searchQuery)) {
+        matchFound = true;
+        const productEl = document.createElement("div");
+        productEl.className = "product";
+        productEl.setAttribute("data-category", data.category);
+
+        const priceRaw = parseFloat(data.price) || 0;
+        let originalHtml = "";
+        let discountBadgeHtml = "";
+        
+        if (data.onSale && data.discount) {
+          const discountPercent = parseFloat(data.discount) || 0;
+          const oldPrice = priceRaw / (1 - (discountPercent/100));
+          originalHtml = `<span class="price-old">${oldPrice.toFixed(0)} جنيه</span>`;
+          discountBadgeHtml = `<span class="badge-discount">خصم ${data.discount}%</span>`;
+        }
+
+        productEl.innerHTML = `
+          <div class="product-image-container">
+            ${discountBadgeHtml}
+            <img src="${data.image}" alt="${data.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+          </div>
+          <span class="category">${data.category || 'مجموعة فاخرة'}</span>
+          <h3>${data.name}</h3>
+          <div class="price-box">
+            <span class="price">${priceRaw} جنيه</span>
+            ${originalHtml}
+          </div>
+          <a href="product.html?id=${child.key}" class="buy-btn">
+            <i class="fas fa-shopping-bag"></i> تفاصيل المنتج والشراء
+          </a>
+        `;
+        container.appendChild(productEl);
+      }
+    });
+
+    if (!matchFound) {
+      container.innerHTML = `<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);">عذراً، لم نجد أي نتائح للبحث عن "${searchQuery}". جربي كلمات أخرى.</p>`;
+    }
+
+    // Apply filters matching tactile pills
+    applyFilters();
+  });
+
+  // Filter application matching categories
+  function applyFilters() {
+    const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
+    const products = document.querySelectorAll('.product');
+
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const activeFilters = Array.from(checkboxes)
+          .filter(chk => chk.checked)
+          .map(chk => chk.getAttribute('data-category'));
+
+        let visibleCount = 0;
+        products.forEach(product => {
+          const category = product.getAttribute('data-category');
+          if (activeFilters.length === 0 || activeFilters.includes(category)) {
+            product.classList.remove('hidden');
+            visibleCount++;
+          } else {
+            product.classList.add('hidden');
+          }
+        });
+      });
+    });
+  }
+
+  // Manage manual search inputs
+  const searchForm = document.getElementById("search-form");
+  searchForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const query = document.getElementById("search-input").value.trim();
+    window.location.href = `all-products.html?search=${encodeURIComponent(query)}`;
+  });
+</script>
+
 </body>
 </html>
-
-
-
-
-
