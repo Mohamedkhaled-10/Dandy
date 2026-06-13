@@ -1,16 +1,32 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تفاصيل المنتج | Dandy</title>
-  <meta name="description" content="تفاصيل وعروض منتج العناية بالبشرة والجمال الفخم من داندي.">
+  <title>Premium Beauty Products | Dandy Beauty</title>
+  <meta name="description" id="meta-description-tag" content="View exclusive botanical ingredients, detailed product information, and special beauty offers from Dandy Beauty Egypt.">
+  <meta name="keywords" content="Dandy, Dandy Beauty, Skincare Egypt, Hair Care Cairo, Authentic Cosmetics, Luxury Beauty Products Egypt">
+  <meta name="robots" content="index, follow">
+  <link id="canonical-link" rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/product.html">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="منتج داندي للعناية الطبيعية">
-  <meta property="og:description" content="عناية طبيعية فائقة النقاء لبشرتك وشعرك.">
+  <!-- Favicons and Manifest Setup -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <meta name="theme-color" content="#D98D99">
+
+  <!-- Open Graph / Social preview (سيتم تحديثها ديناميكياً من الجافاسكربت) -->
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
   <meta property="og:image" content="">
   <meta property="og:url" content="">
+  <meta name="twitter:title" content="">
+  <meta name="twitter:description" content="">
+  <meta name="twitter:image" content="">
 
   <!-- Stylesheet -->
   <link href="style.css" rel="stylesheet">
@@ -44,6 +60,10 @@
       object-fit: cover;
       border-radius: var(--border-radius-md);
       transition: var(--transition-smooth);
+    }
+
+    .detail-image-box img:hover {
+      transform: scale(1.02);
     }
 
     .detail-info-box {
@@ -203,7 +223,7 @@
     .pop-options {
       position: absolute;
       top: 125%;
-      right: 0;
+      left: 0;
       background: var(--color-surface);
       border: 1px solid var(--border-light);
       box-shadow: var(--shadow-lg);
@@ -260,25 +280,27 @@
 <body>
 
 <!-- Navigation -->
-<nav id="navbar" dir="rtl">
+<nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
     <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html" class="active">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html font-heading">المقالات</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html" class="active">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="blog.html">Blog</a></li>
     <li class="dropdown">
-      <a href="javascript:void(0)">المزيد ▾</a>
+      <a href="javascript:void(0)">Help & Info ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="client-reviews.html">ثقة العملاء</a></li>
-        <li><a href="about-us.html font-heading">من نحن</a></li>
+        <li><a href="help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
+        <li><a href="about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
-  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+  <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
     <span></span>
     <span></span>
     <span></span>
@@ -286,19 +308,21 @@
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="client-reviews.html">ثقة العملاء</a></li>
-    <li><a href="blog.html">المقالات</a></li>
-    <li><a href="about-us.html">من نحن</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> Track Your Order</a></li>
+    <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+    <li><a href="client-reviews.html">Client Reviews</a></li>
+    <li><a href="blog.html">Blog Posts</a></li>
+    <li><a href="about-us.html">About Us</a></li>
   </ul>
   <div class="side-bottom-links">
-    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
     <span>|</span>
-    <a href="terms.html">الشروط والأحكام</a>
+    <a href="terms.html">Terms & Conditions</a>
   </div>
 </div>
 
@@ -307,12 +331,12 @@
   <div class="detail-grid" id="detailFrame">
     <!-- Interactive structural display -->
     <div class="detail-image-box">
-      <img id="product-img" src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="...جاري التحميل">
+      <img id="product-img" src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="Loading Product Image...">
     </div>
 
     <div class="detail-info-box">
-      <span class="p-category" id="product-category">مجموعة العناية المتميزة</span>
-      <h1 id="product-title">...تحميل الاسم</h1>
+      <span class="p-category" id="product-category">Premium Skin & Hair Care</span>
+      <h1 id="product-title">Loading Product Name...</h1>
       
       <div class="p-rating">
         <i class="fas fa-star"></i>
@@ -320,33 +344,33 @@
         <i class="fas fa-star"></i>
         <i class="fas fa-star"></i>
         <i class="fas fa-star-half-alt"></i>
-        <span>(4.9 تقعيد) · 92 مراجعة من المشترين المستقلين</span>
+        <span>(4.9 stars) · 92 independent client reviews</span>
       </div>
 
-      <p class="p-desc" id="product-desc">جاري سحب التفاصيل والوصف الحصري من المخدم...</p>
+      <p class="p-desc" id="product-desc">Pulling exclusive botanical skincare properties and details from our database...</p>
 
       <div class="price-section">
-        <span class="price-current" id="product-price">... جنيه</span>
+        <span class="price-current" id="product-price">... EGP</span>
         <span id="price-old-wrapper"></span>
       </div>
 
       <!-- Action capsules -->
       <div class="action-group">
         <button class="btn-action btn-cart" id="add-to-cart-btn">
-          <i class="fas fa-shopping-basket"></i> أضيفي إلى حقيبة التسوق الخاصة بكِ
+          <i class="fas fa-shopping-basket"></i> Add to your Shopping Bag
         </button>
         
         <a class="btn-action btn-wa" id="whatsapp-link" target="_blank">
-          <i class="fab fa-whatsapp"></i> استشارة وتواصل فوري عبر الواتساب
+          <i class="fab fa-whatsapp"></i> Chat & Consult via WhatsApp
         </a>
 
         <!-- Additional instant support portals -->
         <div class="social-direct-box">
           <a class="btn-s btn-fb" id="facebook-link" target="_blank">
-            <i class="fab fa-facebook"></i> فيسبوك مسنجر
+            <i class="fab fa-facebook"></i> FB Messenger
           </a>
           <a class="btn-s btn-ig" id="instagram-link" target="_blank">
-            <i class="fab fa-instagram"></i> انستجرام دايركت
+            <i class="fab fa-instagram"></i> IG Direct Chat
           </a>
         </div>
       </div>
@@ -354,7 +378,7 @@
       <!-- Share option pill -->
       <div class="detail-share-area">
         <div class="share-pill" id="share-toggle">
-          <i class="fas fa-share-alt"></i> مشاركة هذا المستحضر مع صديقتكِ
+          <i class="fas fa-share-alt"></i> Share this product with your friends
           <div class="pop-options">
             <a id="share-whatsapp" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
             <a id="share-facebook" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -371,25 +395,25 @@
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
-      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
-      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+      <h4 style="font-family:'Space Grotesk', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">Your premier destination for natural skincare and organic purity.</p>
     </div>
     <div class="footer-col">
-      <h4>روابط مفيدة</h4>
+      <h4>Useful Links</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="index.html">الرئيسية</a></li>
-        <li><a href="all-products.html">كل المنتجات</a></li>
-        <li><a href="special-offers.html">العروض الخاصة</a></li>
-        <li><a href="blog.html">المدونة والمقالات</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="all-products.html">All Products</a></li>
+        <li><a href="special-offers.html">Special Offers</a></li>
+        <li><a href="blog.html">Our Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
-      <h4>المساعدة والدعم</h4>
+      <h4>Help & Support</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="about-us.html">من نحن</a></li>
-        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
-        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
-        <li><a href="terms.html">الشروط والأحكام</a></li>
+        <li><a href="about-us.html">About Us</a></li>
+        <li><a href="client-reviews.html">Client Reviews</a></li>
+        <li><a href="privacy-policy.html">Privacy & Security Policy</a></li>
+        <li><a href="terms.html">Terms & Conditions</a></li>
       </ul>
     </div>
   </div>
@@ -400,12 +424,12 @@
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
       <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
-    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+    <p class="rights">© 2026 Dandy Beauty. All rights and media reserved.</p>
   </div>
 </footer>
 
 <!-- Floating Actions -->
-<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+<a href="cart.html" class="floating-cart" aria-label="Shopping Bag">
   <span class="cart-count" id="cart-count">0</span>
   <i class="fas fa-shopping-cart"></i>
 </a>
@@ -514,38 +538,101 @@
       loadedProduct.id = id; // Store key directly
 
       document.getElementById("product-img").src = product.image || '';
-      document.getElementById("product-title").textContent = product.name || 'اسم المنتج';
-      document.getElementById("product-desc").textContent = product.description || "لا يوجد وصف متاح.";
-      document.getElementById("product-category").textContent = product.category || "تشكيلة فاخرة";
+      document.getElementById("product-title").textContent = product.name || 'Premium Essential';
+      document.getElementById("product-desc").textContent = product.description || "No description currently available.";
+      
+      // Map Category code to nice English titles
+      let mappedCat = product.category || "Luxury Care";
+      if (product.category === "منتجات الشعر") mappedCat = "Hair Care";
+      if (product.category === "منتجات الجسم") mappedCat = "Body & Skin";
+      if (product.category === "منتجات العطور") mappedCat = "Natural Fragrances";
+
+      document.getElementById("product-category").textContent = mappedCat;
       
       const priceRaw = parseFloat(product.price) || 0;
-      document.getElementById("product-price").textContent = priceRaw + " جنيه";
+      document.getElementById("product-price").textContent = priceRaw + " EGP";
 
       if (product.onSale && product.discount) {
         const discountPercent = parseFloat(product.discount) || 0;
         const oldPrice = priceRaw / (1 - (discountPercent/100));
-        document.getElementById("price-old-wrapper").innerHTML = `<span class="price-crossed">${oldPrice.toFixed(0)} جنيه</span> <span class="badge-discount" style="position:static; margin-right:10px;">وفرتي ${product.discount}%</span>`;
+        document.getElementById("price-old-wrapper").innerHTML = `<span class="price-crossed">${oldPrice.toFixed(0)} EGP</span> <span class="badge-discount" style="position:static; margin-left:10px;">Save ${product.discount}%</span>`;
       }
 
       // Update browser tab name
       try {
-        document.title = `${product.name} | متجر Dandy`;
+        document.title = `${product.name} | Dandy Beauty Egypt`;
       } catch (e) {}
 
-      // Update OG metadata safely
-      const desc = product.description || '';
-      const image = product.image || '';
+      // Update SEO, Open Graph, and Twitter Cards dynamically
+      const cleanDesc = (product.description || "Indulge in premium organic beauty with Dandy's pure natural care essentials.").replace(/<[^>]*>/g, '').substring(0, 155).trim() + "...";
+      const cleanImg = product.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=1200&q=80';
       const pageURL = window.location.href;
 
-      updateMetaTag('meta[name="description"]', 'content', desc);
-      updateMetaTag('meta[property="og:title"]', 'content', product.name || '');
-      updateMetaTag('meta[property="og:description"]', 'content', desc);
-      updateMetaTag('meta[property="og:image"]', 'content', image);
+      updateMetaTag('#meta-description-tag', 'content', cleanDesc);
+      updateMetaTag('meta[name="description"]', 'content', cleanDesc);
+      
+      updateMetaTag('#og-title-meta', 'content', product.name || 'Premium Essential');
+      updateMetaTag('meta[property="og:title"]', 'content', product.name || 'Premium Essential');
+      updateMetaTag('#og-desc-meta', 'content', cleanDesc);
+      updateMetaTag('meta[property="og:description"]', 'content', cleanDesc);
+      updateMetaTag('#og-image-meta', 'content', cleanImg);
+      updateMetaTag('meta[property="og:image"]', 'content', cleanImg);
+      updateMetaTag('#og-url-meta', 'content', pageURL);
       updateMetaTag('meta[property="og:url"]', 'content', pageURL);
+
+      updateMetaTag('#tw-title-meta', 'content', product.name || 'Premium Essential');
+      updateMetaTag('meta[name="twitter:title"]', 'content', product.name || 'Premium Essential');
+      updateMetaTag('#tw-desc-meta', 'content', cleanDesc);
+      updateMetaTag('meta[name="twitter:description"]', 'content', cleanDesc);
+      updateMetaTag('#tw-image-meta', 'content', cleanImg);
+      updateMetaTag('meta[name="twitter:image"]', 'content', cleanImg);
+
+      // Create Dynamic Product Schema
+      try {
+        let schemaScript = document.getElementById('dynamic-product-schema');
+        if (!schemaScript) {
+          schemaScript = document.createElement('script');
+          schemaScript.id = 'dynamic-product-schema';
+          schemaScript.type = 'application/ld+json';
+          document.head.appendChild(schemaScript);
+        }
+        const schemaJSON = {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.name,
+          "image": [cleanImg],
+          "description": cleanDesc,
+          "sku": `DANDY-${(id || 'promo').toUpperCase().substring(0, 8)}`,
+          "brand": {
+            "@type": "Brand",
+            "name": "Dandy Beauty"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": pageURL,
+            "priceCurrency": "EGP",
+            "price": priceRaw,
+            "itemCondition": "https://schema.org/NewCondition",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+              "@type": "Organization",
+              "name": "Dandy Beauty"
+            }
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "92"
+          }
+        };
+        schemaScript.textContent = JSON.stringify(schemaJSON);
+      } catch (e) {
+        console.warn(e);
+      }
 
       // Connect Support Channels with customizable templates
       const cleanPhone = (product.whatsapp || '201067228170').replace(/\D/g, "");
-      const whatsappMsg = `مرحباً داندي، أود الاستفسار وحجز المنتج التالي من فضلكِ:\n- اسم المنتج: ${product.name}\n- رابط التفاصيل: ${pageURL}`;
+      const whatsappMsg = `Hi Dandy Beauty, I would like to inquire about this product:\n- Product Name: ${product.name}\n- Link: ${pageURL}`;
       
       document.getElementById("whatsapp-link").href = `https://wa.me/${cleanPhone ? cleanPhone : '201067228170'}?text=${encodeURIComponent(whatsappMsg)}`;
       document.getElementById("facebook-link").href = product.facebook || "https://www.facebook.com/profile.php?id=61563039704396";
@@ -562,10 +649,10 @@
       if (instagramShare) instagramShare.href = product.instagram || 'https://www.instagram.com/dandy_skincare_cosmotics';
 
     } else {
-      detailFrame.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:60px 0;"><i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-gold);margin-bottom:14px;"></i><p style="font-size:1.2rem;font-weight:700;">المستحضر الذي تبحثين عنه غير متوفر، تصفحي باقي المجموعات.</p></div>';
+      detailFrame.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:60px 0;"><i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-gold);margin-bottom:14px;"></i><p style="font-size:1.2rem;font-weight:700;">The product you are looking for is currently unavailable. Please check other collections.</p></div>';
     }
   }).catch(error => {
-    detailFrame.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:60px 0;">حدث خطأ أثناء تحميل تفاصيل المنتج. يرجى المحاولة لاحقاً.</p>';
+    detailFrame.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:60px 0;">An error occurred while loading product details. Please try again later.</p>';
   });
 
   // Share overlay popup toggle
@@ -620,7 +707,7 @@
     alertDiv.style.zIndex = "1030";
     alertDiv.style.fontWeight = "700";
     alertDiv.style.textAlign = "center";
-    alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-left:8px;"></i> تم إضافته بنجاح لسلتكِ الفاخرة!`;
+    alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-right:8px;"></i> Successfully added to your shopping bag!`;
     document.body.appendChild(alertDiv);
     
     setTimeout(() => {

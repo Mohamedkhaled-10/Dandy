@@ -1,9 +1,30 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>حقيبة التسوق وإتمام الشراء الفوري | Dandy Beauty</title>
+  <title>Shopping Cart & Secure Checkout | Dandy Beauty</title>
+  <meta name="description" content="View your cart status, configure your governorate-based shipping option, and secure your organic purity order at Dandy Beauty Egypt.">
+  <meta name="keywords" content="Cart Dandy Beauty, Secure Checkout Egypt, Skincare Order Cairo">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/cart.html">
+
+  <!-- Favicons and Manifest Setup -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <meta name="theme-color" content="#D98D99">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/cart.html">
+  <meta property="og:title" content="Shopping Cart & Secure Checkout | Dandy Beauty">
+  <meta property="og:description" content="Securely finalize your purchase of premium organic botanical items.">
+  <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
 
   <!-- Stylesheet -->
   <link href="style.css" rel="stylesheet">
@@ -48,7 +69,7 @@
     .stepper-line-progress {
       position: absolute;
       top: 50%;
-      right: 15%;
+      left: 15%;
       height: 3px;
       background: var(--color-blush);
       z-index: 2;
@@ -407,27 +428,27 @@
 <body>
 
 <!-- Navigation -->
-<nav id="navbar" dir="rtl">
+<nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
     <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="blog.html">Blog</a></li>
     <li class="dropdown">
-      <a href="javascript:void(0)">روابط المساعدة ▾</a>
+      <a href="javascript:void(0)">Help & Info ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
-        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> ثقة العملاء</a></li>
-        <li><a href="about-us.html"><i class="fas fa-star"></i> من نحن</a></li>
+        <li><a href="help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
+        <li><a href="about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
-    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
-  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+  <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
     <span></span>
     <span></span>
     <span></span>
@@ -435,21 +456,21 @@
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> تتبع طلبكِ الفوري</a></li>
-    <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة والتسوق</a></li>
-    <li><a href="client-reviews.html">ثقة العملاء</a></li>
-    <li><a href="blog.html">المقالات</a></li>
-    <li><a href="about-us.html">من نحن</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> Track Your Order</a></li>
+    <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+    <li><a href="client-reviews.html">Client Reviews</a></li>
+    <li><a href="blog.html">Blog Posts</a></li>
+    <li><a href="about-us.html">About Us</a></li>
   </ul>
   <div class="side-bottom-links">
-    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
     <span>|</span>
-    <a href="terms.html">الشروط والأحكام</a>
+    <a href="terms.html">Terms & Conditions</a>
   </div>
 </div>
 
@@ -463,17 +484,17 @@
 
       <div class="stepper-step active" id="stepper-step-1">
         <div class="step-num-icon"><i class="fas fa-shopping-basket"></i></div>
-        <span class="step-text">سلة المشتريات</span>
+        <span class="step-text">Shopping Bag</span>
       </div>
       
       <div class="stepper-step" id="stepper-step-2">
         <div class="step-num-icon"><i class="fas fa-truck"></i></div>
-        <span class="step-text">تفاصيل الشحن</span>
+        <span class="step-text">Shipping Details</span>
       </div>
       
       <div class="stepper-step" id="stepper-step-3">
         <div class="step-num-icon"><i class="fas fa-check-double"></i></div>
-        <span class="step-text">مراجعة وتأكيد</span>
+        <span class="step-text">Review & Place Order</span>
       </div>
     </div>
 
@@ -487,7 +508,7 @@
         <div class="catalog-checkout-grid">
           
           <div class="panel-main-card">
-            <h2 style="font-family:'Cairo', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-shopping-bag"></i> المراجعة التفصيلية لمستحضراتكِ</h2>
+            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-shopping-bag"></i> Review Your Selected Essentials</h2>
             
             <div id="cartItemsList">
               <!-- Render details dynamically -->
@@ -495,28 +516,28 @@
           </div>
 
           <div class="panel-side-summary">
-            <h3 style="font-family:'Cairo', sans-serif; font-size:1.1rem; margin-bottom:16px;">ملخص الحساب</h3>
+            <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:16px;">Billing Summary</h3>
             
             <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700;">
-              <span style="color:var(--color-muted);">قيمة المشتريات:</span>
-              <span id="subtotalValSummary">00.00 جنيه</span>
+              <span style="color:var(--color-muted);">Items Subtotal:</span>
+              <span id="subtotalValSummary">00.00 EGP</span>
             </div>
             
             <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.9rem; color:var(--color-muted);">
-              <span>تكلفة الشحن والتوصيل:</span>
-              <span style="color:var(--color-success); font-weight:700;">تحدد حسب المحافظة</span>
+              <span>Shipping cost:</span>
+              <span style="color:var(--color-muted); font-style:italic;" id="shippingCostSummary1">Calculated at next step</span>
             </div>
 
             <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">المجموع المؤقت:</span>
-              <strong style="font-size:1.5rem; color:var(--color-blush);" class="grandTotalSummaryValue">00 جنيه</strong>
+              <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">Estimated Total:</span>
+              <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue1">00 EGP</strong>
             </div>
 
-            <button class="btn-checkout-primary" style="width:100%; justify-content:center;" onclick="goToStep(2)">الاستمرار لبيانات التسليم <i class="fas fa-long-arrow-alt-left"></i></button>
+            <button class="btn-checkout-primary" style="width:100%; justify-content:center;" onclick="goToStep(2)">Proceed to Delivery <i class="fas fa-long-arrow-alt-right"></i></button>
             
             <div class="trust-checkout-tag">
               <i class="fas fa-shield-alt"></i>
-              <span>طرق تصفح آمنة ومتوافقة بالكامل للخصوصية.</span>
+              <span>100% Secure browsing and connection.</span>
             </div>
           </div>
 
@@ -530,80 +551,97 @@
         <div class="catalog-checkout-grid">
           
           <div class="panel-main-card">
-            <h2 style="font-family:'Cairo', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> أين ترغبين في استلام شحنتكِ؟</h2>
+            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> Where should we deliver your order?</h2>
             
-            <form id="shippingFormElement">
+            <form id="shippingFormElement" onsubmit="event.preventDefault();">
               <div class="form-group-checkout">
-                <label for="f-name">الاسم ثلاثياً بالكامل (بالعربية)</label>
-                <input type="text" id="f-name" placeholder="الاسم ثلاثياً بالكامل لضمان دقة الشحن" required>
+                <label for="f-name">Full Customer Name</label>
+                <input type="text" id="f-name" placeholder="Write your full name for postage accuracy" required>
               </div>
 
               <div class="form-row-double">
                 <div class="form-group-checkout">
-                  <label for="f-phone">رقم الموبايل الفعال (للراسل والمندوب)</label>
-                  <input type="tel" id="f-phone" placeholder="مثال: 01012345678" required>
+                  <label for="f-phone">Active Phone Number (For Representative & Courier)</label>
+                  <input type="tel" id="f-phone" placeholder="Example: 01012345678" required>
                 </div>
                 <div class="form-group-checkout">
-                  <label for="f-email">البريد الإلكتروني (اختياري)</label>
-                  <input type="email" id="f-email" placeholder="البريد لتلقي تحديثات الشحن">
+                  <label for="f-email">Email Address (Optional)</label>
+                  <input type="email" id="f-email" placeholder="To receive email tracking updates">
                 </div>
               </div>
 
               <div class="form-row-double">
                 <div class="form-group-checkout">
-                  <label for="f-gov">المحافظة</label>
-                  <select id="f-gov" required>
-                    <option value="">اختر محافظتكِ للتوصيل</option>
-                    <option>القاهرة</option>
-                    <option>الجيزة</option>
-                    <option>الإسكندرية</option>
-                    <option>بورسعيد</option>
-                    <option>السويس</option>
-                    <option>دمياط</option>
-                    <option>الدقهلية</option>
-                    <option>الشرقية</option>
-                    <option>القليوبية</option>
-                    <option>الغربية</option>
-                    <option>المنوفية</option>
-                    <option>كفر الشيخ</option>
-                    <option>البحيرة</option>
-                    <option>الإسماعيلية</option>
-                    <option>شمال سيناء</option>
-                    <option>جنوب سيناء</option>
-                    <option>بني سويف</option>
-                    <option>الفيوم</option>
-                    <option>المنيا</option>
-                    <option>أسيوط</option>
-                    <option>سوهاج</option>
-                    <option>قنا</option>
-                    <option>الأقصر</option>
-                    <option>أسوان</option>
-                    <option>الوادي الجديد</option>
+                  <label for="f-gov">Governorate</label>
+                  <select id="f-gov" required onchange="handleGovChange()">
+                    <option value="">Select your Governorate</option>
+                    <option value="Cairo">Cairo</option>
+                    <option value="Giza">Giza</option>
+                    <option value="Alexandria">Alexandria</option>
+                    <option value="Gharbia">Gharbia</option>
+                    <option value="Dakahlia">Dakahlia</option>
+                    <option value="Sharqia">Sharqia</option>
+                    <option value="Kafr El Sheikh">Kafr El Sheikh</option>
+                    <option value="Qalyubia">Qalyubia</option>
+                    <option value="Port Said">Port Said</option>
+                    <option value="Damietta">Damietta</option>
+                    <option value="Suez">Suez</option>
+                    <option value="Ismailia">Ismailia</option>
+                    <option value="Beheira">Beheira</option>
+                    <option value="Monufia">Monufia</option>
+                    <option value="Fayoum">Fayoum</option>
+                    <option value="Beni Suef">Beni Suef</option>
+                    <option value="Minya">Minya</option>
+                    <option value="Luxor">Luxor</option>
+                    <option value="Aswan">Aswan</option>
+                    <option value="Assiut">Assiut</option>
+                    <option value="Sohag">Sohag</option>
+                    <option value="Qena">Qena</option>
+                    <option value="North Sinai">North Sinai</option>
+                    <option value="South Sinai">South Sinai</option>
+                    <option value="New Valley">New Valley</option>
+                    <option value="Red Sea">Red Sea</option>
+                    <option value="Matrouh">Matrouh</option>
                   </select>
                 </div>
                 <div class="form-group-checkout">
-                  <label for="f-city">المدينة / المركز والمنطقة</label>
-                  <input type="text" id="f-city" placeholder="مثال: المعادي، الدقي، السيوف" required>
+                  <label for="f-city">City / District Zone</label>
+                  <input type="text" id="f-city" placeholder="Example: Nasr City, Dokki, San Stefano" required>
                 </div>
               </div>
 
               <div class="form-group-checkout">
-                <label for="f-address">العنوان التفصيلي بالتحديد (الشارع، البناية، رقم الدوار/الشقة)</label>
-                <input type="text" id="f-address" placeholder="اسم الشارع بالتفصيل وعلامة مميزة مثل بجانب صيدلية..." required>
+                <label for="f-address">Full Detailed Address (Street, Building, Apartment, Floor, LandmarK)</label>
+                <input type="text" id="f-address" placeholder="Write full details, street name, building number, nearby landmark..." required>
               </div>
             </form>
 
             <div class="checkout-nav-row">
-              <button class="btn-checkout-secondary" onclick="goToStep(1)"><i class="fas fa-long-arrow-alt-right"></i> العودة للسلة</button>
-              <button class="btn-checkout-primary" onclick="validateAndGoToReview()">الاستمرار للمراجعة النهائية <i class="fas fa-long-arrow-alt-left"></i></button>
+              <button class="btn-checkout-secondary" onclick="goToStep(1)"><i class="fas fa-long-arrow-alt-left"></i> Back to Bag</button>
+              <button class="btn-checkout-primary" onclick="validateAndGoToReview()">Proceed to Final Review <i class="fas fa-long-arrow-alt-right"></i></button>
             </div>
           </div>
 
           <div class="panel-side-summary">
-            <h3 style="font-family:'Cairo', sans-serif; font-size:1.1rem; margin-bottom:12px;"><i class="fas fa-truck-moving"></i> تغطية التوصيل الآمن</h3>
-            <p style="font-size:0.88rem; color:var(--color-muted); line-height:1.7;">نقوم بالتوصيل لباب منزلكِ بالتعاقد مع أفضل شركات الشحن السريع والآمن بجمهورية مصر العربية.</p>
+            <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;"><i class="fas fa-receipt"></i> Order Summary</h3>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+              <span style="color:var(--color-muted); font-size: 0.9rem;">Items Subtotal:</span>
+              <span id="subtotalValSummary2" style="font-weight:700;">00.00 EGP</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+              <span style="color:var(--color-muted); font-size: 0.9rem;">Shipping Fee:</span>
+              <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-success);">Select Governorate</span>
+            </div>
+
+            <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">Grand Total:</span>
+              <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue2">00 EGP</strong>
+            </div>
+
             <div style="background:var(--color-surface-soft); font-size:0.8rem; padding:12px; border-radius:8px; margin-top:14px; border:1px solid var(--border-light); font-weight:700; color:var(--color-primary);">
-              <i class="fas fa-info-circle"></i> يتم الشحن من مخازن داندي خلال 24 - 48 ساعة فقط!
+              <i class="fas fa-info-circle"></i> Shipped from Dandy packaging facility within 24 to 48 hours cleanly!
             </div>
           </div>
 
@@ -617,44 +655,56 @@
         <div class="catalog-checkout-grid">
           
           <div class="panel-main-card">
-            <h2 style="font-family:'Cairo', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-clipboard-check"></i> المراجعة النهائية لكامل بيانات الطلب</h2>
+            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-clipboard-check"></i> Final Review of Your Order Details</h2>
             
             <div class="final-review-section-header">
-              <i class="fas fa-map-marked-alt"></i> عنوان ونقاط الشحن والتواصل
+              <i class="fas fa-map-marked-alt"></i> Delivery & Contact Details
             </div>
             <div class="final-review-block">
-              <p>اسم المستلم: <strong id="revCustName">...</strong></p>
-              <p>رقم الهاتف للتواصل: <strong id="revCustPhone" style="direction:ltr; display:inline-block;">...</strong></p>
-              <p>البريد المعتمد: <span id="revCustEmail">...</span></p>
-              <p style="margin-top:10px; border-top:1px solid rgba(0,0,0,0.03); padding-top:10px;">المدينة والمحافظة: <strong id="revCustLocation">...</strong></p>
-              <p>العنوان الدقيق: <strong id="revCustAddress">...</strong></p>
+              <p>Recipient Name: <strong id="revCustName">...</strong></p>
+              <p>Contact Phone: <strong id="revCustPhone" style="direction:ltr; display:inline-block;">...</strong></p>
+              <p>Email Address: <span id="revCustEmail">...</span></p>
+              <p style="margin-top:10px; border-top:1px solid rgba(0,0,0,0.03); padding-top:10px;">City & Governorate: <strong id="revCustLocation">...</strong></p>
+              <p>Detailed Address: <strong id="revCustAddress">...</strong></p>
             </div>
 
             <div class="final-review-section-header">
-              <i class="fas fa-shopping-basket"></i> المستحضرات المختارة في شحنتكِ
+              <i class="fas fa-shopping-basket"></i> Selected Essentials in Your Shipment
             </div>
             <div id="revProductsList" style="margin-bottom:30px;">
               <!-- render preview list -->
             </div>
 
             <div class="checkout-nav-row">
-              <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-right"></i> تعديل تفاصيل العنوان</button>
-              <button class="btn-checkout-primary" style="background:var(--color-success); border-color:var(--color-success); box-shadow: 0 8px 24px rgba(60, 119, 90, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()"><i class="fas fa-check"></i> تأكيد وإرسال الطلب الآن مجاناً</button>
+              <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-left"></i> Edit Address Details</button>
+              <button class="btn-checkout-primary" style="background:var(--color-success); border-color:var(--color-success); box-shadow: 0 8px 24px rgba(60, 119, 90, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()"><i class="fas fa-check"></i> Submit & Place Order</button>
             </div>
           </div>
 
           <div class="panel-side-summary">
-            <h3 style="font-family:'Cairo', sans-serif; font-size:1.1rem; margin-bottom:12px;">تأكيد الدفع والاستلام</h3>
+            <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;">Payment Details</h3>
             
             <div style="background:rgba(60, 119, 90, 0.05); color:var(--color-success); padding:16px; border-radius:12px; font-weight:700; font-size:0.88rem; line-height:1.7; margin-bottom:20px; border:1px solid rgba(60, 119, 90, 0.1);">
-              <i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام نقداً (COD)
-              <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px;">يمكنكِ فحص المستحضرات قبل تسليم قيمة الفاتورة للمندوب تماماً لضمان رضاكِ الكامل.</p>
+              <i class="fas fa-money-bill-wave"></i> Cash on Delivery (COD)
+              <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px;">You can inspect all items upon arrival before payment to ensure 100% beauty satisfaction.</p>
             </div>
 
-            <span style="color:var(--color-muted); font-size:0.85rem; font-weight:700;">القيمة الإجمالية النهائية للمستحضرات:</span>
-            <div class="final-summary-total-lg" id="finalSummaryTotal">00.00 جنيه</div>
+            <div style="margin-bottom:12px; line-height:1.5;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
+                <span style="color:var(--color-muted);">Items Subtotal:</span>
+                <span id="summSubtotal" style="font-weight:700;">00 EGP</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
+                <span style="color:var(--color-muted);">Shipping Fee:</span>
+                <span id="summShipping" style="font-weight:700; color:var(--color-success);">00 EGP</span>
+              </div>
+              <div style="border-top:1px dashed var(--border-light); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:var(--color-muted); font-size:0.85rem; font-weight:700;">Grand Total:</span>
+                <strong style="font-size: 1.6rem; color:var(--color-primary);" id="finalSummaryTotal">00 EGP</strong>
+              </div>
+            </div>
             
-            <p style="font-size:0.8rem; color:var(--color-muted); margin-top:8px;" id="savingTextLoader"><i class="fas fa-info-circle"></i> الضغط على تأكيد الطلب يسجله مباشرة وسيزودكِ برمز تتبع فوري.</p>
+            <p style="font-size:0.8rem; color:var(--color-muted); margin-top:8px;" id="savingTextLoader"><i class="fas fa-info-circle"></i> Submitting registers your order securely and provides you with an instant tracking code.</p>
           </div>
 
         </div>
@@ -669,26 +719,26 @@
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
-      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
-      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+      <h4 style="font-family:'Space Grotesk', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">Your premier destination for natural skincare and organic purity.</p>
     </div>
     <div class="footer-col">
-      <h4>روابط مفيدة</h4>
+      <h4>Useful Links</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="index.html">الرئيسية</a></li>
-        <li><a href="all-products.html">كل المنتجات</a></li>
-        <li><a href="special-offers.html">العروض الخاصة</a></li>
-        <li><a href="blog.html font-heading">المدونة والمقالات</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="all-products.html">All Products</a></li>
+        <li><a href="special-offers.html">Special Offers</a></li>
+        <li><a href="blog.html">Our Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
-      <h4>المساعدة والدعم</h4>
+      <h4>Help & Support</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> دليل المساعدة وهدايا داندي</a></li>
-        <li><a href="about-us.html">من نحن</a></li>
-        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
-        <li><a href="privacy-policy.html">سياسة الخصوصية والأمان</a></li>
-        <li><a href="terms.html">الشروط والأحكام العامة</a></li>
+        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+        <li><a href="about-us.html">About Us</a></li>
+        <li><a href="client-reviews.html">Client Reviews</a></li>
+        <li><a href="privacy-policy.html">Privacy & Security Policy</a></li>
+        <li><a href="terms.html">Terms & Conditions</a></li>
       </ul>
     </div>
   </div>
@@ -699,7 +749,7 @@
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
       <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
-    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+    <p class="rights">© 2026 Dandy Beauty. All rights and media reserved.</p>
   </div>
 </footer>
 
@@ -756,14 +806,51 @@
   let cart = JSON.parse(localStorage.getItem('cart')) || [];
   let currentStep = 1;
 
-  // Render variables references
+  // English shipping fees mapped to Egyptian governorate zones
+  const shippingRates = {
+    "Gharbia": 70,
+    "Dakahlia": 85,
+    "Sharqia": 85,
+    "Kafr El Sheikh": 85,
+    "Qalyubia": 85,
+    "Port Said": 85,
+    "Damietta": 85,
+    "Suez": 85,
+    "Ismailia": 85,
+    "Cairo": 85,
+    "Giza": 85,
+    "Beheira": 85,
+    "Monufia": 85,
+    "Alexandria": 85,
+    "Fayoum": 100,
+    "Beni Suef": 100,
+    "Minya": 100,
+    "Luxor": 120,
+    "Aswan": 120,
+    "Assiut": 120,
+    "Sohag": 120,
+    "North Sinai": 120,
+    "South Sinai": 120,
+    "Qena": 120,
+    "New Valley": 120,
+    "Red Sea": 120,
+    "Matrouh": 120
+  };
+
+  function getShippingFeeForGov(govName) {
+    if (!govName) return null;
+    return shippingRates[govName] || 120; // fallback to 120 EGP standard for Upper or unspecified zones
+  }
+
+  // Render elements references
   const cartItemsList = document.getElementById('cartItemsList');
   const subtotalValSummary = document.getElementById('subtotalValSummary');
-  const grandTotalSummaryValue = document.querySelector('.grandTotalSummaryValue');
+  const subtotalValSummary2 = document.getElementById('subtotalValSummary2');
+  const grandTotalSummaryValue1 = document.getElementById('grandTotalSummaryValue1');
+  const grandTotalSummaryValue2 = document.getElementById('grandTotalSummaryValue2');
   const finalSummaryTotal = document.getElementById('finalSummaryTotal');
 
-  // Shipping details form
-  const shippingForm = document.getElementById('shippingFormElement');
+  const shippingCostSummary2 = document.getElementById('shippingCostSummary2');
 
   // Final review text references
   const revCustName = document.getElementById('revCustName');
@@ -773,13 +860,35 @@
   const revCustAddress = document.getElementById('revCustAddress');
   const revProductsList = document.getElementById('revProductsList');
 
-  function calculateCartTotal() {
-    let total = 0;
+  const summSubtotal = document.getElementById('summSubtotal');
+  const summShipping = document.getElementById('summShipping');
+
+  function calculateCartSubtotal() {
+    let subtotal = 0;
     cart.forEach(item => {
       const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
-      total += priceVal * item.quantity;
+      subtotal += priceVal * item.quantity;
     });
-    return total;
+    return subtotal;
+  }
+
+  // Handle live updates on Governorates dropdown change
+  window.handleGovChange = function() {
+    const govDropdown = document.getElementById('f-gov');
+    const selectedGov = govDropdown.value;
+    
+    const subtotal = calculateCartSubtotal();
+    
+    if (selectedGov) {
+      const fee = getShippingFeeForGov(selectedGov);
+      shippingCostSummary2.textContent = fee + " EGP";
+      shippingCostSummary2.style.color = "var(--color-primary)";
+      grandTotalSummaryValue2.textContent = (subtotal + fee).toFixed(0) + " EGP";
+    } else {
+      shippingCostSummary2.textContent = "Select Governorate";
+      shippingCostSummary2.style.color = "var(--color-success)";
+      grandTotalSummaryValue2.textContent = subtotal.toFixed(0) + " EGP";
+    }
   }
 
   function renderStep1CartItems() {
@@ -787,9 +896,9 @@
       document.getElementById('cartCheckoutContainer').innerHTML = `
         <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm);">
           <i class="fas fa-shopping-bag" style="font-size:4.5rem; color:var(--color-blush); margin-bottom:20px;"></i>
-          <h2 style="font-family:'Cairo', sans-serif; font-size:1.8em; margin-bottom:10px;">حقيبة التسوق الخاصة بكِ فارغة!</h2>
-          <p style="color:var(--color-muted); margin-bottom:24px; max-width:480px; margin-left:auto; margin-right:auto;">يبدو أنكِ لم تقومي باختيار تيجان الجمال الطبيعي لمستحضراتنا الفاخرة بعد. تصفحي واكتشفي الآن.</p>
-          <a href="all-products.html" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> تصفحي مجموعات داندي الساحرة</a>
+          <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8em; margin-bottom:10px;">Your shopping bag is empty!</h2>
+          <p style="color:var(--color-muted); margin-bottom:24px; max-width:480px; margin-left:auto; margin-right:auto;">It looks like you haven't filled your cart with our lovely crowns of organic skincare yet. Browse and start pampering!</p>
+          <a href="all-products.html" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> Browse Dandy's Collections</a>
         </div>
       `;
       return;
@@ -807,7 +916,7 @@
           <img src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
           <div class="cart-item-meta">
             <h3>${item.name}</h3>
-            <p>${Number(priceVal).toFixed(0)} جنيه فواتير فرعية</p>
+            <p>${Number(priceVal).toFixed(0)} EGP each</p>
           </div>
         </div>
 
@@ -819,11 +928,11 @@
             <button class="qty-btn-adjust" onclick="changeQty(${index}, 1)">+</button>
           </div>
 
-          <div style="font-weight:800; color:var(--color-blush); font-size:1.1rem; width:100px; text-align:left;">
-            ${Number(rowSubtotal).toFixed(0)} جنيه
+          <div style="font-weight:800; color:var(--color-blush); font-size:1.1rem; width:100px; text-align:right;">
+            ${Number(rowSubtotal).toFixed(0)} EGP
           </div>
 
-          <button class="action-btn-delete" onclick="removeItemFromCart(${index})" title="حذف من السلة">
+          <button class="action-btn-delete" onclick="removeItemFromCart(${index})" title="Delete from Cart">
             <i class="fas fa-trash-alt"></i>
           </button>
         </div>
@@ -831,9 +940,11 @@
       cartItemsList.appendChild(itemCard);
     });
 
-    const sumTotalText = calculateCartTotal().toFixed(0) + ' جنيه';
-    subtotalValSummary.textContent = sumTotalText;
-    grandTotalSummaryValue.textContent = sumTotalText;
+    const sub = calculateCartSubtotal();
+    subtotalValSummary.textContent = sub.toFixed(0) + ' EGP';
+    subtotalValSummary2.textContent = sub.toFixed(0) + ' EGP';
+    grandTotalSummaryValue1.textContent = sub.toFixed(0) + ' EGP';
+    grandTotalSummaryValue2.textContent = sub.toFixed(0) + ' EGP';
   }
 
   window.changeQty = function(index, delta) {
@@ -842,6 +953,7 @@
       if (cart[index].quantity < 1) cart[index].quantity = 1;
       localStorage.setItem('cart', JSON.stringify(cart));
       renderStep1CartItems();
+      handleGovChange();
     }
   };
 
@@ -849,6 +961,7 @@
     cart.splice(index, 1);
     localStorage.setItem('cart', JSON.stringify(cart));
     renderStep1CartItems();
+    handleGovChange();
   };
 
   // Switch panels
@@ -888,25 +1001,29 @@
 
     // Verify Name
     if (!name || name.length < 5) {
-      alert('الرجاء كتابة الاسم الكامل (ثلاثياً على الأقل بالعربية) لضمان تسليمه مع مندوب الشحن.');
+      alert('Please provide your full name (at least 2 words) to guarantee valid courier shipping.');
       return;
     }
     // Verify phone
-    if(!/^01[0125][0-9]{8}$/.test(phone)){
-      alert('الرجاء كتابة رقم موبايل مصري صحيح وفعّال (يتكون من 11 رقم ويبدأ بـ 010، 011، 012، أو 015)');
+    if (!/^01[0125][0-9]{8}$/.test(phone)) {
+      alert('Please write a valid Egyptian mobile number (11 digits, starting with 010, 011, 012, or 015)');
       return;
     }
     // Location options
     if (!governorate || !city || !address) {
-      alert('من فضلكِ، املأي جميع الحقول المطلوبة لتوصيل الطلب بدقة.');
+      alert('Please fill in all layout details, select governorate, city, and street address accurately.');
       return;
     }
+
+    const subtotal = calculateCartSubtotal();
+    const fee = getShippingFeeForGov(governorate);
+    const orderTotal = subtotal + fee;
 
     // Compile values into step 3 preview lists
     revCustName.textContent = name;
     revCustPhone.textContent = phone;
-    revCustEmail.textContent = email || 'غير متوفر';
-    revCustLocation.textContent = governorate + '، ' + city;
+    revCustEmail.textContent = email || 'N/A';
+    revCustLocation.textContent = city + ', ' + governorate + ' Governorate';
     revCustAddress.textContent = address;
 
     // Draw preview list of products inside summary step 3
@@ -921,12 +1038,15 @@
       divItem.style.borderBottom = '1px solid rgba(0,0,0,0.03)';
       divItem.innerHTML = `
         <span style="font-weight:700;"><i class="fas fa-feather-alt" style="color:var(--color-blush); font-size:0.8rem;"></i> ${item.name} <span style="color:var(--color-muted); font-size:0.8rem;">× ${item.quantity}</span></span>
-        <span style="font-weight:800; color:var(--color-primary);">${sub.toFixed(0)} جنيه</span>
+        <span style="font-weight:800; color:var(--color-primary);">${sub.toFixed(0)} EGP</span>
       `;
       revProductsList.appendChild(divItem);
     });
 
-    finalSummaryTotal.textContent = calculateCartTotal().toFixed(0) + ' جنيه';
+    // Step 3 final billing summary indicators
+    summSubtotal.textContent = subtotal.toFixed(0) + " EGP";
+    summShipping.textContent = fee.toFixed(0) + " EGP";
+    finalSummaryTotal.textContent = orderTotal.toFixed(0) + " EGP";
 
     goToStep(3);
   };
@@ -937,8 +1057,8 @@
     const savingTextLoader = document.getElementById('savingTextLoader');
 
     finalBtn.disabled = true;
-    finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل طلبكِ...';
-    savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع الفاتورة وتأكيد حجز المستحضرات الساحرة...</span>';
+    finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing your order...';
+    savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> Uploading invoice details and reserving your essential items...</span>';
 
     const name = document.getElementById('f-name').value.trim();
     const phone = document.getElementById('f-phone').value.trim();
@@ -947,23 +1067,30 @@
     const city = document.getElementById('f-city').value.trim();
     const address = document.getElementById('f-address').value.trim();
 
+    const subtotal = calculateCartSubtotal();
+    const shippingFee = getShippingFeeForGov(governorate);
+    const totalAmount = subtotal + shippingFee;
+
     const invoiceCode = 'DNY-' + Math.floor(100000 + Math.random() * 900000);
 
     const orderData = {
       name,
-      email: email || 'غير متوفر',
+      email: email || 'N/A',
       phone,
       governorate,
       city,
       address,
       products: cart,
+      subtotal: parseFloat(subtotal),
+      shippingFee: parseFloat(shippingFee),
+      totalAmount: parseFloat(totalAmount),
       invoiceCode,
-      status: 'جديد',
+      status: 'New',
       timestamp: new Date().toISOString()
     };
 
     try {
-      // Save directly to raw productsOrders RTDB node
+      // Save directly to orders node in Realtime Database
       const orderRef = db.ref('orders').push();
       await orderRef.set(orderData);
       const generatedKey = orderRef.key;
@@ -981,10 +1108,10 @@
 
     } catch(err) {
       console.error(err);
-      alert('عذراً، طرأ خطأ فني أثناء تواصل الخادم وحجز الطلب. يرجى المحاولة مجدداً.');
+      alert('An error occurred while connecting to the database. Please try again.');
       finalBtn.disabled = false;
-      finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإرسال الطلب الآن مجاناً';
-      savingTextLoader.innerHTML = '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> حدث خطأ، يرجى إعادة المحاولة.';
+      finalBtn.innerHTML = '<i class="fas fa-check"></i> Submit & Place Order';
+      savingTextLoader.innerHTML = '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> Error occurred. Please try again.';
     }
   };
 

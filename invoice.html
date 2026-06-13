@@ -1,10 +1,21 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تفاصيل ومتابعة الفاتورة | Dandy Beauty</title>
+  <title>Invoice Details & Tracking | Dandy Beauty</title>
   <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/invoice.html">
+
+  <!-- Favicons and Manifest Setup -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <meta name="theme-color" content="#D98D99">
 
   <!-- Stylesheet -->
   <link href="style.css" rel="stylesheet">
@@ -101,7 +112,7 @@
     }
 
     .invoice-table th {
-      text-align: right;
+      text-align: left;
       padding: 10px;
       background: var(--color-surface-soft);
       color: var(--color-muted);
@@ -119,7 +130,7 @@
       height: 48px;
       object-fit: cover;
       border-radius: 6px;
-      margin-left: 10px;
+      margin-right: 10px;
       vertical-align: middle;
       border: 1px solid var(--border-light);
     }
@@ -208,7 +219,7 @@
     .timeline-progress-bar {
       position: absolute;
       top: 50%;
-      right: 10%;
+      left: 10%;
       height: 4px;
       background: var(--color-success);
       z-index: 2;
@@ -249,10 +260,6 @@
       box-shadow: 0 0 16px rgba(60, 119, 90, 0.3);
     }
 
-    .step-item.current .step-circle {
-      animation: pulse-success 2s infinite;
-    }
-
     .step-label {
       font-size: 0.85rem;
       font-weight: 700;
@@ -265,80 +272,44 @@
       color: var(--color-primary);
     }
 
-    @keyframes pulse-success {
-      0% {
-        box-shadow: 0 0 0 0 rgba(60, 119, 90, 0.4);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(60, 119, 90, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(60, 119, 90, 0);
-      }
+    .price-crossed {
+      text-decoration: line-through;
+      color: var(--color-muted);
+      margin-left: 8px;
     }
 
-    .cancelled-banner {
-      background: rgba(184, 67, 79, 0.08);
-      border: 1px solid var(--color-danger);
-      color: var(--color-danger);
-      padding: 16px;
-      border-radius: var(--border-radius-sm);
-      text-align: center;
-      font-weight: 700;
-      margin: 20px 0;
-      display: none;
-    }
-
-    /* Clipboard Copy Action button styling */
-    .btn-copy-code {
-      background: var(--color-surface-soft);
-      border: 1px solid var(--border-light);
-      padding: 4px 12px;
-      border-radius: 99px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      color: var(--color-primary);
-      margin-right: 8px;
-      transition: var(--transition-fast);
-      vertical-align: middle;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid rgba(197, 155, 109, 0.25);
-    }
-
-    .btn-copy-code:hover {
-      background: var(--color-blush-soft);
-      border-color: var(--color-blush);
-      color: var(--color-blush);
+    /* Summary Breakdown Table Styles */
+    .invoice-table tfoot td {
+      padding: 10px;
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--border-light);
     }
   </style>
 </head>
 <body>
 
 <!-- Navigation -->
-<nav id="navbar" dir="rtl">
+<nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
     <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="blog.html">Blog</a></li>
     <li class="dropdown">
-      <a href="javascript:void(0)" class="active">روابط المساعدة ▾</a>
+      <a href="javascript:void(0)">Help & Info ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
-        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> ثقة العملاء</a></li>
-        <li><a href="about-us.html"><i class="fas fa-star"></i> من نحن</a></li>
+        <li><a href="help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
+        <li><a href="about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
-    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
-  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+  <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
     <span></span>
     <span></span>
     <span></span>
@@ -346,122 +317,140 @@
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> تتبع طلبكِ الفوري</a></li>
-    <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة والتسوق</a></li>
-    <li><a href="client-reviews.html">ثقة العملاء</a></li>
-    <li><a href="blog.html">المقالات</a></li>
-    <li><a href="about-us.html">من نحن</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> Track Your Order</a></li>
+    <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+    <li><a href="client-reviews.html">Client Reviews</a></li>
+    <li><a href="blog.html">Blog Posts</a></li>
+    <li><a href="about-us.html">About Us</a></li>
   </ul>
   <div class="side-bottom-links">
-    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
     <span>|</span>
-    <a href="terms.html">الشروط والأحكام</a>
+    <a href="terms.html">Terms & Conditions</a>
   </div>
 </div>
 
-<!-- Invoice Screen -->
-<section class="invoice-section container">
-  <div class="invoice-panel" id="invoiceCard">
+<section class="invoice-section">
+  <div class="container" id="invoiceCard">
     
-    <header class="invoice-header">
-      <div>
-        <h1 class="invoice-title">فاتورة تأكيد وحجز الطلب</h1>
-        <div style="display:flex; align-items:center; gap:8px; margin-top:6px; flex-wrap:wrap;">
-          <div class="invoice-code-tag" id="invoiceCode" style="margin-top:0;">...جاري السحب</div>
-          <button class="btn-copy-code" onclick="copyInvoiceToClipboard()" id="btnCopyCode"><i class="fas fa-copy"></i> نسخ الكود</button>
+    <div class="invoice-panel">
+      
+      <div class="invoice-header">
+        <div>
+          <h2 class="invoice-title">Order Handled Successfully!</h2>
+          <span class="invoice-code-tag" id="invoiceCode">...Loading</span>
+          <p style="color:var(--color-muted); font-size:0.85rem; margin-top:6px;">Registered Date: <span id="invoiceDate">...</span></p>
+        </div>
+        <div style="text-align: right;">
+          <button id="btnCopyCode" onclick="copyInvoiceToClipboard()" style="background:#fff; border:1px solid var(--border-light); border-radius:99px; padding:6px 14px; font-weight:700; cursor:pointer; font-size:0.85rem; color:var(--color-primary); display:inline-flex; align-items:center; gap:6px; transition:var(--transition-fast);">
+            <i class="fas fa-copy"></i> Copy Code
+          </button>
+          <div style="margin-top: 10px;">
+            <span class="invoice-badge-status status-new" id="statusBadge">New</span>
+          </div>
         </div>
       </div>
-      <div style="text-align: left;">
-        <div id="statusBadge" class="invoice-badge-status status-new">جديد</div>
-        <div style="color: var(--color-muted); font-size: 0.9rem; margin-top: 6px;" id="invoiceDate">...</div>
+
+      <!-- Cancelled Status Banner -->
+      <div class="cancelled-banner" id="cancelledBanner" style="display:none; background:rgba(184, 67, 79, 0.08); border:1px solid var(--color-danger); color:var(--color-danger); padding:16px; border-radius:var(--border-radius-sm); text-align:center; font-weight:700; margin-bottom:20px;">
+        <i class="fas fa-ban"></i> This order has been marked as cancelled.
       </div>
-    </header>
 
-    <!-- Cancelled Warning -->
-    <div class="cancelled-banner" id="cancelledBanner">
-      <i class="fas fa-ban"></i> تم إلغاء هذه الفاتورة من قِبل المشرف أو بناء على طلب العميلة.
-    </div>
-
-    <!-- Live timeline tracker -->
-    <div class="timeline-container" id="timelineContainer">
-      <div class="timeline-steps">
-        <div class="timeline-progress-bar" id="timelineProgressBar"></div>
-        
-        <div class="step-item" id="step-new">
-          <div class="step-circle"><i class="fas fa-file-invoice"></i></div>
-          <div class="step-label">تم استلام الطلب</div>
-        </div>
-        
-        <div class="step-item" id="step-processing">
-          <div class="step-circle"><i class="fas fa-cog"></i></div>
-          <div class="step-label">قيد التجهيز</div>
-        </div>
-        
-        <div class="step-item" id="step-shipped">
-          <div class="step-circle"><i class="fas fa-truck-moving"></i></div>
-          <div class="step-label">جاري الشحن</div>
-        </div>
-        
-        <div class="step-item" id="step-delivered">
-          <div class="step-circle"><i class="fas fa-check-double"></i></div>
-          <div class="step-label">تم التوصيل</div>
+      <!-- Progress tracker -->
+      <div class="timeline-container" id="timelineContainer">
+        <div class="timeline-steps">
+          <div class="timeline-progress-bar" id="timelineProgressBar"></div>
+          
+          <div class="step-item" id="step-new">
+            <div class="step-circle"><i class="fas fa-asterisk"></i></div>
+            <div class="step-label">Pending Approval</div>
+          </div>
+          
+          <div class="step-item" id="step-processing">
+            <div class="step-circle"><i class="fas fa-cog"></i></div>
+            <div class="step-label">Processing</div>
+          </div>
+          
+          <div class="step-item" id="step-shipped">
+            <div class="step-circle"><i class="fas fa-truck-moving"></i></div>
+            <div class="step-label">Shipped</div>
+          </div>
+          
+          <div class="step-item" id="step-delivered">
+            <div class="step-circle"><i class="fas fa-check-double"></i></div>
+            <div class="step-label">Delivered</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="invoice-coords">
-      <div class="coord-card">
-        <h3>بيانات المستلم</h3>
-        <p>الاسم: <strong id="custName">...</strong></p>
-        <p style="margin-top: 8px;">الهاتف: <span id="custPhone">...</span></p>
-        <p>البريد: <span id="custEmail">...</span></p>
+      <div class="invoice-coords">
+        <div class="coord-card">
+          <h3>Customer Info</h3>
+          <p>Name: <strong id="custName">...</strong></p>
+          <p style="margin-top: 8px;">Phone: <span id="custPhone">...</span></p>
+          <p>Email: <span id="custEmail">...</span></p>
+        </div>
+        <div class="coord-card">
+          <h3>Delivery Address</h3>
+          <p>Governorate: <strong id="custGov">...</strong></p>
+          <p style="margin-top: 8px;">City/Zone: <span id="custCity">...</span></p>
+          <p>Street Details: <span id="custAddress">...</span></p>
+        </div>
       </div>
-      <div class="coord-card">
-        <h3>معلومات التوصيل</h3>
-        <p>المحافظة: <strong id="custGov">...</strong></p>
-        <p style="margin-top: 8px;">المدينة: <span id="custCity">...</span></p>
-        <p>العنوان بالتحديد: <span id="custAddress">...</span></p>
+
+      <!-- Details product lines -->
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Selected Item & Quantity</th>
+            <th style="text-align: right; width: 150px;">Total Price</th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody">
+          <tr>
+            <td colspan="2" style="text-align: center; color: var(--color-muted); padding: 24px;">Loading order lines...</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td style="text-align: right; font-weight: 700; color: var(--color-muted);">Items Subtotal:</td>
+            <td id="tableSubtotal" style="text-align: right; font-weight: 700;">...</td>
+          </tr>
+          <tr>
+            <td style="text-align: right; font-weight: 700; color: var(--color-muted);">Shipping Fee:</td>
+            <td id="tableShipping" style="text-align: right; font-weight: 700; color: var(--color-success);">...</td>
+          </tr>
+          <tr>
+            <td style="text-align: right; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">Grand Total:</td>
+            <td id="tableGrandTotal" style="text-align: right; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">...</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="bill-summary">
+        <div>
+          <span style="font-size: 0.9rem; color: var(--color-muted); font-weight: 700;">Payment Protocol</span>
+          <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-success);"><i class="fas fa-money-bill-wave"></i> Cash on Delivery (COD)</div>
+        </div>
+        <div class="invoice-action-pills">
+          <button class="i-btn i-btn-print" id="print-btn"><i class="fas fa-print"></i> Print Invoice / PDF</button>
+          <button class="i-btn i-btn-wp" id="share-whatsapp"><i class="fab fa-whatsapp"></i> Track with WhatsApp</button>
+        </div>
       </div>
-    </div>
 
-    <!-- Details product lines -->
-    <table class="invoice-table">
-      <thead>
-        <tr>
-          <th>المستحضر المختار والكمية</th>
-          <th style="text-align: center;">إجمالي السعر</th>
-        </tr>
-      </thead>
-      <tbody id="itemsBody">
-        <tr>
-          <td colspan="2" style="text-align: center; color: var(--color-muted); padding: 24px;">جاري إعداد السطور...</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="bill-summary">
-      <div>
-        <span style="font-size: 0.9rem; color: var(--color-muted); font-weight: 700;">المجموع الكلي للمشتريات</span>
-        <div style="font-size: 1.8rem; font-weight: 800; color: var(--color-primary);" id="totalAmount">0.00 جنيه</div>
+      <div style="margin-top: 40px; border-top: 1px dashed var(--border-light); padding-top: 20px;">
+        <p style="color: var(--color-muted); font-size: 0.9rem; line-height: 1.8;">
+          <strong style="color: var(--color-primary);">Ongoing Tracking:</strong>
+          You will receive immediate visual status milestones on this screen as our logistics team packs and ships your order securely. We got you covered!
+        </p>
       </div>
-      <div class="invoice-action-pills">
-        <button class="i-btn i-btn-print" id="print-btn"><i class="fas fa-print"></i> طباعة الفاتورة / PDF</button>
-        <button class="i-btn i-btn-wp" id="share-whatsapp"><i class="fab fa-whatsapp"></i> مشاركة بالواتساب</button>
-      </div>
-    </div>
 
-    <div style="margin-top: 40px; border-top: 1px dashed var(--border-light); padding-top: 20px;">
-      <p style="color: var(--color-muted); font-size: 0.9rem; line-height: 1.8;">
-        <strong style="color: var(--color-primary);">خطوة المتابعة والدعم المباشر:</strong>
-        ستتلقي تحديثات فورية على هذه الشاشة حالما يتبنى فريق المبيعات واللوجستيات شحن الطلب وتحديد القيمة الإجمالية شاملة رسوم الشحن للمحافظة المحددة.
-      </p>
     </div>
-
   </div>
 </section>
 
@@ -469,26 +458,26 @@
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
-      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
-      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+      <h4 style="font-family:'Space Grotesk', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">Your premier destination for natural skincare and organic purity.</p>
     </div>
     <div class="footer-col">
-      <h4>روابط مفيدة</h4>
+      <h4>Useful Links</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="index.html">الرئيسية</a></li>
-        <li><a href="all-products.html">كل المنتجات</a></li>
-        <li><a href="special-offers.html">العروض الخاصة</a></li>
-        <li><a href="blog.html font-heading">المدونة والمقالات</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="all-products.html">All Products</a></li>
+        <li><a href="special-offers.html">Special Offers</a></li>
+        <li><a href="blog.html">Our Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
-      <h4>المساعدة والدعم</h4>
+      <h4>Help & Support</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> دليل المساعدة وهدايا داندي</a></li>
-        <li><a href="about-us.html">من نحن</a></li>
-        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
-        <li><a href="privacy-policy.html">سياسة الخصوصية والأمان</a></li>
-        <li><a href="terms.html">الشروط والأحكام العامة</a></li>
+        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+        <li><a href="about-us.html">About Us</a></li>
+        <li><a href="client-reviews.html">Client Reviews</a></li>
+        <li><a href="privacy-policy.html">Privacy & Security Policy</a></li>
+        <li><a href="terms.html">Terms & Conditions</a></li>
       </ul>
     </div>
   </div>
@@ -499,7 +488,7 @@
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
       <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
-    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+    <p class="rights">© 2026 Dandy Beauty. All rights and media reserved.</p>
   </div>
 </footer>
 
@@ -568,12 +557,37 @@
   const custCity = document.getElementById('custCity');
   const custAddress = document.getElementById('custAddress');
   const itemsBody = document.getElementById('itemsBody');
-  const totalAmount = document.getElementById('totalAmount');
+
+  const tableSubtotal = document.getElementById('tableSubtotal');
+  const tableShipping = document.getElementById('tableShipping');
+  const tableGrandTotal = document.getElementById('tableGrandTotal');
 
   function setStatusBadge(status){
-    const s = status || 'جديد';
-    statusBadge.textContent = s;
-    statusBadge.className = 'invoice-badge-status ' + (s === 'مكتمل' ? 'status-done' : (s === 'تم التواصل' ? 'status-contact' : 'status-new'));
+    const s = status || 'New';
+    
+    // Normalize string representation for CSS mapping
+    let label = 'New';
+    let cssClass = 'status-new';
+    
+    if (s === 'جديد' || s === 'قيد الانتظار' || s === 'New' || s === 'Pending') {
+      label = 'Pending Approval';
+      cssClass = 'status-new';
+    } else if (s === 'تم التواصل' || s === 'قيد التجهيز' || s === 'قيد التحضير' || s === 'قيد المعالجة' || s === 'Processing') {
+      label = 'Processing';
+      cssClass = 'status-contact';
+    } else if (s === 'تم الشحن' || s === 'جاري الشحن' || s === 'جاري التوصيل' || s === 'شحن' || s === 'Shipped') {
+      label = 'Shipped';
+      cssClass = 'status-contact';
+    } else if (s === 'مكتمل' || s === 'تم التوصيل' || s === 'واصل' || s === 'Delivered') {
+      label = 'Delivered';
+      cssClass = 'status-done';
+    } else if (s === 'ملغي' || s === 'Cancelled') {
+      label = 'Cancelled';
+      cssClass = 'status-done';
+    }
+
+    statusBadge.textContent = label;
+    statusBadge.className = 'invoice-badge-status ' + cssClass;
     
     // Also draw the visual timeline status smoothly
     setTimelineStatus(s);
@@ -581,7 +595,7 @@
 
   // Set the visual timeline steps explicitly based on status normalized match
   function setTimelineStatus(status) {
-    const s = status || 'جديد';
+    const s = status || 'New';
     
     // Reset steps
     document.getElementById('step-new').className = 'step-item';
@@ -592,7 +606,7 @@
     document.getElementById('cancelledBanner').style.display = 'none';
     document.getElementById('timelineContainer').style.display = 'block';
 
-    if (s === 'ملغي') {
+    if (s === 'ملغي' || s === 'Cancelled') {
       document.getElementById('cancelledBanner').style.display = 'block';
       document.getElementById('timelineContainer').style.display = 'none';
       return;
@@ -622,21 +636,21 @@
   }
 
   function getNormalizedStatus(s) {
-    if (s === 'جديد' || s === 'قيد الانتظار') return 'new';
-    if (s === 'تم التواصل' || s === 'قيد التجهيز' || s === 'قيد التحضير' || s === 'قيد المعالجة') return 'processing';
-    if (s === 'تم الشحن' || s === 'جاري الشحن' || s === 'جاري التوصيل' || s === 'شحن') return 'shipped';
-    if (s === 'مكتمل' || s === 'تم التوصيل' || s === 'واصل') return 'delivered';
+    if (s === 'جديد' || s === 'قيد الانتظار' || s === 'New' || s === 'Pending') return 'new';
+    if (s === 'تم التواصل' || s === 'قيد التجهيز' || s === 'قيد التحضير' || s === 'قيد المعالجة' || s === 'Processing') return 'processing';
+    if (s === 'تم الشحن' || s === 'جاري الشحن' || s === 'جاري التوصيل' || s === 'شحن' || s === 'Shipped') return 'shipped';
+    if (s === 'مكتمل' || s === 'تم التوصيل' || s === 'واصل' || s === 'Delivered') return 'delivered';
     return 'new';
   }
 
   window.copyInvoiceToClipboard = function() {
     const code = invoiceCodeEl.textContent;
-    if (code && code !== '...جاري السحب') {
+    if (code && code !== '...Loading') {
       navigator.clipboard.writeText(code).then(() => {
         const btn = document.getElementById('btnCopyCode');
-        btn.innerHTML = '<i class="fas fa-check"></i> تم النسخ!';
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
         setTimeout(() => {
-          btn.innerHTML = '<i class="fas fa-copy"></i> نسخ الكود';
+          btn.innerHTML = '<i class="fas fa-copy"></i> Copy Code';
         }, 2000);
       });
     }
@@ -645,17 +659,17 @@
   // Bind order datasets dynamically
   function drawOrder(order, key) {
     invoiceCodeEl.textContent = order.invoiceCode || key || '-';
-    invoiceDateEl.textContent = order.timestamp ? new Date(order.timestamp).toLocaleString('ar-EG') : new Date().toLocaleString('ar-EG');
+    invoiceDateEl.textContent = order.timestamp ? new Date(order.timestamp).toLocaleString('en-US') : new Date().toLocaleString('en-US');
 
     custName.textContent = order.name || '-';
     custPhone.textContent = order.phone || '-';
-    custEmail.textContent = order.email || 'غير متوفر';
+    custEmail.textContent = order.email || 'N/A';
     custAddress.textContent = order.address || '-';
     custGov.textContent = order.governorate || '-';
     custCity.textContent = order.city || '-';
 
     itemsBody.innerHTML = '';
-    let total = 0;
+    let calculatedSubtotal = 0;
 
     if (order.products && order.products.length > 0) {
       order.products.forEach(p => {
@@ -663,14 +677,14 @@
         const quantity = parseInt(p.quantity) || 1;
         let finalPrice = price;
 
-        let displayPriceText = price.toFixed(0) + " جنيه";
+        let displayPriceText = price.toFixed(0) + " EGP";
         if (p.discount) {
           const discountAmount = (price * parseFloat(p.discount)) / 100;
           finalPrice = price - discountAmount;
-          displayPriceText = `${finalPrice.toFixed(0)} جنيه <span class="price-crossed" style="font-size:0.8rem; margin-right:4px;">${price.toFixed(0)}</span>`;
+          displayPriceText = `${finalPrice.toFixed(0)} EGP <span class="price-crossed">${price.toFixed(0)}</span>`;
         }
 
-        total += finalPrice * quantity;
+        calculatedSubtotal += finalPrice * quantity;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -678,27 +692,37 @@
             <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
             <strong>${p.name}</strong> × ${quantity}
           </td>
-          <td style="text-align: center; font-weight:800; color:var(--color-blush);">${displayPriceText}</td>
+          <td style="text-align: right; font-weight:800; color:var(--color-blush);">${displayPriceText}</td>
         `;
         itemsBody.appendChild(tr);
       });
 
-      totalAmount.textContent = total.toFixed(0) + " جنيه";
+      // Implement robust pricing breakdown calculation
+      const subtotalVal = order.subtotal !== undefined ? parseFloat(order.subtotal) : calculatedSubtotal;
+      const shippingVal = order.shippingFee !== undefined ? parseFloat(order.shippingFee) : 0;
+      const totalVal = order.totalAmount !== undefined ? parseFloat(order.totalAmount) : (subtotalVal + shippingVal);
+
+      tableSubtotal.textContent = subtotalVal.toFixed(0) + " EGP";
+      tableShipping.textContent = shippingVal.toFixed(0) + " EGP";
+      tableGrandTotal.textContent = totalVal.toFixed(0) + " EGP";
+
     } else {
-      itemsBody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--color-muted);padding:20px;">حقيبة فواتير مفرغة.</td></tr>';
-      totalAmount.textContent = '0.00 جنيه';
+      itemsBody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--color-muted);padding:20px;">Shopping basket is empty.</td></tr>';
+      tableSubtotal.textContent = '0 EGP';
+      tableShipping.textContent = '0 EGP';
+      tableGrandTotal.textContent = '0 EGP';
     }
 
-    setStatusBadge(order.status || 'جديد');
+    setStatusBadge(order.status || 'New');
   }
 
   function orderError() {
     document.getElementById('invoiceCard').innerHTML = `
-      <div style="text-align:center; padding:40px 10px;">
+      <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm); max-width:600px; margin:0 auto;">
         <i class="fas fa-exclamation-circle" style="font-size:3.5rem; color:var(--color-danger); margin-bottom:16px;"></i>
-        <h2 style="font-family:'Cairo', sans-serif;">لم يتم العثور على الفاتورة المطلوبة</h2>
-        <p style="color:var(--color-muted); margin-top:8px;">نرجو التحقق من كود الفاتورة أو التواصل مع المشرف عبر قنوات الاتصال.</p>
-        <a href="index.html" class="cta-btn" style="margin-top:20px; border-radius:99px; padding:12px 24px;">العودة للرئيسية</a>
+        <h2 style="font-family:'Space Grotesk', sans-serif;">Invoice Not Found</h2>
+        <p style="color:var(--color-muted); margin-top:8px;">Please verify your invoice code or contact customer service.</p>
+        <a href="index.html" class="btn-checkout-primary" style="margin-top:20px; border-radius:99px; padding:12px 24px; text-decoration:none;">Back to Home</a>
       </div>
     `;
   }
@@ -729,7 +753,7 @@
 
   // WhatsApp share
   document.getElementById('share-whatsapp').addEventListener('click', () => {
-    const wpInquiry = `مرحباً، أود مراجعة ومتابعة فاتورة طلبي:\n- كود الفاتورة: ${invoiceCodeEl.textContent}\n- المستلم: ${custName.textContent}\n- الحالة الحالية للطلب: ${statusBadge.textContent}\n- رابط المتابعة المباشر: ${window.location.href}`;
+    const wpInquiry = `Hello, I'd like to check the shipping status of my Dandy order:\n- Invoice Code: ${invoiceCodeEl.textContent}\n- Customer: ${custName.textContent}\n- Current Status: ${statusBadge.textContent}\n- Tracking Link: ${window.location.href}`;
     window.open(`https://wa.me/201067228170?text=${encodeURIComponent(wpInquiry)}`, '_blank');
   });
 </script>

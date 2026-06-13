@@ -3,8 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ركن الجمال | Dandy Beauty</title>
-  
+  <title>ركن الجمال والمقالات | Dandy Beauty</title>
+  <meta name="description" id="meta-description-tag" content="تصفح وتابع أحدث نصائح العناية العضوية بالبشرة والشعر من خبراء داندي بيوتي. أسرار الطبيعة لإشراقة تدوم." />
+  <meta name="keywords" content="داندي, مقالات داندي, العناية بالبشرة, جمال طبيعي, العناية بالبشرة مصر, زيوت طبيعية للشعر" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/post.html" />
+
+  <!-- Favicons and Manifest Setup -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <meta name="theme-color" content="#D98D99">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" id="og-title-meta" content="ركن الجمال | Dandy Beauty" />
+  <meta property="og:description" id="og-desc-meta" content="نصائح وأسرار الجمال الطبيعي للعناية بالبشرة والشعر بتركيبات داندي العضوية." />
+  <meta property="og:image" id="og-image-meta" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
+  <meta property="og:url" id="og-url-meta" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/post.html" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" id="tw-title-meta" content="ركن الجمال | Dandy Beauty" />
+  <meta name="twitter:description" id="tw-desc-meta" content="نصائح وأسرار الجمال الطبيعي للعناية بالبشرة والشعر بتركيبات داندي العضوية." />
+  <meta name="twitter:image" id="tw-image-meta" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
+
   <!-- Stylesheet -->
   <link href="style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -334,6 +361,83 @@
 
       // Update Browser Title
       document.title = data.title ? `${data.title} | مدونة Dandy` : 'عرض المقال | Dandy';
+
+      // Update dynamic SEO & Social Share metadata
+      const cleanDesc = (data.content || "روتين الجمال العضوي والعناية الطبيعية بالبشرة والشعر من داندي بيوتي.").replace(/<[^>]*>/g, '').substring(0, 155).trim() + "...";
+      const cleanImg = data.image || 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1200&q=80';
+      const pageURL = window.location.href;
+
+      // Reusable meta-tag generator
+      const updateMetaTag = (selector, attrName, value) => {
+        try {
+          let meta = document.querySelector(selector);
+          if (meta) {
+            meta.setAttribute(attrName, value || '');
+          } else {
+            meta = document.createElement('meta');
+            if (selector.startsWith('meta[property')) {
+              const prop = selector.match(/property="([^"]+)"/);
+              if (prop) meta.setAttribute('property', prop[1]);
+            } else if (selector.startsWith('meta[name')) {
+              const nm = selector.match(/name="([^"]+)"/);
+              if (nm) meta.setAttribute('name', nm[1]);
+            }
+            meta.setAttribute(attrName, value || '');
+            document.head.appendChild(meta);
+          }
+        } catch (e) {}
+      };
+
+      updateMetaTag('#meta-description-tag', 'content', cleanDesc);
+      updateMetaTag('meta[name="description"]', 'content', cleanDesc);
+
+      updateMetaTag('#og-title-meta', 'content', data.title);
+      updateMetaTag('meta[property="og:title"]', 'content', data.title);
+      updateMetaTag('#og-desc-meta', 'content', cleanDesc);
+      updateMetaTag('meta[property="og:description"]', 'content', cleanDesc);
+      updateMetaTag('#og-image-meta', 'content', cleanImg);
+      updateMetaTag('meta[property="og:image"]', 'content', cleanImg);
+      updateMetaTag('#og-url-meta', 'content', pageURL);
+      updateMetaTag('meta[property="og:url"]', 'content', pageURL);
+
+      updateMetaTag('#tw-title-meta', 'content', data.title);
+      updateMetaTag('meta[name="twitter:title"]', 'content', data.title);
+      updateMetaTag('#tw-desc-meta', 'content', cleanDesc);
+      updateMetaTag('meta[name="twitter:description"]', 'content', cleanDesc);
+      updateMetaTag('#tw-image-meta', 'content', cleanImg);
+      updateMetaTag('meta[name="twitter:image"]', 'content', cleanImg);
+
+      // Article Schema
+      try {
+        let schemaScript = document.getElementById('dynamic-article-schema');
+        if (!schemaScript) {
+          schemaScript = document.createElement('script');
+          schemaScript.id = 'dynamic-article-schema';
+          schemaScript.type = 'application/ld+json';
+          document.head.appendChild(schemaScript);
+        }
+        const schemaJSON = {
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": data.title,
+          "image": [cleanImg],
+          "datePublished": data.date || "2026-01-01",
+          "description": cleanDesc,
+          "author": {
+            "@type": "Organization",
+            "name": "Dandy Beauty"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "Dandy Beauty",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/src/assets/images/dandy_brand_icon_1781354710264.jpg"
+            }
+          }
+        };
+        schemaScript.textContent = JSON.stringify(schemaJSON);
+      } catch (err) {}
 
     } catch(e) {
       console.error(e);

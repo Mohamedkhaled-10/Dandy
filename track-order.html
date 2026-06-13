@@ -1,9 +1,30 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تتبع حالة طلبكِ | Dandy Beauty</title>
+  <title>Track Your Order | Live Shipping Status | Dandy Beauty</title>
+  <meta name="description" content="Track your Dandy Beauty skincare and haircare shipment live in Egypt. Real-time courier status and invoice delivery tracking.">
+  <meta name="keywords" content="Track Skincare Order Egypt, Dandy Beauty Shipment courier status, Cairo delivery status check">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/track-order.html">
+
+  <!-- Favicons and Manifest Setup -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <meta name="theme-color" content="#D98D99">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/track-order.html">
+  <meta property="og:title" content="Track Your Order | Live Shipping Status | Dandy Beauty">
+  <meta property="og:description" content="Track your Dandy Beauty organic cosmetics shipment status live across Egypt's governorates.">
+  <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
 
   <!-- Stylesheet -->
   <link href="style.css" rel="stylesheet" />
@@ -121,7 +142,7 @@
     .timeline-progress-bar {
       position: absolute;
       top: 50%;
-      right: 10%;
+      left: 10%;
       height: 4px;
       background: var(--color-success);
       z-index: 2;
@@ -284,7 +305,7 @@
     .products-table th {
       background: var(--color-surface-soft);
       padding: 10px;
-      text-align: right;
+      text-align: left;
       color: var(--color-muted);
       font-weight: 700;
       border-bottom: 1px solid var(--border-light);
@@ -304,7 +325,7 @@
       border-radius: 6px;
       vertical-align: middle;
       border: 1px solid var(--border-light);
-      margin-left: 10px;
+      margin-right: 10px;
     }
   </style>
 
@@ -320,27 +341,27 @@
 <body>
 
 <!-- Navigation -->
-<nav id="navbar" dir="rtl">
+<nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
     <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html">المقالات</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="blog.html">Blog</a></li>
     <li class="dropdown">
-      <a href="javascript:void(0)" class="active">روابط المساعدة ▾</a>
+      <a href="javascript:void(0)">Help & Info ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة</a></li>
-        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> ثقة العملاء</a></li>
-        <li><a href="about-us.html"><i class="fas fa-star"></i> من نحن</a></li>
+        <li><a href="help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
+        <li><a href="about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
-    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> تتبع طلبكِ</a></li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
-  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+  <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
     <span></span>
     <span></span>
     <span></span>
@@ -348,57 +369,57 @@
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> تتبع طلبكِ الفوري</a></li>
-    <li><a href="help.html"><i class="fas fa-question-circle"></i> دليل المساعدة والتسوق</a></li>
-    <li><a href="client-reviews.html">ثقة العملاء</a></li>
-    <li><a href="blog.html">المقالات</a></li>
-    <li><a href="about-us.html">من نحن</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> Track Your Order</a></li>
+    <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+    <li><a href="client-reviews.html">Client Reviews</a></li>
+    <li><a href="blog.html">Blog Posts</a></li>
+    <li><a href="about-us.html">About Us</a></li>
   </ul>
   <div class="side-bottom-links">
-    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
     <span>|</span>
-    <a href="terms.html">الشروط والأحكام</a>
+    <a href="terms.html">Terms & Conditions</a>
   </div>
 </div>
 
 <section class="track-section container">
   <div class="track-container">
-    <div class="section-header" style="text-align: right; margin-bottom: 40px;">
-      <span class="sub">تتبع فوري وآمن</span>
-      <h2>أين هي شحنة مستحضراتكِ الآن؟</h2>
-      <p style="color:var(--color-muted); margin-top:8px;">تابعي سير تجهيز وتوصيل طلبكِ خطوة بخطوة بكل سهولة وبدون تعقيد التسجيل أو إنشاء حساب.</p>
+    <div class="section-header" style="text-align: left; margin-bottom: 40px;">
+      <span class="sub">Instant & Secure Tracking</span>
+      <h2>Where is your package now?</h2>
+      <p style="color:var(--color-muted); margin-top:8px;">Follow the preparation and delivery journey of your order step by step without the hassle of registering or creating an account.</p>
     </div>
 
     <!-- Search box -->
     <div class="track-search-card">
-      <h3 style="font-size:1.2rem; margin-bottom:12px; color:var(--color-primary);"><i class="fas fa-search"></i> استعلمي عن تفاصيل الفاتورة</h3>
+      <h3 style="font-size:1.2rem; margin-bottom:12px; color:var(--color-primary);"><i class="fas fa-search"></i> Check Your Invoice Details</h3>
       
       <form id="trackingForm">
         <div class="form-group-grid">
           <div class="form-control-block">
-            <label for="trackCode">كود الفاتورة (Invoice Code)</label>
-            <input type="text" id="trackCode" placeholder="مثال: DNY-123456" required>
+            <label for="trackCode">Invoice Code</label>
+            <input type="text" id="trackCode" placeholder="Example: DNY-123456" required>
           </div>
           <div class="form-control-block">
-            <label for="trackPhone">رقم هاتف المستلم</label>
-            <input type="tel" id="trackPhone" placeholder="مثال: 01012345678" required>
+            <label for="trackPhone">Recipient Phone Number</label>
+            <input type="tel" id="trackPhone" placeholder="Example: 01012345678" required>
           </div>
         </div>
 
         <div style="margin-top:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-          <button type="submit" class="btn-track"><i class="fas fa-route"></i> استعلام ومتابعة الشحنة</button>
-          <div id="loadingIndicator" style="display:none; color:var(--color-blush); font-weight:700;"><i class="fas fa-spinner fa-spin"></i> جاري البحث في قاعدة البيانات...</div>
+          <button type="submit" class="btn-track"><i class="fas fa-route"></i> Track Order Status</button>
+          <div id="loadingIndicator" style="display:none; color:var(--color-blush); font-weight:700;"><i class="fas fa-spinner fa-spin"></i> Searching database...</div>
         </div>
       </form>
 
       <!-- Recent lookups -->
       <div class="recent-searches-box" id="recentSearchesBox" style="display:none;">
-        <div>آخر طلبات قمتِ بالاستعلام عنها على هذا الجهاز:</div>
+        <div>Recent lookups on this device:</div>
         <div class="recent-searches-tags" id="recentTagsList">
           <!-- Dyn tags -->
         </div>
@@ -409,17 +430,17 @@
     <div class="tracking-results-card" id="trackingResultsCard">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid var(--border-light); padding-bottom:16px; margin-bottom:16px;">
         <div>
-          <span style="color:var(--color-muted); font-size:0.9rem;">كود الطلب</span>
-          <h2 style="font-family:'Cairo', sans-serif; font-size:1.6rem; color:var(--color-blush);" id="resInvoiceCode">DNY-******</h2>
+          <span style="color:var(--color-muted); font-size:0.9rem;">Order Code</span>
+          <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.6rem; color:var(--color-blush);" id="resInvoiceCode">DNY-******</h2>
         </div>
         <div>
-          <button class="btn" style="background:var(--color-surface-soft); border:1px solid var(--border-light); font-size:0.85rem; padding:8px 16px; border-radius:99px;" onclick="window.print()"><i class="fas fa-print"></i> طباعة كأمر شحن</button>
+          <button class="btn" style="background:var(--color-surface-soft); border:1px solid var(--border-light); font-size:0.85rem; padding:8px 16px; border-radius:99px;" onclick="window.print()"><i class="fas fa-print"></i> Print Invoice</button>
         </div>
       </div>
 
       <!-- Cancelled state warning -->
       <div class="cancelled-banner" id="cancelledBanner">
-        <i class="fas fa-ban"></i> تم إلغاء هذا الطلب من قِبل المشرف أو بناء على طلب العميلة.
+        <i class="fas fa-ban"></i> This order has been cancelled.
       </div>
 
       <!-- Visual timeline tracker -->
@@ -429,22 +450,22 @@
           
           <div class="step-item" id="step-new">
             <div class="step-circle"><i class="fas fa-file-invoice"></i></div>
-            <div class="step-label">تم استلام الطلب</div>
+            <div class="step-label">Order Received</div>
           </div>
           
           <div class="step-item" id="step-processing">
             <div class="step-circle"><i class="fas fa-cog"></i></div>
-            <div class="step-label">قيد التجهيز</div>
+            <div class="step-label">Processing</div>
           </div>
           
           <div class="step-item" id="step-shipped">
             <div class="step-circle"><i class="fas fa-truck-moving"></i></div>
-            <div class="step-label">جاري الشحن</div>
+            <div class="step-label">Shipped</div>
           </div>
           
           <div class="step-item" id="step-delivered">
             <div class="step-circle"><i class="fas fa-check-double"></i></div>
-            <div class="step-label">تم التوصيل</div>
+            <div class="step-label">Delivered</div>
           </div>
         </div>
       </div>
@@ -452,25 +473,25 @@
       <!-- Customer metadata details -->
       <div class="results-grid-meta">
         <div class="meta-col">
-          <h4>تفاصيل المستلم</h4>
+          <h4>Recipient Details</h4>
           <p id="resCustName">...</p>
           <p style="margin-top:6px; font-weight:normal; font-size:0.9rem; color:var(--color-muted);" id="resCustPhone">...</p>
         </div>
         <div class="meta-col">
-          <h4>العنوان ووجهة التوصيل</h4>
+          <h4>Delivery Address</h4>
           <p id="resCustLocation">...</p>
           <p style="margin-top:6px; font-weight:normal; font-size:0.9rem; color:var(--color-muted);" id="resCustAddress">...</p>
         </div>
       </div>
 
       <!-- Table details -->
-      <h3 style="font-size:1.1rem; color:var(--color-primary); margin-bottom:10px;"><i class="fas fa-boxes"></i> مستحضرات التجميل المحجوزة</h3>
+      <h3 style="font-size:1.1rem; color:var(--color-primary); margin-bottom:10px;"><i class="fas fa-boxes"></i> Selected Essentials</h3>
       <table class="products-table">
         <thead>
           <tr>
-            <th>اسم المنتج</th>
-            <th style="text-align:center;">الكمية</th>
-            <th style="text-align:left;">الإجمالي</th>
+            <th>Product Name</th>
+            <th style="text-align:center; width: 80px;">Qty</th>
+            <th style="text-align:right; width: 120px;">Subtotal</th>
           </tr>
         </thead>
         <tbody id="resProductsBody">
@@ -480,14 +501,14 @@
 
       <!-- Summary Display -->
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border-light); padding-top:16px;">
-        <span style="font-weight:700; color:var(--color-muted);">المجموع الإجمالي للطلب</span>
-        <h2 style="font-family:'Cairo', sans-serif; font-size:1.8rem; color:var(--color-primary);" id="resTotal">00.00 جنيه</h2>
+        <span style="font-weight:700; color:var(--color-muted);">Total Paid Amount:</span>
+        <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8rem; color:var(--color-primary);" id="resTotal">00.00 EGP</h2>
       </div>
 
       <div style="background:var(--color-gold-cream); border:1px solid var(--border-light); padding:16px; border-radius:12px; margin-top:24px; font-size:0.9rem;">
         <p style="color:var(--color-text); line-height:1.7;">
-          <strong style="color:var(--color-gold);"><i class="fas fa-shield-alt"></i> ضمان حماية عميلات داندي:</strong>
-          يتم تجهيز المنتجات العضوية في ظروف معقمة تماماً وتأكيد وزن الشحنة، ويقوم المندوب بالتواصل معكِ فور وصوله منطقتكِ لتسليمها بأرقى خدمة.
+          <strong style="color:var(--color-gold);"><i class="fas fa-shield-alt"></i> Guarantees:</strong>
+          Organic beauty essentials. Freshly packaged under sterilized laboratory conditions of purity, and delivered with standard COD courier guidelines to your address.
         </p>
       </div>
     </div>
@@ -498,26 +519,26 @@
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
-      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
-      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+      <h4 style="font-family:'Space Grotesk', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">Your premier destination for natural skincare and organic purity.</p>
     </div>
     <div class="footer-col">
-      <h4>روابط مفيدة</h4>
+      <h4>Useful Links</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="index.html">الرئيسية</a></li>
-        <li><a href="all-products.html">كل المنتجات</a></li>
-        <li><a href="special-offers.html">العروض الخاصة</a></li>
-        <li><a href="blog.html">المدونة والمقالات</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="all-products.html">All Products</a></li>
+        <li><a href="special-offers.html">Special Offers</a></li>
+        <li><a href="blog.html">Our Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
-      <h4>المساعدة والدعم</h4>
+      <h4>Help & Support</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> دليل المساعدة وهدايا داندي</a></li>
-        <li><a href="about-us.html">من نحن</a></li>
-        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
-        <li><a href="privacy-policy.html">سياسة الخصوصية والأمان</a></li>
-        <li><a href="terms.html">الشروط والأحكام العامة</a></li>
+        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+        <li><a href="about-us.html">About Us</a></li>
+        <li><a href="client-reviews.html">Client Reviews</a></li>
+        <li><a href="privacy-policy.html">Privacy & Security Policy</a></li>
+        <li><a href="terms.html">Terms & Conditions</a></li>
       </ul>
     </div>
   </div>
@@ -528,7 +549,7 @@
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
       <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
-    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+    <p class="rights">© 2026 Dandy Beauty. All rights and media reserved.</p>
   </div>
 </footer>
 
@@ -616,7 +637,7 @@
     const params = new URLSearchParams(window.location.search);
     const codeParam = params.get('code');
     const phoneParam = params.get('phone');
-    if(codeParam && phoneParam) {
+    if (codeParam && phoneParam) {
       trackCodeInput.value = codeParam;
       trackPhoneInput.value = phoneParam;
       performQuery(codeParam, phoneParam);
@@ -630,7 +651,7 @@
 
     // Quick basic validation
     if (!code || !phone) {
-      alert('من فضلكِ املئي كود الفاتورة ورقم الهاتف معاً.');
+      alert('Please fill in both the Invoice Code and Phone Number.');
       return;
     }
 
@@ -650,7 +671,7 @@
         loadingIndicator.style.display = 'none';
         
         if (!snap.exists()) {
-          alert('لم نجد أي طلب يطابق كود الفاتورة المدخل. يرجى مراجعة الرمز مجدداً.');
+          alert('We could not find any order matching the provided Invoice Code. Please check and try again.');
           return;
         }
 
@@ -670,7 +691,7 @@
         });
 
         if (!matchedPhone) {
-          alert('كود الفاتورة صحيح، ولكن رقم الهاتف غير مطابق للرقم المسجل بالطلب. لخصوصيتكِ وحماية البيانات يرجى إدخال الهاتف الصحيح.');
+          alert('The Invoice Code is valid, but the phone number does not match our records. For security reasons, please provide the registered phone number.');
           return;
         }
 
@@ -683,7 +704,7 @@
       .catch(err => {
         loadingIndicator.style.display = 'none';
         console.error(err);
-        alert('خطأ فني أثناء تواصل الخادم. يرجى المحاولة بعد قليل.');
+        alert('A technical error occurred while fetching your order. Please try again.');
       });
   }
 
@@ -692,19 +713,18 @@
     resInvoiceCode.textContent = order.invoiceCode;
     resCustName.textContent = order.name || '';
     resCustPhone.textContent = order.phone || '';
-    resCustLocation.textContent = order.governorate + '، ' + order.city;
+    resCustLocation.textContent = (order.city || '') + ', ' + (order.governorate || '') + ' Governorate';
     resCustAddress.textContent = order.address || '';
 
     // Draw products table
     resProductsBody.innerHTML = '';
-    let totalComputed = 0;
+    let calculatedSubtotal = 0;
 
     if (order.products && order.products.length > 0) {
       order.products.forEach(p => {
         const price = parseFloat(p.price) || 0;
         const qty = parseInt(p.quantity) || 1;
-        const subtotal = price * qty;
-        totalComputed += subtotal;
+        calculatedSubtotal += price * qty;
 
         const imgHtml = p.image ? `<img src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">` : '';
 
@@ -712,18 +732,24 @@
         tr.innerHTML = `
           <td>${imgHtml}<strong>${p.name}</strong></td>
           <td style="text-align:center;">${qty}</td>
-          <td style="text-align:left; font-weight:700; color:var(--color-blush);">${subtotal} جنيه</td>
+          <td style="text-align:right; font-weight:700; color:var(--color-blush);">${(price * qty).toFixed(0)} EGP</td>
         `;
         resProductsBody.appendChild(tr);
       });
-      resTotal.textContent = totalComputed + ' جنيه';
+
+      // Get precise totals (including shipping fee and computed subtotal helper check)
+      const sub = order.subtotal !== undefined ? parseFloat(order.subtotal) : calculatedSubtotal;
+      const ship = order.shippingFee !== undefined ? parseFloat(order.shippingFee) : 0;
+      const total = order.totalAmount !== undefined ? parseFloat(order.totalAmount) : (sub + ship);
+
+      resTotal.textContent = total.toFixed(0) + ' EGP';
     } else {
-      resProductsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--color-muted);">لا توجد منتجات مسجلة.</td></tr>';
-      resTotal.textContent = '0 جنيه';
+      resProductsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--color-muted);">No products registered under this order.</td></tr>';
+      resTotal.textContent = '0 EGP';
     }
 
     // Determine status and set progress-steps
-    const status = order.status || 'جديد';
+    const status = order.status || 'New';
     
     // Reset steps
     stepNew.classList.remove('active', 'current');
@@ -734,12 +760,10 @@
     cancelledBanner.style.display = 'none';
     timelineContainer.style.display = 'block';
 
-    if (status === 'ملغي') {
+    if (status === 'ملغي' || status === 'Cancelled') {
       cancelledBanner.style.display = 'block';
       timelineContainer.style.display = 'none';
     } else {
-      // Map statuses: جديد => Processing => Shipped => Delivered
-      // Status values in db are 'جديد', 'تم التواصل' or 'قيد التجهيز', 'تم الشحن' or 'جاري الشحن', 'مكتمل' or 'تم التوصيل'
       const normStatus = getNormalizedStatus(status);
       
       if (normStatus === 'new') {
@@ -768,10 +792,10 @@
   }
 
   function getNormalizedStatus(status) {
-    if (status === 'جديد' || status === 'قيد الانتظار') return 'new';
-    if (status === 'تم التواصل' || status === 'قيد التجهيز' || status === 'قيد التحضير' || status === 'قيد المعالجة') return 'processing';
-    if (status === 'تم الشحن' || status === 'جاري الشحن' || status === 'جاري التوصيل' || status === 'شحن') return 'shipped';
-    if (status === 'مكتمل' || status === 'تم التوصيل' || status === 'واصل') return 'delivered';
+    if (status === 'جديد' || status === 'قيد الانتظار' || status === 'New' || status === 'Pending') return 'new';
+    if (status === 'تم التواصل' || status === 'قيد التجهيز' || status === 'قيد التحضير' || status === 'قيد المعالجة' || status === 'Processing') return 'processing';
+    if (status === 'تم الشحن' || status === 'جاري الشحن' || status === 'جاري التوصيل' || status === 'شحن' || status === 'Shipped') return 'shipped';
+    if (status === 'مكتمل' || status === 'تم التوصيل' || status === 'واصل' || status === 'Delivered') return 'delivered';
     return 'new';
   }
 
@@ -802,7 +826,7 @@
       const tag = document.createElement('span');
       tag.className = 'recent-tag';
       tag.innerHTML = `<i class="fas fa-history"></i> ${r.code}`;
-      tag.title = 'انقري لتتبع شحنتكِ تلقائياً';
+      tag.title = 'Click to track this package instantly';
       tag.addEventListener('click', () => {
         trackCodeInput.value = r.code;
         trackPhoneInput.value = r.phone;

@@ -1,0 +1,28 @@
+{
+  "name": "Dandy Beauty",
+  "short_name": "Dandy Beauty",
+  "name_ar": "داندي بيوتي",
+  "short_name_ar": "داندي",
+  "description": "Your premier destination for natural skincare and organic purity in Egypt.",
+  "icons": [
+    {
+      "src": "/src/assets/images/dandy_brand_icon_1781354710264.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/src/assets/images/dandy_brand_icon_1781354710264.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/src/assets/images/dandy_brand_icon_1781354710264.jpg",
+      "sizes": "180x180",
+      "type": "image/jpeg"
+    }
+  ],
+  "theme_color": "#D98D99",
+  "background_color": "#FCF8F9",
+  "display": "standalone",
+  "start_url": "/index.html"
+}

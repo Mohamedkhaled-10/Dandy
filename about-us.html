@@ -1,10 +1,37 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>من نحن وعالمنا الفاخر | Dandy Beauty</title>
-  
+  <title>Our Story, Vision & Purity | Dandy Beauty Egypt</title>
+  <meta name="description" content="Learn about Dandy Beauty's devotion to natural, cruelty-free, and dermatologically safe botanical skincare cosmetics in Egypt. Handcrafted organic purity.">
+  <meta name="keywords" content="Dandy Beauty brand, Organic formulation Egypt, Clean Cosmetics Cairo, Cruelty free skincare Cairo">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/about-us.html">
+
+  <!-- Favicons and Manifest Setup -->
+  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <meta name="theme-color" content="#D98D99">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/about-us.html">
+  <meta property="og:title" content="Our Story, Vision & Purity | Dandy Beauty Egypt">
+  <meta property="og:description" content="Learn about Dandy Beauty's devotion to natural, cruelty-free, and dermatologically safe botanical skincare cosmetics in Egypt.">
+  <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Our Story, Vision & Purity | Dandy Beauty Egypt">
+  <meta name="twitter:description" content="Dandy Beauty is devoted to clean, cruelty-free, organic formulation skincare in Egypt.">
+  <meta name="twitter:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
+
   <!-- Stylesheet -->
   <link href="style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -26,11 +53,15 @@
       padding: 16px;
       box-shadow: var(--shadow-md);
       overflow: hidden;
-      height: 480px;
+      width: 100%;
+      max-width: 450px;
+      height: auto;
+      aspect-ratio: 1 / 1;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: var(--transition-smooth);
+      margin: 0 auto; /* perfectly centers the image block on both desktop and mobile */
     }
 
     .detail-image-box:hover {
@@ -62,7 +93,7 @@
       line-height: 1.85;
       color: var(--color-muted);
       margin-bottom: 24px;
-      text-align: justify;
+      text-align: left;
     }
 
     .p-desc strong {
@@ -114,7 +145,7 @@
         gap: 40px;
       }
       .detail-image-box {
-        height: 340px;
+        max-width: 320px;
       }
       .p-desc {
         font-size: 1.05rem;
@@ -134,25 +165,25 @@
 <body>
 
 <!-- Navigation -->
-<nav id="navbar" dir="rtl">
+<nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
     <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="blog.html font-heading">المقالات</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="blog.html font-heading">Blog</a></li>
     <li class="dropdown">
-      <a href="javascript:void(0)" class="active">المزيد ▾</a>
+      <a href="javascript:void(0)" class="active">More ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="client-reviews.html">ثقة العملاء</a></li>
-        <li><a href="about-us.html">من نحن</a></li>
+        <li><a href="client-reviews.html">Client Reviews</a></li>
+        <li><a href="about-us.html">About Us</a></li>
       </ul>
     </li>
   </ul>
-  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+  <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
     <span></span>
     <span></span>
     <span></span>
@@ -160,48 +191,48 @@
 </nav>
 
 <!-- Mobile Menu -->
-<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+<div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
   <ul>
-    <li><a href="index.html">الرئيسية</a></li>
-    <li><a href="all-products.html">المنتجات</a></li>
-    <li><a href="special-offers.html">العروض</a></li>
-    <li><a href="client-reviews.html font-heading">ثقة العملاء</a></li>
-    <li><a href="blog.html">المقالات</a></li>
-    <li><a href="about-us.html">من نحن</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
+    <li><a href="special-offers.html">Offers</a></li>
+    <li><a href="client-reviews.html font-heading">Client Reviews</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="about-us.html">About Us</a></li>
   </ul>
   <div class="side-bottom-links">
-    <a href="privacy-policy.html">سياسة الخصوصية</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
     <span>|</span>
-    <a href="terms.html">الشروط والأحكام</a>
+    <a href="terms.html">Terms & Conditions</a>
   </div>
 </div>
 
 <!-- Brand story container -->
 <main class="container" style="padding-top: 140px; padding-bottom: 80px;">
   <div class="section-header" style="text-align: center; margin-bottom: 40px;">
-    <span class="sub">عالم داندي الفاخر</span>
-    <h2>من نحن وما يمثل جمالنا</h2>
+    <span class="sub">The World of Dandy</span>
+    <h2>Who We Are & What We Represent</h2>
   </div>
 
   <div class="detail-grid">
     <div class="detail-image-box">
-      <img src="images/logo.png" alt="عالم داندي للجمال والنقاء الطبيعي">
+      <img src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="Dandy skincare and organic essence world">
     </div>
 
     <div class="detail-info-box">
-      <p class="p-desc">مرحباً بكم في <strong>Dandy</strong>، مأوى النقاء للعناصر والزيوت العضوية والجمال المتكامل، حيث يلتقي نبض دلال الطبيعة الفعالة مع ثقتكِ المستحقة لتشرق ملامحكِ وصحتك من جديد.</p>
+      <p class="p-desc">Welcome to <strong>Dandy</strong>, a dedicated sanctuary of organic botanicals, active cosmetic elements, and skin-loving formulations designed to unleash your natural beauty safely and effectively.</p>
       
-      <p class="p-desc">نحن علامة متميزة ومتخصصة في انتقاء مستحضرات تجميلية حصرية، ورعايات جلدية وشعرية ناصعة. نؤمن بأن الحرفية تكمن في تقديم عناصر آمنة خالية من الكيماويات والملونات التجارية المؤذية، بمواصفات عالية تعيد لشعركِ الحيوية وتغذي مسامكِ بأمان دائم وسرور.</p>
+      <p class="p-desc">We specialize in sourcing premium skin, body, and hair care lines. Our philosophy centers on pure ingredients free from harsh commercial synthetics, synthetic colorants, and aggressive chemicals. We aim to bring high-standard natural luxury into your self-care routine with guaranteed security, quality, and complete transparency.</p>
       
-      <p class="p-category"><i class="fas fa-map-marker-alt" style="color: var(--color-blush); margin-left:8px;"></i> مقرنا الدائم والفاخر: مدينة نصر، القاهرة، جمهورية مصر العربية.</p>
+      <p class="p-category"><i class="fas fa-map-marker-alt" style="color: var(--color-blush); margin-right:8px;"></i> Nasr City, Cairo, Arab Republic of Egypt.</p>
 
       <hr style="margin: 25px 0; border: none; border-top: 1px dashed var(--border-light);" />
 
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.25rem; margin-bottom: 15px; color:var(--color-primary);"><i class="fas fa-heart" style="color:var(--color-blush); margin-left:8px;"></i> تواصل فوري ومتابعة ممتعة:</h3>
+      <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.25rem; margin-bottom: 15px; color:var(--color-primary);"><i class="fas fa-heart" style="color:var(--color-blush); margin-right:8px;"></i> Connect With Us Instantly:</h3>
       <ul class="about-social-list">
-        <li><i class="fab fa-instagram" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> إنستجرام الرسمي: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
-        <li><i class="fab fa-facebook" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> صفحة فيسبوك الرسمية للتواصل: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">شقيق المتجر داندي</a></li>
-        <li><i class="fab fa-whatsapp" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> الخط الهاتفي المعتمد للمبيعات: <a href="tel:01067228170">01067228170</a></li>
+        <li><i class="fab fa-instagram" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> Instagram: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
+        <li><i class="fab fa-facebook" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> Facebook: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">Dandy Cosmetics Page</a></li>
+        <li><i class="fab fa-whatsapp" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> WhatsApp Hotline: <a href="https://wa.me/201067228170" target="_blank">01067228170</a></li>
       </ul>
     </div>
   </div>
@@ -211,25 +242,25 @@
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
-      <h4 style="font-family:'Cairo', sans-serif;">DANDY BEAUTY</h4>
-      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
+      <h4 style="font-family:'Space Grotesk', sans-serif;">DANDY BEAUTY</h4>
+      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">Your premier destination for natural skincare and organic purity.</p>
     </div>
     <div class="footer-col">
-      <h4>روابط مفيدة</h4>
+      <h4>Useful Links</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="index.html">الرئيسية</a></li>
-        <li><a href="all-products.html">كل المنتجات</a></li>
-        <li><a href="special-offers.html">العروض الخاصة</a></li>
-        <li><a href="blog.html font-heading">المدونة والمقالات</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="all-products.html">All Products</a></li>
+        <li><a href="special-offers.html">Special Offers</a></li>
+        <li><a href="blog.html">Our Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
-      <h4>المساعدة والدعم</h4>
+      <h4>Help & Support</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="about-us.html">من نحن</a></li>
-        <li><a href="client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
-        <li><a href="privacy-policy.html">سياسة الخصوصية</a></li>
-        <li><a href="terms.html">الشروط والأحكام</a></li>
+        <li><a href="about-us.html">About Us</a></li>
+        <li><a href="client-reviews.html">Client Reviews</a></li>
+        <li><a href="privacy-policy.html">Privacy & Security Policy</a></li>
+        <li><a href="terms.html">Terms & Conditions</a></li>
       </ul>
     </div>
   </div>
@@ -240,12 +271,12 @@
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
       <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
-    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
+    <p class="rights">© 2026 Dandy Beauty. All rights and media reserved.</p>
   </div>
 </footer>
 
 <!-- Floating Actions -->
-<a href="cart.html" class="floating-cart" aria-label="سلة المشتريات">
+<a href="cart.html" class="floating-cart" aria-label="Shopping Bag">
   <span class="cart-count" id="cart-count">0</span>
   <i class="fas fa-shopping-cart"></i>
 </a>
