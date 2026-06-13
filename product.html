@@ -631,7 +631,7 @@
       }
 
       // Connect Support Channels with customizable templates
-      const cleanPhone = (product.whatsapp || '201067228170').replace(/\D/g, "");
+      const cleanPhone = (product.whatsapp || '⁦201038941005⁩').replace(/\D/g, "");
       const whatsappMsg = `Hi Dandy Beauty, I would like to inquire about this product:\n- Product Name: ${product.name}\n- Link: ${pageURL}`;
       
       document.getElementById("whatsapp-link").href = `https://wa.me/${cleanPhone ? cleanPhone : '201067228170'}?text=${encodeURIComponent(whatsappMsg)}`;
