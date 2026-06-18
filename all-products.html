@@ -119,6 +119,79 @@
     .product.hidden {
       display: none;
     }
+
+    /* أزرار الإضافة للموبايل والديسك توب */
+    .action-buttons-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .action-btn-view, .action-btn-add {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 99px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transition: 0.3s;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .action-btn-view {
+      background: #fff;
+      color: var(--color-primary);
+      border: 1px solid var(--border-light);
+    }
+    
+    .action-btn-view:hover {
+      border-color: var(--color-primary);
+    }
+
+    .action-btn-add {
+      background: var(--color-primary);
+      color: #fff;
+      border: 1px solid var(--color-primary);
+    }
+
+    .action-btn-add:hover {
+      background: var(--color-blush);
+      border-color: var(--color-blush);
+    }
+
+    /* Mobile First Adjustments لتنسيق عرض المنتجات */
+    @media (max-width: 650px) {
+      .product-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+      }
+      .product {
+        padding: 12px !important;
+      }
+      .filter-bar label {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+      }
+      .action-buttons-row {
+        flex-direction: column;
+        gap: 6px;
+      }
+      .action-btn-view, .action-btn-add {
+        font-size: 0.75rem;
+        padding: 6px;
+      }
+      .price-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+    }
   </style>
 
   <!-- Google tag (gtag.js) -->
@@ -194,20 +267,22 @@
   </form>
 </section>
 
-<!-- Filter System 
+<!-- Filter System Active -->
 <section class="container">
   <div class="filter-bar">
-    <input type="checkbox" id="filter1" data-category="منتجات الشعر">
-    <label for="filter1">🌿 Hair Care</label>
+    <input type="checkbox" id="filter1" value="skin care">
+    <label for="filter1">✨ Skin Care</label>
 
-    <input type="checkbox" id="filter2" data-category="منتجات الجسم">
-    <label for="filter2">🧴 Body & Skin</label>
+    <input type="checkbox" id="filter2" value="hair care">
+    <label for="filter2">🌿 Hair Care</label>
 
-    <input type="checkbox" id="filter3" data-category="منتجات العطور">
-    <label for="filter3">🌸 Natural Fragrances</label>
+    <input type="checkbox" id="filter3" value="body care">
+    <label for="filter3">🧴 Body Care</label>
+
+    <input type="checkbox" id="filter4" value="perfume">
+    <label for="filter4">🌸 Fragrances</label>
   </div>
 </section>
--->
 
 <!-- Product Catalog -->
 <section class="products" style="padding: 20px 0 80px;">
@@ -327,6 +402,74 @@
     }
     lastScrollTop = scrollTop;
   });
+
+  // إعداد الفلاتر بشكل احترافي لتعمل مع قاعدة البيانات
+  const filterCheckboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
+  filterCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+      const activeFilters = Array.from(filterCheckboxes)
+        .filter(chk => chk.checked)
+        .map(chk => chk.value.toLowerCase());
+
+      const products = document.querySelectorAll('.product');
+      products.forEach(product => {
+        const category = (product.getAttribute('data-category') || "").toLowerCase();
+        
+        // التحقق من توافق الفلتر مع حالة التصنيف باللغة الإنجليزية أو العربية
+        if (activeFilters.length === 0 || 
+            activeFilters.includes(category) ||
+            (category === 'منتجات الشعر' && activeFilters.includes('hair care')) ||
+            (category === 'منتجات الجسم' && activeFilters.includes('body care')) ||
+            (category === 'منتجات العطور' && activeFilters.includes('perfume')) ||
+            (category === 'عناية بالبشرة' && activeFilters.includes('skin care'))
+        ) {
+          product.classList.remove('hidden');
+        } else {
+          product.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // دالة الإضافة السريعة للسلة
+  window.quickAdd = function(id, name, price, image, discount, onSale) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const productItem = { id, name, price, image, discount, onSale };
+
+    const existIndex = cart.findIndex(item => item.id === id);
+    if(existIndex !== -1) {
+      cart[existIndex].quantity += 1;
+    } else {
+      productItem.quantity = 1;
+      cart.push(productItem);
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
+
+    // رسالة تنبيه أنيقة غير مزعجة
+    const alertDiv = document.createElement("div");
+    alertDiv.style.position = "fixed";
+    alertDiv.style.bottom = "100px";
+    alertDiv.style.left = "50%";
+    alertDiv.style.transform = "translateX(-50%)";
+    alertDiv.style.background = "#2bae66";
+    alertDiv.style.color = "#fff";
+    alertDiv.style.padding = "14px 28px";
+    alertDiv.style.borderRadius = "8px";
+    alertDiv.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+    alertDiv.style.zIndex = "1030";
+    alertDiv.style.fontWeight = "700";
+    alertDiv.style.textAlign = "center";
+    alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-right:8px;"></i> Successfully added to bag!`;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+      alertDiv.style.opacity = "0";
+      alertDiv.style.transition = "opacity 0.4s ease";
+      setTimeout(() => alertDiv.remove(), 400);
+    }, 2800);
+  };
 </script>
 
 <script>
@@ -348,8 +491,15 @@
       return;
     }
 
+    let allProductsData = [];
     snapshot.forEach(child => {
-      const data = child.val();
+      allProductsData.push({ id: child.key, ...child.val() });
+    });
+    
+    // عرض أحدث المنتجات أولاً
+    allProductsData.reverse();
+
+    allProductsData.forEach(data => {
       const name = data.name?.toLowerCase() || "";
       const desc = data.description?.toLowerCase() || "";
       const category = data.category?.toLowerCase() || "";
@@ -359,7 +509,7 @@
         matchFound = true;
         const productEl = document.createElement("div");
         productEl.className = "product";
-        productEl.setAttribute("data-category", data.category);
+        productEl.setAttribute("data-category", data.category || 'Skin care');
 
         const priceRaw = parseFloat(data.price) || 0;
         let originalHtml = "";
@@ -373,10 +523,11 @@
         }
 
         // Map Category to English if standard
-        let catLabel = data.category || 'Luxury Collection';
-        if (data.category === 'منتجات الشعر') catLabel = 'Hair Care';
-        if (data.category === 'منتجات الجسم') catLabel = 'Body & Skin';
-        if (data.category === 'منتجات العطور') catLabel = 'Natural Fragrances';
+        let catLabel = data.category || 'Skin Care';
+        if (data.category === 'منتجات الشعر' || category === 'hair care') catLabel = 'Hair Care';
+        if (data.category === 'منتجات الجسم' || category === 'body care') catLabel = 'Body & Skin';
+        if (data.category === 'منتجات العطور' || category === 'perfume') catLabel = 'Natural Fragrances';
+        if (data.category === 'عناية بالبشرة' || category === 'skin care') catLabel = 'Skin Care';
 
         productEl.innerHTML = `
           <div class="product-image-container">
@@ -384,14 +535,19 @@
             <img src="${data.image}" alt="${data.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
           </div>
           <span class="category">${catLabel}</span>
-          <h3>${data.name}</h3>
-          <div class="price-box">
+          <h3 style="font-size: 1.05rem; margin: 8px 0; height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${data.name}</h3>
+          <div class="price-box" style="margin-bottom: 12px;">
             <span class="price">${priceRaw} EGP</span>
             ${originalHtml}
           </div>
-          <a href="product.html?id=${child.key}" class="buy-btn">
-            <i class="fas fa-shopping-bag"></i> View Product Details
-          </a>
+          <div class="action-buttons-row">
+            <a href="product.html?id=${data.id}" class="action-btn-view">
+              <i class="fas fa-eye"></i> View
+            </a>
+            <button onclick="quickAdd('${data.id}', \`${(data.name || '').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount || ''}', ${data.onSale || false})" class="action-btn-add">
+              <i class="fas fa-shopping-basket"></i> Add
+            </button>
+          </div>
         `;
         container.appendChild(productEl);
       }
@@ -401,32 +557,9 @@
       container.innerHTML = `<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);">Sorry, we couldn't find any results for "${searchQuery}". Please test other keywords.</p>`;
     }
 
-    // Apply filters matching tactile pills
-    applyFilters();
+    // تطبيق الفلاتر تلقائياً إذا كان هناك فلتر مفعل بالفعل
+    document.querySelector('.filter-bar input[type="checkbox"]')?.dispatchEvent(new Event('change'));
   });
-
-  // Filter application matching categories
-  function applyFilters() {
-    const checkboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
-    const products = document.querySelectorAll('.product');
-
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        const activeFilters = Array.from(checkboxes)
-          .filter(chk => chk.checked)
-          .map(chk => chk.getAttribute('data-category'));
-
-        products.forEach(product => {
-          const category = product.getAttribute('data-category');
-          if (activeFilters.length === 0 || activeFilters.includes(category)) {
-            product.classList.remove('hidden');
-          } else {
-            product.classList.add('hidden');
-          }
-        });
-      });
-    });
-  }
 
   // Manage manual search inputs
   const searchForm = document.getElementById("search-form");
