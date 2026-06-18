@@ -19,7 +19,7 @@
   <link rel="manifest" href="images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
-  <!-- Open Graph / Social preview (سيتم تحديثها ديناميكياً من الجافاسكربت) -->
+  <!-- Open Graph -->
   <meta property="og:title" content="">
   <meta property="og:description" content="">
   <meta property="og:image" content="">
@@ -52,6 +52,7 @@
       justify-content: center;
       aspect-ratio: 1;
       overflow: hidden;
+      height: fit-content;
     }
 
     .detail-image-box img {
@@ -101,11 +102,100 @@
       color: var(--color-muted);
     }
 
-    .detail-info-box .p-desc {
-      font-size: 1.1rem;
-      color: var(--color-text);
-      line-height: 1.8;
+    /* Structured Layout & Dynamic Design Styles for Arabic Descriptions */
+    .product-desc-wrapper {
+      direction: rtl;
+      text-align: right;
+      font-family: 'Cairo', sans-serif;
       margin-bottom: 30px;
+    }
+
+    .product-intro-header {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .product-intro-p {
+      font-size: 1.05rem;
+      color: var(--color-text);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .desc-card-section {
+      background: var(--color-surface-soft);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      padding: 18px 22px;
+      margin-bottom: 16px;
+      transition: var(--transition-fast);
+    }
+
+    .desc-card-section:hover {
+      border-color: rgba(217,141,153,0.3);
+    }
+
+    .desc-section-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .desc-section-title i {
+      font-size: 1.1rem;
+    }
+
+    .desc-text-content {
+      font-size: 1rem;
+      color: var(--color-text);
+      line-height: 1.7;
+    }
+
+    .desc-list-points {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .desc-list-points li {
+      font-size: 1rem;
+      color: var(--color-text);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.6;
+    }
+
+    .desc-list-points li i {
+      color: var(--color-blush);
+      margin-top: 5px;
+      font-size: 0.85rem;
+    }
+
+    .step-list-points li i {
+      color: var(--color-gold);
+    }
+
+    .results-highlight-box {
+      background: rgba(43, 174, 102, 0.04);
+      border-right: 4px solid #2bae66;
+      border-left: 1px solid var(--border-light);
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+    }
+    
+    .results-highlight-box .desc-section-title {
+      color: #2bae66;
     }
 
     .detail-info-box .price-section {
@@ -347,7 +437,10 @@
         <span>(4.9 stars) · 92 independent client reviews</span>
       </div>
 
-      <p class="p-desc" id="product-desc">Pulling exclusive botanical skincare properties and details from our database...</p>
+      <!-- Specialized Destination for Structured Dynamic Descriptions Content -->
+      <div id="product-desc" class="product-desc-container">
+         <p style="color: var(--color-muted);">Pulling exclusive botanical skincare properties and details from our database...</p>
+      </div>
 
       <div class="price-section">
         <span class="price-current" id="product-price">... EGP</span>
@@ -507,6 +600,85 @@
 
   const detailFrame = document.getElementById("detailFrame");
 
+  // Category normalization helper
+  function normalizeCategory(cat) {
+    if (!cat) return 'Skin care';
+    const c = cat.toLowerCase().trim();
+    if (c === 'hair care' || c === 'منتجات الشعر' || c === 'عناية بالشعر') return 'Hair care';
+    if (c === 'body care' || c === 'منتجات الجسم') return 'Body care';
+    if (c === 'skin care' || c === 'عناية بالبشرة' || c === 'الزيوت العضوية' || c === 'مستحضرات النقاء') return 'Skin care';
+    if (c === 'perfume' || c === 'منتجات العطور') return 'Perfume';
+    return cat;
+  }
+
+  // High-performance custom parser to layout data text block into sleek components
+  function parseDescriptionToHtml(textStr) {
+    if (!textStr) return '<p>No description content available for this model.</p>';
+    
+    let containerHtml = `<div class="product-desc-wrapper">`;
+    
+    // Split into structural blocks/paragraphs cleanly
+    const segments = textStr.split(/\n\s*\n/);
+    
+    segments.forEach((segment, idx) => {
+      let chunk = segment.trim();
+      if (!chunk) return;
+      
+      // Determine if chunk belongs to structured headers
+      if (chunk.includes('مميزات') || chunk.startsWith('مميزات:')) {
+        const lines = chunk.split('\n');
+        containerHtml += `<div class="desc-card-section">
+          <h4 class="desc-section-title"><i class="fas fa-magic" style="color:var(--color-blush);"></i> ${lines[0]}</h4>
+          <ul class="desc-list-points">`;
+        lines.slice(1).forEach(l => {
+          let cleanLine = l.replace(/^[-*•\s\d)]+/, '').trim();
+          if (cleanLine) containerHtml += `<li><i class="fas fa-check-circle"></i> <span>${cleanLine}</span></li>`;
+        });
+        containerHtml += `</ul></div>`;
+      } 
+      else if (chunk.includes('طريقة الاستخدام') || chunk.startsWith('طريقة الاستخدام:')) {
+        const lines = chunk.split('\n');
+        containerHtml += `<div class="desc-card-section">
+          <h4 class="desc-section-title"><i class="fas fa-spa" style="color:var(--color-gold);"></i> ${lines[0]}</h4>
+          <ul class="desc-list-points step-list-points">`;
+        lines.slice(1).forEach(l => {
+          let cleanLine = l.replace(/^[-*•\s\d)]+/, '').trim();
+          if (cleanLine) containerHtml += `<li><i class="fas fa-circle-notch"></i> <span>${cleanLine}</span></li>`;
+        });
+        containerHtml += `</ul></div>`;
+      }
+      else if (chunk.includes('النتائج') || chunk.startsWith('النتائج:')) {
+        const lines = chunk.split('\n');
+        containerHtml += `<div class="desc-card-section results-highlight-box">
+          <h4 class="desc-section-title"><i class="fas fa-seedling"></i> ${lines[0]}</h4>
+          <p class="desc-text-content">${lines.slice(1).join('<br>') || lines[0]}</p>
+        </div>`;
+      }
+      else if (chunk.includes('المكونات') || chunk.includes('الفوائد')) {
+        const lines = chunk.split('\n');
+        containerHtml += `<div class="desc-card-section">
+          <h4 class="desc-section-title"><i class="fas fa-flask" style="color:var(--color-blush);"></i> ${lines[0]}</h4>
+          <p class="desc-text-content">${lines.slice(1).join('<br>') || lines[0]}</p>
+        </div>`;
+      }
+      else {
+        // Fallback or Intro segments management
+        if (idx === 0) {
+          const lines = chunk.split('\n');
+          containerHtml += `<h3 class="product-intro-header">${lines[0]}</h3>`;
+          if (lines.length > 1) {
+            containerHtml += `<p class="product-intro-p">${lines.slice(1).join('<br>')}</p>`;
+          }
+        } else {
+          containerHtml += `<p class="product-intro-p">${chunk.replace(/\n/g, '<br>')}</p>`;
+        }
+      }
+    });
+    
+    containerHtml += `</div>`;
+    return containerHtml;
+  }
+
   // Helper function to update SEO parameters dynamically
   function updateMetaTag(selector, attrName, value) {
     try {
@@ -535,18 +707,16 @@
     if (snapshot.exists()) {
       const product = snapshot.val();
       loadedProduct = product;
-      loadedProduct.id = id; // Store key directly
+      loadedProduct.id = id; 
 
       document.getElementById("product-img").src = product.image || '';
       document.getElementById("product-title").textContent = product.name || 'Premium Essential';
-      document.getElementById("product-desc").textContent = product.description || "No description currently available.";
       
-      // Map Category code to nice English titles
-      let mappedCat = product.category || "Luxury Care";
-      if (product.category === "منتجات الشعر") mappedCat = "Hair Care";
-      if (product.category === "منتجات الجسم") mappedCat = "Body & Skin";
-      if (product.category === "منتجات العطور") mappedCat = "Natural Fragrances";
-
+      // Inject beautifully parsed structured blocks instead of basic text wall
+      document.getElementById("product-desc").innerHTML = parseDescriptionToHtml(product.description);
+      
+      // Map and load new English standardized category label
+      let mappedCat = normalizeCategory(product.category);
       document.getElementById("product-category").textContent = mappedCat;
       
       const priceRaw = parseFloat(product.price) || 0;
@@ -630,27 +800,17 @@
         console.warn(e);
       }
 
-// Connect Support Channels with customizable templates
+      // Connect Support Channels with customizable templates
+      const cleanPhone = "201067228170";
+      const whatsappMsg = `مرحباً داندي بيوتي، أود الاستفسار عن هذا المنتج الفاخر:\n- اسم المنتج: ${product.name}\n- رابط المعاينة: ${pageURL}`;
 
-const cleanPhone = (product.whatsapp || "201038941005").replace(/\D/g, "");
+      const whatsappLink = document.getElementById("whatsapp-link");
+      const facebookLink = document.getElementById("facebook-link");
+      const instagramLink = document.getElementById("instagram-link");
 
-const whatsappMsg = `Hi Dandy Beauty, I would like to inquire about this product:
-- Product Name: ${product.name}
-- Link: ${pageURL}`;
-
-const whatsappLink = document.getElementById("whatsapp-link");
-const facebookLink = document.getElementById("facebook-link");
-const instagramLink = document.getElementById("instagram-link");
-
-// WhatsApp
-whatsappLink.href = `https://wa.me/${cleanPhone || "201038941005"}?text=${encodeURIComponent(whatsappMsg)}`;
-
-// Facebook
-facebookLink.href = product.facebook || "https://www.facebook.com/profile.php?id=61563039704396";
-
-// Instagram
-instagramLink.href = product.instagram || "https://www.instagram.com/dandy_skincare_cosmotics";
-
+      whatsappLink.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
+      facebookLink.href = "https://www.facebook.com/profile.php?id=61563039704396";
+      instagramLink.href = "https://www.instagram.com/dandy_skincare_cosmotics";
       
       // Connect Shares
       const shareURL = window.location.origin + `/product.html?id=${encodeURIComponent(id)}`;
@@ -660,12 +820,13 @@ instagramLink.href = product.instagram || "https://www.instagram.com/dandy_skinc
 
       if (whatsappShare) whatsappShare.href = `https://wa.me/?text=${encodeURIComponent(product.name + '\n' + shareURL)}`;
       if (facebookShare) facebookShare.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareURL)}`;
-      if (instagramShare) instagramShare.href = product.instagram || 'https://www.instagram.com/dandy_skincare_cosmotics';
+      if (instagramShare) instagramShare.href = 'https://www.instagram.com/dandy_skincare_cosmotics';
 
     } else {
       detailFrame.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:60px 0;"><i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-gold);margin-bottom:14px;"></i><p style="font-size:1.2rem;font-weight:700;">The product you are looking for is currently unavailable. Please check other collections.</p></div>';
     }
   }).catch(error => {
+    console.error(error);
     detailFrame.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:60px 0;">An error occurred while loading product details. Please try again later.</p>';
   });
 

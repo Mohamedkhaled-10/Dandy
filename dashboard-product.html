@@ -21,7 +21,7 @@
       gap: 30px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1100px) {
       .manager-layout {
         grid-template-columns: 1fr;
       }
@@ -93,42 +93,175 @@
       cursor: pointer;
     }
 
-    .admin-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
+    /* Professional Premium Admin Product Grid Layout */
+    .admin-products-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 14px;
     }
 
-    .admin-table th {
-      background: var(--color-surface-soft);
-      padding: 12px 10px;
-      font-weight: 800;
-      text-align: right;
-      color: var(--color-muted);
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .admin-table td {
-      padding: 12px 10px;
-      border-bottom: 1px solid var(--border-light);
-    }
-
-    .action-badge-btn {
-      padding: 6px 12px;
-      font-weight: 700;
-      font-size: 0.8rem;
+    .admin-filter-select {
+      padding: 8px 16px;
       border-radius: 99px;
+      border: 1px solid var(--border-light);
+      font-family: inherit;
+      font-weight: 700;
+      outline: none;
+      background: #fff;
+      color: var(--color-primary);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    
+    .admin-filter-select:focus {
+      border-color: var(--color-blush);
+    }
+
+    .admin-product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .admin-p-card {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition-smooth);
+      position: relative;
+    }
+
+    .admin-p-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-blush);
+    }
+
+    .admin-p-img-box {
+      width: 100%;
+      height: 160px;
+      position: relative;
+      background: #fdfafb;
+    }
+
+    .admin-p-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .admin-p-badges {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 2;
+    }
+
+    .admin-badge {
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 99px;
+      color: #fff;
+      text-align: center;
+    }
+    .admin-badge-best { background: var(--color-blush); }
+    .admin-badge-sale { background: var(--color-gold); }
+
+    .admin-p-content {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .admin-p-cat {
+      font-size: 0.78rem;
+      color: var(--color-gold);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .admin-p-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+      line-height: 1.4;
+      height: 2.8em;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .admin-p-price {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--color-blush);
+      margin-bottom: 12px;
+    }
+
+    .admin-p-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: auto;
+      border-top: 1px solid var(--border-light);
+      padding-top: 10px;
+    }
+
+    .admin-p-btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: var(--border-radius-sm);
       border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 4px;
       transition: var(--transition-fast);
+      text-decoration: none;
+      text-align: center;
     }
 
-    .badge-btn-edit { background: var(--color-gold-cream); color: var(--color-gold); }
-    .badge-btn-del { background: rgba(220,100,100,0.1); color: var(--color-danger); }
-    .badge-btn-del:hover { background: var(--color-danger); color: #fff; }
+    .admin-btn-edit { background: var(--color-gold-cream); color: var(--color-gold); }
+    .admin-btn-edit:hover { background: var(--color-gold); color: #fff; }
+    
+    .admin-btn-view { background: var(--color-surface-soft); color: var(--color-primary); border: 1px solid var(--border-light); }
+    .admin-btn-view:hover { background: var(--color-primary); color: #fff; }
+    
+    .admin-btn-del { background: rgba(220,100,100,0.1); color: var(--color-danger); }
+    .admin-btn-del:hover { background: var(--color-danger); color: #fff; }
+
+    .btn-template {
+      background: var(--color-surface-soft);
+      border: 1px dashed var(--color-blush);
+      color: var(--color-blush);
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: auto;
+      transition: var(--transition-fast);
+    }
+    .btn-template:hover {
+      background: var(--color-blush);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -198,7 +331,7 @@
           </div>
           <div class="form-group-admin">
             <label for="p-discount">نسبة الخصم المئوية (%)</label>
-            <input type="number" id="p-discount" placeholder="اتركيه فارغاً إن لم يتوفرخصم" min="0" max="100">
+            <input type="number" id="p-discount" placeholder="اتركيه فارغاً إن لم يتوفر خصم" min="0" max="100">
           </div>
         </div>
 
@@ -206,10 +339,10 @@
           <div class="form-group-admin">
             <label for="p-category">فئة وتصنيف المنتج</label>
             <select id="p-category">
-              <option>عناية بالشعر</option>
-              <option>عناية بالبشرة</option>
-              <option>الزيوت العضوية</option>
-              <option>مستحضرات النقاء</option>
+              <option value="Body care">Body care</option>
+              <option value="Hair care">Hair care</option>
+              <option value="Skin care">Skin care</option>
+              <option value="Perfume">Perfume</option>
             </select>
           </div>
           <div class="form-group-admin">
@@ -224,8 +357,11 @@
         </div>
 
         <div class="form-group-admin" style="margin-bottom: 16px;">
-          <label for="p-description">الوصف التفصيلي الدقيق للمنتج وفوائده</label>
-          <textarea id="p-description" rows="4" placeholder="اكتبي المكونات وطريقة الاستخدام والمميزات الطبيعية المبهرة بشرح وافٍ..." required></textarea>
+          <div style="display: flex; align-items: center; width: 100%;">
+            <label for="p-description">الوصف التفصيلي الدقيق للمنتج وفوائده</label>
+            <button type="button" class="btn-template" onclick="insertDescriptionTemplate()"><i class="fas fa-magic"></i> إدراج نموذج منسق</button>
+          </div>
+          <textarea id="p-description" rows="8" placeholder="اكتبي المكونات وطريقة الاستخدام والمميزات الطبيعية المبهرة بشرح وافٍ..." required></textarea>
         </div>
 
         <div class="chk-row">
@@ -244,26 +380,22 @@
       </form>
     </div>
 
-    <!-- Left list table -->
-    <div class="manager-card" style="overflow-x: auto;">
-      <h3><i class="fas fa-boxes"></i> المنتجات المنشورة على المتجر</h3>
+    <!-- Left list Grid Cards -->
+    <div class="manager-card">
+      <div class="admin-products-header">
+        <h3><i class="fas fa-boxes"></i> المنتجات المنشورة على المتجر</h3>
+        <select id="admin-filter-select" class="admin-filter-select">
+          <option value="all">كل الفئات والمنتجات</option>
+          <option value="Body care">Body care</option>
+          <option value="Hair care">Hair care</option>
+          <option value="Skin care">Skin care</option>
+          <option value="Perfume">Perfume</option>
+        </select>
+      </div>
       
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>اسم المنتج</th>
-            <th>التصنيف</th>
-            <th>السعر الأصلي</th>
-            <th>الجمهور</th>
-            <th style="text-align: center;">إجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="productsTableBody">
-          <tr>
-            <td colspan="5" style="text-align: center; color: var(--color-muted); padding: 20px;">جاري سحب وجرد المستحضرات الحية...</td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="adminProductGrid" class="admin-product-grid">
+        <p style="text-align: center; color: var(--color-muted); padding: 20px; grid-column: 1/-1;">جاري سحب وجرد المستحضرات الحية...</p>
+      </div>
     </div>
 
   </div>
@@ -327,6 +459,17 @@
   const auth = firebase.auth();
   const db = firebase.database();
 
+  // Category normalization helper
+  function normalizeCategory(cat) {
+    if (!cat) return 'Skin care';
+    const c = cat.toLowerCase().trim();
+    if (c === 'hair care' || c === 'منتجات الشعر' || c === 'عناية بالشعر') return 'Hair care';
+    if (c === 'body care' || c === 'منتجات الجسم') return 'Body care';
+    if (c === 'skin care' || c === 'عناية بالبشرة' || c === 'الزيوت العضوية' || c === 'مستحضرات النقاء') return 'Skin care';
+    if (c === 'perfume' || c === 'منتجات العطور') return 'Perfume';
+    return cat;
+  }
+
   auth.onAuthStateChanged(user => {
     if (!user) {
       window.location.href = 'login.html';
@@ -379,47 +522,72 @@
 
 <script>
   const productForm = document.getElementById('productForm');
-  const productsTableBody = document.getElementById('productsTableBody');
+  const adminProductGrid = document.getElementById('adminProductGrid');
   const saveBtn = document.getElementById('saveBtn');
   const editIdEl = document.getElementById('edit-id');
   const cancelEditBtn = document.getElementById('cancelEdit');
+  const adminFilterSelect = document.getElementById('admin-filter-select');
 
   let activeProducts = [];
 
-  // Load all products in Realtime Database inventory table
+  // Load and render products inside specialized responsive bento cards
   function loadProductsAdmin(){
+    const currentFilter = adminFilterSelect.value;
+    
     db.ref('products').on('value', snap => {
-      productsTableBody.innerHTML = '';
+      adminProductGrid.innerHTML = '';
       activeProducts = [];
 
       if(!snap.exists()) {
-        productsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--color-muted);">المخزن مفرغ بالكامل من أي معروضات.</td></tr>';
+        adminProductGrid.innerHTML = '<p style="text-align:center;padding:20px;color:var(--color-muted);grid-column:1/-1;">المخزن مفرغ بالكامل من أي معروضات.</p>';
         return;
       }
 
+      let count = 0;
       snap.forEach(child => {
         const d = child.val();
+        const normCat = normalizeCategory(d.category);
         activeProducts.push({id: child.key, ...d});
 
-        let pillFlagsText = '';
-        if(d.bestSeller) pillFlagsText += '<span style="background:rgba(217,141,153,0.1);color:var(--color-blush);padding:2px 8px;border-radius:99px;font-size:0.75rem;margin-left:4px;">مبيعاً</span>';
-        if(d.onSale) pillFlagsText += '<span style="background:rgba(180,140,50,0.1);color:var(--color-gold);padding:2px 8px;border-radius:99px;font-size:0.75rem;">خصم</span>';
+        // Filter functionality
+        if(currentFilter !== 'all' && normCat !== currentFilter) {
+          return;
+        }
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td style="font-weight:700;color:var(--color-primary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.name || ''}</td>
-          <td>${d.category || ''}</td>
-          <td style="font-weight:800;color:var(--color-blush);">${d.price || 0} جنيه</td>
-          <td>${pillFlagsText || '-'}</td>
-          <td style="text-align:center;white-space:nowrap;">
-            <button class="action-badge-btn badge-btn-edit" onclick="startProductEdit('${child.key}')"><i class="fas fa-edit"></i> تعديل</button>
-            <button class="action-badge-btn badge-btn-del" onclick="deleteProduct('${child.key}')"><i class="fas fa-trash"></i></button>
-          </td>
+        count++;
+
+        let badgesHtml = '';
+        if(d.bestSeller) badgesHtml += '<span class="admin-badge admin-badge-best">الأكثر مبيعاً</span>';
+        if(d.onSale) badgesHtml += '<span class="admin-badge admin-badge-sale">خصم خاص</span>';
+
+        const card = document.createElement('div');
+        card.className = 'admin-p-card';
+        card.innerHTML = `
+          <div class="admin-p-img-box">
+            <div class="admin-p-badges">${badgesHtml}</div>
+            <img src="${d.image || ''}" alt="${d.name || ''}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+          </div>
+          <div class="admin-p-content">
+            <span class="admin-p-cat"><i class="fas fa-tags"></i> ${normCat}</span>
+            <h4 class="admin-p-title">${d.name || ''}</h4>
+            <div class="admin-p-price">${d.price || 0} جنيه</div>
+            <div class="admin-p-actions">
+              <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${child.key}')"><i class="fas fa-edit"></i> تعديل</button>
+              <a href="../product.html?id=${child.key}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-eye"></i> معاينة</a>
+              <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${child.key}')"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
         `;
-        productsTableBody.appendChild(tr);
+        adminProductGrid.appendChild(card);
       });
+
+      if (count === 0) {
+        adminProductGrid.innerHTML = '<p style="text-align:center;padding:20px;color:var(--color-muted);grid-column:1/-1;">لا يوجد منتجات تندرج تحت هذا التصنيف حالياً.</p>';
+      }
     });
   }
+
+  adminFilterSelect.addEventListener('change', loadProductsAdmin);
 
   // Handle addition and edits submit
   productForm.addEventListener('submit', async (e) => {
@@ -472,7 +640,7 @@
     document.getElementById('p-name').value = p.name || '';
     document.getElementById('p-price').value = p.price || '';
     document.getElementById('p-discount').value = p.discount || '';
-    document.getElementById('p-category').value = p.category || 'عناية بالشعر';
+    document.getElementById('p-category').value = normalizeCategory(p.category);
     document.getElementById('p-rating').value = p.rating || 5;
     document.getElementById('p-image').value = p.image || '';
     document.getElementById('p-description').value = p.description || '';
@@ -483,6 +651,9 @@
     editIdEl.value = key;
     saveBtn.innerHTML = '<i class="fas fa-check"></i> حفظ تعديلات المستحضر';
     cancelEditBtn.style.display = 'inline-block';
+    
+    // Smooth scroll up to form layout
+    window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
   // Close editing layout
@@ -503,6 +674,32 @@
     } catch(err) {
       alert('فشل الحذف.');
     }
+  };
+
+  // Inject beautiful text structures helper template
+  window.insertDescriptionTemplate = function() {
+    const template = `كريم بديل الليزر من داندى ✨
+ودّعي الشعر الزائد مع تركيبة متطورة غنية بالمكونات الطبيعية الفعالة للعناية بالبشرة وتقليل نمو الشعر تدريجيًا بعد الإزالة.
+
+المكونات أو الفوائد:
+يحتوي الكريم على زيت السعد، زيت الترمس، زيت الورد، البانثينول، وخلاصات البابونج والصبار والخيار، ليمنح بشرتك نعومة وراحة مع كل استخدام.
+
+مميزات كريم بديل الليزر من داندى:
+- يساعد على تقليل نمو الشعر تدريجيًا بعد إزالة الشعر.
+- يرطب البشرة بعمق ويمنحها نعومة ولمسة حريرية.
+- يخفف التهيج والاحمرار بعد السويت أو الحلاقة.
+- يحتوي على خصائص مضادة للبكتيريا تساعد في تقليل التهاب بصيلات الشعر وظهور الحبوب.
+- يساعد على توحيد لون البشرة ومنحها إشراقة طبيعية مع الاستخدام المنتظم.
+- مناسب للبشرة الحساسة ويمنح إحساسًا بالتهدئة والانتعاش.
+
+طريقة الاستخدام:
+- يُستخدم مرتين يوميًا بعد السويت لمدة 10 أيام.
+- تُكرر العملية 3 مرات متتالية للحصول على أفضل نتيجة.
+
+النتائج المتوقعة:
+تبدأ النتائج في الظهور من أول استخدام، حيث يزداد الوقت بين ظهور الشعر تدريجيًا، ومع الاستمرار في الاستخدام قد يقل ظهور الشعر بنسبة من 70% إلى 90% حسب طبيعة واستجابة الجسم.`;
+    
+    document.getElementById('p-description').value = template;
   };
 </script>
 
