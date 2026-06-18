@@ -9,7 +9,6 @@
   <meta name="robots" content="index, follow">
   <link id="canonical-link" rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/product.html">
 
-  <!-- Favicons and Manifest Setup -->
   <link rel="icon" type="image/x-icon" href="images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
@@ -19,16 +18,18 @@
   <link rel="manifest" href="images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="">
-  <meta property="og:description" content="">
-  <meta property="og:image" content="">
-  <meta property="og:url" content="">
-  <meta name="twitter:title" content="">
-  <meta name="twitter:description" content="">
-  <meta name="twitter:image" content="">
+  <meta property="og:type" content="product">
+  <meta id="og-title-meta" property="og:title" content="Premium Beauty Products | Dandy Beauty">
+  <meta id="og-desc-meta" property="og:description" content="View exclusive botanical ingredients, detailed product information, and special beauty offers from Dandy Beauty Egypt.">
+  <meta id="og-image-meta" property="og:image" content="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=1200&q=80">
+  <meta id="og-url-meta" property="og:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/product.html">
+  <meta property="og:site_name" content="Dandy Beauty">
 
-  <!-- Stylesheet -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta id="tw-title-meta" name="twitter:title" content="Premium Beauty Products | Dandy Beauty">
+  <meta id="tw-desc-meta" name="twitter:description" content="View exclusive botanical ingredients, detailed product information, and special beauty offers from Dandy Beauty Egypt.">
+  <meta id="tw-image-meta" name="twitter:image" content="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=1200&q=80">
+
   <link href="style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -358,7 +359,6 @@
     }
   </style>
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -369,7 +369,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
     <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
@@ -397,7 +396,6 @@
   </button>
 </nav>
 
-<!-- Mobile Menu -->
 <div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
   <ul>
     <li><a href="index.html">Home</a></li>
@@ -416,10 +414,8 @@
   </div>
 </div>
 
-<!-- Product Details Frame -->
 <main class="container" style="padding-top: 130px; padding-bottom: 60px;">
   <div class="detail-grid" id="detailFrame">
-    <!-- Interactive structural display -->
     <div class="detail-image-box">
       <img id="product-img" src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="Loading Product Image...">
     </div>
@@ -437,7 +433,6 @@
         <span>(4.9 stars) · 92 independent client reviews</span>
       </div>
 
-      <!-- Specialized Destination for Structured Dynamic Descriptions Content -->
       <div id="product-desc" class="product-desc-container">
          <p style="color: var(--color-muted);">Pulling exclusive botanical skincare properties and details from our database...</p>
       </div>
@@ -447,7 +442,6 @@
         <span id="price-old-wrapper"></span>
       </div>
 
-      <!-- Action capsules -->
       <div class="action-group">
         <button class="btn-action btn-cart" id="add-to-cart-btn">
           <i class="fas fa-shopping-basket"></i> Add to your Shopping Bag
@@ -457,7 +451,6 @@
           <i class="fab fa-whatsapp"></i> Chat & Consult via WhatsApp
         </a>
 
-        <!-- Additional instant support portals -->
         <div class="social-direct-box">
           <a class="btn-s btn-fb" id="facebook-link" target="_blank">
             <i class="fab fa-facebook"></i> FB Messenger
@@ -468,7 +461,6 @@
         </div>
       </div>
 
-      <!-- Share option pill -->
       <div class="detail-share-area">
         <div class="share-pill" id="share-toggle">
           <i class="fas fa-share-alt"></i> Share this product with your friends
@@ -484,7 +476,6 @@
   </div>
 </main>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -521,13 +512,11 @@
   </div>
 </footer>
 
-<!-- Floating Actions -->
 <a href="cart.html" class="floating-cart" aria-label="Shopping Bag">
   <span class="cart-count" id="cart-count">0</span>
   <i class="fas fa-shopping-cart"></i>
 </a>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
