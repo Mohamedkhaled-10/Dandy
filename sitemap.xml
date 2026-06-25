@@ -1,57 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="https://www.xml-sitemaps.com/css/sitemap.css"?>
 <urlset
       xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:fo="http://www.w3.org/1999/XSL/Format"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 <!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
 
 
 <url>
-  <loc>https://dandy1.netlify.app/</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/all-products</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/index.html</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/special-offers</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/all-products.html</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/blog</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/special-offers.html</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/help</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/blog.html</loc>
+  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/client-reviews</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/help.html</loc>
+  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/about-us</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/client-reviews.html</loc>
+  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/privacy-policy</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/about-us.html</loc>
+  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy1.netlify.app/terms</loc>
-  <lastmod>2026-06-13T13:51:50+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/privacy-policy.html</loc>
+  <lastmod>2026-06-25T17:18:35+00:00</lastmod>
   <priority>0.80</priority>
 </url>
-
+<url>
+  <loc>https://dandy-ebon.vercel.app/terms.html</loc>
+  <lastmod>2026-06-25T17:18:35+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Skin%20Care</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Hair%20Care</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Body%20Care</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Fragrances</loc>
+  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
 
 </urlset>
