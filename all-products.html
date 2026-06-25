@@ -40,11 +40,14 @@
 
   <style>
     /* Styling specialized checkboxes to look like premium tactile category pills */
+    /* ==============================
+       Filter Buttons - Elegant Pills
+       ============================== */
     .filter-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin: 40px auto;
+      gap: 14px;
+      margin: 40px auto 50px;
       justify-content: center;
       padding: 0 10px;
     }
@@ -54,39 +57,64 @@
     }
 
     .filter-bar label {
-      display: inline-block;
-      padding: 10px 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 26px;
       background: var(--color-surface);
-      color: var(--color-text);
-      font-weight: 700;
+      color: var(--color-primary);
+      font-weight: 600;
       border: 1px solid var(--border-light);
       border-radius: 99px;
       cursor: pointer;
       font-size: 0.95rem;
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition-fast);
+      box-shadow: 0 4px 12px rgba(76, 50, 46, 0.04);
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .filter-bar label:hover {
+      background: var(--color-surface-soft);
+      border-color: var(--color-gold);
+      transform: translateY(-2px);
     }
 
     .filter-bar input[type="checkbox"]:checked + label {
       background: var(--color-blush);
       color: #fff;
       border-color: var(--color-blush);
-      box-shadow: 0 6px 16px rgba(217, 141, 153, 0.25);
+      box-shadow: 0 8px 24px rgba(204, 90, 108, 0.25);
+      transform: translateY(-3px);
+    }
+
+    /* ==============================
+       Search Box - Premium Design
+       ============================== */
+    .catalog-search-box {
+      max-width: 650px;
+      width: 95%;
+      margin: 40px auto 0;
+      background: #ffffff;
+      border: 2px solid transparent;
+      box-shadow: 0 8px 25px rgba(76, 50, 46, 0.08);
+      border-radius: 99px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.35s ease;
+      position: relative;
+    }
+
+    .catalog-search-box:focus-within {
+      border-color: var(--color-blush-soft);
+      box-shadow: 0 12px 35px rgba(204, 90, 108, 0.15);
       transform: translateY(-2px);
     }
 
-    .catalog-search-box {
-      max-width: 600px;
-      width: 90%;
-      margin: 30px auto 0;
-      background: var(--color-surface);
-      border: 1px solid var(--border-light);
-      box-shadow: var(--shadow-sm);
-      border-radius: 99px;
-      padding: 6px 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .catalog-search-box i.search-icon {
+      color: var(--color-gold);
+      font-size: 1.2rem;
+      padding-left: 14px;
     }
 
     .catalog-search-box input {
@@ -94,26 +122,37 @@
       background: transparent;
       outline: none;
       flex: 1;
-      padding: 10px 14px;
-      font-size: 1rem;
-      direction: ltr;
+      padding: 12px 5px;
+      font-size: 1.05rem;
+      color: var(--color-primary);
       font-family: inherit;
+    }
+
+    .catalog-search-box input::placeholder {
+      color: #a0908d;
+      font-weight: 400;
     }
 
     .catalog-search-box button {
       background: var(--color-primary);
       color: #fff;
       border: none;
-      outline: none;
       border-radius: 99px;
-      padding: 12px 24px;
+      padding: 14px 32px;
       font-weight: 700;
+      font-size: 1rem;
       cursor: pointer;
-      transition: var(--transition-fast);
+      box-shadow: 0 4px 15px rgba(39, 20, 18, 0.15);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .catalog-search-box button:hover {
       background: var(--color-blush);
+      box-shadow: 0 8px 20px rgba(204, 90, 108, 0.3);
+      transform: scale(1.02);
     }
 
     .product.hidden {
@@ -175,8 +214,18 @@
         padding: 12px !important;
       }
       .filter-bar label {
-        padding: 8px 16px;
+        padding: 10px 18px;
         font-size: 0.85rem;
+      }
+      .catalog-search-box {
+        padding: 4px 6px;
+      }
+      .catalog-search-box button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
+      .catalog-search-box i.search-icon {
+        padding-left: 10px;
       }
       .action-buttons-row {
         flex-direction: column;
@@ -212,8 +261,8 @@
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="all-products.html" class="active">Products</a></li>
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="all-products.html">Products</a></li>
     <li><a href="special-offers.html">Offers</a></li>
     <li><a href="blog.html">Blog</a></li>
     <li class="dropdown">
@@ -224,31 +273,40 @@
         <li><a href="about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
-    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
+    <li><a href="/track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
-  <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
+  
+  <div class="nav-actions">
+    <a href="cart.html" class="nav-cart" aria-label="Shopping Cart">
+      <i class="fas fa-shopping-bag"></i>
+      <span class="cart-count" id="cart-count">0</span>
+    </a>
+    <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
 </nav>
 
-<!-- Mobile Menu -->
+<div class="menu-overlay" id="menu-overlay" onclick="toggleNav()"></div>
+
 <div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
-  <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="all-products.html" class="active">Products</a></li>
-    <li><a href="special-offers.html">Offers</a></li>
-    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> Track Your Order</a></li>
-    <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
-    <li><a href="client-reviews.html">Client Reviews</a></li>
-    <li><a href="blog.html">Blog Posts</a></li>
-    <li><a href="about-us.html">About Us</a></li>
-  </ul>
-  <div class="side-bottom-links">
-    <a href="privacy-policy.html">Privacy Policy</a>
-    <span>|</span>
-    <a href="terms.html">Terms & Conditions</a>
+  <button class="close-menu" onclick="toggleNav()"><i class="fas fa-times"></i></button>
+  <div class="menubar-content">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="all-products.html">Products</a></li>
+      <li><a href="special-offers.html">Offers</a></li>
+      <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold; text-align:center;"><i class="fas fa-route"></i> Track Your Order</a></li>
+      <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+      <li><a href="client-reviews.html">Client Reviews</a></li>
+      <li><a href="blog.html">Blog Posts</a></li>
+      <li><a href="about.html">About Us</a></li>
+    </ul>
+    <div class="side-bottom-links">
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <span>|</span>
+      <a href="terms.html">Terms & Conditions</a>
+    </div>
   </div>
 </div>
 
@@ -257,13 +315,13 @@
   <div class="section-header" style="margin-bottom: 20px;">
     <span class="sub">Our Special Collections</span>
     <h2>The Dandy Beauty Catalogue Goal</h2>
-    <p style="color: var(--color-muted); max-width: 600px; margin: 10px auto 0;">Explore our premium organic haircare, skincare essential oils, and luxury French fragrances designed to unleash your natural beauty.</p>
+    <p class="header-desc">Explore our premium organic haircare, skincare essential oils, and luxury French fragrances designed to unleash your natural beauty.</p>
   </div>
 
-  <!-- Search widget inside catalog -->
   <form id="search-form" class="catalog-search-box">
+    <i class="fas fa-search search-icon"></i>
     <input type="text" id="search-input" placeholder="Search for your beauty products...">
-    <button type="submit"><i class="fas fa-search"></i> Search</button>
+    <button type="submit">Search</button>
   </form>
 </section>
 
@@ -332,12 +390,6 @@
   </div>
 </footer>
 
-<!-- Floating Actions -->
-<a href="cart.html" class="floating-cart" aria-label="Shopping Bag">
-  <span class="cart-count" id="cart-count">0</span>
-  <i class="fas fa-shopping-cart"></i>
-</a>
-
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -374,31 +426,43 @@
     if (e.key === 'cart') updateCartCount();
   });
 
-  // Toggle Menubar drawer for mobile
+    // Hamburger drawer menu toggle with animation and blur
   function toggleNav() {
     const menubar = document.getElementById("menubar");
-    const hamburger = document.querySelector(".hamburger");
+    const overlay = document.getElementById("menu-overlay");
+    const navbar = document.getElementById("navbar");
+    
     menubar.classList.toggle("active");
-    hamburger.classList.toggle("change");
+    overlay.classList.toggle("active");
+    
+    // إخفاء النافبار عند فتح القائمة
+    if (menubar.classList.contains("active")) {
+      navbar.style.transform = "translateY(-100%)";
+    } else {
+      navbar.style.transform = "translateY(0)";
+    }
   }
 
-  // Navigation hide / show on scroll
+  // Navigation hide / show on scroll with smooth transitions
   let lastScrollTop = 0;
   const nav = document.getElementById('navbar');
-  const navHeight = nav.offsetHeight;
 
   window.addEventListener('scroll', function () {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > 80) {
+    
+    if (scrollTop > 10) {
       nav.classList.add('scrolled');
     } else {
       nav.classList.remove('scrolled');
     }
 
-    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
-      nav.style.top = `-${navHeight + 20}px`;
-    } else {
-      nav.style.top = `20px`;
+    // إخفاء الشريط عند النزول، وإظهاره عند الصعود (إلا إذا كانت قائمة الهاتف مفتوحة)
+    if (!document.getElementById("menubar").classList.contains("active")) {
+      if (scrollTop > lastScrollTop && scrollTop > 100) {
+        nav.style.transform = `translateY(-100%)`;
+      } else {
+        nav.style.transform = `translateY(0)`;
+      }
     }
     lastScrollTop = scrollTop;
   });

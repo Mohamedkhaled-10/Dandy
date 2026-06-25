@@ -92,7 +92,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
     <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
@@ -113,46 +112,48 @@
     </li>
     <li><a href="/track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
-  <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
+  
+  <div class="nav-actions">
+    <a href="cart.html" class="nav-cart" aria-label="Shopping Cart">
+      <i class="fas fa-shopping-bag"></i>
+      <span class="cart-count" id="cart-count">0</span>
+    </a>
+    <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
 </nav>
 
-<!-- Mobile Menu -->
+<div class="menu-overlay" id="menu-overlay" onclick="toggleNav()"></div>
+
 <div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
-  <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="all-products.html">Products</a></li>
-    <li><a href="special-offers.html">Offers</a></li>
-    <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold;"><i class="fas fa-route"></i> Track Your Order</a></li>
-    <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
-    <li><a href="client-reviews.html">Client Reviews</a></li>
-    <li><a href="blog.html">Blog Posts</a></li>
-    <li><a href="about.html">About Us</a></li>
-  </ul>
-  <div class="side-bottom-links">
-    <a href="privacy-policy.html">Privacy Policy</a>
-    <span>|</span>
-    <a href="terms.html">Terms & Conditions</a>
+  <button class="close-menu" onclick="toggleNav()"><i class="fas fa-times"></i></button>
+  <div class="menubar-content">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="all-products.html">Products</a></li>
+      <li><a href="special-offers.html">Offers</a></li>
+      <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold; text-align:center;"><i class="fas fa-route"></i> Track Your Order</a></li>
+      <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+      <li><a href="client-reviews.html">Client Reviews</a></li>
+      <li><a href="blog.html">Blog Posts</a></li>
+      <li><a href="about.html">About Us</a></li>
+    </ul>
+    <div class="side-bottom-links">
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <span>|</span>
+      <a href="terms.html">Terms & Conditions</a>
+    </div>
   </div>
 </div>
 
 <!-- Hero Section -->
-<section class="hero container">
-  <div class="hero-text">
-    <span class="badge-hero">🌿 Pure Organic & Botanical Luxury</span>
-    <h2>Where Exquisite Beauty Meets Nature's Touch</h2>
-    <p>Your skin and hair deserve an exquisite pampering experience inspired by active organic ingredients. Select the finest essentials for an everlasting radiant glow.</p>
-    <a href="all-products.html" class="cta-btn">Shop Luxury Collections <i class="fas fa-arrow-right"></i></a>
-  </div>
-
+<section class="hero-full">
   <div class="hero-slider" id="heroSlider">
-    <img src="images/hero/hero-1.jpg" alt="Dandy Luxury Creams" class="active" loading="lazy">
-    <img src="images/hero/hero-2.jpg" alt="Rose Petals Skincare" loading="lazy">
-    <img src="images/hero/hero-3.jpg" alt="Organic Serums" loading="lazy">
-    <img src="images/hero/hero-4.jpg" alt="Aroma Beauty Oils" loading="lazy">
+    <img src="images/hero/hero-1.jpg" alt="Dandy Luxury Creams" class="active" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=1600&q=80';">
+    <img src="images/hero/hero-2.jpg" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1600&q=80';">
+    <img src="images/hero/hero-3.jpg" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1600&q=80';">
+    <div class="slider-overlay"></div>
   </div>
 </section>
 
@@ -177,14 +178,30 @@
   </div>
 </section>
 
-<!-- Inspired Story Banner -->
-<section class="container" style="margin: 60px auto;">
-  <div class="cat-banner" style="background-image: url('https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1200&q=80');">
-    <div class="cat-content">
-      <h3>Philosophy of Holistic Beauty</h3>
-      <p style="color: var(--color-text); margin-bottom: 12px; font-weight: 500;">We attend to every detail to offer you a personalized and organic skincare journey, redefining your natural glow to express your radiant self.</p>
-      <a href="about-us.html" style="font-weight: 700; text-decoration: underline;">Discover Our Story &rarr;</a>
-    </div>
+
+
+<section class="shop-categories container">
+  <div class="section-header" style="margin-bottom: 40px;">
+    <span class="sub">Discover by Category</span>
+    <h2>Shop Our Collections</h2>
+  </div>
+  <div class="cat-grid">
+    <a href="all-products.html?category=Skin Care" class="cat-card">
+      <img src="https://pixabay.com/images/download/sabeeonly-ai-generated-8966704_1920.jpg" alt="Skin Care">
+      <div class="cat-card-title">Skin Care</div>
+    </a>
+    <a href="all-products.html?category=Hair Care" class="cat-card">
+      <img src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=600&q=80" alt="Hair Care">
+      <div class="cat-card-title">Hair Care</div>
+    </a>
+    <a href="all-products.html?category=Body Care" class="cat-card">
+      <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80" alt="Body Care">
+      <div class="cat-card-title">Body Care</div>
+    </a>
+    <a href="all-products.html?category=Fragrances" class="cat-card">
+      <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=600&q=80" alt="Fragrances">
+      <div class="cat-card-title">Fragrances</div>
+    </a>
   </div>
 </section>
 
@@ -271,11 +288,7 @@
   <button id="acceptCookies" onclick="acceptCookies()">I Accept, Thank You</button>
 </div>
 
-<!-- Floating Floating Actions -->
-<a href="cart.html" class="floating-cart" aria-label="Shopping Cart">
-  <span class="cart-count" id="cart-count">0</span>
-  <i class="fas fa-shopping-cart"></i>
-</a>
+
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -331,33 +344,42 @@
   // Navigation hide / show on scroll with smooth transitions
   let lastScrollTop = 0;
   const nav = document.getElementById('navbar');
-  const navHeight = nav.offsetHeight;
 
   window.addEventListener('scroll', function () {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     
-    if (scrollTop > 80) {
+    if (scrollTop > 10) {
       nav.classList.add('scrolled');
     } else {
       nav.classList.remove('scrolled');
     }
 
-    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
-      nav.style.top = `-${navHeight + 20}px`;
-    } else {
-      nav.style.top = `20px`;
+    // إخفاء الشريط عند النزول، وإظهاره عند الصعود (إلا إذا كانت قائمة الهاتف مفتوحة)
+    if (!document.getElementById("menubar").classList.contains("active")) {
+      if (scrollTop > lastScrollTop && scrollTop > 100) {
+        nav.style.transform = `translateY(-100%)`;
+      } else {
+        nav.style.transform = `translateY(0)`;
+      }
     }
     lastScrollTop = scrollTop;
   });
-
-  // Hamburger drawer menu toggle
+  // Hamburger drawer menu toggle with animation and blur
   function toggleNav() {
     const menubar = document.getElementById("menubar");
-    const hamburger = document.querySelector(".hamburger");
+    const overlay = document.getElementById("menu-overlay");
+    const navbar = document.getElementById("navbar");
+    
     menubar.classList.toggle("active");
-    hamburger.classList.toggle("change");
+    overlay.classList.toggle("active");
+    
+    // إخفاء النافبار عند فتح القائمة
+    if (menubar.classList.contains("active")) {
+      navbar.style.transform = "translateY(-100%)";
+    } else {
+      navbar.style.transform = "translateY(0)";
+    }
   }
-
   // Background slider transitions under Hero
   const sliderImages = Array.from(document.querySelectorAll('.hero-slider img'));
   let activeSlide = 0;
