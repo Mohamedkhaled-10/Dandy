@@ -9,7 +9,6 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/track-order.html">
 
-  <!-- Favicons and Manifest Setup -->
   <link rel="icon" type="image/x-icon" href="../../assets/images/fav-icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/fav-icons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/fav-icons/favicon-32x32.png">
@@ -19,14 +18,12 @@
   <link rel="manifest" href="../../assets/images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
-  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/track-order.html">
   <meta property="og:title" content="Track Your Order | Live Shipping Status | Dandy Beauty">
   <meta property="og:description" content="Track your Dandy Beauty organic cosmetics shipment status live across Egypt's governorates.">
   <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
 
-  <!-- Stylesheet -->
   <link href="../../assets/css/style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -142,7 +139,8 @@
     .timeline-progress-bar {
       position: absolute;
       top: 50%;
-      left: 10%;
+      right: 10%; /* changed to right for RTL progression */
+      left: auto;
       height: 4px;
       background: var(--color-success);
       z-index: 2;
@@ -305,7 +303,6 @@
     .products-table th {
       background: var(--color-surface-soft);
       padding: 10px;
-      text-align: left;
       color: var(--color-muted);
       font-weight: 700;
       border-bottom: 1px solid var(--border-light);
@@ -325,11 +322,10 @@
       border-radius: 6px;
       vertical-align: middle;
       border: 1px solid var(--border-light);
-      margin-right: 10px;
+      margin-left: 10px; /* modified for RTL */
     }
   </style>
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -340,7 +336,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='../..index.html'">
     <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
@@ -397,134 +392,123 @@
 </div>
 
 <section class="track-section container">
-  <div class="track-container">
-    <div class="section-header" style="text-align: left; margin-bottom: 40px;">
-      <span class="sub">Instant & Secure Tracking</span>
-      <h2>Where is your package now?</h2>
-      <p style="color:var(--color-muted); margin-top:8px;">Follow the preparation and delivery journey of your order step by step without the hassle of registering or creating an account.</p>
+  <div class="track-container" dir="rtl">
+    <div class="section-header" style="text-align: right; margin-bottom: 40px;">
+      <span class="sub">تتبع فوري وآمن</span>
+      <h2>أين شحنتك الآن؟</h2>
+      <p style="color:var(--color-muted); margin-top:8px;">تتبع رحلة تجهيز وتوصيل طلبك خطوة بخطوة دون الحاجة للتسجيل أو إنشاء حساب.</p>
     </div>
 
-    <!-- Search box -->
     <div class="track-search-card">
-      <h3 style="font-size:1.2rem; margin-bottom:12px; color:var(--color-primary);"><i class="fas fa-search"></i> Check Your Invoice Details</h3>
+      <h3 style="font-size:1.2rem; margin-bottom:12px; color:var(--color-primary);"><i class="fas fa-search"></i> تحقق من تفاصيل فاتورتك</h3>
       
       <form id="trackingForm">
         <div class="form-group-grid">
           <div class="form-control-block">
-            <label for="trackCode">Invoice Code</label>
-            <input type="text" id="trackCode" placeholder="Example: DNY-123456" required>
+            <label for="trackCode">كود الفاتورة</label>
+            <input type="text" id="trackCode" placeholder="مثال: DNY-123456" required>
           </div>
           <div class="form-control-block">
-            <label for="trackPhone">Recipient Phone Number</label>
-            <input type="tel" id="trackPhone" placeholder="Example: 01012345678" required>
+            <label for="trackPhone">رقم هاتف المستلم</label>
+            <input type="tel" id="trackPhone" placeholder="مثال: 01012345678" required>
           </div>
         </div>
 
         <div style="margin-top:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-          <button type="submit" class="btn-track"><i class="fas fa-route"></i> Track Order Status</button>
-          <div id="loadingIndicator" style="display:none; color:var(--color-blush); font-weight:700;"><i class="fas fa-spinner fa-spin"></i> Searching database...</div>
+          <button type="submit" class="btn-track"><i class="fas fa-route"></i> تتبع حالة الطلب</button>
+          <div id="loadingIndicator" style="display:none; color:var(--color-blush); font-weight:700;"><i class="fas fa-spinner fa-spin"></i> جاري البحث في قاعدة البيانات...</div>
         </div>
       </form>
 
-      <!-- Recent lookups -->
       <div class="recent-searches-box" id="recentSearchesBox" style="display:none;">
-        <div>Recent lookups on this device:</div>
+        <div>عمليات البحث الأخيرة على هذا الجهاز:</div>
         <div class="recent-searches-tags" id="recentTagsList">
-          <!-- Dyn tags -->
-        </div>
+          </div>
       </div>
     </div>
 
-    <!-- Results Display -->
     <div class="tracking-results-card" id="trackingResultsCard">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid var(--border-light); padding-bottom:16px; margin-bottom:16px;">
         <div>
-          <span style="color:var(--color-muted); font-size:0.9rem;">Order Code</span>
+          <span style="color:var(--color-muted); font-size:0.9rem;">كود الطلب</span>
           <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.6rem; color:var(--color-blush);" id="resInvoiceCode">DNY-******</h2>
         </div>
         <div>
-          <button class="btn" style="background:var(--color-surface-soft); border:1px solid var(--border-light); font-size:0.85rem; padding:8px 16px; border-radius:99px;" onclick="window.print()"><i class="fas fa-print"></i> Print Invoice</button>
+          <button class="btn" style="background:var(--color-surface-soft); border:1px solid var(--border-light); font-size:0.85rem; padding:8px 16px; border-radius:99px;" onclick="window.print()"><i class="fas fa-print"></i> طباعة الفاتورة</button>
         </div>
       </div>
 
-      <!-- Cancelled state warning -->
       <div class="cancelled-banner" id="cancelledBanner">
-        <i class="fas fa-ban"></i> This order has been cancelled.
+        <i class="fas fa-ban"></i> تم إلغاء هذا الطلب.
       </div>
 
-      <!-- Visual timeline tracker -->
       <div class="timeline-container" id="timelineContainer">
         <div class="timeline-steps">
           <div class="timeline-progress-bar" id="timelineProgressBar"></div>
           
           <div class="step-item" id="step-new">
             <div class="step-circle"><i class="fas fa-file-invoice"></i></div>
-            <div class="step-label">Order Received</div>
+            <div class="step-label">تم استلام الطلب</div>
           </div>
           
           <div class="step-item" id="step-processing">
             <div class="step-circle"><i class="fas fa-cog"></i></div>
-            <div class="step-label">Processing</div>
+            <div class="step-label">قيد التجهيز</div>
           </div>
           
           <div class="step-item" id="step-shipped">
             <div class="step-circle"><i class="fas fa-truck-moving"></i></div>
-            <div class="step-label">Shipped</div>
+            <div class="step-label">تم الشحن</div>
           </div>
           
           <div class="step-item" id="step-delivered">
             <div class="step-circle"><i class="fas fa-check-double"></i></div>
-            <div class="step-label">Delivered</div>
+            <div class="step-label">تم التوصيل</div>
           </div>
         </div>
       </div>
 
-      <!-- Customer metadata details -->
       <div class="results-grid-meta">
         <div class="meta-col">
-          <h4>Recipient Details</h4>
+          <h4>بيانات المستلم</h4>
           <p id="resCustName">...</p>
           <p style="margin-top:6px; font-weight:normal; font-size:0.9rem; color:var(--color-muted);" id="resCustPhone">...</p>
         </div>
         <div class="meta-col">
-          <h4>Delivery Address</h4>
+          <h4>عنوان التوصيل</h4>
           <p id="resCustLocation">...</p>
           <p style="margin-top:6px; font-weight:normal; font-size:0.9rem; color:var(--color-muted);" id="resCustAddress">...</p>
         </div>
       </div>
 
-      <!-- Table details -->
-      <h3 style="font-size:1.1rem; color:var(--color-primary); margin-bottom:10px;"><i class="fas fa-boxes"></i> Selected Essentials</h3>
+      <h3 style="font-size:1.1rem; color:var(--color-primary); margin-bottom:10px;"><i class="fas fa-boxes"></i> المنتجات المطلوبة</h3>
       <table class="products-table">
         <thead>
           <tr>
-            <th>Product Name</th>
-            <th style="text-align:center; width: 80px;">Qty</th>
-            <th style="text-align:right; width: 120px;">Subtotal</th>
+            <th style="text-align: right;">اسم المنتج</th>
+            <th style="text-align: center; width: 80px;">الكمية</th>
+            <th style="text-align: left; width: 120px;">المجموع</th>
           </tr>
         </thead>
         <tbody id="resProductsBody">
-          <!-- Dyn rows -->
-        </tbody>
+          </tbody>
       </table>
 
-      <!-- Summary Display -->
       <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border-light); padding-top:16px;">
-        <span style="font-weight:700; color:var(--color-muted);">Total Paid Amount:</span>
-        <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8rem; color:var(--color-primary);" id="resTotal">00.00 EGP</h2>
+        <span style="font-weight:700; color:var(--color-muted);">إجمالي المبلغ المطلوب:</span>
+        <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8rem; color:var(--color-primary);" id="resTotal">00.00 ج.م</h2>
       </div>
 
       <div style="background:var(--color-gold-cream); border:1px solid var(--border-light); padding:16px; border-radius:12px; margin-top:24px; font-size:0.9rem;">
         <p style="color:var(--color-text); line-height:1.7;">
-          <strong style="color:var(--color-gold);"><i class="fas fa-shield-alt"></i> Guarantees:</strong>
-          Organic beauty essentials. Freshly packaged under sterilized laboratory conditions of purity, and delivered with standard COD courier guidelines to your address.
+          <strong style="color:var(--color-gold);"><i class="fas fa-shield-alt"></i> الضمانات:</strong>
+          منتجات عناية طبيعية. يتم تغليفها حديثاً في ظروف معملية معقمة، وتوصيلها بأمان إلى عنوانك وفقاً لمعايير الدفع عند الاستلام.
         </p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -562,7 +546,6 @@
   </div>
 </footer>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -581,7 +564,6 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-    // Hamburger drawer menu toggle with animation and blur
   function toggleNav() {
     const menubar = document.getElementById("menubar");
     const overlay = document.getElementById("menu-overlay");
@@ -590,7 +572,6 @@
     menubar.classList.toggle("active");
     overlay.classList.toggle("active");
     
-    // إخفاء النافبار عند فتح القائمة
     if (menubar.classList.contains("active")) {
       navbar.style.transform = "translateY(-100%)";
     } else {
@@ -598,7 +579,6 @@
     }
   }
 
-  // Navigation hide / show on scroll with smooth transitions
   let lastScrollTop = 0;
   const nav = document.getElementById('navbar');
 
@@ -611,7 +591,6 @@
       nav.classList.remove('scrolled');
     }
 
-    // إخفاء الشريط عند النزول، وإظهاره عند الصعود (إلا إذا كانت قائمة الهاتف مفتوحة)
     if (!document.getElementById("menubar").classList.contains("active")) {
       if (scrollTop > lastScrollTop && scrollTop > 100) {
         nav.style.transform = `translateY(-100%)`;
@@ -650,11 +629,9 @@
   const recentSearchesBox = document.getElementById('recentSearchesBox');
   const recentTagsList = document.getElementById('recentTagsList');
 
-  // Load and draw recent orders from localStorage as lookups
   window.addEventListener('DOMContentLoaded', () => {
     drawRecentSearches();
 
-    // Look for URL parameters (e.g., if redirected from invoice or order success)
     const params = new URLSearchParams(window.location.search);
     const codeParam = params.get('code');
     const phoneParam = params.get('phone');
@@ -670,9 +647,8 @@
     const code = trackCodeInput.value.trim().toUpperCase();
     const phone = trackPhoneInput.value.trim();
 
-    // Quick basic validation
     if (!code || !phone) {
-      alert('Please fill in both the Invoice Code and Phone Number.');
+      alert('يرجى إدخال كود الفاتورة ورقم الهاتف.');
       return;
     }
 
@@ -683,7 +659,6 @@
     loadingIndicator.style.display = 'inline-block';
     resultsCard.classList.remove('show');
 
-    // Query firebase database based on the invoice code
     db.ref('orders')
       .orderByChild('invoiceCode')
       .equalTo(code)
@@ -692,14 +667,13 @@
         loadingIndicator.style.display = 'none';
         
         if (!snap.exists()) {
-          alert('We could not find any order matching the provided Invoice Code. Please check and try again.');
+          alert('لم نتمكن من العثور على أي طلب يطابق كود الفاتورة المدخل. يرجى التحقق والمحاولة مرة أخرى.');
           return;
         }
 
         let foundOrder = null;
         let matchedPhone = false;
 
-        // Strip characters to match plain digits of phone
         const normalizedPhoneInput = phone.replace(/[^0-9]/g, '');
 
         snap.forEach(child => {
@@ -712,20 +686,18 @@
         });
 
         if (!matchedPhone) {
-          alert('The Invoice Code is valid, but the phone number does not match our records. For security reasons, please provide the registered phone number.');
+          alert('كود الفاتورة صحيح، لكن رقم الهاتف لا يطابق سجلاتنا. لأسباب أمنية، يرجى إدخال رقم الهاتف المسجل بالطلب.');
           return;
         }
 
-        // Draw results
         renderOrderResults(foundOrder);
-        // Save to recent localStorage list
         saveRecentSearch(code, phone);
 
       })
       .catch(err => {
         loadingIndicator.style.display = 'none';
         console.error(err);
-        alert('A technical error occurred while fetching your order. Please try again.');
+        alert('حدث خطأ فني أثناء جلب بيانات طلبك. يرجى المحاولة مرة أخرى.');
       });
   }
 
@@ -734,10 +706,9 @@
     resInvoiceCode.textContent = order.invoiceCode;
     resCustName.textContent = order.name || '';
     resCustPhone.textContent = order.phone || '';
-    resCustLocation.textContent = (order.city || '') + ', ' + (order.governorate || '') + ' Governorate';
+    resCustLocation.textContent = (order.city || '') + '، محافظة ' + (order.governorate || '');
     resCustAddress.textContent = order.address || '';
 
-    // Draw products table
     resProductsBody.innerHTML = '';
     let calculatedSubtotal = 0;
 
@@ -753,26 +724,23 @@
         tr.innerHTML = `
           <td>${imgHtml}<strong>${p.name}</strong></td>
           <td style="text-align:center;">${qty}</td>
-          <td style="text-align:right; font-weight:700; color:var(--color-blush);">${(price * qty).toFixed(0)} EGP</td>
+          <td style="text-align:left; font-weight:700; color:var(--color-blush);">${(price * qty).toFixed(0)} ج.م</td>
         `;
         resProductsBody.appendChild(tr);
       });
 
-      // Get precise totals (including shipping fee and computed subtotal helper check)
       const sub = order.subtotal !== undefined ? parseFloat(order.subtotal) : calculatedSubtotal;
       const ship = order.shippingFee !== undefined ? parseFloat(order.shippingFee) : 0;
       const total = order.totalAmount !== undefined ? parseFloat(order.totalAmount) : (sub + ship);
 
-      resTotal.textContent = total.toFixed(0) + ' EGP';
+      resTotal.textContent = total.toFixed(0) + ' ج.م';
     } else {
-      resProductsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--color-muted);">No products registered under this order.</td></tr>';
-      resTotal.textContent = '0 EGP';
+      resProductsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--color-muted);">لا توجد منتجات مسجلة في هذا الطلب.</td></tr>';
+      resTotal.textContent = '0 ج.م';
     }
 
-    // Determine status and set progress-steps
     const status = order.status || 'New';
     
-    // Reset steps
     stepNew.classList.remove('active', 'current');
     stepProcessing.classList.remove('active', 'current');
     stepShipped.classList.remove('active', 'current');
@@ -808,7 +776,6 @@
       }
     }
 
-    // Scroll to results seamlessly
     resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -822,11 +789,9 @@
 
   function saveRecentSearch(code, phone) {
     let recent = JSON.parse(localStorage.getItem('dandy_recent_lookups')) || [];
-    // remove duplicates
     recent = recent.filter(r => r.code !== code);
     recent.unshift({ code, phone, time: new Date().getTime() });
     
-    // limit to 4 records
     if (recent.length > 4) recent.pop();
     
     localStorage.setItem('dandy_recent_lookups', JSON.stringify(recent));
@@ -847,7 +812,7 @@
       const tag = document.createElement('span');
       tag.className = 'recent-tag';
       tag.innerHTML = `<i class="fas fa-history"></i> ${r.code}`;
-      tag.title = 'Click to track this package instantly';
+      tag.title = 'اضغط لتتبع هذه الشحنة فوراً';
       tag.addEventListener('click', () => {
         trackCodeInput.value = r.code;
         trackPhoneInput.value = r.phone;
