@@ -498,12 +498,12 @@
       
       <div class="stepper-step" id="stepper-step-2">
         <div class="step-num-icon"><i class="fas fa-truck"></i></div>
-        <span class="step-text">Shipping Details</span>
+        <span class="step-text">تفاصيل الشحن</span>
       </div>
       
       <div class="stepper-step" id="stepper-step-3">
         <div class="step-num-icon"><i class="fas fa-check-double"></i></div>
-        <span class="step-text">Review & Place Order</span>
+        <span class="step-text">مراجعة وتأكيد الطلب</span>
       </div>
     </div>
 
@@ -554,103 +554,103 @@
       </div>
 
       <!-- ==================================== -->
-      <!-- STEP 2: SHIPPING DETAILS FORM -->
+      <!-- STEP 2: SHIPPING DETAILS FORM (ARABIC) -->
       <!-- ==================================== -->
-      <div id="step-panel-2" class="checkout-step-panel">
+      <div id="step-panel-2" class="checkout-step-panel" dir="rtl">
         <div class="catalog-checkout-grid">
           
           <div class="panel-main-card">
-            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> Where should we deliver your order?</h2>
+            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> أين يجب أن نقوم بتوصيل طلبك؟</h2>
             
             <form id="shippingFormElement" onsubmit="event.preventDefault();">
               <div class="form-group-checkout">
-                <label for="f-name">Full Customer Name</label>
-                <input type="text" id="f-name" placeholder="Write your full name for postage accuracy" required>
+                <label for="f-name">الاسم بالكامل</label>
+                <input type="text" id="f-name" placeholder="اكتب اسمك بالكامل لضمان دقة التوصيل" required>
               </div>
 
               <div class="form-row-double">
                 <div class="form-group-checkout">
-                  <label for="f-phone">Active Phone Number (For Representative & Courier)</label>
-                  <input type="tel" id="f-phone" placeholder="Example: 01012345678" required>
+                  <label for="f-phone">رقم هاتف فعال (للمندوب وشركة الشحن)</label>
+                  <input type="tel" id="f-phone" placeholder="مثال: 01012345678" required style="text-align: right;" dir="ltr">
                 </div>
                 <div class="form-group-checkout">
-                  <label for="f-email">Email Address (Optional)</label>
-                  <input type="email" id="f-email" placeholder="To receive email tracking updates">
+                  <label for="f-email">البريد الإلكتروني (اختياري)</label>
+                  <input type="email" id="f-email" placeholder="لاستلام تحديثات تتبع الطلب" style="text-align: right;" dir="ltr">
                 </div>
               </div>
 
               <div class="form-row-double">
                 <div class="form-group-checkout">
-                  <label for="f-gov">Governorate</label>
+                  <label for="f-gov">المحافظة</label>
                   <select id="f-gov" required onchange="handleGovChange()">
-                    <option value="">Select your Governorate</option>
-                    <option value="Cairo">Cairo</option>
-                    <option value="Giza">Giza</option>
-                    <option value="Alexandria">Alexandria</option>
-                    <option value="Gharbia">Gharbia</option>
-                    <option value="Dakahlia">Dakahlia</option>
-                    <option value="Sharqia">Sharqia</option>
-                    <option value="Kafr El Sheikh">Kafr El Sheikh</option>
-                    <option value="Qalyubia">Qalyubia</option>
-                    <option value="Port Said">Port Said</option>
-                    <option value="Damietta">Damietta</option>
-                    <option value="Suez">Suez</option>
-                    <option value="Ismailia">Ismailia</option>
-                    <option value="Beheira">Beheira</option>
-                    <option value="Monufia">Monufia</option>
-                    <option value="Fayoum">Fayoum</option>
-                    <option value="Beni Suef">Beni Suef</option>
-                    <option value="Minya">Minya</option>
-                    <option value="Luxor">Luxor</option>
-                    <option value="Aswan">Aswan</option>
-                    <option value="Assiut">Assiut</option>
-                    <option value="Sohag">Sohag</option>
-                    <option value="Qena">Qena</option>
-                    <option value="North Sinai">North Sinai</option>
-                    <option value="South Sinai">South Sinai</option>
-                    <option value="New Valley">New Valley</option>
-                    <option value="Red Sea">Red Sea</option>
-                    <option value="Matrouh">Matrouh</option>
+                    <option value="">اختر المحافظة</option>
+                    <option value="Cairo">القاهرة</option>
+                    <option value="Giza">الجيزة</option>
+                    <option value="Alexandria">الإسكندرية</option>
+                    <option value="Gharbia">الغربية</option>
+                    <option value="Dakahlia">الدقهلية</option>
+                    <option value="Sharqia">الشرقية</option>
+                    <option value="Kafr El Sheikh">كفر الشيخ</option>
+                    <option value="Qalyubia">القليوبية</option>
+                    <option value="Port Said">بورسعيد</option>
+                    <option value="Damietta">دمياط</option>
+                    <option value="Suez">السويس</option>
+                    <option value="Ismailia">الإسماعيلية</option>
+                    <option value="Beheira">البحيرة</option>
+                    <option value="Monufia">المنوفية</option>
+                    <option value="Fayoum">الفيوم</option>
+                    <option value="Beni Suef">بني سويف</option>
+                    <option value="Minya">المنيا</option>
+                    <option value="Luxor">الأقصر</option>
+                    <option value="Aswan">أسوان</option>
+                    <option value="Assiut">أسيوط</option>
+                    <option value="Sohag">سوهاج</option>
+                    <option value="Qena">قنا</option>
+                    <option value="North Sinai">شمال سيناء</option>
+                    <option value="South Sinai">جنوب سيناء</option>
+                    <option value="New Valley">الوادي الجديد</option>
+                    <option value="Red Sea">البحر الأحمر</option>
+                    <option value="Matrouh">مطروح</option>
                   </select>
                 </div>
                 <div class="form-group-checkout">
-                  <label for="f-city">City / District Zone</label>
-                  <input type="text" id="f-city" placeholder="Example: Nasr City, Dokki, San Stefano" required>
+                  <label for="f-city">المدينة / المنطقة</label>
+                  <input type="text" id="f-city" placeholder="مثال: مدينة نصر، الدقي، سان ستيفانو" required>
                 </div>
               </div>
 
               <div class="form-group-checkout">
-                <label for="f-address">Full Detailed Address (Street, Building, Apartment, Floor, LandmarK)</label>
-                <input type="text" id="f-address" placeholder="Write full details, street name, building number, nearby landmark..." required>
+                <label for="f-address">العنوان بالتفصيل (الشارع، المبنى، الشقة، الدور، علامة مميزة)</label>
+                <input type="text" id="f-address" placeholder="اكتب التفاصيل الكاملة، اسم الشارع، رقم المبنى، علامة مميزة..." required>
               </div>
             </form>
 
             <div class="checkout-nav-row">
-              <button class="btn-checkout-secondary" onclick="goToStep(1)"><i class="fas fa-long-arrow-alt-left"></i> Back to Bag</button>
-              <button class="btn-checkout-primary" onclick="validateAndGoToReview()">Proceed to Final Review <i class="fas fa-long-arrow-alt-right"></i></button>
+              <button class="btn-checkout-secondary" onclick="goToStep(1)"><i class="fas fa-long-arrow-alt-right"></i> العودة لحقيبة التسوق</button>
+              <button class="btn-checkout-primary" onclick="validateAndGoToReview()">الانتقال للمراجعة النهائية <i class="fas fa-long-arrow-alt-left"></i></button>
             </div>
           </div>
 
           <div class="panel-side-summary">
-            <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;"><i class="fas fa-receipt"></i> Order Summary</h3>
+            <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;"><i class="fas fa-receipt"></i> ملخص الطلب</h3>
             
             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-              <span style="color:var(--color-muted); font-size: 0.9rem;">Items Subtotal:</span>
-              <span id="subtotalValSummary2" style="font-weight:700;">00.00 EGP</span>
+              <span style="color:var(--color-muted); font-size: 0.9rem;">المجموع الفرعي:</span>
+              <span id="subtotalValSummary2" style="font-weight:700;">00.00 ج.م</span>
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-              <span style="color:var(--color-muted); font-size: 0.9rem;">Shipping Fee:</span>
-              <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-success);">Select Governorate</span>
+              <span style="color:var(--color-muted); font-size: 0.9rem;">مصاريف الشحن:</span>
+              <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-success);">اختر المحافظة</span>
             </div>
 
             <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">Grand Total:</span>
-              <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue2">00 EGP</strong>
+              <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">الإجمالي الكلي:</span>
+              <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue2">00 ج.م</strong>
             </div>
 
             <div style="background:var(--color-surface-soft); font-size:0.8rem; padding:12px; border-radius:8px; margin-top:14px; border:1px solid var(--border-light); font-weight:700; color:var(--color-primary);">
-              <i class="fas fa-info-circle"></i> Shipped from Dandy packaging facility within 24 to 48 hours cleanly!
+              <i class="fas fa-info-circle"></i> يتم الشحن من منشأة داندي للتعبئة خلال 24 إلى 48 ساعة بشكل آمن!
             </div>
           </div>
 
@@ -658,62 +658,62 @@
       </div>
 
       <!-- ==================================== -->
-      <!-- STEP 3: ORDER FINAL REVIEW & CONFIRM -->
+      <!-- STEP 3: ORDER FINAL REVIEW (ARABIC) -->
       <!-- ==================================== -->
-      <div id="step-panel-3" class="checkout-step-panel">
+      <div id="step-panel-3" class="checkout-step-panel" dir="rtl">
         <div class="catalog-checkout-grid">
           
           <div class="panel-main-card">
-            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-clipboard-check"></i> Final Review of Your Order Details</h2>
+            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-clipboard-check"></i> المراجعة النهائية لتفاصيل طلبك</h2>
             
             <div class="final-review-section-header">
-              <i class="fas fa-map-marked-alt"></i> Delivery & Contact Details
+              <i class="fas fa-map-marked-alt"></i> تفاصيل التوصيل وجهة الاتصال
             </div>
             <div class="final-review-block">
-              <p>Recipient Name: <strong id="revCustName">...</strong></p>
-              <p>Contact Phone: <strong id="revCustPhone" style="direction:ltr; display:inline-block;">...</strong></p>
-              <p>Email Address: <span id="revCustEmail">...</span></p>
-              <p style="margin-top:10px; border-top:1px solid rgba(0,0,0,0.03); padding-top:10px;">City & Governorate: <strong id="revCustLocation">...</strong></p>
-              <p>Detailed Address: <strong id="revCustAddress">...</strong></p>
+              <p>اسم المستلم: <strong id="revCustName">...</strong></p>
+              <p>رقم التواصل: <strong id="revCustPhone" style="direction:ltr; display:inline-block;">...</strong></p>
+              <p>البريد الإلكتروني: <span id="revCustEmail">...</span></p>
+              <p style="margin-top:10px; border-top:1px solid rgba(0,0,0,0.03); padding-top:10px;">المدينة والمحافظة: <strong id="revCustLocation">...</strong></p>
+              <p>العنوان بالتفصيل: <strong id="revCustAddress">...</strong></p>
             </div>
 
             <div class="final-review-section-header">
-              <i class="fas fa-shopping-basket"></i> Selected Essentials in Your Shipment
+              <i class="fas fa-shopping-basket"></i> المنتجات المختارة في شحنتك
             </div>
             <div id="revProductsList" style="margin-bottom:30px;">
               <!-- render preview list -->
             </div>
 
             <div class="checkout-nav-row">
-              <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-left"></i> Edit Address Details</button>
-              <button class="btn-checkout-primary" style="background:var(--color-success); border-color:var(--color-success); box-shadow: 0 8px 24px rgba(60, 119, 90, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()"><i class="fas fa-check"></i> Submit & Place Order</button>
+              <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-right"></i> تعديل تفاصيل العنوان</button>
+              <button class="btn-checkout-primary" style="background:var(--color-success); border-color:var(--color-success); box-shadow: 0 8px 24px rgba(60, 119, 90, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()"><i class="fas fa-check"></i> تأكيد وإتمام الطلب</button>
             </div>
           </div>
 
           <div class="panel-side-summary">
-            <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;">Payment Details</h3>
+            <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;">تفاصيل الدفع</h3>
             
             <div style="background:rgba(60, 119, 90, 0.05); color:var(--color-success); padding:16px; border-radius:12px; font-weight:700; font-size:0.88rem; line-height:1.7; margin-bottom:20px; border:1px solid rgba(60, 119, 90, 0.1);">
-              <i class="fas fa-money-bill-wave"></i> Cash on Delivery (COD)
-              <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px;">You can inspect all items upon arrival before payment to ensure 100% beauty satisfaction.</p>
+              <i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام (COD)
+              <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px;">يمكنك فحص جميع المنتجات عند الاستلام قبل الدفع لضمان رضاك التام.</p>
             </div>
 
             <div style="margin-bottom:12px; line-height:1.5;">
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
-                <span style="color:var(--color-muted);">Items Subtotal:</span>
-                <span id="summSubtotal" style="font-weight:700;">00 EGP</span>
+                <span style="color:var(--color-muted);">المجموع الفرعي:</span>
+                <span id="summSubtotal" style="font-weight:700;">00 ج.م</span>
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
-                <span style="color:var(--color-muted);">Shipping Fee:</span>
-                <span id="summShipping" style="font-weight:700; color:var(--color-success);">00 EGP</span>
+                <span style="color:var(--color-muted);">مصاريف الشحن:</span>
+                <span id="summShipping" style="font-weight:700; color:var(--color-success);">00 ج.م</span>
               </div>
               <div style="border-top:1px dashed var(--border-light); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:var(--color-muted); font-size:0.85rem; font-weight:700;">Grand Total:</span>
-                <strong style="font-size: 1.6rem; color:var(--color-primary);" id="finalSummaryTotal">00 EGP</strong>
+                <span style="color:var(--color-muted); font-size:0.85rem; font-weight:700;">الإجمالي الكلي:</span>
+                <strong style="font-size: 1.6rem; color:var(--color-primary);" id="finalSummaryTotal">00 ج.م</strong>
               </div>
             </div>
             
-            <p style="font-size:0.8rem; color:var(--color-muted); margin-top:8px;" id="savingTextLoader"><i class="fas fa-info-circle"></i> Submitting registers your order securely and provides you with an instant tracking code.</p>
+            <p style="font-size:0.8rem; color:var(--color-muted); margin-top:8px;" id="savingTextLoader"><i class="fas fa-info-circle"></i> تأكيد الطلب يسجله بأمان ويوفر لك كود تتبع فوري.</p>
           </div>
 
         </div>
@@ -902,13 +902,13 @@
     
     if (selectedGov) {
       const fee = getShippingFeeForGov(selectedGov);
-      shippingCostSummary2.textContent = fee + " EGP";
+      shippingCostSummary2.textContent = fee + " ج.م";
       shippingCostSummary2.style.color = "var(--color-primary)";
-      grandTotalSummaryValue2.textContent = (subtotal + fee).toFixed(0) + " EGP";
+      grandTotalSummaryValue2.textContent = (subtotal + fee).toFixed(0) + " ج.م";
     } else {
-      shippingCostSummary2.textContent = "Select Governorate";
+      shippingCostSummary2.textContent = "اختر المحافظة";
       shippingCostSummary2.style.color = "var(--color-success)";
-      grandTotalSummaryValue2.textContent = subtotal.toFixed(0) + " EGP";
+      grandTotalSummaryValue2.textContent = subtotal.toFixed(0) + " ج.م";
     }
   }
 
@@ -963,9 +963,9 @@
 
     const sub = calculateCartSubtotal();
     subtotalValSummary.textContent = sub.toFixed(0) + ' EGP';
-    subtotalValSummary2.textContent = sub.toFixed(0) + ' EGP';
+    subtotalValSummary2.textContent = sub.toFixed(0) + ' ج.م';
     grandTotalSummaryValue1.textContent = sub.toFixed(0) + ' EGP';
-    grandTotalSummaryValue2.textContent = sub.toFixed(0) + ' EGP';
+    grandTotalSummaryValue2.textContent = sub.toFixed(0) + ' ج.م';
   }
 
   window.changeQty = function(index, delta) {
@@ -1016,23 +1016,27 @@
     const name = document.getElementById('f-name').value.trim();
     const phone = document.getElementById('f-phone').value.trim();
     const email = document.getElementById('f-email').value.trim();
-    const governorate = document.getElementById('f-gov').value;
+    
+    const govSelect = document.getElementById('f-gov');
+    const governorate = govSelect.value;
+    const govText = governorate ? govSelect.options[govSelect.selectedIndex].text : '';
+    
     const city = document.getElementById('f-city').value.trim();
     const address = document.getElementById('f-address').value.trim();
 
     // Verify Name
     if (!name || name.length < 5) {
-      alert('Please provide your full name (at least 2 words) to guarantee valid courier shipping.');
+      alert('يرجى إدخال الاسم بالكامل (كلمتين على الأقل) لضمان دقة الشحن.');
       return;
     }
     // Verify phone
     if (!/^01[0125][0-9]{8}$/.test(phone)) {
-      alert('Please write a valid Egyptian mobile number (11 digits, starting with 010, 011, 012, or 015)');
+      alert('يرجى كتابة رقم هاتف مصري صحيح (11 رقم، يبدأ بـ 010, 011, 012, أو 015)');
       return;
     }
     // Location options
     if (!governorate || !city || !address) {
-      alert('Please fill in all layout details, select governorate, city, and street address accurately.');
+      alert('يرجى ملء جميع التفاصيل، واختيار المحافظة، والمدينة، وعنوان الشارع بدقة.');
       return;
     }
 
@@ -1043,8 +1047,8 @@
     // Compile values into step 3 preview lists
     revCustName.textContent = name;
     revCustPhone.textContent = phone;
-    revCustEmail.textContent = email || 'N/A';
-    revCustLocation.textContent = city + ', ' + governorate + ' Governorate';
+    revCustEmail.textContent = email || 'لا يوجد';
+    revCustLocation.textContent = city + '، محافظة ' + govText;
     revCustAddress.textContent = address;
 
     // Draw preview list of products inside summary step 3
@@ -1054,20 +1058,20 @@
       const sub = priceVal * item.quantity;
       const divItem = document.createElement('div');
       divItem.style.display = 'flex';
-      divItem.style.justify = 'space-between';
+      divItem.style.justifyContent = 'space-between';
       divItem.style.padding = '10px 0';
       divItem.style.borderBottom = '1px solid rgba(0,0,0,0.03)';
       divItem.innerHTML = `
-        <span style="font-weight:700;"><i class="fas fa-feather-alt" style="color:var(--color-blush); font-size:0.8rem;"></i> ${item.name} <span style="color:var(--color-muted); font-size:0.8rem;">× ${item.quantity}</span></span>
-        <span style="font-weight:800; color:var(--color-primary);">${sub.toFixed(0)} EGP</span>
+        <span style="font-weight:700;"><i class="fas fa-feather-alt" style="color:var(--color-blush); font-size:0.8rem; margin-left:6px;"></i> ${item.name} <span style="color:var(--color-muted); font-size:0.8rem;">× ${item.quantity}</span></span>
+        <span style="font-weight:800; color:var(--color-primary);">${sub.toFixed(0)} ج.م</span>
       `;
       revProductsList.appendChild(divItem);
     });
 
     // Step 3 final billing summary indicators
-    summSubtotal.textContent = subtotal.toFixed(0) + " EGP";
-    summShipping.textContent = fee.toFixed(0) + " EGP";
-    finalSummaryTotal.textContent = orderTotal.toFixed(0) + " EGP";
+    summSubtotal.textContent = subtotal.toFixed(0) + " ج.م";
+    summShipping.textContent = fee.toFixed(0) + " ج.م";
+    finalSummaryTotal.textContent = orderTotal.toFixed(0) + " ج.م";
 
     goToStep(3);
   };
@@ -1078,8 +1082,8 @@
     const savingTextLoader = document.getElementById('savingTextLoader');
 
     finalBtn.disabled = true;
-    finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing your order...';
-    savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> Uploading invoice details and reserving your essential items...</span>';
+    finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ طلبك...';
+    savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع تفاصيل الفاتورة وحجز منتجاتك...</span>';
 
     const name = document.getElementById('f-name').value.trim();
     const phone = document.getElementById('f-phone').value.trim();
@@ -1129,10 +1133,10 @@
 
     } catch(err) {
       console.error(err);
-      alert('An error occurred while connecting to the database. Please try again.');
+      alert('حدث خطأ أثناء الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى.');
       finalBtn.disabled = false;
-      finalBtn.innerHTML = '<i class="fas fa-check"></i> Submit & Place Order';
-      savingTextLoader.innerHTML = '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> Error occurred. Please try again.';
+      finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإتمام الطلب';
+      savingTextLoader.innerHTML = '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> حدث خطأ. يرجى المحاولة مرة أخرى.';
     }
   };
 
