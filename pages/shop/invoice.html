@@ -307,7 +307,7 @@
         <li><a href="../legal/about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
-    <li><a href="../shop/track-order.html class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
+    <li><a href="../shop/track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
   
   <div class="nav-actions">
@@ -520,7 +520,30 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-    // Hamburger drawer menu toggle with animation and blur
+
+
+  function sendTelegramNotification(order, orderId) {
+    // التحقق لمنع تكرار إرسال نفس الطلب
+    if (localStorage.getItem('notified_' + orderId)) return;
+
+    // إرسال البيانات إلى السيرفر الخلفي في فيرسيل بدلاً من إرسالها لتليجرام مباشرة
+    fetch('/api/send-telegram', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order, orderId })
+    })
+    .then(res => {
+      if (res.ok) {
+        console.log("تم إرسال الإشعار الآمن عبر Vercel بنجاح");
+        localStorage.setItem('notified_' + orderId, 'true');
+      } else {
+        console.error("فشل السيرفر في إرسال الإشعار");
+      }
+    })
+    .catch(err => console.error("خطأ أثناء الاتصال بالسيرفر الخلفي:", err));
+  }
+
+  // Hamburger drawer menu toggle with animation and blur
   function toggleNav() {
     const menubar = document.getElementById("menubar");
     const overlay = document.getElementById("menu-overlay");
@@ -529,7 +552,6 @@
     menubar.classList.toggle("active");
     overlay.classList.toggle("active");
     
-    // إخفاء النافبار عند فتح القائمة
     if (menubar.classList.contains("active")) {
       navbar.style.transform = "translateY(-100%)";
     } else {
@@ -550,7 +572,6 @@
       nav.classList.remove('scrolled');
     }
 
-    // إخفاء الشريط عند النزول، وإظهاره عند الصعود (إلا إذا كانت قائمة الهاتف مفتوحة)
     if (!document.getElementById("menubar").classList.contains("active")) {
       if (scrollTop > lastScrollTop && scrollTop > 100) {
         nav.style.transform = `translateY(-100%)`;
@@ -718,7 +739,6 @@
         itemsBody.appendChild(tr);
       });
 
-      // Implement robust pricing breakdown calculation
       const subtotalVal = order.subtotal !== undefined ? parseFloat(order.subtotal) : calculatedSubtotal;
       const shippingVal = order.shippingFee !== undefined ? parseFloat(order.shippingFee) : 0;
       const totalVal = order.totalAmount !== undefined ? parseFloat(order.totalAmount) : (subtotalVal + shippingVal);
@@ -735,6 +755,12 @@
     }
 
     setStatusBadge(order.status || 'New');
+
+    // إرسال الإشعار فقط إذا كانت حالة الطلب جديدة
+    const currentStatus = order.status || 'New';
+    if ((currentStatus === 'جديد' || currentStatus === 'New' || currentStatus === 'Pending' || currentStatus === 'قيد الانتظار') && key) {
+      sendTelegramNotification(order, key);
+    }
   }
 
   function orderError() {
