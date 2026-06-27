@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dandy Store | Premium Skincare & Luxury Beauty Egypt</title>
 
-  <!-- Favicons and Manifest Setup -->
   <link rel="icon" type="image/x-icon" href="images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/images/fav-icons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/images/fav-icons/favicon-32x32.png">
@@ -15,19 +14,154 @@
   <link rel="manifest" href="assets/images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
-  <!-- Stylesheet -->
   <link href="assets/css/style.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --color-cream: #FAF9F6;
+      --color-navy: #1A2530;
+      --color-blush: #D98D99;
+      --color-blush-soft: #f4dce0;
+    }
+    
+    /* Hero Overlay Improvements */
+    .slider-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(26, 37, 48, 0.35); /* Navy Tint */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 2;
+    }
+    .hero-content {
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    .hero-content h1 {
+      color: var(--color-cream);
+      font-size: 3.5rem;
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .hero-content p {
+      color: var(--color-cream);
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      font-weight: 300;
+    }
+    .btn-primary {
+      background: var(--color-blush);
+      color: white;
+      padding: 15px 35px;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 4px;
+      transition: background 0.3s, transform 0.3s;
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn-primary:hover {
+      background: #c77b87;
+      transform: translateY(-2px);
+    }
 
-  <!-- Font Awesome -->
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Quick Add To Cart Button */
+    .quick-add-btn {
+      background: transparent;
+      border: 1px solid var(--color-blush);
+      color: var(--color-blush);
+      padding: 10px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 10px;
+      width: 100%;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-add-btn:hover {
+      background: var(--color-blush);
+      color: white;
+    }
+
+    /* Polaroid Reviews Section */
+    .polaroid-grid {
+      display: flex;
+      gap: 30px;
+      overflow-x: auto;
+      padding: 40px 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .polaroid {
+      background: var(--color-cream);
+      padding: 15px 15px 45px 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      border: 1px solid #eaeaea;
+      width: 260px;
+      text-align: center;
+      position: relative;
+      transform: rotate(-3deg);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      cursor: pointer;
+    }
+    .polaroid:nth-child(even) {
+      transform: rotate(3deg);
+    }
+    .polaroid:hover {
+      transform: scale(1.05) rotate(0);
+      z-index: 10;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    .polaroid img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      margin-bottom: 20px;
+      filter: contrast(1.15) brightness(1.05); /* Flash effect */
+    }
+    .polaroid-text {
+      color: var(--color-navy);
+      font-size: 0.95rem;
+      font-style: italic;
+      line-height: 1.4;
+    }
+    .polaroid-author {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: var(--color-blush);
+      font-size: 0.85rem;
+    }
+
+    /* Elegant Section Background */
+    .bestsellers-section {
+      background-color: var(--color-cream);
+      padding: 60px 0;
+      margin-top: 60px;
+    }
+  </style>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- SEO Meta Tags -->
   <meta name="robots" content="index, follow">
   <meta name="description" content="Discover Dandy Store for luxury organic skincare and cosmetics in Egypt. Premium hair care, skincare, and natural beauty essentials for your ultimate eternal glow.">
   <meta name="keywords" content="Dandy, Dandy Store, Dandy Beauty, Skincare Egypt, Organic Haircare, Natural Beauty, Cosmetics Cairo, Egyptian Beauty Brands, Organic Oil Egypt">
   <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/index.html">
 
-  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/index.html">
   <meta property="og:title" content="Dandy Store | Premium Skincare & Luxury Beauty Egypt">
@@ -36,52 +170,12 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/index.html">
   <meta name="twitter:title" content="Dandy Store | Premium Skincare & Luxury Beauty Egypt">
   <meta name="twitter:description" content="Discover Dandy Store for luxury organic skincare and cosmetics in Egypt. Premium hair care, skincare, and natural beauty essentials.">
   <meta name="twitter:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
 
-  <!-- Structured Data JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BeautySalon",
-    "name": "Dandy Beauty",
-    "alternateName": "Dandy Store",
-    "url": "https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app",
-    "logo": "https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/src/assets/images/dandy_brand_icon_1781354710264.jpg",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+201038941005",
-      "contactType": "customer service",
-      "areaServed": "EG",
-      "availableLanguage": ["English", "Arabic"]
-    },
-    "sameAs": [
-      "https://www.facebook.com/profile.php?id=61563039704396",
-      "https://www.instagram.com/dandy_skincare_cosmotics"
-    ]
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "url": "https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/all-products.html?search={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    }
-  }
-  </script>
-
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -147,104 +241,87 @@
   </div>
 </div>
 
-<!-- Hero Section -->
 <section class="hero-full">
   <div class="hero-slider" id="heroSlider">
-    <img src="https://i.postimg.cc/cLkXDKj0/Gemini-Generated-Image-qyba02qyba02qyba.png" alt="Dandy Luxury Creams" class="active" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=1600&q=80';">
-    <img src="https://i.postimg.cc/CxvSmNSn/Gemini-Generated-Image-mhc9k4mhc9k4mhc9.png" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1600&q=80';">
-    <img src="https://i.postimg.cc/mZ84bj1q/Gemini-Generated-Image-bnkrxjbnkrxjbnkr.png" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1600&q=80';">
-    <div class="slider-overlay"></div>
+    <img id="heroImg1" src="https://i.postimg.cc/cLkXDKj0/Gemini-Generated-Image-qyba02qyba02qyba.png" alt="Dandy Luxury Creams" class="active" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=1600&q=80';">
+    <img id="heroImg2" src="https://i.postimg.cc/CxvSmNSn/Gemini-Generated-Image-mhc9k4mhc9k4mhc9.png" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1600&q=80';">
+    <img id="heroImg3" src="https://i.postimg.cc/mZ84bj1q/Gemini-Generated-Image-bnkrxjbnkrxjbnkr.png" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1600&q=80';">
+    
+    <div class="slider-overlay">
+      <div class="hero-content">
+        <h1 id="heroTitle">Eternal Glow</h1>
+        <p id="heroSubtitle">Ultra-pure wellness care entirely free of toxic additives.</p>
+        <a href="pages/shop/all-products.html" class="btn-primary">Shop The Luxury Collection</a>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- Trust Value Bar -->
 <section class="container">
-  <div class="trust-bar">
-    <div class="trust-item">
-      <i class="fas fa-seedling"></i>
-      <span>100% Organic Ingredients</span>
-      <p>Ultra-pure wellness care entirely free of toxic additives</p>
-    </div>
-    <div class="trust-item">
-      <i class="fas fa-truck-moving"></i>
-      <span>Fast Egyptian Shipping</span>
-      <p>Committed door-to-door delivery across all governorates</p>
-    </div>
-    <div class="trust-item">
-      <i class="fas fa-award"></i>
-      <span>Quality & Safe Efficacy</span>
-      <p>Dermatologically approved formulas designed for fine skin</p>
-    </div>
+  <div class="trust-bar" id="trustBarContainer" style="margin-top: -30px; position: relative; z-index: 5; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px;">
+    <div class="trust-item"><i class="fas fa-seedling"></i><span>100% Organic Ingredients</span><p>Ultra-pure wellness care entirely free of toxic additives</p></div>
+    <div class="trust-item"><i class="fas fa-truck-moving"></i><span>Fast Egyptian Shipping</span><p>Committed door-to-door delivery across all governorates</p></div>
+    <div class="trust-item"><i class="fas fa-award"></i><span>Quality & Safe Efficacy</span><p>Dermatologically approved formulas designed for fine skin</p></div>
   </div>
 </section>
 
-
-
-<section class="shop-categories container">
+<section class="shop-categories container" style="margin-top: 60px;">
   <div class="section-header" style="margin-bottom: 40px;">
     <span class="sub">Discover by Category</span>
     <h2>Shop Our Collections</h2>
   </div>
-  <div class="cat-grid">
-    <a href="pages/shop/all-products.html?category=Skin Care" class="cat-card">
-      <img src="https://i.postimg.cc/nVTRswkS/sabeeonly-ai-generated-8966704-1920.jpg" alt="Skin Care">
-      <div class="cat-card-title">Skin Care</div>
-    </a>
-    <a href="pages/shop/all-products.html?category=Hair Care" class="cat-card">
-      <img src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=600&q=80" alt="Hair Care">
-      <div class="cat-card-title">Hair Care</div>
-    </a>
-    <a href="pages/shop/all-products.html?category=Body Care" class="cat-card">
-      <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80" alt="Body Care">
-      <div class="cat-card-title">Body Care</div>
-    </a>
-    <a href="pages/shop/all-products.html?category=Fragrances" class="cat-card">
-      <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=600&q=80" alt="Fragrances">
-      <div class="cat-card-title">Fragrances</div>
-    </a>
+  <div class="cat-grid" id="dynamic-categories">
   </div>
 </section>
 
-<!-- Products Block -->
 <section class="products">
   <div class="container">
     <div class="section-header">
       <span class="sub">Shop the Absolute Best</span>
       <h2>Our Premium New Arrivals</h2>
     </div>
-    
     <div class="product-grid" id="home-products">
-      <!-- Firebase dynamic cards will build elegantly here -->
     </div>
   </div>
-</section> <!-- Brand Benefits Block / Client Confidence FAQ -->
+</section> 
+
+<section class="products bestsellers-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="sub">Most Loved</span>
+      <h2>Our Bestsellers</h2>
+    </div>
+    <div class="product-grid" id="bestseller-products">
+    </div>
+  </div>
+</section>
+
+<section class="reviews-section container" style="margin-top: 80px; margin-bottom: 80px;">
+  <div class="section-header" style="margin-bottom: 40px;">
+    <span class="sub">Real Results</span>
+    <h2>What Our Clients Say</h2>
+  </div>
+  <div class="polaroid-grid" id="reviewsContainer">
+    <div class="polaroid"><img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=400&q=80" alt="Client Review"><p class="polaroid-text">"The organic serum completely transformed my skin texture in just two weeks. Absolute luxury!"</p><span class="polaroid-author">- Sarah M.</span></div>
+    <div class="polaroid"><img src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=400&q=80" alt="Client Review"><p class="polaroid-text">"I’ve finally found a reliable brand in Egypt that understands sensitive skin needs."</p><span class="polaroid-author">- Amina H.</span></div>
+    <div class="polaroid"><img src="https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=400&q=80" alt="Client Review"><p class="polaroid-text">"Incredible packaging and the results are even better. The night cream is magic."</p><span class="polaroid-author">- Dina K.</span></div>
+  </div>
+</section>
+
 <section class="categories-section">
   <div class="container">
     <div class="section-header" style="margin-bottom: 40px;">
       <span class="sub">Why Choose Us</span>
       <h2>Why Elegant Minds Prefer Dandy Skincare</h2>
     </div>
-    <div class="categories-grid">
-      <div class="product" style="padding: 24px; text-align: left;">
-        <i class="fas fa-hand-holding-heart" style="font-size: 2rem; color: var(--color-blush); margin-bottom: 16px;"></i>
-        <h3 style="font-size: 1.25rem; height: auto; margin-bottom: 10px;">Tailored Skin Treatments</h3>
-        <p style="color: var(--color-muted); font-size: 0.95rem;">Our formulas are designed and certified to perfectly balance deep nourishment, protecting your radiance from harsh climate conditions.</p>
-      </div>
-      <div class="product" style="padding: 24px; text-align: left;">
-        <i class="fas fa-thumbs-up" style="font-size: 2rem; color: var(--color-blush); margin-bottom: 16px;"></i>
-        <h3 style="font-size: 1.25rem; height: auto; margin-bottom: 10px;">Outstanding Reviews</h3>
-        <p style="color: var(--color-muted); font-size: 0.95rem;">Our collections are trusted by thousands of customers who notice real, visible cellular improvements in skin and hair structure.</p>
-      </div>
-      <div class="product" style="padding: 24px; text-align: left;">
-        <i class="fas fa-undo-alt" style="font-size: 2rem; color: var(--color-blush); margin-bottom: 16px;"></i>
-        <h3 style="font-size: 1.25rem; height: auto; margin-bottom: 10px;">Seamless Replacements</h3>
-        <p style="color: var(--color-muted); font-size: 0.95rem;">Your ultimate satisfaction is our priority. We offer a swift and delightful product replacement and support policy.</p>
-      </div>
+    <div class="categories-grid" id="benefitsContainer">
+      <div class="product" style="padding: 24px; text-align: left;"><i class="fas fa-hand-holding-heart" style="font-size: 2rem; color: var(--color-blush); margin-bottom: 16px;"></i><h3 style="font-size: 1.25rem; height: auto; margin-bottom: 10px;">Tailored Skin Treatments</h3><p style="color: var(--color-muted); font-size: 0.95rem;">Our formulas are designed and certified to perfectly balance deep nourishment, protecting your radiance from harsh climate conditions.</p></div>
+      <div class="product" style="padding: 24px; text-align: left;"><i class="fas fa-thumbs-up" style="font-size: 2rem; color: var(--color-blush); margin-bottom: 16px;"></i><h3 style="font-size: 1.25rem; height: auto; margin-bottom: 10px;">Outstanding Reviews</h3><p style="color: var(--color-muted); font-size: 0.95rem;">Our collections are trusted by thousands of customers who notice real, visible cellular improvements in skin and hair structure.</p></div>
+      <div class="product" style="padding: 24px; text-align: left;"><i class="fas fa-undo-alt" style="font-size: 2rem; color: var(--color-blush); margin-bottom: 16px;"></i><h3 style="font-size: 1.25rem; height: auto; margin-bottom: 10px;">Seamless Replacements</h3><p style="color: var(--color-muted); font-size: 0.95rem;">Your ultimate satisfaction is our priority. We offer a swift and delightful product replacement and support policy.</p></div>
     </div>
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -282,15 +359,11 @@
   </div>
 </footer>
 
-<!-- Cookie Popup -->
 <div id="popup" class="cookie-popup" aria-live="polite">
   <p>🍪 We use cookies to elevate and personalize your luxury browsing and shopping experience.</p>
   <button id="acceptCookies" onclick="acceptCookies()">I Accept, Thank You</button>
 </div>
 
-
-
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -308,6 +381,58 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
+  // Load Homepage Dynamic Content (Hero, Trust, Reviews, Benefits)
+  db.ref('homepage').once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      
+      // 1. Hero Content
+      if (data.hero) {
+        if(data.hero.img1) document.getElementById('heroImg1').src = data.hero.img1;
+        if(data.hero.img2) document.getElementById('heroImg2').src = data.hero.img2;
+        if(data.hero.img3) document.getElementById('heroImg3').src = data.hero.img3;
+        if(data.hero.title) document.getElementById('heroTitle').textContent = data.hero.title;
+        if(data.hero.subtitle) document.getElementById('heroSubtitle').textContent = data.hero.subtitle;
+      }
+
+      // 2. Trust Bar
+      if (data.trust) {
+        let trustHtml = '';
+        for (let i = 1; i <= 3; i++) {
+          if (data.trust[`item${i}`]) {
+            const item = data.trust[`item${i}`];
+            trustHtml += `<div class="trust-item"><i class="${item.icon}"></i><span>${item.title}</span><p>${item.desc}</p></div>`;
+          }
+        }
+        if (trustHtml) document.getElementById('trustBarContainer').innerHTML = trustHtml;
+      }
+
+      // 3. Reviews
+      if (data.reviews) {
+        let reviewsHtml = '';
+        for (let i = 1; i <= 3; i++) {
+          if (data.reviews[`item${i}`]) {
+            const item = data.reviews[`item${i}`];
+            reviewsHtml += `<div class="polaroid"><img src="${item.image}" alt="Client Review" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=400&q=80';"><p class="polaroid-text">"${item.text}"</p><span class="polaroid-author">- ${item.author}</span></div>`;
+          }
+        }
+        if (reviewsHtml) document.getElementById('reviewsContainer').innerHTML = reviewsHtml;
+      }
+
+      // 4. Benefits
+      if (data.benefits) {
+        let benefitsHtml = '';
+        for (let i = 1; i <= 3; i++) {
+          if (data.benefits[`item${i}`]) {
+            const item = data.benefits[`item${i}`];
+            benefitsHtml += `<div class="product" style="padding: 24px; text-align: left;"><i class="${item.icon}" style="font-size: 2rem; color: var(--color-blush); margin-bottom: 16px;"></i><h3 style="font-size: 1.25rem; height: auto; margin-bottom: 10px;">${item.title}</h3><p style="color: var(--color-muted); font-size: 0.95rem;">${item.desc}</p></div>`;
+          }
+        }
+        if (benefitsHtml) document.getElementById('benefitsContainer').innerHTML = benefitsHtml;
+      }
+    }
+  });
 
   // Visitor Log analytics
   const lastVisit = localStorage.getItem("last_visit_time");
@@ -338,33 +463,39 @@
   window.addEventListener('storage', (e) => {
     if (e.key === 'cart') updateCartCount();
   });
+
+  // Quick Add To Cart function
+  function quickAddToCart(id, name, price, image) {
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    let existing = cart.find(item => item.id === id);
+    if(existing) {
+        existing.quantity = (existing.quantity || 1) + 1;
+    } else {
+        cart.push({id, name, price, image, quantity: 1});
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    alert(name + " has been added to your cart!");
+  }
 </script>
 
 <script>
-  // Navigation hide / show on scroll with smooth transitions
+  // Navigation & UI Scripts
   let lastScrollTop = 0;
   const nav = document.getElementById('navbar');
 
   window.addEventListener('scroll', function () {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    
-    if (scrollTop > 10) {
-      nav.classList.add('scrolled');
-    } else {
-      nav.classList.remove('scrolled');
-    }
+    if (scrollTop > 10) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
 
-    // إخفاء الشريط عند النزول، وإظهاره عند الصعود (إلا إذا كانت قائمة الهاتف مفتوحة)
     if (!document.getElementById("menubar").classList.contains("active")) {
-      if (scrollTop > lastScrollTop && scrollTop > 100) {
-        nav.style.transform = `translateY(-100%)`;
-      } else {
-        nav.style.transform = `translateY(0)`;
-      }
+      if (scrollTop > lastScrollTop && scrollTop > 100) nav.style.transform = `translateY(-100%)`;
+      else nav.style.transform = `translateY(0)`;
     }
     lastScrollTop = scrollTop;
   });
-  // Hamburger drawer menu toggle with animation and blur
+
   function toggleNav() {
     const menubar = document.getElementById("menubar");
     const overlay = document.getElementById("menu-overlay");
@@ -373,31 +504,28 @@
     menubar.classList.toggle("active");
     overlay.classList.toggle("active");
     
-    // إخفاء النافبار عند فتح القائمة
-    if (menubar.classList.contains("active")) {
-      navbar.style.transform = "translateY(-100%)";
-    } else {
-      navbar.style.transform = "translateY(0)";
-    }
+    if (menubar.classList.contains("active")) navbar.style.transform = "translateY(-100%)";
+    else navbar.style.transform = "translateY(0)";
   }
-  // Background slider transitions under Hero
+
+  // Background slider transitions
   const sliderImages = Array.from(document.querySelectorAll('.hero-slider img'));
   let activeSlide = 0;
-
   setInterval(() => {
-    sliderImages[activeSlide].classList.remove('active');
-    activeSlide = (activeSlide + 1) % sliderImages.length;
-    sliderImages[activeSlide].classList.add('active');
+    if(sliderImages.length > 0) {
+        sliderImages[activeSlide].classList.remove('active');
+        activeSlide = (activeSlide + 1) % sliderImages.length;
+        sliderImages[activeSlide].classList.add('active');
+    }
   }, 4400);
 
-  // Cookie Popup Action
+  // Cookie Popup
   document.addEventListener("DOMContentLoaded", function() {
     const popup = document.getElementById("popup");
     if (!localStorage.getItem("cookiesAccepted_dandy")) {
       setTimeout(() => { popup.classList.add("show"); }, 2000);
     }
   });
-
   function acceptCookies() {
     localStorage.setItem("cookiesAccepted_dandy", "true");
     document.getElementById("popup").classList.remove("show");
@@ -405,54 +533,78 @@
 </script>
 
 <script>
-  // Load dynamic Home Premium products from Firebase Realtime Database
-  const homeContainer = document.getElementById("home-products");
-
-  db.ref("products").limitToFirst(4).once("value", snapshot => {
-    homeContainer.innerHTML = "";
-    if(!snapshot.exists()){
-      homeContainer.innerHTML = `<p style="text-align:center;grid-column:1/-1;color:var(--color-muted)">Our pure luxury collections will be stocked soon. Enjoy browsing all products page.</p>`;
-      return;
+  function createProductCard(child, data) {
+    const productEl = document.createElement("div");
+    productEl.className = "product";
+    
+    const priceRaw = parseFloat(data.price) || 0;
+    let originalHtml = "";
+    let discountBadgeHtml = "";
+    
+    if(data.onSale && data.discount) {
+      const discountPercent = parseFloat(data.discount) || 0;
+      const oldPrice = priceRaw / (1 - (discountPercent/100));
+      originalHtml = `<span class="price-old">${oldPrice.toFixed(0)} EGP</span>`;
+      discountBadgeHtml = `<span class="badge-discount">Sale ${data.discount}%</span>`;
     }
     
-    snapshot.forEach(child => {
-      const data = child.val();
-      const productEl = document.createElement("div");
-      productEl.className = "product";
-      
-      const priceRaw = parseFloat(data.price) || 0;
-      let originalHtml = "";
-      let discountBadgeHtml = "";
-      
-      if(data.onSale && data.discount) {
-        const discountPercent = parseFloat(data.discount) || 0;
-        const oldPrice = priceRaw / (1 - (discountPercent/100));
-        originalHtml = `<span class="price-old">${oldPrice.toFixed(0)} EGP</span>`;
-        discountBadgeHtml = `<span class="badge-discount">Sale ${data.discount}%</span>`;
-      }
+    const productLink = data.slug ? `pages/shop/product.html?slug=${data.slug}` : `pages/shop/product.html?id=${child.key}`;
 
-      productEl.innerHTML = `
-        <div class="product-image-container">
-          ${discountBadgeHtml}
-          <img src="${data.image}" alt="${data.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
-        </div>
-        <span class="category">${data.category || 'Luxury Care'}</span>
-        <h3>${data.name}</h3>
-        <div class="price-box">
-          <span class="price">${priceRaw} EGP</span>
-          ${originalHtml}
-        </div>
-        <a href="pages/shop/product.html?id=${child.key}" class="buy-btn">
-          <i class="fas fa-shopping-bag"></i> View Product Details
+    productEl.innerHTML = `
+      <div class="product-image-container">
+        ${discountBadgeHtml}
+        <img src="${data.image}" alt="${data.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+      </div>
+      <span class="category">${data.category || 'Luxury Care'}</span>
+      <h3>${data.name}</h3>
+      <div class="price-box">
+        <span class="price">${priceRaw} EGP</span>
+        ${originalHtml}
+      </div>
+      <a href="${productLink}" class="buy-btn">
+        <i class="fas fa-eye"></i> View Details
+      </a>
+      <button class="quick-add-btn" onclick="quickAddToCart('${child.key}', '${data.name.replace(/'/g, "\\'")}', ${priceRaw}, '${data.image}')">
+        <i class="fas fa-cart-plus"></i> Quick Add
+      </button>
+    `;
+    return productEl;
+  }
+
+  // Categories
+  const dynamicCategoriesContainer = document.getElementById("dynamic-categories");
+  db.ref("categories").once("value", snapshot => {
+    dynamicCategoriesContainer.innerHTML = "";
+    if(!snapshot.exists()){ return; }
+    snapshot.forEach(child => {
+      const cat = child.val();
+      dynamicCategoriesContainer.innerHTML += `
+        <a href="pages/shop/all-products.html?category=${cat.name}" class="cat-card">
+          <img src="${cat.image}" alt="${cat.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80';">
+          <div class="cat-card-title">${cat.name}</div>
         </a>
       `;
-      homeContainer.appendChild(productEl);
     });
+  });
 
+  // Home Products
+  const homeContainer = document.getElementById("home-products");
+  db.ref("products").limitToFirst(4).once("value", snapshot => {
+    homeContainer.innerHTML = "";
+    if(!snapshot.exists()){ return; }
+    snapshot.forEach(child => { homeContainer.appendChild(createProductCard(child, child.val())); });
     const moreBtn = document.createElement("div");
     moreBtn.className = "browse-more";
     moreBtn.innerHTML = `<a href="pages/shop/all-products.html">Browse our complete collection of natural beauty care ✨</a>`;
     homeContainer.appendChild(moreBtn);
+  });
+
+  // Bestsellers
+  const bestsellersContainer = document.getElementById("bestseller-products");
+  db.ref("products").limitToLast(4).once("value", snapshot => {
+    bestsellersContainer.innerHTML = "";
+    if(!snapshot.exists()){ return; }
+    snapshot.forEach(child => { bestsellersContainer.appendChild(createProductCard(child, child.val())); });
   });
 </script>
 
