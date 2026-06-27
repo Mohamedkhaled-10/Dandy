@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>إدارة الصفحة الرئيسية | Dandy Beauty Dashboard</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link href="../../assets/css/style.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    .dashboard-hero {
+      padding: 130px 0 40px;
+      text-align: right;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--color-primary);
+      font-size: 0.9rem;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="url"],
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-sm);
+      font-family: inherit;
+      background: var(--color-surface);
+      color: var(--color-primary);
+      transition: border-color 0.3s;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--color-blush);
+    }
+    .btn-save {
+      background: var(--color-blush);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+      font-weight: bold;
+      font-family: inherit;
+      transition: background 0.3s, transform 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-save:hover {
+      background: #c77b87;
+      transform: translateY(-2px);
+    }
+    .btn-save:disabled {
+      background: var(--color-muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 80px;
+    }
+    .bento-admin-card {
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      text-align: right;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+    .bento-admin-card::before {
+      content: "";
+      position: absolute;
+      top: 0; right: 0;
+      width: 4px; height: 100%;
+      background: var(--color-blush);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: var(--transition-smooth);
+    }
+    .bento-admin-card:hover { box-shadow: var(--shadow-lg); }
+    .bento-admin-card:hover::before { transform: scaleY(1); }
+    .bento-admin-icon {
+      font-size: 2rem;
+      color: var(--color-blush);
+      margin-bottom: 15px;
+    }
+    .bento-admin-card h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 10px;
+    }
+    .category-item {
+      display: flex; align-items: center; gap: 15px;
+      padding: 10px; background: var(--color-gold-cream);
+      border-radius: var(--border-radius-sm); margin-bottom: 10px;
+    }
+    .category-item img {
+      width: 50px; height: 50px; object-fit: cover; border-radius: 4px;
+    }
+    .category-item-info { flex: 1; }
+    .category-item-info h4 { margin: 0 0 5px 0; font-size: 0.95rem; color: var(--color-primary); }
+    .btn-delete {
+      color: var(--color-danger); background: none; border: none;
+      cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;
+    }
+    .btn-delete:hover { transform: scale(1.2); }
+    .toast {
+      position: fixed; bottom: 20px; left: 20px; background: #4CAF50; color: white;
+      padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(150%); transition: transform 0.3s ease-in-out;
+      z-index: 1000; font-weight: bold;
+    }
+    .toast.show { transform: translateY(0); }
+    .toast.error { background: #F44336; }
+    .item-block {
+      background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;
+      border: 1px dashed #ccc;
+    }
+    .item-block h4 { margin-top: 0; color: var(--color-primary); font-size: 1rem; margin-bottom: 15px;}
+  </style>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NH8NG47PDV');
+  </script>
+</head>
+<body>
+
+<nav id="navbar" dir="rtl">
+  <div class="logo" onclick="window.location.href='../../index.html'">
+    <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <h1>DANDY</h1>
+  </div>
+  <ul>
+    <li><a href="../../index.html">الرئيسية</a></li>
+    <li><a href="../shop/all-products.html">المنتجات</a></li>
+    <li><a href="../shop/special-offers.html">العروض</a></li>
+    <li><a href="../blog/blog.html">المقالات</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" class="active">لوحة التحكم ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="dashboard.html">الرئيسية اللوحة</a></li>
+        <li><a href="javascript:void(0)" id="signoutLink">تسجيل خروج</a></li>
+      </ul>
+    </li>
+  </ul>
+  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
+  <ul>
+    <li><a href="../../index.html">الرئيسية</a></li>
+    <li><a href="../shop/all-products.html">المنتجات</a></li>
+    <li><a href="../shop/special-offers.html">العروض</a></li>
+    <li><a href="../blog/blog.html">المقالات</a></li>
+    <li><a href="dashboard.html">اللوحة الرئيسية</a></li>
+  </ul>
+</div>
+
+<section class="dashboard-hero container">
+  <div class="section-header" style="text-align: right; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+      <span class="sub">إعدادات واجهة المستخدم</span>
+      <h2>إدارة الصفحة الرئيسية</h2>
+    </div>
+    <a href="dashboard.html" style="color: var(--color-muted); text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-right"></i> عودة للوحة الرئيسية</a>
+  </div>
+
+  <div class="dashboard-grid">
+    
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-images"></i></div>
+      <h3>البانر الرئيسي (Hero Slider)</h3>
+      <form id="heroForm">
+        <div class="form-group"><label>رابط الصورة 1 (النشطة)</label><input type="url" id="heroImg1" required></div>
+        <div class="form-group"><label>رابط الصورة 2</label><input type="url" id="heroImg2" required></div>
+        <div class="form-group"><label>رابط الصورة 3</label><input type="url" id="heroImg3" required></div>
+        <div class="form-group"><label>العنوان الرئيسي (Headline)</label><input type="text" id="heroTitle" required></div>
+        <div class="form-group"><label>النص الفرعي (Subtitle)</label><textarea id="heroSubtitle" required></textarea></div>
+        <button type="submit" class="btn-save" id="btnSaveHero"><i class="fas fa-save"></i> حفظ البانر</button>
+      </form>
+    </div>
+
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-shield-alt"></i></div>
+      <h3>شريط الثقة (Trust Bar)</h3>
+      <form id="trustForm">
+        <div class="item-block">
+          <h4>العنصر الأول</h4>
+          <div class="form-group"><label>كود الأيقونة (FontAwesome)</label><input type="text" id="trust1Icon" placeholder="fas fa-seedling"></div>
+          <div class="form-group"><label>العنوان</label><input type="text" id="trust1Title"></div>
+          <div class="form-group"><label>الوصف</label><input type="text" id="trust1Desc"></div>
+        </div>
+        <div class="item-block">
+          <h4>العنصر الثاني</h4>
+          <div class="form-group"><label>كود الأيقونة</label><input type="text" id="trust2Icon" placeholder="fas fa-truck-moving"></div>
+          <div class="form-group"><label>العنوان</label><input type="text" id="trust2Title"></div>
+          <div class="form-group"><label>الوصف</label><input type="text" id="trust2Desc"></div>
+        </div>
+        <div class="item-block">
+          <h4>العنصر الثالث</h4>
+          <div class="form-group"><label>كود الأيقونة</label><input type="text" id="trust3Icon" placeholder="fas fa-award"></div>
+          <div class="form-group"><label>العنوان</label><input type="text" id="trust3Title"></div>
+          <div class="form-group"><label>الوصف</label><input type="text" id="trust3Desc"></div>
+        </div>
+        <button type="submit" class="btn-save" id="btnSaveTrust"><i class="fas fa-save"></i> حفظ شريط الثقة</button>
+      </form>
+    </div>
+
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-layer-group"></i></div>
+      <h3>إدارة فئات الواجهة</h3>
+      <div id="categoriesList" style="margin-bottom: 25px; max-height: 250px; overflow-y: auto; padding-left: 10px;"></div>
+      <h4 style="margin-bottom: 15px; font-size: 1rem; color: var(--color-primary); border-top: 1px dashed var(--border-light); padding-top: 15px;">إضافة فئة جديدة</h4>
+      <form id="addCategoryForm">
+        <div class="form-group"><label>اسم الفئة الإنجليزي</label><input type="text" id="catName" required></div>
+        <div class="form-group"><label>رابط الصورة</label><input type="url" id="catImage" required></div>
+        <button type="submit" class="btn-save" style="background: var(--color-primary);"><i class="fas fa-plus"></i> إضافة فئة</button>
+      </form>
+    </div>
+
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-comments"></i></div>
+      <h3>آراء العملاء (Polaroid Style)</h3>
+      <form id="reviewsForm">
+        <div class="item-block">
+          <h4>الرأي الأول</h4>
+          <div class="form-group"><label>صورة العميل / النتيجة</label><input type="url" id="rev1Img"></div>
+          <div class="form-group"><label>نص التقييم</label><textarea id="rev1Text"></textarea></div>
+          <div class="form-group"><label>اسم العميل</label><input type="text" id="rev1Auth"></div>
+        </div>
+        <div class="item-block">
+          <h4>الرأي الثاني</h4>
+          <div class="form-group"><label>صورة العميل / النتيجة</label><input type="url" id="rev2Img"></div>
+          <div class="form-group"><label>نص التقييم</label><textarea id="rev2Text"></textarea></div>
+          <div class="form-group"><label>اسم العميل</label><input type="text" id="rev2Auth"></div>
+        </div>
+        <div class="item-block">
+          <h4>الرأي الثالث</h4>
+          <div class="form-group"><label>صورة العميل / النتيجة</label><input type="url" id="rev3Img"></div>
+          <div class="form-group"><label>نص التقييم</label><textarea id="rev3Text"></textarea></div>
+          <div class="form-group"><label>اسم العميل</label><input type="text" id="rev3Auth"></div>
+        </div>
+        <button type="submit" class="btn-save" id="btnSaveReviews"><i class="fas fa-save"></i> حفظ التقييمات</button>
+      </form>
+    </div>
+
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-leaf"></i></div>
+      <h3>مميزات العلامة التجارية</h3>
+      <form id="benefitsForm">
+        <div class="item-block">
+          <h4>الميزة الأولى</h4>
+          <div class="form-group"><label>كود الأيقونة</label><input type="text" id="ben1Icon" placeholder="fas fa-hand-holding-heart"></div>
+          <div class="form-group"><label>العنوان</label><input type="text" id="ben1Title"></div>
+          <div class="form-group"><label>الوصف</label><textarea id="ben1Desc"></textarea></div>
+        </div>
+        <div class="item-block">
+          <h4>الميزة الثانية</h4>
+          <div class="form-group"><label>كود الأيقونة</label><input type="text" id="ben2Icon" placeholder="fas fa-thumbs-up"></div>
+          <div class="form-group"><label>العنوان</label><input type="text" id="ben2Title"></div>
+          <div class="form-group"><label>الوصف</label><textarea id="ben2Desc"></textarea></div>
+        </div>
+        <div class="item-block">
+          <h4>الميزة الثالثة</h4>
+          <div class="form-group"><label>كود الأيقونة</label><input type="text" id="ben3Icon" placeholder="fas fa-undo-alt"></div>
+          <div class="form-group"><label>العنوان</label><input type="text" id="ben3Title"></div>
+          <div class="form-group"><label>الوصف</label><textarea id="ben3Desc"></textarea></div>
+        </div>
+        <button type="submit" class="btn-save" id="btnSaveBenefits"><i class="fas fa-save"></i> حفظ المميزات</button>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<div id="toast" class="toast">تم الحفظ بنجاح!</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+    authDomain: "dandy-562fc.firebaseapp.com",
+    databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "dandy-562fc",
+    storageBucket: "dandy-562fc.appspot.com",
+    messagingSenderId: "454972972842",
+    appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) window.location.href = '../auth/login.html';
+    else { loadHomepageData(); loadCategories(); }
+  });
+
+  document.getElementById('signoutLink').addEventListener('click', async () => {
+    await auth.signOut(); window.location.href = '../auth/login.html';
+  });
+
+  function toggleNav() {
+    document.getElementById("menubar").classList.toggle("active");
+    document.querySelector(".hamburger").classList.toggle("change");
+  }
+
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.background = isError ? '#F44336' : '#4CAF50';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // --- Load All Homepage Data ---
+  function loadHomepageData() {
+    db.ref('homepage').once('value').then((snapshot) => {
+      if (!snapshot.exists()) return;
+      const data = snapshot.val();
+      
+      // Hero
+      if(data.hero) {
+        document.getElementById('heroImg1').value = data.hero.img1 || '';
+        document.getElementById('heroImg2').value = data.hero.img2 || '';
+        document.getElementById('heroImg3').value = data.hero.img3 || '';
+        document.getElementById('heroTitle').value = data.hero.title || '';
+        document.getElementById('heroSubtitle').value = data.hero.subtitle || '';
+      }
+      
+      // Trust Bar
+      if(data.trust) {
+        document.getElementById('trust1Icon').value = data.trust.item1?.icon || '';
+        document.getElementById('trust1Title').value = data.trust.item1?.title || '';
+        document.getElementById('trust1Desc').value = data.trust.item1?.desc || '';
+        
+        document.getElementById('trust2Icon').value = data.trust.item2?.icon || '';
+        document.getElementById('trust2Title').value = data.trust.item2?.title || '';
+        document.getElementById('trust2Desc').value = data.trust.item2?.desc || '';
+        
+        document.getElementById('trust3Icon').value = data.trust.item3?.icon || '';
+        document.getElementById('trust3Title').value = data.trust.item3?.title || '';
+        document.getElementById('trust3Desc').value = data.trust.item3?.desc || '';
+      }
+
+      // Reviews
+      if(data.reviews) {
+        document.getElementById('rev1Img').value = data.reviews.item1?.image || '';
+        document.getElementById('rev1Text').value = data.reviews.item1?.text || '';
+        document.getElementById('rev1Auth').value = data.reviews.item1?.author || '';
+
+        document.getElementById('rev2Img').value = data.reviews.item2?.image || '';
+        document.getElementById('rev2Text').value = data.reviews.item2?.text || '';
+        document.getElementById('rev2Auth').value = data.reviews.item2?.author || '';
+
+        document.getElementById('rev3Img').value = data.reviews.item3?.image || '';
+        document.getElementById('rev3Text').value = data.reviews.item3?.text || '';
+        document.getElementById('rev3Auth').value = data.reviews.item3?.author || '';
+      }
+
+      // Benefits
+      if(data.benefits) {
+        document.getElementById('ben1Icon').value = data.benefits.item1?.icon || '';
+        document.getElementById('ben1Title').value = data.benefits.item1?.title || '';
+        document.getElementById('ben1Desc').value = data.benefits.item1?.desc || '';
+
+        document.getElementById('ben2Icon').value = data.benefits.item2?.icon || '';
+        document.getElementById('ben2Title').value = data.benefits.item2?.title || '';
+        document.getElementById('ben2Desc').value = data.benefits.item2?.desc || '';
+
+        document.getElementById('ben3Icon').value = data.benefits.item3?.icon || '';
+        document.getElementById('ben3Title').value = data.benefits.item3?.title || '';
+        document.getElementById('ben3Desc').value = data.benefits.item3?.desc || '';
+      }
+    });
+  }
+
+  // --- Save Functions ---
+  function saveSectionData(formId, btnId, dbNode, payloadBuilder) {
+    document.getElementById(formId).addEventListener('submit', function(e) {
+      e.preventDefault();
+      const btn = document.getElementById(btnId);
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+      db.ref(`homepage/${dbNode}`).set(payloadBuilder())
+        .then(() => showToast('تم التحديث بنجاح!'))
+        .catch((e) => { console.error(e); showToast('خطأ أثناء الحفظ', true); })
+        .finally(() => { btn.disabled = false; btn.innerHTML = originalText; });
+    });
+  }
+
+  // Save Hero
+  saveSectionData('heroForm', 'btnSaveHero', 'hero', () => ({
+    img1: document.getElementById('heroImg1').value,
+    img2: document.getElementById('heroImg2').value,
+    img3: document.getElementById('heroImg3').value,
+    title: document.getElementById('heroTitle').value,
+    subtitle: document.getElementById('heroSubtitle').value
+  }));
+
+  // Save Trust Bar
+  saveSectionData('trustForm', 'btnSaveTrust', 'trust', () => ({
+    item1: { icon: document.getElementById('trust1Icon').value, title: document.getElementById('trust1Title').value, desc: document.getElementById('trust1Desc').value },
+    item2: { icon: document.getElementById('trust2Icon').value, title: document.getElementById('trust2Title').value, desc: document.getElementById('trust2Desc').value },
+    item3: { icon: document.getElementById('trust3Icon').value, title: document.getElementById('trust3Title').value, desc: document.getElementById('trust3Desc').value }
+  }));
+
+  // Save Reviews
+  saveSectionData('reviewsForm', 'btnSaveReviews', 'reviews', () => ({
+    item1: { image: document.getElementById('rev1Img').value, text: document.getElementById('rev1Text').value, author: document.getElementById('rev1Auth').value },
+    item2: { image: document.getElementById('rev2Img').value, text: document.getElementById('rev2Text').value, author: document.getElementById('rev2Auth').value },
+    item3: { image: document.getElementById('rev3Img').value, text: document.getElementById('rev3Text').value, author: document.getElementById('rev3Auth').value }
+  }));
+
+  // Save Benefits
+  saveSectionData('benefitsForm', 'btnSaveBenefits', 'benefits', () => ({
+    item1: { icon: document.getElementById('ben1Icon').value, title: document.getElementById('ben1Title').value, desc: document.getElementById('ben1Desc').value },
+    item2: { icon: document.getElementById('ben2Icon').value, title: document.getElementById('ben2Title').value, desc: document.getElementById('ben2Desc').value },
+    item3: { icon: document.getElementById('ben3Icon').value, title: document.getElementById('ben3Title').value, desc: document.getElementById('ben3Desc').value }
+  }));
+
+  // --- Categories Logic ---
+  function loadCategories() {
+    db.ref('categories').on('value', (snapshot) => {
+        const listEl = document.getElementById('categoriesList');
+        listEl.innerHTML = '';
+        if (!snapshot.exists()) { listEl.innerHTML = '<p>لا توجد فئات.</p>'; return; }
+        snapshot.forEach((child) => {
+            const data = child.val();
+            listEl.innerHTML += `
+                <div class="category-item">
+                    <img src="${data.image}" onerror="this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=100&q=80'">
+                    <div class="category-item-info"><h4>${data.name}</h4></div>
+                    <button class="btn-delete" onclick="deleteCategory('${child.key}')"><i class="fas fa-trash-alt"></i></button>
+                </div>`;
+        });
+    });
+  }
+
+  document.getElementById('addCategoryForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('catName');
+      const imageInput = document.getElementById('catImage');
+      const btn = this.querySelector('button'); btn.disabled = true;
+      
+      db.ref('categories').push({ name: nameInput.value, image: imageInput.value, createdAt: new Date().toISOString() })
+        .then(() => { nameInput.value = ''; imageInput.value = ''; showToast('تمت الإضافة!'); })
+        .finally(() => btn.disabled = false);
+  });
+
+  window.deleteCategory = function(key) {
+      if(confirm('هل أنت متأكد من الحذف؟')) db.ref('categories/' + key).remove().then(() => showToast('تم الحذف'));
+  };
+</script>
+
+</body>
+</html>
