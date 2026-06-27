@@ -7,7 +7,6 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/invoice.html">
 
-  <!-- Favicons and Manifest Setup -->
   <link rel="icon" type="image/x-icon" href="../../assets/images/fav-icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/fav-icons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/fav-icons/favicon-32x32.png">
@@ -17,7 +16,6 @@
   <link rel="manifest" href="../../assets/images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
-  <!-- Stylesheet -->
   <link href="../../assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -112,7 +110,6 @@
     }
 
     .invoice-table th {
-      text-align: left;
       padding: 10px;
       background: var(--color-surface-soft);
       color: var(--color-muted);
@@ -130,7 +127,7 @@
       height: 48px;
       object-fit: cover;
       border-radius: 6px;
-      margin-right: 10px;
+      margin-left: 10px; /* modified for RTL */
       vertical-align: middle;
       border: 1px solid var(--border-light);
     }
@@ -219,7 +216,8 @@
     .timeline-progress-bar {
       position: absolute;
       top: 50%;
-      left: 10%;
+      right: 10%; /* changed to right for RTL progression */
+      left: auto;
       height: 4px;
       background: var(--color-success);
       z-index: 2;
@@ -275,7 +273,7 @@
     .price-crossed {
       text-decoration: line-through;
       color: var(--color-muted);
-      margin-left: 8px;
+      margin-right: 8px; /* modified for RTL */
     }
 
     /* Summary Breakdown Table Styles */
@@ -288,7 +286,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='../../index.html'">
     <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
@@ -347,115 +344,112 @@
 <section class="invoice-section">
   <div class="container" id="invoiceCard">
     
-    <div class="invoice-panel">
+    <div class="invoice-panel" dir="rtl">
       
       <div class="invoice-header">
         <div>
-          <h2 class="invoice-title">Order Handled Successfully!</h2>
-          <span class="invoice-code-tag" id="invoiceCode">...Loading</span>
-          <p style="color:var(--color-muted); font-size:0.85rem; margin-top:6px;">Registered Date: <span id="invoiceDate">...</span></p>
+          <h2 class="invoice-title">تمت معالجة الطلب بنجاح!</h2>
+          <span class="invoice-code-tag" id="invoiceCode">...جاري التحميل</span>
+          <p style="color:var(--color-muted); font-size:0.85rem; margin-top:6px;">تاريخ التسجيل: <span id="invoiceDate">...</span></p>
         </div>
-        <div style="text-align: right;">
+        <div style="text-align: left;">
           <button id="btnCopyCode" onclick="copyInvoiceToClipboard()" style="background:#fff; border:1px solid var(--border-light); border-radius:99px; padding:6px 14px; font-weight:700; cursor:pointer; font-size:0.85rem; color:var(--color-primary); display:inline-flex; align-items:center; gap:6px; transition:var(--transition-fast);">
-            <i class="fas fa-copy"></i> Copy Code
+            <i class="fas fa-copy"></i> نسخ الكود
           </button>
           <div style="margin-top: 10px;">
-            <span class="invoice-badge-status status-new" id="statusBadge">New</span>
+            <span class="invoice-badge-status status-new" id="statusBadge">قيد المراجعة</span>
           </div>
         </div>
       </div>
 
-      <!-- Cancelled Status Banner -->
       <div class="cancelled-banner" id="cancelledBanner" style="display:none; background:rgba(184, 67, 79, 0.08); border:1px solid var(--color-danger); color:var(--color-danger); padding:16px; border-radius:var(--border-radius-sm); text-align:center; font-weight:700; margin-bottom:20px;">
-        <i class="fas fa-ban"></i> This order has been marked as cancelled.
+        <i class="fas fa-ban"></i> تم إلغاء هذا الطلب.
       </div>
 
-      <!-- Progress tracker -->
       <div class="timeline-container" id="timelineContainer">
         <div class="timeline-steps">
           <div class="timeline-progress-bar" id="timelineProgressBar"></div>
           
           <div class="step-item" id="step-new">
             <div class="step-circle"><i class="fas fa-asterisk"></i></div>
-            <div class="step-label">Pending Approval</div>
+            <div class="step-label">قيد المراجعة</div>
           </div>
           
           <div class="step-item" id="step-processing">
             <div class="step-circle"><i class="fas fa-cog"></i></div>
-            <div class="step-label">Processing</div>
+            <div class="step-label">قيد التجهيز</div>
           </div>
           
           <div class="step-item" id="step-shipped">
             <div class="step-circle"><i class="fas fa-truck-moving"></i></div>
-            <div class="step-label">Shipped</div>
+            <div class="step-label">تم الشحن</div>
           </div>
           
           <div class="step-item" id="step-delivered">
             <div class="step-circle"><i class="fas fa-check-double"></i></div>
-            <div class="step-label">Delivered</div>
+            <div class="step-label">تم التوصيل</div>
           </div>
         </div>
       </div>
 
       <div class="invoice-coords">
         <div class="coord-card">
-          <h3>Customer Info</h3>
-          <p>Name: <strong id="custName">...</strong></p>
-          <p style="margin-top: 8px;">Phone: <span id="custPhone">...</span></p>
-          <p>Email: <span id="custEmail">...</span></p>
+          <h3>بيانات العميل</h3>
+          <p>الاسم: <strong id="custName">...</strong></p>
+          <p style="margin-top: 8px;">رقم الهاتف: <span id="custPhone">...</span></p>
+          <p>البريد الإلكتروني: <span id="custEmail">...</span></p>
         </div>
         <div class="coord-card">
-          <h3>Delivery Address</h3>
-          <p>Governorate: <strong id="custGov">...</strong></p>
-          <p style="margin-top: 8px;">City/Zone: <span id="custCity">...</span></p>
-          <p>Street Details: <span id="custAddress">...</span></p>
+          <h3>عنوان التوصيل</h3>
+          <p>المحافظة: <strong id="custGov">...</strong></p>
+          <p style="margin-top: 8px;">المدينة/المنطقة: <span id="custCity">...</span></p>
+          <p>تفاصيل الشارع: <span id="custAddress">...</span></p>
         </div>
       </div>
 
-      <!-- Details product lines -->
       <table class="invoice-table">
         <thead>
           <tr>
-            <th>Selected Item & Quantity</th>
-            <th style="text-align: right; width: 150px;">Total Price</th>
+            <th style="text-align: right;">المنتج والكمية</th>
+            <th style="text-align: left; width: 150px;">السعر الإجمالي</th>
           </tr>
         </thead>
         <tbody id="itemsBody">
           <tr>
-            <td colspan="2" style="text-align: center; color: var(--color-muted); padding: 24px;">Loading order lines...</td>
+            <td colspan="2" style="text-align: center; color: var(--color-muted); padding: 24px;">جاري تحميل المنتجات...</td>
           </tr>
         </tbody>
         <tfoot>
           <tr>
-            <td style="text-align: right; font-weight: 700; color: var(--color-muted);">Items Subtotal:</td>
-            <td id="tableSubtotal" style="text-align: right; font-weight: 700;">...</td>
+            <td style="text-align: left; font-weight: 700; color: var(--color-muted);">المجموع الفرعي:</td>
+            <td id="tableSubtotal" style="text-align: left; font-weight: 700;">...</td>
           </tr>
           <tr>
-            <td style="text-align: right; font-weight: 700; color: var(--color-muted);">Shipping Fee:</td>
-            <td id="tableShipping" style="text-align: right; font-weight: 700; color: var(--color-success);">...</td>
+            <td style="text-align: left; font-weight: 700; color: var(--color-muted);">مصاريف الشحن:</td>
+            <td id="tableShipping" style="text-align: left; font-weight: 700; color: var(--color-success);">...</td>
           </tr>
           <tr>
-            <td style="text-align: right; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">Grand Total:</td>
-            <td id="tableGrandTotal" style="text-align: right; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">...</td>
+            <td style="text-align: left; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">الإجمالي الكلي:</td>
+            <td id="tableGrandTotal" style="text-align: left; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">...</td>
           </tr>
         </tfoot>
       </table>
 
       <div class="bill-summary">
         <div>
-          <span style="font-size: 0.9rem; color: var(--color-muted); font-weight: 700;">Payment Protocol</span>
-          <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-success);"><i class="fas fa-money-bill-wave"></i> Cash on Delivery (COD)</div>
+          <span style="font-size: 0.9rem; color: var(--color-muted); font-weight: 700;">طريقة الدفع</span>
+          <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-success);"><i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام (COD)</div>
         </div>
         <div class="invoice-action-pills">
-          <button class="i-btn i-btn-print" id="print-btn"><i class="fas fa-print"></i> Print Invoice / PDF</button>
-          <button class="i-btn i-btn-wp" id="share-whatsapp"><i class="fab fa-whatsapp"></i> Track with WhatsApp</button>
+          <button class="i-btn i-btn-print" id="print-btn"><i class="fas fa-print"></i> طباعة الفاتورة / PDF</button>
+          <button class="i-btn i-btn-wp" id="share-whatsapp"><i class="fab fa-whatsapp"></i> تتبع عبر واتساب</button>
         </div>
       </div>
 
       <div style="margin-top: 40px; border-top: 1px dashed var(--border-light); padding-top: 20px;">
         <p style="color: var(--color-muted); font-size: 0.9rem; line-height: 1.8;">
-          <strong style="color: var(--color-primary);">Ongoing Tracking:</strong>
-          You will receive immediate visual status milestones on this screen as our logistics team packs and ships your order securely. We got you covered!
+          <strong style="color: var(--color-primary);">تتبع مستمر:</strong>
+          ستتلقى تحديثات مرئية فورية لحالة الطلب على هذه الشاشة بينما يقوم فريقنا بتجهيز وشحن طلبك بأمان.
         </p>
       </div>
 
@@ -463,7 +457,6 @@
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -501,7 +494,6 @@
   </div>
 </footer>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -520,13 +512,9 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-
-
   function sendTelegramNotification(order, orderId) {
-    // التحقق لمنع تكرار إرسال نفس الطلب
     if (localStorage.getItem('notified_' + orderId)) return;
 
-    // إرسال البيانات إلى السيرفر الخلفي في فيرسيل بدلاً من إرسالها لتليجرام مباشرة
     fetch('/api/send-telegram', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -543,7 +531,6 @@
     .catch(err => console.error("خطأ أثناء الاتصال بالسيرفر الخلفي:", err));
   }
 
-  // Hamburger drawer menu toggle with animation and blur
   function toggleNav() {
     const menubar = document.getElementById("menubar");
     const overlay = document.getElementById("menu-overlay");
@@ -559,7 +546,6 @@
     }
   }
 
-  // Navigation hide / show on scroll with smooth transitions
   let lastScrollTop = 0;
   const nav = document.getElementById('navbar');
 
@@ -607,39 +593,35 @@
   function setStatusBadge(status){
     const s = status || 'New';
     
-    // Normalize string representation for CSS mapping
-    let label = 'New';
+    let label = 'قيد المراجعة';
     let cssClass = 'status-new';
     
     if (s === 'جديد' || s === 'قيد الانتظار' || s === 'New' || s === 'Pending') {
-      label = 'Pending Approval';
+      label = 'قيد المراجعة';
       cssClass = 'status-new';
     } else if (s === 'تم التواصل' || s === 'قيد التجهيز' || s === 'قيد التحضير' || s === 'قيد المعالجة' || s === 'Processing') {
-      label = 'Processing';
+      label = 'قيد التجهيز';
       cssClass = 'status-contact';
     } else if (s === 'تم الشحن' || s === 'جاري الشحن' || s === 'جاري التوصيل' || s === 'شحن' || s === 'Shipped') {
-      label = 'Shipped';
+      label = 'تم الشحن';
       cssClass = 'status-contact';
     } else if (s === 'مكتمل' || s === 'تم التوصيل' || s === 'واصل' || s === 'Delivered') {
-      label = 'Delivered';
+      label = 'تم التوصيل';
       cssClass = 'status-done';
     } else if (s === 'ملغي' || s === 'Cancelled') {
-      label = 'Cancelled';
+      label = 'تم الإلغاء';
       cssClass = 'status-done';
     }
 
     statusBadge.textContent = label;
     statusBadge.className = 'invoice-badge-status ' + cssClass;
     
-    // Also draw the visual timeline status smoothly
     setTimelineStatus(s);
   }
 
-  // Set the visual timeline steps explicitly based on status normalized match
   function setTimelineStatus(status) {
     const s = status || 'New';
     
-    // Reset steps
     document.getElementById('step-new').className = 'step-item';
     document.getElementById('step-processing').className = 'step-item';
     document.getElementById('step-shipped').className = 'step-item';
@@ -687,25 +669,24 @@
 
   window.copyInvoiceToClipboard = function() {
     const code = invoiceCodeEl.textContent;
-    if (code && code !== '...Loading') {
+    if (code && code !== '...جاري التحميل' && code !== '...Loading') {
       navigator.clipboard.writeText(code).then(() => {
         const btn = document.getElementById('btnCopyCode');
-        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.innerHTML = '<i class="fas fa-check"></i> تم النسخ!';
         setTimeout(() => {
-          btn.innerHTML = '<i class="fas fa-copy"></i> Copy Code';
+          btn.innerHTML = '<i class="fas fa-copy"></i> نسخ الكود';
         }, 2000);
       });
     }
   };
 
-  // Bind order datasets dynamically
   function drawOrder(order, key) {
     invoiceCodeEl.textContent = order.invoiceCode || key || '-';
     invoiceDateEl.textContent = order.timestamp ? new Date(order.timestamp).toLocaleString('en-US') : new Date().toLocaleString('en-US');
 
     custName.textContent = order.name || '-';
     custPhone.textContent = order.phone || '-';
-    custEmail.textContent = order.email || 'N/A';
+    custEmail.textContent = order.email || 'غير متوفر';
     custAddress.textContent = order.address || '-';
     custGov.textContent = order.governorate || '-';
     custCity.textContent = order.city || '-';
@@ -719,11 +700,11 @@
         const quantity = parseInt(p.quantity) || 1;
         let finalPrice = price;
 
-        let displayPriceText = price.toFixed(0) + " EGP";
+        let displayPriceText = price.toFixed(0) + " ج.م";
         if (p.discount) {
           const discountAmount = (price * parseFloat(p.discount)) / 100;
           finalPrice = price - discountAmount;
-          displayPriceText = `${finalPrice.toFixed(0)} EGP <span class="price-crossed">${price.toFixed(0)}</span>`;
+          displayPriceText = `${finalPrice.toFixed(0)} ج.م <span class="price-crossed">${price.toFixed(0)}</span>`;
         }
 
         calculatedSubtotal += finalPrice * quantity;
@@ -734,7 +715,7 @@
             <img src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
             <strong>${p.name}</strong> × ${quantity}
           </td>
-          <td style="text-align: right; font-weight:800; color:var(--color-blush);">${displayPriceText}</td>
+          <td style="text-align: left; font-weight:800; color:var(--color-blush);">${displayPriceText}</td>
         `;
         itemsBody.appendChild(tr);
       });
@@ -743,20 +724,19 @@
       const shippingVal = order.shippingFee !== undefined ? parseFloat(order.shippingFee) : 0;
       const totalVal = order.totalAmount !== undefined ? parseFloat(order.totalAmount) : (subtotalVal + shippingVal);
 
-      tableSubtotal.textContent = subtotalVal.toFixed(0) + " EGP";
-      tableShipping.textContent = shippingVal.toFixed(0) + " EGP";
-      tableGrandTotal.textContent = totalVal.toFixed(0) + " EGP";
+      tableSubtotal.textContent = subtotalVal.toFixed(0) + " ج.م";
+      tableShipping.textContent = shippingVal.toFixed(0) + " ج.م";
+      tableGrandTotal.textContent = totalVal.toFixed(0) + " ج.م";
 
     } else {
-      itemsBody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--color-muted);padding:20px;">Shopping basket is empty.</td></tr>';
-      tableSubtotal.textContent = '0 EGP';
-      tableShipping.textContent = '0 EGP';
-      tableGrandTotal.textContent = '0 EGP';
+      itemsBody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--color-muted);padding:20px;">سلة المشتريات فارغة.</td></tr>';
+      tableSubtotal.textContent = '0 ج.م';
+      tableShipping.textContent = '0 ج.م';
+      tableGrandTotal.textContent = '0 ج.م';
     }
 
     setStatusBadge(order.status || 'New');
 
-    // إرسال الإشعار فقط إذا كانت حالة الطلب جديدة
     const currentStatus = order.status || 'New';
     if ((currentStatus === 'جديد' || currentStatus === 'New' || currentStatus === 'Pending' || currentStatus === 'قيد الانتظار') && key) {
       sendTelegramNotification(order, key);
@@ -765,16 +745,15 @@
 
   function orderError() {
     document.getElementById('invoiceCard').innerHTML = `
-      <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm); max-width:600px; margin:0 auto;">
+      <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm); max-width:600px; margin:0 auto;" dir="rtl">
         <i class="fas fa-exclamation-circle" style="font-size:3.5rem; color:var(--color-danger); margin-bottom:16px;"></i>
-        <h2 style="font-family:'Space Grotesk', sans-serif;">Invoice Not Found</h2>
-        <p style="color:var(--color-muted); margin-top:8px;">Please verify your invoice code or contact customer service.</p>
-        <a href="../../index.html" class="btn-checkout-primary" style="margin-top:20px; border-radius:99px; padding:12px 24px; text-decoration:none;">Back to Home</a>
+        <h2 style="font-family:'Space Grotesk', sans-serif;">الفاتورة غير موجودة</h2>
+        <p style="color:var(--color-muted); margin-top:8px;">يرجى التحقق من كود الفاتورة أو التواصل مع خدمة العملاء.</p>
+        <a href="../../index.html" class="btn-checkout-primary" style="margin-top:20px; border-radius:99px; padding:12px 24px; text-decoration:none;">العودة للرئيسية</a>
       </div>
     `;
   }
 
-  // Observer queries triggered continuously
   if (idParam) {
     const ref = db.ref('orders/' + idParam);
     ref.on('value', snap => {
@@ -795,12 +774,10 @@
     orderError();
   }
 
-  // Print PDF Trigger
   document.getElementById('print-btn').addEventListener('click', () => window.print());
 
-  // WhatsApp share
   document.getElementById('share-whatsapp').addEventListener('click', () => {
-    const wpInquiry = `Hello, I'd like to check the shipping status of my Dandy order:\n- Invoice Code: ${invoiceCodeEl.textContent}\n- Customer: ${custName.textContent}\n- Current Status: ${statusBadge.textContent}\n- Tracking Link: ${window.location.href}`;
+    const wpInquiry = `مرحباً، أود الاستعلام عن حالة شحن طلب Dandy الخاص بي:\n- كود الفاتورة: ${invoiceCodeEl.textContent}\n- العميل: ${custName.textContent}\n- الحالة الحالية: ${statusBadge.textContent}\n- رابط التتبع: ${window.location.href}`;
     window.open(`https://wa.me/201038941005?text=${encodeURIComponent(wpInquiry)}`, '_blank');
   });
 </script>
