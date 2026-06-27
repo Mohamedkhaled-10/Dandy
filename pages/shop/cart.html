@@ -1120,6 +1120,19 @@
       await orderRef.set(orderData);
       const generatedKey = orderRef.key;
 
+      // 🔥 أرسل البيانات فوراً وفي نفس الثانية إلى Make.com
+try {
+  await fetch('https://hook.eu1.make.com/vx6ie8k20cw0difkin21bx4dvkw7rful', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(orderData)
+  });
+} catch(webhookError) {
+  console.error('Webhook sending failed:', webhookError);
+}
+
+      
+
       // Wipe local state bucket
       localStorage.removeItem('cart');
 
