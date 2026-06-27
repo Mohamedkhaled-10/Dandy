@@ -6,8 +6,7 @@
   <title>مدير مخزن ومستحضرات الشحن | لوحة داندي</title>
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Stylesheet -->
-  <link href="style.css" rel="stylesheet" />
+  <link href="../../assets/css/style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
@@ -79,6 +78,7 @@
 
     .chk-row {
       display: flex;
+      flex-wrap: wrap;
       gap: 20px;
       margin: 16px 0;
     }
@@ -177,6 +177,8 @@
     }
     .admin-badge-best { background: var(--color-blush); }
     .admin-badge-sale { background: var(--color-gold); }
+    .admin-badge-hidden { background: #6c757d; }
+    .admin-badge-soldout { background: #343a40; }
 
     .admin-p-content {
       padding: 14px;
@@ -266,21 +268,20 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="rtl">
-  <div class="logo" onclick="window.location.href='../index.html'">
-    <img src="../images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+  <div class="logo" onclick="window.location.href='../../index.html'">
+    <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="../index.html">الرئيسية</a></li>
-    <li><a href="../all-products.html">المنتجات</a></li>
-    <li><a href="../special-offers.html">العروض</a></li>
-    <li><a href="../blog.html">المقالات</a></li>
+    <li><a href="../../index.html">الرئيسية</a></li>
+    <li><a href="../shop/all-products.html">المنتجات</a></li>
+    <li><a href="../shop/special-offers.html">العروض</a></li>
+    <li><a href="../blog/blog.html">المقالات</a></li>
     <li class="dropdown">
       <a href="javascript:void(0)" class="active">لوحة التحكم ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="index.html">اللوحة الرئيسية</a></li>
+        <li><a href="dashboard.html">اللوحة الرئيسية</a></li>
         <li><a href="javascript:void(0)" id="signoutLink">تسجيل خروج</a></li>
       </ul>
     </li>
@@ -292,27 +293,24 @@
   </button>
 </nav>
 
-<!-- Mobile Menu -->
 <div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
-    <li><a href="../index.html">الرئيسية</a></li>
-    <li><a href="../all-products.html">المنتجات</a></li>
-    <li><a href="../special-offers.html">العروض</a></li>
-    <li><a href="../blog.html">المقالات</a></li>
-    <li><a href="index.html">اللوحة الرئيسية</a></li>
+    <li><a href="../../index.html">الرئيسية</a></li>
+    <li><a href="../shop/all-products.html">المنتجات</a></li>
+    <li><a href="../shop/special-offers.html">العروض</a></li>
+    <li><a href="../blog/blog.html">المقالات</a></li>
+    <li><a href="dashboard.html">اللوحة الرئيسية</a></li>
   </ul>
   <div class="side-bottom-links">
-    <a href="../privacy-policy.html">سياسة الخصوصية</a>
+    <a href="../legal/privacy-policy.html">سياسة الخصوصية</a>
     <span>|</span>
-    <a href="../terms.html">الشروط والأحكام</a>
+    <a href="../legal/terms.html">الشروط والأحكام</a>
   </div>
 </div>
 
-<!-- Main Workspace -->
 <section class="manager-section container">
   <div class="manager-layout">
     
-    <!-- Right Form -->
     <div class="manager-card">
       <h3><i class="fas fa-box-open"></i> إضافة / تعديل مستحضر تجميلي</h3>
       
@@ -326,8 +324,8 @@
 
         <div class="form-row">
           <div class="form-group-admin">
-            <label for="p-price">السعر الأساسي (جنيه)</label>
-            <input type="number" id="p-price" placeholder="مثال: 320" required>
+            <label for="p-price">السعر النهائي (جنيه)</label>
+            <input type="number" id="p-price" placeholder="السعر الذي يباع به المنتج الآن" required>
           </div>
           <div class="form-group-admin">
             <label for="p-discount">نسبة الخصم المئوية (%)</label>
@@ -371,6 +369,12 @@
           <label class="chk-label">
             <input type="checkbox" id="p-onSale"> خاضع لـ "العروض الخاصة"
           </label>
+          <label class="chk-label" style="color:var(--color-danger);">
+            <input type="checkbox" id="p-isSoldOut"> نفذت الكمية (Sold Out)
+          </label>
+          <label class="chk-label" style="color:#6c757d;">
+            <input type="checkbox" id="p-isHidden"> إخفاء المنتج من المتجر
+          </label>
         </div>
 
         <div style="display: flex; gap: 10px;">
@@ -380,7 +384,6 @@
       </form>
     </div>
 
-    <!-- Left list Grid Cards -->
     <div class="manager-card">
       <div class="admin-products-header">
         <h3><i class="fas fa-boxes"></i> المنتجات المنشورة على المتجر</h3>
@@ -401,7 +404,6 @@
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -411,19 +413,19 @@
     <div class="footer-col">
       <h4>روابط مفيدة</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="../index.html">الرئيسية</a></li>
-        <li><a href="../all-products.html">كل المنتجات</a></li>
-        <li><a href="../special-offers.html">العروض الخاصة</a></li>
-        <li><a href="../blog.html">المدونة والمقالات</a></li>
+        <li><a href="../../index.html">الرئيسية</a></li>
+        <li><a href="../shop/all-products.html">كل المنتجات</a></li>
+        <li><a href="../shop/special-offers.html">العروض الخاصة</a></li>
+        <li><a href="../blog/blog.html">المدونة والمقالات</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>المساعدة والدعم</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="../about-us.html">من نحن</a></li>
-        <li><a href="../client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
-        <li><a href="../privacy-policy.html">سياسة الخصوصية والأمان</a></li>
-        <li><a href="../terms.html">الشروط والأحكام العامة</a></li>
+        <li><a href="../legal/about-us.html">من نحن</a></li>
+        <li><a href="../support/client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
+        <li><a href="../legal/privacy-policy.html">سياسة الخصوصية والأمان</a></li>
+        <li><a href="../legal/terms.html">الشروط والأحكام العامة</a></li>
       </ul>
     </div>
   </div>
@@ -432,13 +434,12 @@
     <div class="social-icons">
       <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://wa.me/201038941005" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
     <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
   </div>
 </footer>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -472,7 +473,7 @@
 
   auth.onAuthStateChanged(user => {
     if (!user) {
-      window.location.href = 'login.html';
+      window.location.href = '../auth/login.html';
     } else {
       loadProductsAdmin();
     }
@@ -482,7 +483,7 @@
   async function performLogOut(){
     try {
       await auth.signOut();
-      window.location.href = 'login.html';
+      window.location.href = '../auth/login.html';
     } catch(err) {
       console.error(err);
     }
@@ -559,6 +560,8 @@
         let badgesHtml = '';
         if(d.bestSeller) badgesHtml += '<span class="admin-badge admin-badge-best">الأكثر مبيعاً</span>';
         if(d.onSale) badgesHtml += '<span class="admin-badge admin-badge-sale">خصم خاص</span>';
+        if(d.isHidden) badgesHtml += '<span class="admin-badge admin-badge-hidden">مخفي</span>';
+        if(d.isSoldOut) badgesHtml += '<span class="admin-badge admin-badge-soldout">نفذت الكمية</span>';
 
         const card = document.createElement('div');
         card.className = 'admin-p-card';
@@ -573,7 +576,7 @@
             <div class="admin-p-price">${d.price || 0} جنيه</div>
             <div class="admin-p-actions">
               <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${child.key}')"><i class="fas fa-edit"></i> تعديل</button>
-              <a href="../product.html?id=${child.key}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-eye"></i> معاينة</a>
+              <a href="../shop/product.html?id=${child.key}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-eye"></i> معاينة</a>
               <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${child.key}')"><i class="fas fa-trash"></i></button>
             </div>
           </div>
@@ -603,6 +606,9 @@
     
     const bestSeller = document.getElementById('p-bestSeller').checked;
     const onSale = document.getElementById('p-onSale').checked;
+    const isSoldOut = document.getElementById('p-isSoldOut').checked;
+    const isHidden = document.getElementById('p-isHidden').checked;
+
     const editId = editIdEl.value;
 
     const payload = {
@@ -614,7 +620,9 @@
       image,
       description,
       bestSeller,
-      onSale
+      onSale,
+      isSoldOut,
+      isHidden
     };
 
     try {
@@ -647,6 +655,8 @@
 
     document.getElementById('p-bestSeller').checked = !!p.bestSeller;
     document.getElementById('p-onSale').checked = !!p.onSale;
+    document.getElementById('p-isSoldOut').checked = !!p.isSoldOut;
+    document.getElementById('p-isHidden').checked = !!p.isHidden;
 
     editIdEl.value = key;
     saveBtn.innerHTML = '<i class="fas fa-check"></i> حفظ تعديلات المستحضر';

@@ -7,16 +7,16 @@
 
   <!-- Favicons and Manifest Setup -->
   <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
-  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="assets/images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
   <!-- Stylesheet -->
-  <link href="style.css" rel="stylesheet">
+  <link href="assets/css/style.css" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -54,7 +54,7 @@
     "logo": "https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/src/assets/images/dandy_brand_icon_1781354710264.jpg",
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+201067228170",
+      "telephone": "+201038941005",
       "contactType": "customer service",
       "areaServed": "EG",
       "availableLanguage": ["English", "Arabic"]
@@ -94,27 +94,27 @@
 
 <nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='index.html'">
-    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <img src="assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html" class="active">Home</a></li>
-    <li><a href="all-products.html">Products</a></li>
-    <li><a href="special-offers.html">Offers</a></li>
-    <li><a href="blog.html">Blog</a></li>
+    <li><a href="#" class="active">Home</a></li>
+    <li><a href="pages/shop/all-products.html">Products</a></li>
+    <li><a href="pages/shop/special-offers.html">Offers</a></li>
+    <li><a href="pages/blog/blog.html">Blog</a></li>
     <li class="dropdown">
       <a href="javascript:void(0)">Help & Info ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
-        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
-        <li><a href="about-us.html"><i class="fas fa-star"></i> About Us</a></li>
+        <li><a href="pages/support/help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="pages/support/client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
+        <li><a href="pages/legal/about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
-    <li><a href="/track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
+    <li><a href="pages/shop/track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
   
   <div class="nav-actions">
-    <a href="cart.html" class="nav-cart" aria-label="Shopping Cart">
+    <a href="pages/shop/cart.html" class="nav-cart" aria-label="Shopping Cart">
       <i class="fas fa-shopping-bag"></i>
       <span class="cart-count" id="cart-count">0</span>
     </a>
@@ -130,19 +130,19 @@
   <button class="close-menu" onclick="toggleNav()"><i class="fas fa-times"></i></button>
   <div class="menubar-content">
     <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="all-products.html">Products</a></li>
-      <li><a href="special-offers.html">Offers</a></li>
-      <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold; text-align:center;"><i class="fas fa-route"></i> Track Your Order</a></li>
-      <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
-      <li><a href="client-reviews.html">Client Reviews</a></li>
-      <li><a href="blog.html">Blog Posts</a></li>
-      <li><a href="about.html">About Us</a></li>
+      <li><a href="#">Home</a></li>
+      <li><a href="pages/shop/all-products.html">Products</a></li>
+      <li><a href="pages/shop/special-offers.html">Offers</a></li>
+      <li><a href="pages/shop/track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold; text-align:center;"><i class="fas fa-route"></i> Track Your Order</a></li>
+      <li><a href="pages/support/help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+      <li><a href="pages/support/client-reviews.html">Client Reviews</a></li>
+      <li><a href="pages/blog/blog.html">Blog Posts</a></li>
+      <li><a href="pages/legal/about-us.html">About Us</a></li>
     </ul>
     <div class="side-bottom-links">
-      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="pages/legal/privacy-policy.html">Privacy Policy</a>
       <span>|</span>
-      <a href="terms.html">Terms & Conditions</a>
+      <a href="pages/legal/terms.html">Terms & Conditions</a>
     </div>
   </div>
 </div>
@@ -150,9 +150,9 @@
 <!-- Hero Section -->
 <section class="hero-full">
   <div class="hero-slider" id="heroSlider">
-    <img src="https://i.postimg.cc/RhvrP2Yt/Gemini-Generated-Image-qyba02qyba02qyba.webp" alt="Dandy Luxury Creams" class="active" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=1600&q=80';">
-    <img src="https://i.postimg.cc/FzhtPw6d/Gemini-Generated-Image-mhc9k4mhc9k4mhc9.webp" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1600&q=80';">
-    <img src="https://i.postimg.cc/QCjL6vz5/Gemini-Generated-Image-bnkrxjbnkrxjbnkr.webp" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1600&q=80';">
+    <img src="https://i.postimg.cc/cLkXDKj0/Gemini-Generated-Image-qyba02qyba02qyba.png" alt="Dandy Luxury Creams" class="active" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=1600&q=80';">
+    <img src="https://i.postimg.cc/CxvSmNSn/Gemini-Generated-Image-mhc9k4mhc9k4mhc9.png" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1600&q=80';">
+    <img src="https://i.postimg.cc/mZ84bj1q/Gemini-Generated-Image-bnkrxjbnkrxjbnkr.png" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1600&q=80';">
     <div class="slider-overlay"></div>
   </div>
 </section>
@@ -186,19 +186,19 @@
     <h2>Shop Our Collections</h2>
   </div>
   <div class="cat-grid">
-    <a href="all-products.html?category=Skin Care" class="cat-card">
+    <a href="pages/shop/all-products.html?category=Skin Care" class="cat-card">
       <img src="https://i.postimg.cc/nVTRswkS/sabeeonly-ai-generated-8966704-1920.jpg" alt="Skin Care">
       <div class="cat-card-title">Skin Care</div>
     </a>
-    <a href="all-products.html?category=Hair Care" class="cat-card">
+    <a href="pages/shop/all-products.html?category=Hair Care" class="cat-card">
       <img src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=600&q=80" alt="Hair Care">
       <div class="cat-card-title">Hair Care</div>
     </a>
-    <a href="all-products.html?category=Body Care" class="cat-card">
+    <a href="pages/shop/all-products.html?category=Body Care" class="cat-card">
       <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80" alt="Body Care">
       <div class="cat-card-title">Body Care</div>
     </a>
-    <a href="all-products.html?category=Fragrances" class="cat-card">
+    <a href="pages/shop/all-products.html?category=Fragrances" class="cat-card">
       <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=600&q=80" alt="Fragrances">
       <div class="cat-card-title">Fragrances</div>
     </a>
@@ -254,20 +254,20 @@
     <div class="footer-col">
       <h4>Useful Links</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="all-products.html">All Products</a></li>
-        <li><a href="special-offers.html">Special Offers</a></li>
-        <li><a href="blog.html">Our Blog</a></li>
+        <li><a href="#">Home</a></li>
+        <li><a href="pages/shop/all-products.html">All Products</a></li>
+        <li><a href="pages/shop/special-offers.html">Special Offers</a></li>
+        <li><a href="pages/blog/blog.html">Our Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Help & Support</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
-        <li><a href="about-us.html">About Us</a></li>
-        <li><a href="client-reviews.html">Client Reviews</a></li>
-        <li><a href="privacy-policy.html">Privacy & Security Policy</a></li>
-        <li><a href="terms.html">Terms & Conditions</a></li>
+        <li><a href="pages/support/help.html" style="font-weight: bold; color: var(--color-blush);"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+        <li><a href="pages/legal/about-us.html">About Us</a></li>
+        <li><a href="pages/support/client-reviews.html">Client Reviews</a></li>
+        <li><a href="pages/legal/privacy-policy.html">Privacy & Security Policy</a></li>
+        <li><a href="pages/legal/terms.html">Terms & Conditions</a></li>
       </ul>
     </div>
   </div>
@@ -276,7 +276,7 @@
     <div class="social-icons">
       <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://wa.me/201038941005" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
     <p class="rights">© 2026 Dandy Beauty. All rights and media reserved.</p>
   </div>
@@ -442,7 +442,7 @@
           <span class="price">${priceRaw} EGP</span>
           ${originalHtml}
         </div>
-        <a href="product.html?id=${child.key}" class="buy-btn">
+        <a href="pages/shop/product.html?id=${child.key}" class="buy-btn">
           <i class="fas fa-shopping-bag"></i> View Product Details
         </a>
       `;
@@ -451,7 +451,7 @@
 
     const moreBtn = document.createElement("div");
     moreBtn.className = "browse-more";
-    moreBtn.innerHTML = `<a href="all-products.html">Browse our complete collection of natural beauty care ✨</a>`;
+    moreBtn.innerHTML = `<a href="pages/shop/all-products.html">Browse our complete collection of natural beauty care ✨</a>`;
     homeContainer.appendChild(moreBtn);
   });
 </script>

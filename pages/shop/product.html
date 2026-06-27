@@ -9,13 +9,13 @@
   <meta name="robots" content="index, follow">
   <link id="canonical-link" rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/product.html">
 
-  <link rel="icon" type="image/x-icon" href="images/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/fav-icons/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/fav-icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="images/fav-icons/android-chrome-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="images/fav-icons/android-chrome-512x512.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="images/fav-icons/apple-touch-icon.png">
-  <link rel="manifest" href="images/fav-icons/site.webmanifest">
+  <link rel="icon" type="image/x-icon" href="../../assets/images/fav-icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/fav-icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/fav-icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/images/fav-icons/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/fav-icons/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/fav-icons/apple-touch-icon.png">
+  <link rel="manifest" href="../../assets/images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
   <meta property="og:type" content="product">
@@ -30,7 +30,7 @@
   <meta id="tw-desc-meta" name="twitter:description" content="View exclusive botanical ingredients, detailed product information, and special beauty offers from Dandy Beauty Egypt.">
   <meta id="tw-image-meta" name="twitter:image" content="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=1200&q=80">
 
-  <link href="style.css" rel="stylesheet">
+  <link href="../../assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
@@ -54,6 +54,7 @@
       aspect-ratio: 1;
       overflow: hidden;
       height: fit-content;
+      position: relative;
     }
 
     .detail-image-box img {
@@ -249,7 +250,7 @@
       color: #fff;
     }
 
-    .action-group .btn-cart:hover {
+    .action-group .btn-cart:hover:not(:disabled) {
       background: var(--color-blush);
       box-shadow: 0 10px 24px rgba(217, 141, 153, 0.25);
       transform: translateY(-2px);
@@ -369,26 +370,25 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="ltr">
-  <div class="logo" onclick="window.location.href='index.html'">
-    <img src="images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+  <div class="logo" onclick="window.location.href='../../index.html'">
+    <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
     <h1>DANDY</h1>
   </div>
   <ul>
-    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="../../index.html" class="active">Home</a></li>
     <li><a href="all-products.html">Products</a></li>
     <li><a href="special-offers.html">Offers</a></li>
-    <li><a href="blog.html">Blog</a></li>
+    <li><a href="../blog/blog.html">Blog</a></li>
     <li class="dropdown">
       <a href="javascript:void(0)">Help & Info ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
-        <li><a href="client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
-        <li><a href="about-us.html"><i class="fas fa-star"></i> About Us</a></li>
+        <li><a href="../support/help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
+        <li><a href="../support/client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
+        <li><a href="../legal/about-us.html"><i class="fas fa-star"></i> About Us</a></li>
       </ul>
     </li>
-    <li><a href="/track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
+    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
   </ul>
   
   <div class="nav-actions">
@@ -408,19 +408,19 @@
   <button class="close-menu" onclick="toggleNav()"><i class="fas fa-times"></i></button>
   <div class="menubar-content">
     <ul>
-      <li><a href="index.html">Home</a></li>
+      <li><a href="../../index.html">Home</a></li>
       <li><a href="all-products.html">Products</a></li>
       <li><a href="special-offers.html">Offers</a></li>
       <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold; text-align:center;"><i class="fas fa-route"></i> Track Your Order</a></li>
-      <li><a href="help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
-      <li><a href="client-reviews.html">Client Reviews</a></li>
-      <li><a href="blog.html">Blog Posts</a></li>
-      <li><a href="about.html">About Us</a></li>
+      <li><a href="../support/help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
+      <li><a href="../support/client-reviews.html">Client Reviews</a></li>
+      <li><a href="../blog/blog.html">Blog Posts</a></li>
+      <li><a href="../legal/about-us.html">About Us</a></li>
     </ul>
     <div class="side-bottom-links">
-      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="../legal/privacy-policy.html">Privacy Policy</a>
       <span>|</span>
-      <a href="terms.html">Terms & Conditions</a>
+      <a href="../legal/terms.html">Terms & Conditions</a>
     </div>
   </div>
 </div>
@@ -448,7 +448,7 @@
          <p style="color: var(--color-muted);">Pulling exclusive botanical skincare properties and details from our database...</p>
       </div>
 
-      <div class="price-section">
+      <div class="price-section" id="product-price-section">
         <span class="price-current" id="product-price">... EGP</span>
         <span id="price-old-wrapper"></span>
       </div>
@@ -496,19 +496,19 @@
     <div class="footer-col">
       <h4>Useful Links</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="index.html">Home</a></li>
+        <li><a href="../../index.html">Home</a></li>
         <li><a href="all-products.html">All Products</a></li>
         <li><a href="special-offers.html">Special Offers</a></li>
-        <li><a href="blog.html">Our Blog</a></li>
+        <li><a href="../blog/blog.html">Our Blog</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Help & Support</h4>
       <ul style="margin: 0; padding: 0;">
-        <li><a href="about-us.html">About Us</a></li>
-        <li><a href="client-reviews.html">Client Reviews</a></li>
-        <li><a href="privacy-policy.html">Privacy & Security Policy</a></li>
-        <li><a href="terms.html">Terms & Conditions</a></li>
+        <li><a href="../legal/about-us.html">About Us</a></li>
+        <li><a href="../support/client-reviews.html">Client Reviews</a></li>
+        <li><a href="../legal/privacy-policy.html">Privacy & Security Policy</a></li>
+        <li><a href="../legal/terms.html">Terms & Conditions</a></li>
       </ul>
     </div>
   </div>
@@ -517,7 +517,7 @@
     <div class="social-icons">
       <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
       <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-      <a href="https://wa.me/201067228170" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://wa.me/201038941005" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
     <p class="rights">© 2026 Dandy Beauty. All rights and media reserved.</p>
   </div>
@@ -713,7 +713,7 @@
 
   // Fetch product data from Firebase Realtime Database
   db.ref("products/" + id).once("value").then(snapshot => {
-    if (snapshot.exists()) {
+    if (snapshot.exists() && !snapshot.val().isHidden) {
       const product = snapshot.val();
       loadedProduct = product;
       loadedProduct.id = id; 
@@ -726,15 +726,37 @@
       
       // Map and load new English standardized category label
       let mappedCat = normalizeCategory(product.category);
-      document.getElementById("product-category").textContent = mappedCat;
+      document.getElementById("product-category").innerHTML = `${mappedCat}`;
       
-      const priceRaw = parseFloat(product.price) || 0;
-      document.getElementById("product-price").textContent = priceRaw + " EGP";
+      // نظام نفاذ الكمية في صفحة المنتج
+      if (product.isSoldOut) {
+         const btn = document.getElementById("add-to-cart-btn");
+         btn.innerHTML = `<i class="fas fa-ban"></i> Out of Stock`;
+         btn.style.background = "#555";
+         btn.style.cursor = "not-allowed";
+         btn.disabled = true;
+         
+         document.getElementById("product-category").innerHTML += ` <span style="background:#222; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; margin-left:10px; font-weight:bold; vertical-align:middle;"><i class="fas fa-box-open"></i> Sold Out</span>`;
+      }
 
+      // نظام الخصم الجديد الواضح
+      const priceRaw = parseFloat(product.price) || 0;
       if (product.onSale && product.discount) {
         const discountPercent = parseFloat(product.discount) || 0;
         const oldPrice = priceRaw / (1 - (discountPercent/100));
-        document.getElementById("price-old-wrapper").innerHTML = `<span class="price-crossed">${oldPrice.toFixed(0)} EGP</span> <span class="badge-discount" style="position:static; margin-left:10px;">Save ${product.discount}%</span>`;
+        
+        document.getElementById("product-price-section").innerHTML = `
+          <div style="display:flex; flex-direction:column; padding: 20px 0;">
+            <span style="color:var(--color-blush); font-size:2.4rem; font-weight:800;">${priceRaw.toFixed(0)} EGP</span>
+            <span style="font-size:1.1rem; color:var(--color-muted); font-weight:600; margin-top:6px;">
+              Instead of <span style="text-decoration:line-through;">${oldPrice.toFixed(0)} EGP</span> 
+              <span style="background:var(--color-blush); color:#fff; padding:4px 10px; border-radius:6px; font-size:0.9rem; margin-left:12px; display:inline-block; vertical-align:middle;">${product.discount}% OFF</span>
+            </span>
+          </div>
+        `;
+      } else {
+        document.getElementById("product-price").textContent = priceRaw + " EGP";
+        document.getElementById("price-old-wrapper").innerHTML = '';
       }
 
       // Update browser tab name
@@ -792,7 +814,7 @@
             "priceCurrency": "EGP",
             "price": priceRaw,
             "itemCondition": "https://schema.org/NewCondition",
-            "availability": "https://schema.org/InStock",
+            "availability": product.isSoldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
             "seller": {
               "@type": "Organization",
               "name": "Dandy Beauty"
@@ -810,7 +832,7 @@
       }
 
       // Connect Support Channels with customizable templates
-      const cleanPhone = "201067228170";
+      const cleanPhone = "201038941005";
       const whatsappMsg = `مرحباً داندي بيوتي، أود الاستفسار عن هذا المنتج الفاخر:\n- اسم المنتج: ${product.name}\n- رابط المعاينة: ${pageURL}`;
 
       const whatsappLink = document.getElementById("whatsapp-link");
@@ -854,7 +876,7 @@
   // Cart storage injection management
   const addToCartBtn = document.getElementById("add-to-cart-btn");
   addToCartBtn.addEventListener("click", () => {
-    if(!loadedProduct) return;
+    if(!loadedProduct || loadedProduct.isSoldOut) return;
 
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const productItem = {
