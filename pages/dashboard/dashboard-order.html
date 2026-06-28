@@ -6,7 +6,6 @@
   <title>مدير وتوزيع الطلبات والفواتير | لوحة داندي</title>
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Stylesheet -->
   <link href="../../assets/css/style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -101,9 +100,18 @@
       margin-bottom: 24px;
     }
 
+    .top-actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
     .search-bar-wrapper {
       position: relative;
       flex-grow: 1;
+      max-width: 400px;
     }
 
     .search-bar-wrapper i {
@@ -131,6 +139,51 @@
       outline: none;
       background: #fff;
       box-shadow: 0 0 0 4px rgba(217, 141, 153, 0.15);
+    }
+
+    /* Bulk Actions & Export */
+    .utility-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-utility {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light, #eaeaea);
+      background: #fff;
+      color: var(--color-primary, #333);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-utility:hover {
+      background: var(--color-surface-soft, #f9f9f9);
+      border-color: #ccc;
+    }
+    
+    .btn-utility.export-btn {
+      color: #1976d2;
+      border-color: #bbdefb;
+      background: #e3f2fd;
+    }
+    .btn-utility.export-btn:hover { background: #bbdefb; }
+
+    .bulk-action-select {
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light, #eaeaea);
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.85rem;
+      outline: none;
+      background: var(--color-surface-soft, #fcfcfc);
     }
 
     /* Filters selectors */
@@ -204,6 +257,14 @@
     .orders-main-table tr:last-child td {
       border-bottom: none;
     }
+    
+    /* Checkbox Styles */
+    .row-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--color-blush, #D98D99);
+    }
 
     /* Pulse Animation للطلبات الجديدة */
     @keyframes pulseNewOrder {
@@ -213,7 +274,7 @@
     }
 
     .row-new-order td {
-      background: #f2fcf4 !important; /* لون أخضر باهت */
+      background: #f2fcf4 !important;
     }
     .row-new-order td:first-child {
       border-right: 4px solid var(--color-success, #2e7d32);
@@ -261,6 +322,29 @@
     .badge-btn-edit:hover { background: var(--color-blush, #D98D99); color: #fff; }
     .badge-btn-del { background: #ffebee; color: var(--color-danger, #c62828); }
     .badge-btn-del:hover { background: var(--color-danger, #c62828); color: #fff; }
+
+    /* -------------------------------------------
+       Skeleton Loading Animation
+       ------------------------------------------- */
+    @keyframes shimmer {
+      0% { background-position: -468px 0; }
+      100% { background-position: 468px 0; }
+    }
+    
+    .skeleton-box {
+      height: 20px;
+      border-radius: 4px;
+      background: #f6f7f8;
+      background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+      background-repeat: no-repeat;
+      background-size: 800px 104px; 
+      animation-duration: 1.5s;
+      animation-fill-mode: forwards; 
+      animation-iteration-count: infinite;
+      animation-name: shimmer;
+      animation-timing-function: linear;
+    }
+    .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
 
     /* -------------------------------------------
        النافذة المنبثقة (Modal) والتفاصيل
@@ -350,15 +434,30 @@
 
     .btn-copy-modal { background: #fff; color: var(--color-primary, #333); border: 1px solid var(--border-light, #eaeaea); border-radius: 99px; padding: 12px 20px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
     .btn-copy-modal:hover { background: var(--color-surface-soft, #f9f9f9); border-color: #ccc; }
+    
+    .btn-print-modal { background: #333; color: #fff; border: none; border-radius: 99px; padding: 12px 20px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-print-modal:hover { background: #555; }
+
+    /* -------------------------------------------
+       إعدادات الطباعة
+       ------------------------------------------- */
+    @media print {
+      body * { visibility: hidden; }
+      .order-details-pane-modal, .order-details-pane-modal * { visibility: visible; }
+      .order-details-pane-modal {
+        position: absolute; left: 0; top: 0; width: 100%; height: auto;
+        background: transparent !important; backdrop-filter: none; display: block !important; opacity: 1 !important; padding: 0;
+      }
+      .order-details-box { box-shadow: none; max-width: 100%; border: none; overflow: visible; max-height: none; }
+      .modal-footer, .close-details-btn { display: none !important; }
+      .modal-body { overflow: visible; padding: 10px; }
+      .info-grid-cards { grid-template-columns: 1fr 1fr; }
+      .product-list-modal table { border: 1px solid #000; }
+    }
 
     /* -------------------------------------------
        إعدادات التجاوب المخصصة للهواتف والتابلت
        ------------------------------------------- */
-    @media (min-width: 992px) {
-      .orders-header-actions { flex-direction: row; justify-content: space-between; align-items: center; }
-      .search-bar-wrapper { max-width: 380px; }
-    }
-
     @media (max-width: 991px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -366,6 +465,9 @@
     @media (max-width: 768px) {
       .admin-card-orders { padding: 20px 15px; }
       .kpi-grid { gap: 15px; }
+      .top-actions-bar { flex-direction: column; align-items: stretch; }
+      .search-bar-wrapper { max-width: 100%; }
+      .utility-actions { justify-content: space-between; }
       
       .orders-filter-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; }
       .filter-btn-pill { white-space: nowrap; }
@@ -376,7 +478,7 @@
       .orders-main-table, .orders-main-table tbody, .orders-main-table tr, .orders-main-table td { display: block; width: 100%; }
       .orders-main-table tr {
         background: #fff; margin-bottom: 16px; border-radius: 12px;
-        border: 1px solid var(--border-light, #eaeaea); box-shadow: 0 4px 15px rgba(0,0,0,0.04); padding: 8px 0;
+        border: 1px solid var(--border-light, #eaeaea); box-shadow: 0 4px 15px rgba(0,0,0,0.04); padding: 8px 0; position: relative;
       }
       .orders-main-table tr:hover td { background: transparent; }
       
@@ -388,6 +490,9 @@
       .orders-main-table td { display: flex; justify-content: space-between; align-items: center; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.04); padding: 12px 16px; }
       .orders-main-table td:last-child { border-bottom: none; justify-content: center; gap: 12px; padding-top: 16px; }
       .orders-main-table td::before { content: attr(data-label); font-weight: 800; color: var(--color-primary, #333); text-align: right; margin-left: 15px; }
+      
+      /* إخفاء مربع التحديد في الموبايل لتسهيل الواجهة */
+      .chk-col { display: none !important; }
 
       .status-dropdown-admin { max-width: 140px; text-align: center; }
 
@@ -395,7 +500,7 @@
       .modal-header, .modal-body, .modal-footer { padding: 20px 15px; }
       .modal-footer { flex-direction: column; align-items: stretch; }
       .modal-footer-actions { flex-direction: column; width: 100%; }
-      .btn-whatsapp-modal, .btn-copy-modal { justify-content: center; width: 100%; }
+      .btn-whatsapp-modal, .btn-copy-modal, .btn-print-modal { justify-content: center; width: 100%; }
     }
     
     @media (max-width: 480px) {
@@ -405,7 +510,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="rtl">
   <div class="logo" onclick="window.location.href='../../index.html'">
     <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
@@ -431,7 +535,6 @@
   </button>
 </nav>
 
-<!-- Mobile Menu -->
 <div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="../../index.html">الرئيسية</a></li>
@@ -447,10 +550,8 @@
   </div>
 </div>
 
-<!-- Orders Manager Main View -->
 <section class="order-manager-sec container">
   
-  <!-- KPI Dashboard Area -->
   <div class="kpi-grid" id="kpiDashboard">
     <div class="kpi-card">
       <div class="kpi-icon" style="color: #2e7d32; background: #e8f5e9;"><i class="fas fa-money-bill-wave"></i></div>
@@ -486,12 +587,24 @@
     <div class="admin-card-orders">
       <h3><i class="fas fa-tasks" style="color: var(--color-blush);"></i> إدارة طلبات وحجوزات داندي</h3>
       
-      <!-- شريط البحث السريع وفلاتر التصفية -->
       <div class="orders-header-actions">
         
-        <div class="search-bar-wrapper">
-          <i class="fas fa-search"></i>
-          <input type="text" id="liveSearchInput" placeholder="بحث بالاسم، الهاتف، أو كود الفاتورة..." oninput="handleSearch()">
+        <div class="top-actions-bar">
+          <div class="search-bar-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="liveSearchInput" placeholder="بحث بالاسم، الهاتف، أو كود الفاتورة..." oninput="handleSearch()">
+          </div>
+
+          <div class="utility-actions">
+            <select id="bulkActionSelect" class="bulk-action-select" title="اختر إجراء جماعي">
+              <option value="">إجراء جماعي...</option>
+              <option value="قيد التجهيز">نقل إلى قيد التجهيز</option>
+              <option value="تم الشحن">نقل إلى تم الشحن</option>
+              <option value="تم التوصيل">نقل إلى تم التوصيل</option>
+            </select>
+            <button class="btn-utility" onclick="applyBulkAction()"><i class="fas fa-check-double"></i> تطبيق</button>
+            <button class="btn-utility export-btn" onclick="exportToCSV()"><i class="fas fa-file-csv"></i> تصدير الطلبات</button>
+          </div>
         </div>
 
         <div class="orders-filter-row">
@@ -508,6 +621,9 @@
         <table class="orders-main-table">
           <thead>
             <tr>
+              <th class="chk-col" style="width: 40px; text-align: center;">
+                <input type="checkbox" id="selectAllOrders" class="row-checkbox" onchange="toggleAllCheckboxes()">
+              </th>
               <th>كود الفاتورة</th>
               <th>العميلة</th>
               <th>رقم الهاتف</th>
@@ -518,11 +634,25 @@
             </tr>
           </thead>
           <tbody id="ordersListArea">
-            <tr>
-              <td colspan="7" style="text-align: center; color: var(--color-muted); padding: 40px;">
-                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px; color: var(--color-blush);"></i><br>
-                جاري جرد الطلبات الحية...
-              </td>
+            <tr class="skeleton-row">
+              <td class="chk-col"><div class="skeleton-box" style="width:20px;"></div></td>
+              <td><div class="skeleton-box" style="width:80px;"></div></td>
+              <td><div class="skeleton-box" style="width:120px;"></div></td>
+              <td><div class="skeleton-box" style="width:100px;"></div></td>
+              <td><div class="skeleton-box" style="width:90px;"></div></td>
+              <td><div class="skeleton-box" style="width:110px;"></div></td>
+              <td><div class="skeleton-box" style="width:130px;"></div></td>
+              <td><div class="skeleton-box" style="width:100px; margin: 0 auto;"></div></td>
+            </tr>
+            <tr class="skeleton-row">
+              <td class="chk-col"><div class="skeleton-box" style="width:20px;"></div></td>
+              <td><div class="skeleton-box" style="width:80px;"></div></td>
+              <td><div class="skeleton-box" style="width:120px;"></div></td>
+              <td><div class="skeleton-box" style="width:100px;"></div></td>
+              <td><div class="skeleton-box" style="width:90px;"></div></td>
+              <td><div class="skeleton-box" style="width:110px;"></div></td>
+              <td><div class="skeleton-box" style="width:130px;"></div></td>
+              <td><div class="skeleton-box" style="width:100px; margin: 0 auto;"></div></td>
             </tr>
           </tbody>
         </table>
@@ -532,7 +662,6 @@
   </div>
 </section>
 
-<!-- Popunder order details Modal overlay -->
 <div class="order-details-pane-modal" id="detailsModal">
   <div class="order-details-box">
     
@@ -541,7 +670,12 @@
       <button class="close-details-btn" id="closeDetailsBtn"><i class="fas fa-times"></i></button>
     </div>
     
-    <div class="modal-body">
+    <div class="modal-body" id="printableInvoiceArea">
+      <div style="display: none; text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;" id="printHeader">
+        <h1 style="font-family: 'Cairo', sans-serif; font-size: 2rem; margin: 0;">DANDY BEAUTY</h1>
+        <p style="margin: 5px 0 0; color: #555;">فاتورة طلب رقم: <span id="md-print-id"></span></p>
+      </div>
+
       <div class="info-grid-cards">
         <div class="info-card">
           <h4><i class="fas fa-user-circle"></i> بيانات العميلة</h4>
@@ -569,8 +703,7 @@
             </tr>
           </thead>
           <tbody id="md-items-body">
-            <!-- items lists inside modal drawer -->
-          </tbody>
+            </tbody>
           <tfoot style="background: var(--color-surface-soft, #fcfcfc);">
             <tr>
               <td colspan="3" style="text-align: left; font-weight: 800; color: var(--color-primary);">إجمالي الطلب:</td>
@@ -584,10 +717,13 @@
     <div class="modal-footer">
       <div class="modal-footer-actions">
         <a href="" id="md-whatsapp" target="_blank" class="btn-whatsapp-modal">
-          <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> تواصل عبر الواتساب مباشر
+          <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i> تواصل بالعميلة
         </a>
         <button class="btn-copy-modal" id="md-copy-btn">
-          <i class="fas fa-copy"></i> نسخ بيانات العميل 
+          <i class="fas fa-copy"></i> نسخ البيانات 
+        </button>
+        <button class="btn-print-modal" onclick="window.print()">
+          <i class="fas fa-print"></i> طباعة الفاتورة
         </button>
       </div>
       <button class="btn" style="background:var(--color-surface-soft, #f0f0f0); color: var(--color-primary); border:none; border-radius:8px; padding:12px 24px; font-weight: 700; cursor: pointer; transition: 0.2s;" id="md-close" onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
@@ -598,7 +734,6 @@
   </div>
 </div>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -635,7 +770,6 @@
   </div>
 </footer>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -708,13 +842,20 @@
 
 <script>
   let rawOrders = [];
+  let currentFiltered = [];
   let selectedFilter = 'الكل';
   let searchQuery = '';
+  let initialLoad = true;
+  let previousOrdersCount = 0;
+
+  // Audio object for new order notification (base64 simple beep)
+  const notificationAudio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vT18A...'); 
 
   const ordersListArea = document.getElementById('ordersListArea');
   const detailsModal = document.getElementById('detailsModal');
   const closeDetailsBtn = document.getElementById('closeDetailsBtn');
   const mdClose = document.getElementById('md-close');
+  const selectAllCheckbox = document.getElementById('selectAllOrders');
 
   function setFilter(filter) {
     selectedFilter = filter;
@@ -728,47 +869,27 @@
     drawOrdersTable();
   }
 
-  // التقاط مدخلات البحث الحي
   function handleSearch() {
     searchQuery = document.getElementById('liveSearchInput').value.trim().toLowerCase();
     drawOrdersTable();
   }
 
-  // تحديث لوحة المؤشرات العلوية KPI
   function updateKPIs() {
-    let totalSales = 0;
-    let newOrders = 0;
-    let processingOrders = 0;
-    let completedOrders = 0;
+    let totalSales = 0, newOrders = 0, processingOrders = 0, completedOrders = 0;
 
     rawOrders.forEach(o => {
       const state = (o.status || 'جديد').trim();
       
-      // 1. حساب الطلبات الجديدة
-      if (state === 'جديد') {
-        newOrders++;
-      } 
-      // 2. حساب الطلبات قيد التجهيز أو جاري شحنها (دمجنا الشحن هنا لضمان عدم ضياعه من الـ 4 بطاقات)
-      else if (state === 'قيد التجهيز' || state === 'تم التواصل' || state === 'تم الشحن' || state === 'جاري الشحن') {
-        processingOrders++;
-      } 
-      // 3. حساب الطلبات المكتملة
-      else if (state === 'تم التوصيل' || state === 'مكتمل') {
-        completedOrders++;
-      }
+      if (state === 'جديد') newOrders++;
+      else if (['قيد التجهيز', 'تم التواصل', 'تم الشحن', 'جاري الشحن'].includes(state)) processingOrders++;
+      else if (['تم التوصيل', 'مكتمل'].includes(state)) completedOrders++;
 
-      // 4. حساب إجمالي المبيعات (تستثني الطلبات الملغية فقط)
       if (state !== 'ملغي') {
         let orderTotal = 0;
-        // التحقق الذكي من أن الإجمالي رقم صحيح وليس NaN
         if (o.totalAmount && !isNaN(parseFloat(o.totalAmount))) {
           orderTotal = parseFloat(o.totalAmount);
         } else if (o.products && Array.isArray(o.products)) {
-          // إذا كان السعر غير محفوظ مسبقاً، نحسبه من المنتجات كإجراء احتياطي (Fallback)
-          let calcSum = 0;
-          o.products.forEach(p => { 
-            calcSum += (parseFloat(p.price) || 0) * (parseInt(p.quantity) || 1); 
-          });
+          let calcSum = o.products.reduce((acc, p) => acc + (parseFloat(p.price) || 0) * (parseInt(p.quantity) || 1), 0);
           orderTotal = calcSum + (parseFloat(o.shippingFee) || 0);
         }
         totalSales += orderTotal;
@@ -781,70 +902,69 @@
     document.getElementById('kpi-completed').textContent = completedOrders;
   }
 
-  // مراقبة قاعدة البيانات والاستماع للطلبات الحية
   function listenToOrders(){
-    db.ref('orders').on('value', snap => {
+    // Limit to newest 100 orders to improve performance
+    db.ref('orders').limitToLast(100).on('value', snap => {
       let currentOrders = [];
       if (snap.exists()){
         snap.forEach(child => {
-          currentOrders.push({
-            id: child.key,
-            ...child.val()
-          });
+          currentOrders.push({ id: child.key, ...child.val() });
         });
         
-        // ترتيب تنازلي حسب التاريخ لظهور الأحدث في الأعلى دائماً
-        currentOrders.sort((a,b) => {
-          const dateA = new Date(a.timestamp || 0);
-          const dateB = new Date(b.timestamp || 0);
-          return dateB - dateA;
-        });
+        currentOrders.sort((a,b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+        
+        // Play notification if a new order arrives after initial load
+        if(!initialLoad && currentOrders.length > previousOrdersCount) {
+          const newestOrder = currentOrders[0];
+          if((newestOrder.status || 'جديد').trim() === 'جديد') {
+             try { notificationAudio.play(); } catch(e) {} // Catch auto-play restrictions
+          }
+        }
+        previousOrdersCount = currentOrders.length;
       }
       
       rawOrders = currentOrders;
+      initialLoad = false;
       updateKPIs();
       drawOrdersTable();
     });
   }
 
-  // رسم وتحديث الجدول مع تطبيق الفلاتر والبحث الحي والتنبيه البصري
   function drawOrdersTable(){
     ordersListArea.innerHTML = '';
+    selectAllCheckbox.checked = false;
     
-    const filtered = rawOrders.filter(o => {
+    currentFiltered = rawOrders.filter(o => {
       const state = (o.status || 'جديد').trim();
-      // فلتر التصنيف
       const matchesFilter = (selectedFilter === 'الكل' || state === selectedFilter);
-      
-      // فلتر البحث الحي
       const searchStr = `${o.name || ''} ${o.phone || ''} ${o.invoiceCode || ''} ${o.id || ''}`.toLowerCase();
       const matchesSearch = searchStr.includes(searchQuery);
-
       return matchesFilter && matchesSearch;
     });
 
-    if(filtered.length === 0){
-      ordersListArea.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--color-muted);"><i class="fas fa-search" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i><br>لا توجد طلبات مطابقة للبحث أو التصفية الحالية.</td></tr>';
+    if(currentFiltered.length === 0){
+      ordersListArea.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--color-muted);"><i class="fas fa-search" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i><br>لا توجد طلبات مطابقة للبحث أو التصفية الحالية.</td></tr>';
       return;
     }
 
-    filtered.forEach(o => {
+    currentFiltered.forEach(o => {
       const dateText = o.timestamp ? new Date(o.timestamp).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : '';
       const state = (o.status || 'جديد').trim();
       const isNew = (state === 'جديد');
       
       let dropdownClass = 'st-new';
-      if(state === 'قيد التجهيز' || state === 'تم التواصل') dropdownClass = 'st-processing';
-      if(state === 'تم الشحن' || state === 'جاري الشحن') dropdownClass = 'st-shipped';
-      if(state === 'تم التوصيل' || state === 'مكتمل') dropdownClass = 'st-delivered';
+      if(['قيد التجهيز', 'تم التواصل'].includes(state)) dropdownClass = 'st-processing';
+      if(['تم الشحن', 'جاري الشحن'].includes(state)) dropdownClass = 'st-shipped';
+      if(['تم التوصيل', 'مكتمل'].includes(state)) dropdownClass = 'st-delivered';
       if(state === 'ملغي') dropdownClass = 'st-cancelled';
 
       const tr = document.createElement('tr');
-      
-      // إضافة التنبيه البصري (كلاس row-new-order) للطلبات الجديدة
       if(isNew) tr.classList.add('row-new-order');
       
       tr.innerHTML = `
+        <td class="chk-col" style="text-align: center;">
+          <input type="checkbox" class="row-checkbox order-select-cb" value="${o.id}">
+        </td>
         <td data-label="كود الفاتورة" style="font-weight:800;color:var(--color-primary);"><i class="fas fa-hashtag" style="color:var(--border-light); font-size:0.8rem;"></i> ${o.invoiceCode || o.id}</td>
         <td data-label="العميلة" style="font-weight:700;">${o.name || '-'}</td>
         <td data-label="رقم الهاتف" style="direction:ltr; text-align:right; font-weight:600; color:var(--color-muted);">${o.phone || '-'}</td>
@@ -868,6 +988,67 @@
     });
   }
 
+  // --- Bulk Actions ---
+  function toggleAllCheckboxes() {
+    const isChecked = selectAllCheckbox.checked;
+    document.querySelectorAll('.order-select-cb').forEach(cb => {
+      cb.checked = isChecked;
+    });
+  }
+
+  window.applyBulkAction = async function() {
+    const action = document.getElementById('bulkActionSelect').value;
+    if(!action) return alert("الرجاء اختيار إجراء أولاً");
+    
+    const selectedIds = Array.from(document.querySelectorAll('.order-select-cb:checked')).map(cb => cb.value);
+    if(selectedIds.length === 0) return alert("الرجاء تحديد طلب واحد على الأقل");
+
+    if(confirm(`هل أنت متأكد من تغيير حالة ${selectedIds.length} طلب إلى "${action}"؟`)) {
+      const updates = {};
+      selectedIds.forEach(id => {
+        updates[`orders/${id}/status`] = action;
+      });
+      try {
+        await db.ref().update(updates);
+        document.getElementById('bulkActionSelect').value = '';
+      } catch(err) {
+        alert('حدث خطأ أثناء التحديث الجماعي');
+      }
+    }
+  }
+
+  // --- CSV Export ---
+  window.exportToCSV = function() {
+    if(currentFiltered.length === 0) return alert("لا توجد بيانات لتصديرها");
+    
+    // Add UTF-8 BOM so Excel opens Arabic text correctly
+    let csvContent = "\uFEFFكود الفاتورة,اسم العميل,الهاتف,المحافظة,العنوان التفصيلي,الإجمالي,الحالة\n";
+    
+    currentFiltered.forEach(o => {
+      const code = `"${o.invoiceCode || o.id}"`;
+      const name = `"${(o.name || '').replace(/"/g, '""')}"`;
+      const phone = `"${o.phone || ''}"`;
+      const gov = `"${o.governorate || ''}"`;
+      const address = `"${(o.address || '').replace(/"/g, '""')}"`;
+      const status = `"${o.status || 'جديد'}"`;
+      
+      let orderTotal = o.totalAmount || 0;
+      csvContent += `${code},${name},${phone},${gov},${address},${orderTotal},${status}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) { 
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Dandy_Orders_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
   window.changeOrderStatus = async function(id, val){
     try {
       await db.ref(`orders/${id}`).update({status: val});
@@ -889,7 +1070,7 @@
     const o = rawOrders.find(order => order.id === id);
     if(!o) return;
 
-    // تعبئة البيانات
+    document.getElementById('md-print-id').textContent = o.invoiceCode || o.id; // For print layout
     document.getElementById('md-name').textContent = o.name || 'غير متوفر';
     document.getElementById('md-phone').textContent = o.phone || 'غير متوفر';
     document.getElementById('md-email').textContent = o.email || 'غير متوفر';
@@ -898,11 +1079,9 @@
     document.getElementById('md-coords').textContent = fullLocation;
     document.getElementById('md-address').textContent = o.address || 'لا يوجد تفاصيل للعنوان';
 
-    // رابط الواتساب
     const wpSum = `مرحباً ${o.name}، نتواصل معكِ من Dandy لتأكيد تفاصيل طلبك:\n- كود الفاتورة: ${o.invoiceCode || o.id}\n- العنوان: ${o.address}\n\nنتمنى لكِ يوماً سعيداً!`;
     document.getElementById('md-whatsapp').href = `https://wa.me/${(o.phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(wpSum)}`;
 
-    // تجهيز زر النسخ الذكي (نسخ بيانات العميل لشركات الشحن)
     const copyBtn = document.getElementById('md-copy-btn');
     const copyText = `الاسم: ${o.name || '-'}\nالهاتف: ${o.phone || '-'}\nالعنوان: ${fullLocation} - ${o.address || ''}\nالفاتورة: ${o.invoiceCode || o.id}`;
     
@@ -920,7 +1099,6 @@
       });
     };
 
-    // تعبئة المنتجات
     const itemsBody = document.getElementById('md-items-body');
     const grandTotalEl = document.getElementById('md-grand-total');
     itemsBody.innerHTML = '';
@@ -953,20 +1131,23 @@
       grandTotalEl.textContent = '0 EGP';
     }
 
+    // Toggle Display header for printing
+    document.getElementById('printHeader').style.display = 'block';
+
     detailsModal.classList.add('show');
   };
 
   function hideModal(){
     detailsModal.classList.remove('show');
+    // Hide print header again
+    setTimeout(() => { document.getElementById('printHeader').style.display = 'none'; }, 300);
   }
   
   closeDetailsBtn.addEventListener('click', hideModal);
   mdClose.addEventListener('click', hideModal);
   
   detailsModal.addEventListener('click', function(e) {
-    if (e.target === detailsModal) {
-      hideModal();
-    }
+    if (e.target === detailsModal) hideModal();
   });
 </script>
 
