@@ -21,9 +21,9 @@
       align-items: center;
       gap: 16px;
       padding: 24px;
-      background: var(--color-gold-cream);
-      border: 1px solid var(--border-light);
-      border-radius: var(--border-radius-md);
+      background: var(--color-gold-cream, #fcfaf5);
+      border: 1px solid var(--border-light, #e0e0e0);
+      border-radius: var(--border-radius-md, 12px);
       margin-bottom: 40px;
     }
 
@@ -31,7 +31,7 @@
       width: 60px;
       height: 60px;
       border-radius: 99px;
-      background: var(--color-blush);
+      background: var(--color-blush, #d98d99);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -44,21 +44,21 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 24px;
-      margin-bottom: 80px;
+      margin-bottom: 40px;
     }
 
     .bento-admin-card {
-      background: var(--color-surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--border-radius-lg);
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--border-light, #e0e0e0);
+      border-radius: var(--border-radius-lg, 16px);
       padding: 30px;
       text-align: right;
-      box-shadow: var(--shadow-sm);
+      box-shadow: var(--shadow-sm, 0 4px 10px rgba(0,0,0,0.03));
       display: flex;
       flex-direction: column;
       position: relative;
       overflow: hidden;
-      transition: var(--transition-smooth);
+      transition: var(--transition-smooth, 0.3s ease);
     }
 
     .bento-admin-card::before {
@@ -68,16 +68,16 @@
       right: 0;
       width: 4px;
       height: 100%;
-      background: var(--color-blush);
+      background: var(--color-blush, #d98d99);
       transform: scaleY(0);
       transform-origin: bottom;
-      transition: var(--transition-smooth);
+      transition: var(--transition-smooth, 0.3s ease);
     }
 
     .bento-admin-card:hover {
       transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
-      border-color: var(--color-blush);
+      box-shadow: var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.08));
+      border-color: var(--color-blush, #d98d99);
     }
 
     .bento-admin-card:hover::before {
@@ -86,19 +86,19 @@
 
     .bento-admin-icon {
       font-size: 2.5rem;
-      color: var(--color-blush);
+      color: var(--color-blush, #d98d99);
       margin-bottom: 20px;
     }
 
     .bento-admin-card h3 {
       font-size: 1.35rem;
       font-weight: 800;
-      color: var(--color-primary);
+      color: var(--color-primary, #2c3e50);
       margin-bottom: 10px;
     }
 
     .bento-admin-card p {
-      color: var(--color-muted);
+      color: var(--color-muted, #7f8c8d);
       font-size: 0.95rem;
       line-height: 1.6;
       margin-bottom: 24px;
@@ -109,35 +109,89 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      color: var(--color-primary);
+      color: var(--color-primary, #2c3e50);
       text-decoration: none;
       font-weight: 700;
       font-size: 0.95rem;
-      border-top: 1px solid var(--border-light);
+      border-top: 1px solid var(--border-light, #e0e0e0);
       padding-top: 16px;
-      transition: var(--transition-fast);
+      transition: var(--transition-fast, 0.2s ease);
     }
 
     .bento-admin-card:hover .bento-admin-link {
-      color: var(--color-blush);
+      color: var(--color-blush, #d98d99);
     }
 
     .btn-signout {
       padding: 10px 24px;
-      background: var(--color-surface-soft);
-      border: 1px solid var(--border-light);
-      color: var(--color-primary);
+      background: var(--color-surface-soft, #f8f9fa);
+      border: 1px solid var(--border-light, #e0e0e0);
+      color: var(--color-primary, #2c3e50);
       font-weight: 700;
       border-radius: 99px;
       cursor: pointer;
       font-size: 0.9rem;
-      transition: var(--transition-fast);
+      transition: var(--transition-fast, 0.2s ease);
     }
 
     .btn-signout:hover {
-      background: var(--color-danger);
+      background: var(--color-danger, #e74c3c);
       color: #fff;
-      border-color: var(--color-danger);
+      border-color: var(--color-danger, #e74c3c);
+    }
+
+    /* Change Logs Table Styles */
+    .logs-section {
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--border-light, #e0e0e0);
+      border-radius: var(--border-radius-lg, 16px);
+      padding: 30px;
+      margin-bottom: 80px;
+      box-shadow: var(--shadow-sm, 0 4px 10px rgba(0,0,0,0.03));
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .logs-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+    }
+
+    .logs-table th, .logs-table td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-light, #e0e0e0);
+    }
+
+    .logs-table th {
+      background: var(--color-gold-cream, #fcfaf5);
+      color: var(--color-primary, #2c3e50);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .logs-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(217, 141, 153, 0.1);
+      color: var(--color-primary, #2c3e50);
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .log-date {
+      color: var(--color-muted, #7f8c8d);
+      font-size: 0.9rem;
+      white-space: nowrap;
     }
   </style>
 
@@ -218,7 +272,7 @@
     <div class="bento-admin-card">
       <div class="bento-admin-icon"><i class="fas fa-shopping-basket"></i></div>
       <h3>إدارة وتوصيل الطلبات</h3>
-      <p>متابعة فواتير الحبيبات اللحظية، مراجعة وتجهيز الشحن، تغيير حالة كل طلب مع إرسال التنبيهات.</p>
+      <p>متابعة فواتير المبيعات اللحظية، مراجعة وتجهيز الشحن، تغيير حالة كل طلب مع إرسال التنبيهات.</p>
       <a href="dashboard-order.html" class="bento-admin-link">الانتقال لمدير الطلبات الفوري <i class="fas fa-arrow-left"></i></a>
     </div>
 
@@ -226,7 +280,7 @@
     <div class="bento-admin-card">
       <div class="bento-admin-icon"><i class="fas fa-boxes"></i></div>
       <h3>مخزن ومستحضرات المتجر</h3>
-      <p>تنظيم قائمة المنتجات في ثلاجة الشحن، تعديل أسعار المستحضرات، إضافة الخصومات الحصرية والتقييمات وصور المعاينة.</p>
+      <p>تنظيم قائمة المنتجات في ثلاجة الشحن، تعديل أسعار المستحضرات، إضافة الخصومات الحصرية وصور المعاينة.</p>
       <a href="dashboard-product.html" class="bento-admin-link">تسيير قائمة المستحضرات <i class="fas fa-arrow-left"></i></a>
     </div>
 
@@ -241,19 +295,49 @@
     <!-- Analytics Card -->
     <div class="bento-admin-card">
       <div class="bento-admin-icon"><i class="fas fa-chart-line"></i></div>
-      <h3>الإحصائيات وسلامة المحطات</h3>
+      <h3>الإحصائيات والمقاييس</h3>
       <p>أبعاد العمل الكاملة: معدل قراءة المقالات، حجم حجز السلال، ورصد أداء استقرار خوادم قواعد البيانات في داندي.</p>
-      <a href="statues.html" class="bento-admin-link">استعراض لوحة التحليلات والمقاييس <i class="fas fa-arrow-left"></i></a>
+      <a href="statues.html" class="bento-admin-link">استعراض لوحة التحليلات <i class="fas fa-arrow-left"></i></a>
     </div>
 
-    <!-- index Card -->
+    <!-- Index Card (تم إصلاح المحتوى) -->
     <div class="bento-admin-card">
-      <div class="bento-admin-icon"><i class="fas fa-page-line"></i></div>
-      <h3>الإحصائيات وسلامة المحطات</h3>
-      <p>أبعاد العمل الكاملة: معدل قراءة المقالات، حجم حجز السلال، ورصد أداء استقرار خوادم قواعد البيانات في داندي.</p>
-      <a href="dashboard-index.html" class="bento-admin-link">استعراض لوحة التحليلات والمقاييس <i class="fas fa-arrow-left"></i></a>
+      <div class="bento-admin-icon"><i class="fas fa-home"></i></div>
+      <h3>إدارة الواجهة الرئيسية</h3>
+      <p>تعديل أقسام الصفحة الرئيسية، بانر العروض، أشرطة التنبيهات، وترتيب فئات المنتجات الظاهرة للعملاء.</p>
+      <a href="dashboard-index.html" class="bento-admin-link">تخصيص واجهة المتجر <i class="fas fa-arrow-left"></i></a>
     </div>
   </div>
+
+  <!-- Change Logs Section -->
+  <div class="logs-section">
+    <div class="section-header" style="text-align: right; margin-bottom: 24px;">
+      <h3 style="font-size: 1.35rem; color: var(--color-primary); margin-bottom: 8px;">
+        <i class="fas fa-clipboard-list" style="color:var(--color-blush); margin-left: 8px;"></i>سجل نشاطات النظام (Change Logs)
+      </h3>
+      <p style="color:var(--color-muted); font-size:0.95rem;">مراقبة حية لأحدث التعديلات والإجراءات التي قام بها المشرفون.</p>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>المسؤول (الأدمن)</th>
+            <th>نوع الإجراء والتفاصيل</th>
+            <th>التاريخ والوقت</th>
+          </tr>
+        </thead>
+        <tbody id="logsTableBody">
+          <tr>
+            <td colspan="3" style="text-align:center; padding: 30px;">
+              <i class="fas fa-spinner fa-spin" style="color:var(--color-blush); margin-left: 5px;"></i> جاري تحميل السجل...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </section>
 
 <!-- Footer -->
@@ -296,6 +380,8 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- تمت إضافة مكتبة Firestore هنا -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
   // Firebase configuration
@@ -310,12 +396,14 @@
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  const db = firebase.firestore();
 
   const operatorCard = document.getElementById('operatorCard');
   const operatorEmail = document.getElementById('operatorEmail');
   const operatorInitials = document.getElementById('operatorInitials');
   const signOutBtn = document.getElementById('signOutBtn');
   const signoutLink = document.getElementById('signoutLink');
+  const logsTableBody = document.getElementById('logsTableBody');
 
   // Guard routing checks
   auth.onAuthStateChanged(user => {
@@ -325,8 +413,57 @@
       operatorCard.style.display = 'flex';
       operatorEmail.textContent = user.email || 'Admin';
       operatorInitials.textContent = (user.email ? user.email.charAt(0).toUpperCase() : 'A');
+      
+      // جلب سجل النشاطات بمجرد التحقق من تسجيل الدخول
+      fetchChangeLogs();
     }
   });
+
+  // Fetch Change Logs from Firestore
+  async function fetchChangeLogs() {
+    try {
+      // نجلب آخر 15 عملية مسجلة مرتبة من الأحدث للأقدم
+      const snapshot = await db.collection('change_logs')
+                               .orderBy('timestamp', 'desc')
+                               .limit(15)
+                               .get();
+
+      if (snapshot.empty) {
+        logsTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">لا توجد نشاطات مسجلة حتى الآن.</td></tr>';
+        return;
+      }
+
+      logsTableBody.innerHTML = ''; // إفراغ سطر "جاري التحميل"
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const adminEmail = data.adminEmail || 'غير معروف';
+        const action = data.action || 'إجراء غير محدد';
+        
+        // تنسيق التاريخ والوقت
+        let dateString = 'الآن';
+        if (data.timestamp) {
+          const dateObj = data.timestamp.toDate();
+          dateString = dateObj.toLocaleString('ar-EG', { 
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          });
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="admin-badge"><i class="fas fa-user-circle"></i> ${adminEmail}</span></td>
+          <td style="font-weight: 500;">${action}</td>
+          <td class="log-date" dir="ltr" style="text-align: right;">${dateString}</td>
+        `;
+        logsTableBody.appendChild(tr);
+      });
+
+    } catch (error) {
+      console.error("Error fetching logs: ", error);
+      logsTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding: 20px;">حدث خطأ أثناء جلب السجل. يرجى التأكد من صلاحيات قاعدة البيانات (Firestore Rules).</td></tr>';
+    }
+  }
 
   // Action logout triggers
   async function performLogOut(){
