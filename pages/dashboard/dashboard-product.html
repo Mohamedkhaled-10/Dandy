@@ -18,6 +18,7 @@
       display: grid;
       grid-template-columns: 1fr 1.5fr;
       gap: 30px;
+      align-items: start;
     }
 
     @media (max-width: 1100px) {
@@ -27,17 +28,17 @@
     }
 
     .manager-card {
-      background: var(--color-surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--border-radius-lg);
+      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--border-light, #eaeaea);
+      border-radius: var(--border-radius-lg, 16px);
       padding: 30px;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
 
     .manager-card h3 {
       font-size: 1.3rem;
       font-weight: 800;
-      color: var(--color-primary);
+      color: var(--color-primary, #333);
       margin-bottom: 20px;
       border-bottom: 1px solid rgba(0,0,0,0.05);
       padding-bottom: 10px;
@@ -47,10 +48,12 @@
       display: flex;
       gap: 16px;
       margin-bottom: 16px;
+      flex-wrap: wrap;
     }
 
     .form-group-admin {
       flex: 1;
+      min-width: 200px;
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -59,21 +62,40 @@
     .form-group-admin label {
       font-weight: 700;
       font-size: 0.85rem;
-      color: var(--color-muted);
+      color: var(--color-muted, #777);
     }
 
     .form-group-admin input, .form-group-admin select, .form-group-admin textarea {
       padding: 10px 14px;
-      border: 1px solid var(--border-light);
-      border-radius: var(--border-radius-sm);
+      border: 1px solid var(--border-light, #eaeaea);
+      border-radius: var(--border-radius-sm, 8px);
       font-size: 0.9rem;
       outline: none;
-      transition: var(--transition-fast);
-      background: #fff;
+      transition: all 0.3s ease;
+      background: var(--color-surface-soft, #fcfcfc);
+      font-family: inherit;
     }
 
     .form-group-admin input:focus, .form-group-admin select:focus, .form-group-admin textarea:focus {
-      border-color: var(--color-blush);
+      border-color: var(--color-blush, #D98D99);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(217, 141, 153, 0.1);
+    }
+    
+    /* Live Image Preview */
+    .img-preview-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .img-preview-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light, #eaeaea);
+      object-fit: cover;
+      display: none;
+      background: #f0f0f0;
     }
 
     .chk-row {
@@ -81,6 +103,10 @@
       flex-wrap: wrap;
       gap: 20px;
       margin: 16px 0;
+      background: var(--color-surface-soft, #f9f9f9);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-light, #eaeaea);
     }
 
     .chk-label {
@@ -89,9 +115,11 @@
       gap: 8px;
       font-weight: 700;
       font-size: 0.9rem;
-      color: var(--color-primary);
+      color: var(--color-primary, #333);
       cursor: pointer;
     }
+    
+    .chk-label input { accent-color: var(--color-blush, #D98D99); width: 16px; height: 16px; cursor: pointer; }
 
     /* Professional Premium Admin Product Grid Layout */
     .admin-products-header {
@@ -102,22 +130,48 @@
       flex-wrap: wrap;
       gap: 14px;
     }
+    
+    .controls-wrapper {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      flex-grow: 1;
+      justify-content: flex-end;
+    }
 
-    .admin-filter-select {
-      padding: 8px 16px;
+    .admin-filter-select, .admin-search-input {
+      padding: 9px 16px;
       border-radius: 99px;
-      border: 1px solid var(--border-light);
+      border: 1px solid var(--border-light, #eaeaea);
       font-family: inherit;
       font-weight: 700;
+      font-size: 0.85rem;
       outline: none;
-      background: #fff;
-      color: var(--color-primary);
-      cursor: pointer;
-      transition: var(--transition-fast);
+      background: var(--color-surface-soft, #fcfcfc);
+      color: var(--color-primary, #333);
+      transition: all 0.3s ease;
     }
     
-    .admin-filter-select:focus {
-      border-color: var(--color-blush);
+    .admin-filter-select:focus, .admin-search-input:focus {
+      border-color: var(--color-blush, #D98D99);
+      background: #fff;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+    }
+    .search-input-wrapper i {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-muted, #777);
+    }
+    .admin-search-input {
+      padding-right: 36px;
+      width: 100%;
+      max-width: 220px;
     }
 
     .admin-product-grid {
@@ -127,26 +181,26 @@
     }
 
     .admin-p-card {
-      background: var(--color-surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--border-radius-md);
+      background: var(--color-surface, #fff);
+      border: 1px solid var(--border-light, #eaeaea);
+      border-radius: var(--border-radius-md, 12px);
       overflow: hidden;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
       display: flex;
       flex-direction: column;
-      transition: var(--transition-smooth);
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
       position: relative;
     }
 
     .admin-p-card:hover {
       transform: translateY(-4px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--color-blush);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+      border-color: var(--color-blush, #D98D99);
     }
 
     .admin-p-img-box {
       width: 100%;
-      height: 160px;
+      height: 170px;
       position: relative;
       background: #fdfafb;
     }
@@ -159,29 +213,30 @@
 
     .admin-p-badges {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 10px;
+      right: 10px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
       z-index: 2;
     }
 
     .admin-badge {
       padding: 4px 10px;
       font-size: 0.72rem;
-      font-weight: 700;
-      border-radius: 99px;
+      font-weight: 800;
+      border-radius: 4px;
       color: #fff;
       text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .admin-badge-best { background: var(--color-blush); }
-    .admin-badge-sale { background: var(--color-gold); }
+    .admin-badge-best { background: var(--color-blush, #D98D99); }
+    .admin-badge-sale { background: var(--color-gold, #c28834); }
     .admin-badge-hidden { background: #6c757d; }
-    .admin-badge-soldout { background: #343a40; }
+    .admin-badge-soldout { background: #dc3545; }
 
     .admin-p-content {
-      padding: 14px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -189,15 +244,15 @@
 
     .admin-p-cat {
       font-size: 0.78rem;
-      color: var(--color-gold);
-      font-weight: 700;
+      color: var(--color-gold, #c28834);
+      font-weight: 800;
       margin-bottom: 6px;
     }
 
     .admin-p-title {
       font-size: 0.95rem;
       font-weight: 800;
-      color: var(--color-primary);
+      color: var(--color-primary, #333);
       margin-bottom: 8px;
       line-height: 1.4;
       height: 2.8em;
@@ -208,61 +263,121 @@
     }
 
     .admin-p-price {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 800;
-      color: var(--color-blush);
+      color: var(--color-blush, #D98D99);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .old-price {
+      font-size: 0.85rem;
+      text-decoration: line-through;
+      color: var(--color-muted, #999);
+      font-weight: 600;
+    }
+
+    /* Quick Toggles */
+    .quick-toggles-row {
+      display: flex;
+      gap: 8px;
       margin-bottom: 12px;
     }
+    
+    .btn-qt {
+      flex: 1;
+      padding: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      border: 1px solid var(--border-light, #eaeaea);
+      background: var(--color-surface-soft, #f9f9f9);
+      color: var(--color-muted, #777);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .btn-qt:hover { background: #eee; }
+    .btn-qt.active-danger { background: #ffebee; color: #dc3545; border-color: #ffcdd2; }
+    .btn-qt.active-muted { background: #e9ecef; color: #495057; border-color: #ced4da; }
 
     .admin-p-actions {
       display: flex;
       gap: 6px;
       margin-top: auto;
-      border-top: 1px solid var(--border-light);
-      padding-top: 10px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      padding-top: 12px;
     }
 
     .admin-p-btn {
       flex: 1;
       padding: 8px 4px;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      border-radius: var(--border-radius-sm);
+      border-radius: 6px;
       border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 4px;
-      transition: var(--transition-fast);
+      transition: all 0.2s;
       text-decoration: none;
       text-align: center;
     }
 
-    .admin-btn-edit { background: var(--color-gold-cream); color: var(--color-gold); }
-    .admin-btn-edit:hover { background: var(--color-gold); color: #fff; }
+    .admin-btn-edit { background: #fff8e1; color: var(--color-gold, #c28834); border: 1px solid #ffecb3; }
+    .admin-btn-edit:hover { background: var(--color-gold, #c28834); color: #fff; }
     
-    .admin-btn-view { background: var(--color-surface-soft); color: var(--color-primary); border: 1px solid var(--border-light); }
-    .admin-btn-view:hover { background: var(--color-primary); color: #fff; }
+    .admin-btn-view { background: #f0f4f8; color: #334155; border: 1px solid #cbd5e1; }
+    .admin-btn-view:hover { background: #334155; color: #fff; }
     
-    .admin-btn-del { background: rgba(220,100,100,0.1); color: var(--color-danger); }
-    .admin-btn-del:hover { background: var(--color-danger); color: #fff; }
+    .admin-btn-del { background: #ffebee; color: #dc3545; border: 1px solid #ffcdd2; flex: 0.4; }
+    .admin-btn-del:hover { background: #dc3545; color: #fff; }
 
     .btn-template {
-      background: var(--color-surface-soft);
-      border: 1px dashed var(--color-blush);
-      color: var(--color-blush);
-      padding: 4px 10px;
+      background: var(--color-surface-soft, #f9f9f9);
+      border: 1px dashed var(--color-blush, #D98D99);
+      color: var(--color-blush, #D98D99);
+      padding: 6px 12px;
       font-size: 0.75rem;
-      font-weight: 700;
-      border-radius: 4px;
+      font-weight: 800;
+      border-radius: 6px;
       cursor: pointer;
       margin-right: auto;
-      transition: var(--transition-fast);
+      transition: all 0.2s ease;
     }
     .btn-template:hover {
-      background: var(--color-blush);
+      background: var(--color-blush, #D98D99);
       color: #fff;
+    }
+    
+    /* Skeleton Loader */
+    @keyframes shimmer {
+      0% { background-position: -468px 0; }
+      100% { background-position: 468px 0; }
+    }
+    .skeleton-card {
+      height: 380px;
+      border-radius: 12px;
+      background: #f6f7f8;
+      background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+      background-repeat: no-repeat;
+      background-size: 800px 380px; 
+      animation: shimmer 1.5s linear infinite forwards;
+      border: 1px solid var(--border-light, #eaeaea);
+    }
+    
+    @media (max-width: 768px) {
+      .controls-wrapper { justify-content: flex-start; width: 100%; }
+      .admin-search-input { max-width: 100%; }
+      .admin-products-header h3 { width: 100%; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
     }
   </style>
 </head>
@@ -312,7 +427,7 @@
   <div class="manager-layout">
     
     <div class="manager-card">
-      <h3><i class="fas fa-box-open"></i> إضافة / تعديل مستحضر تجميلي</h3>
+      <h3><i class="fas fa-box-open" style="color: var(--color-blush);"></i> إضافة / تعديل مستحضر تجميلي</h3>
       
       <form id="productForm">
         <input type="hidden" id="edit-id">
@@ -345,17 +460,20 @@
           </div>
           <div class="form-group-admin">
             <label for="p-rating">التقييم الأصلي (من 5 نجوم)</label>
-            <input type="number" id="p-rating" placeholder="مثال: 5" min="1" max="5" required>
+            <input type="number" id="p-rating" placeholder="مثال: 5" min="1" max="5" step="0.1" required>
           </div>
         </div>
 
         <div class="form-group-admin" style="margin-bottom: 16px;">
           <label for="p-image">رابط صورة المستحضر الثابتة</label>
-          <input type="url" id="p-image" placeholder="https://unsplash.com/... أو رابط مباشر آخر" required>
+          <div class="img-preview-wrapper">
+            <input type="url" id="p-image" placeholder="https://unsplash.com/... أو رابط مباشر آخر" required style="flex: 1;">
+            <img id="imagePreview" class="img-preview-box" alt="Preview">
+          </div>
         </div>
 
         <div class="form-group-admin" style="margin-bottom: 16px;">
-          <div style="display: flex; align-items: center; width: 100%;">
+          <div style="display: flex; align-items: center; width: 100%; margin-bottom: 6px;">
             <label for="p-description">الوصف التفصيلي الدقيق للمنتج وفوائده</label>
             <button type="button" class="btn-template" onclick="insertDescriptionTemplate()"><i class="fas fa-magic"></i> إدراج نموذج منسق</button>
           </div>
@@ -369,7 +487,7 @@
           <label class="chk-label">
             <input type="checkbox" id="p-onSale"> خاضع لـ "العروض الخاصة"
           </label>
-          <label class="chk-label" style="color:var(--color-danger);">
+          <label class="chk-label" style="color:#dc3545;">
             <input type="checkbox" id="p-isSoldOut"> نفذت الكمية (Sold Out)
           </label>
           <label class="chk-label" style="color:#6c757d;">
@@ -378,26 +496,42 @@
         </div>
 
         <div style="display: flex; gap: 10px;">
-          <button type="submit" class="btn" style="background:var(--color-blush); color:#fff; flex:1; padding:12px; border-radius:8px; border:none; font-weight:700; cursor:pointer;" id="saveBtn"><i class="fas fa-plus"></i> إضافة المستحضر للرفوف</button>
-          <button type="button" class="btn" style="background:#fff; border:1px solid var(--border-light); color:var(--color-muted); padding:12px; border-radius:8px; display:none;" id="cancelEdit">إلغاء التعديل</button>
+          <button type="submit" class="btn" style="background:var(--color-blush); color:#fff; flex:1; padding:12px; border-radius:8px; border:none; font-weight:800; font-size:1rem; cursor:pointer; transition:0.2s;" id="saveBtn"><i class="fas fa-plus"></i> إضافة المستحضر للرفوف</button>
+          <button type="button" class="btn" style="background:#fff; border:1px solid var(--border-light); color:var(--color-muted); padding:12px; border-radius:8px; font-weight:700; cursor:pointer; display:none; transition:0.2s;" id="cancelEdit" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='#fff'">إلغاء التعديل</button>
         </div>
       </form>
     </div>
 
     <div class="manager-card">
       <div class="admin-products-header">
-        <h3><i class="fas fa-boxes"></i> المنتجات المنشورة على المتجر</h3>
-        <select id="admin-filter-select" class="admin-filter-select">
-          <option value="all">كل الفئات والمنتجات</option>
-          <option value="Body care">Body care</option>
-          <option value="Hair care">Hair care</option>
-          <option value="Skin care">Skin care</option>
-          <option value="Perfume">Perfume</option>
-        </select>
+        <h3><i class="fas fa-boxes" style="color: var(--color-gold);"></i> المنتجات المنشورة</h3>
+        
+        <div class="controls-wrapper">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="liveSearchProduct" class="admin-search-input" placeholder="بحث بالاسم...">
+          </div>
+          
+          <select id="admin-sort-select" class="admin-filter-select">
+            <option value="default">الترتيب الافتراضي</option>
+            <option value="price-asc">السعر: من الأقل للأعلى</option>
+            <option value="price-desc">السعر: من الأعلى للأقل</option>
+          </select>
+
+          <select id="admin-filter-select" class="admin-filter-select">
+            <option value="all">كل الفئات</option>
+            <option value="Body care">Body care</option>
+            <option value="Hair care">Hair care</option>
+            <option value="Skin care">Skin care</option>
+            <option value="Perfume">Perfume</option>
+          </select>
+        </div>
       </div>
       
       <div id="adminProductGrid" class="admin-product-grid">
-        <p style="text-align: center; color: var(--color-muted); padding: 20px; grid-column: 1/-1;">جاري سحب وجرد المستحضرات الحية...</p>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
       </div>
     </div>
 
@@ -475,11 +609,10 @@
     if (!user) {
       window.location.href = '../auth/login.html';
     } else {
-      loadProductsAdmin();
+      listenToProducts();
     }
   });
 
-  // Action logout triggers
   async function performLogOut(){
     try {
       await auth.signOut();
@@ -491,7 +624,6 @@
   const signoutLink = document.getElementById('signoutLink');
   if(signoutLink) signoutLink.addEventListener('click', performLogOut);
 
-  // Toggle Menubar drawer for mobile
   function toggleNav() {
     const menubar = document.getElementById("menubar");
     const hamburger = document.querySelector(".hamburger");
@@ -499,24 +631,17 @@
     hamburger.classList.toggle("change");
   }
 
-  // Navigation hide / show on scroll
   let lastScrollTop = 0;
   const nav = document.getElementById('navbar');
   const navHeight = nav.offsetHeight;
 
   window.addEventListener('scroll', function () {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > 80) {
-      nav.classList.add('scrolled');
-    } else {
-      nav.classList.remove('scrolled');
-    }
+    if (scrollTop > 80) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
 
-    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
-      nav.style.top = `-${navHeight + 20}px`;
-    } else {
-      nav.style.top = `20px`;
-    }
+    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) nav.style.top = `-${navHeight + 20}px`;
+    else nav.style.top = `20px`;
     lastScrollTop = scrollTop;
   });
 </script>
@@ -527,74 +652,139 @@
   const saveBtn = document.getElementById('saveBtn');
   const editIdEl = document.getElementById('edit-id');
   const cancelEditBtn = document.getElementById('cancelEdit');
+  
+  // Controls
   const adminFilterSelect = document.getElementById('admin-filter-select');
+  const adminSortSelect = document.getElementById('admin-sort-select');
+  const liveSearchProduct = document.getElementById('liveSearchProduct');
+  
+  // Image Preview Logic
+  const imgInput = document.getElementById('p-image');
+  const imgPreview = document.getElementById('imagePreview');
+  imgInput.addEventListener('input', function() {
+    if(this.value.trim() !== '') {
+      imgPreview.src = this.value;
+      imgPreview.style.display = 'block';
+    } else {
+      imgPreview.style.display = 'none';
+      imgPreview.src = '';
+    }
+  });
 
-  let activeProducts = [];
+  let rawProducts = [];
 
-  // Load and render products inside specialized responsive bento cards
-  function loadProductsAdmin(){
-    const currentFilter = adminFilterSelect.value;
-    
+  // Listen once and keep synced
+  function listenToProducts(){
     db.ref('products').on('value', snap => {
-      adminProductGrid.innerHTML = '';
-      activeProducts = [];
-
-      if(!snap.exists()) {
-        adminProductGrid.innerHTML = '<p style="text-align:center;padding:20px;color:var(--color-muted);grid-column:1/-1;">المخزن مفرغ بالكامل من أي معروضات.</p>';
-        return;
+      let tempArr = [];
+      if(snap.exists()) {
+        snap.forEach(child => {
+          tempArr.push({id: child.key, ...child.val()});
+        });
       }
-
-      let count = 0;
-      snap.forEach(child => {
-        const d = child.val();
-        const normCat = normalizeCategory(d.category);
-        activeProducts.push({id: child.key, ...d});
-
-        // Filter functionality
-        if(currentFilter !== 'all' && normCat !== currentFilter) {
-          return;
-        }
-
-        count++;
-
-        let badgesHtml = '';
-        if(d.bestSeller) badgesHtml += '<span class="admin-badge admin-badge-best">الأكثر مبيعاً</span>';
-        if(d.onSale) badgesHtml += '<span class="admin-badge admin-badge-sale">خصم خاص</span>';
-        if(d.isHidden) badgesHtml += '<span class="admin-badge admin-badge-hidden">مخفي</span>';
-        if(d.isSoldOut) badgesHtml += '<span class="admin-badge admin-badge-soldout">نفذت الكمية</span>';
-
-        const card = document.createElement('div');
-        card.className = 'admin-p-card';
-        card.innerHTML = `
-          <div class="admin-p-img-box">
-            <div class="admin-p-badges">${badgesHtml}</div>
-            <img src="${d.image || ''}" alt="${d.name || ''}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
-          </div>
-          <div class="admin-p-content">
-            <span class="admin-p-cat"><i class="fas fa-tags"></i> ${normCat}</span>
-            <h4 class="admin-p-title">${d.name || ''}</h4>
-            <div class="admin-p-price">${d.price || 0} جنيه</div>
-            <div class="admin-p-actions">
-              <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${child.key}')"><i class="fas fa-edit"></i> تعديل</button>
-              <a href="../shop/product.html?id=${child.key}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-eye"></i> معاينة</a>
-              <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${child.key}')"><i class="fas fa-trash"></i></button>
-            </div>
-          </div>
-        `;
-        adminProductGrid.appendChild(card);
-      });
-
-      if (count === 0) {
-        adminProductGrid.innerHTML = '<p style="text-align:center;padding:20px;color:var(--color-muted);grid-column:1/-1;">لا يوجد منتجات تندرج تحت هذا التصنيف حالياً.</p>';
-      }
+      // Reverse to show latest added normally
+      rawProducts = tempArr.reverse();
+      renderProducts();
     });
   }
 
-  adminFilterSelect.addEventListener('change', loadProductsAdmin);
+  // Filter, Sort and Render Engine
+  function renderProducts() {
+    const currentFilter = adminFilterSelect.value;
+    const currentSort = adminSortSelect.value;
+    const searchQuery = liveSearchProduct.value.trim().toLowerCase();
+    
+    adminProductGrid.innerHTML = '';
+
+    if(rawProducts.length === 0) {
+      adminProductGrid.innerHTML = '<p style="text-align:center;padding:40px;color:var(--color-muted);grid-column:1/-1;">المخزن مفرغ بالكامل من أي معروضات.</p>';
+      return;
+    }
+
+    // Apply Filter & Search
+    let filtered = rawProducts.filter(p => {
+      const normCat = normalizeCategory(p.category);
+      const matchesCat = (currentFilter === 'all' || normCat === currentFilter);
+      const matchesSearch = (p.name || '').toLowerCase().includes(searchQuery);
+      return matchesCat && matchesSearch;
+    });
+
+    // Apply Sorting
+    if (currentSort === 'price-asc') {
+      filtered.sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
+    } else if (currentSort === 'price-desc') {
+      filtered.sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0));
+    }
+
+    if(filtered.length === 0) {
+      adminProductGrid.innerHTML = '<p style="text-align:center;padding:40px;color:var(--color-muted);grid-column:1/-1;">لا يوجد منتجات مطابقة للبحث أو التصفية.</p>';
+      return;
+    }
+
+    filtered.forEach(d => {
+      const normCat = normalizeCategory(d.category);
+      
+      let badgesHtml = '';
+      if(d.bestSeller) badgesHtml += '<span class="admin-badge admin-badge-best">الأكثر مبيعاً</span>';
+      if(d.onSale) badgesHtml += '<span class="admin-badge admin-badge-sale">خصم خاص</span>';
+      if(d.isHidden) badgesHtml += '<span class="admin-badge admin-badge-hidden">مخفي</span>';
+      if(d.isSoldOut) badgesHtml += '<span class="admin-badge admin-badge-soldout">نفذت الكمية</span>';
+
+      // Price logic
+      let priceHtml = `${d.price || 0} EGP`;
+      if(d.onSale && d.discount) {
+        const originalPrice = ((d.price * 100) / (100 - d.discount)).toFixed(0);
+        priceHtml = `${d.price} EGP <span class="old-price">${originalPrice} EGP</span>`;
+      }
+
+      const card = document.createElement('div');
+      card.className = 'admin-p-card';
+      card.innerHTML = `
+        <div class="admin-p-img-box">
+          <div class="admin-p-badges">${badgesHtml}</div>
+          <img src="${d.image || ''}" alt="${d.name || ''}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+        </div>
+        <div class="admin-p-content">
+          <span class="admin-p-cat"><i class="fas fa-tags"></i> ${normCat}</span>
+          <h4 class="admin-p-title" title="${d.name || ''}">${d.name || ''}</h4>
+          
+          <div class="quick-toggles-row">
+            <button class="btn-qt ${d.isSoldOut ? 'active-danger' : ''}" onclick="toggleStatus('${d.id}', 'isSoldOut', ${!!d.isSoldOut})" title="إيقاف / تشغيل: نفذت الكمية"><i class="fas fa-ban"></i> ${d.isSoldOut ? 'متوفر' : 'نفاذ'}</button>
+            <button class="btn-qt ${d.isHidden ? 'active-muted' : ''}" onclick="toggleStatus('${d.id}', 'isHidden', ${!!d.isHidden})" title="إخفاء / إظهار المنتج"><i class="fas ${d.isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${d.isHidden ? 'إظهار' : 'إخفاء'}</button>
+          </div>
+
+          <div class="admin-p-price">${priceHtml}</div>
+          
+          <div class="admin-p-actions">
+            <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${d.id}')"><i class="fas fa-edit"></i> تعديل</button>
+            <a href="../shop/product.html?id=${d.id}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
+            <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${d.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+      adminProductGrid.appendChild(card);
+    });
+  }
+
+  // Control Listeners
+  adminFilterSelect.addEventListener('change', renderProducts);
+  adminSortSelect.addEventListener('change', renderProducts);
+  liveSearchProduct.addEventListener('input', renderProducts);
+
+  // Quick Toggles API
+  window.toggleStatus = async function(id, field, currentValue) {
+    try {
+      await db.ref(`products/${id}`).update({ [field]: !currentValue });
+    } catch(err) {
+      alert('حدث خطأ أثناء تحديث حالة المنتج.');
+    }
+  }
 
   // Handle addition and edits submit
   productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+    saveBtn.disabled = true;
 
     const name = document.getElementById('p-name').value.trim();
     const price = parseFloat(document.getElementById('p-price').value) || 0;
@@ -612,37 +802,27 @@
     const editId = editIdEl.value;
 
     const payload = {
-      name,
-      price,
-      discount: discount || '',
-      category,
-      rating,
-      image,
-      description,
-      bestSeller,
-      onSale,
-      isSoldOut,
-      isHidden
+      name, price, discount: discount || '', category, rating, image, description,
+      bestSeller, onSale, isSoldOut, isHidden
     };
 
     try {
       if(editId) {
         await db.ref(`products/${editId}`).update(payload);
-        alert('تم تعديل وحفظ المستحضر التجميلي بأمان!');
       } else {
         await db.ref('products').push().set(payload);
-        alert('تم إضافة المستحضر الجديد على قائمة الرفوف بالمتجر!');
       }
-
       resetProductForm();
     } catch(err) {
       alert('خطأ أثناء حفظ المنتج. يرجى المحاولة لاحقاً.');
+    } finally {
+      saveBtn.disabled = false;
     }
   });
 
   // Start edit item trigger
   window.startProductEdit = function(key) {
-    const p = activeProducts.find(item => item.id === key);
+    const p = rawProducts.find(item => item.id === key);
     if(!p) return;
 
     document.getElementById('p-name').value = p.name || '';
@@ -653,6 +833,9 @@
     document.getElementById('p-image').value = p.image || '';
     document.getElementById('p-description').value = p.description || '';
 
+    // Trigger image preview
+    imgInput.dispatchEvent(new Event('input'));
+
     document.getElementById('p-bestSeller').checked = !!p.bestSeller;
     document.getElementById('p-onSale').checked = !!p.onSale;
     document.getElementById('p-isSoldOut').checked = !!p.isSoldOut;
@@ -662,7 +845,6 @@
     saveBtn.innerHTML = '<i class="fas fa-check"></i> حفظ تعديلات المستحضر';
     cancelEditBtn.style.display = 'inline-block';
     
-    // Smooth scroll up to form layout
     window.scrollTo({top: 0, behavior: 'smooth'});
   };
 
@@ -670,6 +852,8 @@
   function resetProductForm(){
     productForm.reset();
     editIdEl.value = '';
+    imgPreview.style.display = 'none';
+    imgPreview.src = '';
     saveBtn.innerHTML = '<i class="fas fa-plus"></i> إضافة المستحضر للرفوف';
     cancelEditBtn.style.display = 'none';
   }
@@ -680,7 +864,6 @@
     if(!confirm('هل أنتِ موقنة بحذف هذا المستحضر التجميلي نهائياً من رفوف داندي؟')) return;
     try {
       await db.ref(`products/${key}`).remove();
-      alert('تم حذف المنتج بنجاح.');
     } catch(err) {
       alert('فشل الحذف.');
     }
