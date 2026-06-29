@@ -13,73 +13,53 @@
 
 <url>
   <loc>https://dandy-ebon.vercel.app/</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
+  <lastmod>2026-06-29T15:00:46+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
+  <loc>https://dandy-ebon.vercel.app/pages/shop/all-products.html</loc>
+  <lastmod>2026-06-29T15:00:47+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/shop/special-offers.html</loc>
+  <lastmod>2026-06-29T15:00:47+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/blog/blog.html</loc>
+  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/support/help.html</loc>
+  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/support/client-reviews.html</loc>
+  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/legal/about-us.html</loc>
+  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/legal/privacy-policy.html</loc>
+  <lastmod>2026-06-29T15:00:49+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/legal/terms.html</loc>
+  <lastmod>2026-06-29T15:00:49+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
   <loc>https://dandy-ebon.vercel.app/index.html</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/all-products.html</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/special-offers.html</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/blog.html</loc>
-  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/help.html</loc>
-  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/client-reviews.html</loc>
-  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/about-us.html</loc>
-  <lastmod>2026-06-25T17:18:34+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/privacy-policy.html</loc>
-  <lastmod>2026-06-25T17:18:35+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/terms.html</loc>
-  <lastmod>2026-06-25T17:18:35+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Skin%20Care</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Hair%20Care</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Body%20Care</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/all-products.html?category=Fragrances</loc>
-  <lastmod>2026-06-25T17:18:33+00:00</lastmod>
-  <priority>0.80</priority>
+  <lastmod>2026-06-29T15:00:49+00:00</lastmod>
+  <priority>0.64</priority>
 </url>
 
 </urlset>
