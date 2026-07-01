@@ -9,7 +9,6 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="canonical" href="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/cart.html">
 
-  <!-- Favicons and Manifest Setup -->
   <link rel="icon" type="image/x-icon" href="../../assets/images/fav-icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/fav-icons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/fav-icons/favicon-32x32.png">
@@ -19,14 +18,12 @@
   <link rel="manifest" href="../../assets/images/fav-icons/site.webmanifest">
   <meta name="theme-color" content="#D98D99">
 
-  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://ais-pre-fniowevcowlzn3v6zabmmc-894996933888.europe-west2.run.app/cart.html">
   <meta property="og:title" content="Shopping Cart & Secure Checkout | Dandy Beauty">
   <meta property="og:description" content="Securely finalize your purchase of premium organic botanical items.">
   <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
 
-  <!-- Stylesheet -->
   <link href="../../assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -46,7 +43,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 40px;
+      margin-bottom: 25px;
       position: relative;
       background: var(--color-surface);
       border: 1px solid var(--border-light);
@@ -127,6 +124,35 @@
 
     .stepper-step.active .step-text {
       color: var(--color-primary);
+    }
+
+    /* Info Bubbles Design */
+    .info-bubbles-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .info-bubble {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(217, 141, 153, 0.08);
+      color: var(--color-primary);
+      border: 1px solid rgba(217, 141, 153, 0.2);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .info-bubble i {
+      color: var(--color-blush);
+      font-size: 0.9rem;
     }
 
     /* Checkout Steps panels */
@@ -416,7 +442,6 @@
     }
   </style>
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -427,7 +452,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="ltr">
   <div class="logo" onclick="window.location.href='../../index.html'">
     <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
@@ -486,7 +510,6 @@
 <section class="cart-section container">
   <div class="cart-checkout-container" id="cartCheckoutContainer">
     
-    <!-- Stepper tracker -->
     <div class="checkout-stepper">
       <div class="stepper-line"></div>
       <div class="stepper-line-progress" id="stepperLineProgress"></div>
@@ -507,21 +530,23 @@
       </div>
     </div>
 
-    <!-- MAIN VIEWS CONTAINER -->
+    <div class="info-bubbles-container" dir="rtl">
+      <span class="info-bubble"><i class="fas fa-gift"></i> شحن مجاني للمشتريات فوق 2000 جنيه</span>
+      <span class="info-bubble"><i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام بعد معاينة المنتجات</span>
+      <span class="info-bubble"><i class="fas fa-bolt"></i> توصيل سريع لجميع المحافظات</span>
+      <span class="info-bubble"><i class="fas fa-sparkles"></i> منتجات طبيعية وأصلية 100%</span>
+    </div>
+
     <div id="checkoutFlowViews">
       
-      <!-- ==================================== -->
-      <!-- STEP 1: CART BASKET LIST -->
-      <!-- ==================================== -->
       <div id="step-panel-1" class="checkout-step-panel active">
         <div class="catalog-checkout-grid">
           
           <div class="panel-main-card">
-            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-shopping-bag"></i> Review Your Selected Essentials</h2>
+            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary); text-align: right;" dir="rtl"><i class="fas fa-shopping-bag"></i> مراجعة المنتجات المختارة في حقيبتك</h2>
             
             <div id="cartItemsList">
-              <!-- Render details dynamically -->
-            </div>
+              </div>
           </div>
 
           <div class="panel-side-summary">
@@ -553,9 +578,6 @@
         </div>
       </div>
 
-      <!-- ==================================== -->
-      <!-- STEP 2: SHIPPING DETAILS FORM (ARABIC) -->
-      <!-- ==================================== -->
       <div id="step-panel-2" class="checkout-step-panel" dir="rtl">
         <div class="catalog-checkout-grid">
           
@@ -585,7 +607,7 @@
                   <select id="f-gov" required onchange="handleGovChange()">
                     <option value="">اختر المحافظة</option>
                     <option value="Cairo">القاهرة</option>
-                    <option value="Giza">الجيزة</option>
+                    <option value="Giza">الجيرة</option>
                     <option value="Alexandria">الإسكندرية</option>
                     <option value="Gharbia">الغربية</option>
                     <option value="Dakahlia">الدقهلية</option>
@@ -639,9 +661,9 @@
               <span id="subtotalValSummary2" style="font-weight:700;">00.00 ج.م</span>
             </div>
 
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items: center;">
               <span style="color:var(--color-muted); font-size: 0.9rem;">مصاريف الشحن:</span>
-              <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-success);">اختر المحافظة</span>
+              <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-blush); font-size: 0.8rem;">شحن مجاني عندما تتخطى القيمة 2000 جنيه</span>
             </div>
 
             <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
@@ -657,9 +679,6 @@
         </div>
       </div>
 
-      <!-- ==================================== -->
-      <!-- STEP 3: ORDER FINAL REVIEW (ARABIC) -->
-      <!-- ==================================== -->
       <div id="step-panel-3" class="checkout-step-panel" dir="rtl">
         <div class="catalog-checkout-grid">
           
@@ -681,8 +700,7 @@
               <i class="fas fa-shopping-basket"></i> المنتجات المختارة في شحنتك
             </div>
             <div id="revProductsList" style="margin-bottom:30px;">
-              <!-- render preview list -->
-            </div>
+              </div>
 
             <div class="checkout-nav-row">
               <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-right"></i> تعديل تفاصيل العنوان</button>
@@ -724,7 +742,6 @@
   </div>
 </section>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -762,7 +779,6 @@
   </div>
 </footer>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -781,7 +797,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-    // Hamburger drawer menu toggle with animation and blur
+  // Hamburger drawer menu toggle with animation and blur
   function toggleNav() {
     const menubar = document.getElementById("menubar");
     const overlay = document.getElementById("menu-overlay");
@@ -790,7 +806,6 @@
     menubar.classList.toggle("active");
     overlay.classList.toggle("active");
     
-    // إخفاء النافبار عند فتح القائمة
     if (menubar.classList.contains("active")) {
       navbar.style.transform = "translateY(-100%)";
     } else {
@@ -811,7 +826,6 @@
       nav.classList.remove('scrolled');
     }
 
-    // إخفاء الشريط عند النزول، وإظهاره عند الصعود (إلا إذا كانت قائمة الهاتف مفتوحة)
     if (!document.getElementById("menubar").classList.contains("active")) {
       if (scrollTop > lastScrollTop && scrollTop > 100) {
         nav.style.transform = `translateY(-100%)`;
@@ -860,7 +874,7 @@
 
   function getShippingFeeForGov(govName) {
     if (!govName) return null;
-    return shippingRates[govName] || 120; // fallback to 120 EGP standard for Upper or unspecified zones
+    return shippingRates[govName] || 120;
   }
 
   // Render elements references
@@ -901,13 +915,24 @@
     const subtotal = calculateCartSubtotal();
     
     if (selectedGov) {
-      const fee = getShippingFeeForGov(selectedGov);
-      shippingCostSummary2.textContent = fee + " ج.م";
-      shippingCostSummary2.style.color = "var(--color-primary)";
+      let fee = getShippingFeeForGov(selectedGov);
+      if (subtotal > 2000) {
+        fee = 0;
+        shippingCostSummary2.textContent = "شحن مجاني";
+        shippingCostSummary2.style.color = "var(--color-success)";
+      } else {
+        shippingCostSummary2.textContent = fee + " ج.م";
+        shippingCostSummary2.style.color = "var(--color-primary)";
+      }
       grandTotalSummaryValue2.textContent = (subtotal + fee).toFixed(0) + " ج.م";
     } else {
-      shippingCostSummary2.textContent = "اختر المحافظة";
-      shippingCostSummary2.style.color = "var(--color-success)";
+      if (subtotal > 2000) {
+        shippingCostSummary2.textContent = "شحن مجاني";
+        shippingCostSummary2.style.color = "var(--color-success)";
+      } else {
+        shippingCostSummary2.textContent = "شحن مجاني عندما تتخطى القيمة 2000 جنيه";
+        shippingCostSummary2.style.color = "var(--color-blush)";
+      }
       grandTotalSummaryValue2.textContent = subtotal.toFixed(0) + " ج.م";
     }
   }
@@ -942,7 +967,6 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
-          <!-- Tactile custom Qty selectors with handles -->
           <div class="qty-tactile-selector">
             <button class="qty-btn-adjust" onclick="changeQty(${index}, -1)">-</button>
             <input type="text" readonly class="qty-display-box" value="${item.quantity}">
@@ -966,6 +990,19 @@
     subtotalValSummary2.textContent = sub.toFixed(0) + ' ج.م';
     grandTotalSummaryValue1.textContent = sub.toFixed(0) + ' EGP';
     grandTotalSummaryValue2.textContent = sub.toFixed(0) + ' ج.م';
+
+    const shippingCostSummary1 = document.getElementById('shippingCostSummary1');
+    if (shippingCostSummary1) {
+      if (sub > 2000) {
+        shippingCostSummary1.textContent = 'Free Shipping';
+        shippingCostSummary1.style.color = 'var(--color-success)';
+        shippingCostSummary1.style.fontWeight = 'bold';
+      } else {
+        shippingCostSummary1.textContent = 'Calculated at next step';
+        shippingCostSummary1.style.color = 'var(--color-muted)';
+        shippingCostSummary1.style.fontWeight = 'normal';
+      }
+    }
   }
 
   window.changeQty = function(index, delta) {
@@ -985,11 +1022,9 @@
     handleGovChange();
   };
 
-  // Switch panels
   window.goToStep = function(step) {
     currentStep = step;
 
-    // Reset indicator classes
     document.querySelectorAll('.checkout-step-panel').forEach(panel => panel.classList.remove('active'));
     document.querySelectorAll('.stepper-step').forEach((s, idx) => {
       s.classList.remove('active', 'completed');
@@ -1000,18 +1035,13 @@
       }
     });
 
-    // Animate line progress width
     const pct = ((step - 1) / 2) * 100;
     document.getElementById('stepperLineProgress').style.width = pct + '%';
-
-    // Activate specific panel
     document.getElementById(`step-panel-${step}`).classList.add('active');
     
-    // Smooth window back to top on transitions
     window.scrollTo({ top: 40, behavior: 'smooth' });
   };
 
-  // Step 2 Form validation and summary compilation
   window.validateAndGoToReview = function() {
     const name = document.getElementById('f-name').value.trim();
     const phone = document.getElementById('f-phone').value.trim();
@@ -1024,34 +1054,30 @@
     const city = document.getElementById('f-city').value.trim();
     const address = document.getElementById('f-address').value.trim();
 
-    // Verify Name
     if (!name || name.length < 5) {
       alert('يرجى إدخال الاسم بالكامل (كلمتين على الأقل) لضمان دقة الشحن.');
       return;
     }
-    // Verify phone
     if (!/^01[0125][0-9]{8}$/.test(phone)) {
       alert('يرجى كتابة رقم هاتف مصري صحيح (11 رقم، يبدأ بـ 010, 011, 012, أو 015)');
       return;
     }
-    // Location options
     if (!governorate || !city || !address) {
       alert('يرجى ملء جميع التفاصيل، واختيار المحافظة، والمدينة، وعنوان الشارع بدقة.');
       return;
     }
 
     const subtotal = calculateCartSubtotal();
-    const fee = getShippingFeeForGov(governorate);
+    let fee = getShippingFeeForGov(governorate);
+    if (subtotal > 2000) fee = 0;
     const orderTotal = subtotal + fee;
 
-    // Compile values into step 3 preview lists
     revCustName.textContent = name;
     revCustPhone.textContent = phone;
     revCustEmail.textContent = email || 'لا يوجد';
     revCustLocation.textContent = city + '، محافظة ' + govText;
     revCustAddress.textContent = address;
 
-    // Draw preview list of products inside summary step 3
     revProductsList.innerHTML = '';
     cart.forEach(item => {
       const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
@@ -1068,15 +1094,13 @@
       revProductsList.appendChild(divItem);
     });
 
-    // Step 3 final billing summary indicators
     summSubtotal.textContent = subtotal.toFixed(0) + " ج.م";
-    summShipping.textContent = fee.toFixed(0) + " ج.م";
+    summShipping.textContent = fee === 0 ? "شحن مجاني" : fee.toFixed(0) + " ج.م";
     finalSummaryTotal.textContent = orderTotal.toFixed(0) + " ج.م";
 
     goToStep(3);
   };
 
-  // Submit Final Order internally to Firebase DB
   window.submitFinalOrder = async function() {
     const finalBtn = document.getElementById('finalPlaceOrderBtn');
     const savingTextLoader = document.getElementById('savingTextLoader');
@@ -1093,7 +1117,8 @@
     const address = document.getElementById('f-address').value.trim();
 
     const subtotal = calculateCartSubtotal();
-    const shippingFee = getShippingFeeForGov(governorate);
+    let shippingFee = getShippingFeeForGov(governorate);
+    if (subtotal > 2000) shippingFee = 0;
     const totalAmount = subtotal + shippingFee;
 
     const invoiceCode = 'DNY-' + Math.floor(100000 + Math.random() * 900000);
@@ -1115,33 +1140,26 @@
     };
 
     try {
-      // Save directly to orders node in Realtime Database
       const orderRef = db.ref('orders').push();
       await orderRef.set(orderData);
       const generatedKey = orderRef.key;
 
-      // 🔥 أرسل البيانات فوراً وفي نفس الثانية إلى Make.com
-try {
-  await fetch('https://hook.eu1.make.com/vx6ie8k20cw0difkin21bx4dvkw7rful', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(orderData)
-  });
-} catch(webhookError) {
-  console.error('Webhook sending failed:', webhookError);
-}
+      try {
+        await fetch('https://hook.eu1.make.com/vx6ie8k20cw0difkin21bx4dvkw7rful', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+      } catch(webhookError) {
+        console.error('Webhook sending failed:', webhookError);
+      }
 
-      
-
-      // Wipe local state bucket
       localStorage.removeItem('cart');
 
-      // Append code & phone into recentSearches automatically so they don't have to write
       let recent = JSON.parse(localStorage.getItem('dandy_recent_lookups')) || [];
       recent.unshift({ code: invoiceCode, phone: phone, time: new Date().getTime() });
       localStorage.setItem('dandy_recent_lookups', JSON.stringify(recent));
 
-      // Redirect peacefully to invoice confirmation screen
       window.location.href = `invoice.html?id=${encodeURIComponent(generatedKey)}&invoice=${encodeURIComponent(invoiceCode)}`;
 
     } catch(err) {
@@ -1153,7 +1171,6 @@ try {
     }
   };
 
-  // Initialize
   renderStep1CartItems();
 </script>
 
