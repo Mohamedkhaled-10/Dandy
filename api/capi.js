@@ -13,37 +13,35 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // استخدام الأسماء الصحيحة التي قمت أنت بإنشائها في Vercel
+    const { eventName, eventData, userData, eventId } = req.body || {};
     const PIXEL_ID = process.env.META_PIXEL_ID;
     const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
 
-    // فحص المتغيرات بشكل آمن لمنع الانهيار
+    // إذا كانت المتغيرات ناقصة، سنرسل خطأ تفصيلياً لنعرف أيهما مفقود
     if (!PIXEL_ID || !ACCESS_TOKEN) {
       return res.status(500).json({ 
         error: 'Missing Meta credentials in Environment Variables',
-        diagnostics: { pixelIdExists: !!PIXEL_ID, accessTokenExists: !!ACCESS_TOKEN }
+        diagnostics: { 
+          META_PIXEL_ID_FOUND: !!PIXEL_ID, 
+          META_ACCESS_TOKEN_FOUND: !!ACCESS_TOKEN 
+        },
+        tip: 'If you just added them, you MUST run a "Redeploy" on Vercel Dashboard.'
       });
     }
 
-    const { eventName, eventData, userData, eventId } = req.body;
-    
-    // جلب الـ IP والـ User Agent الخاص بالعميل مباشرة من السيرفر لضمان الدقة
-    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
-    const clientUserAgent = req.headers['user-agent'] || '';
-
-    // تجهيز بيانات المستخدم وتصفية الـ IP في حال وجود بروكسي
+    // تجهيز بيانات المستخدم
     const hashedUserData = {
-      client_ip_address: clientIp.split(',')[0].trim(),
-      client_user_agent: clientUserAgent,
+      client_ip_address: req.headers['x-forwarded-for'] || req.socket.remoteAddress || '',
+      client_user_agent: req.headers['user-agent'] || '',
       fbp: userData?.fbp || null,
       fbc: userData?.fbc || null,
     };
 
-    // تشفير البيانات الحساسة إن وجدت (مثل حدث الشراء)
+    // تشفير الإيميل ورقم الهاتف إن وجدوا
     if (userData?.em) hashedUserData.em = [hashData(userData.em)];
     if (userData?.ph) {
       let phone = userData.ph.replace(/[^0-9]/g, '');
-      if (phone.startsWith('01')) phone = '2' + phone; // إضافة كود مصر الدولي إذا كان مفقوداً
+      if (phone.startsWith('01')) phone = '2' + phone; // إضافة كود مصر إذا كان مفقوداً
       hashedUserData.ph = [hashData(phone)];
     }
 
@@ -54,30 +52,31 @@ module.exports = async function handler(req, res) {
           event_time: Math.floor(Date.now() / 1000),
           action_source: 'website',
           event_source_url: req.headers.referer || "https://dandy-ebon.vercel.app/",
-          event_id: eventId, // الربط لمنع التكرار
+          event_id: eventId, // لمنع التكرار
           user_data: hashedUserData,
           custom_data: eventData || {},
         },
       ],
     };
 
-    // إرسال الطلب إلى خوادم فيسبوك الرسمية
-    const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`, {
+    // إرسال البيانات إلى فيسبوك
+    const response = await fetch(`https://graph.facebook.com/v19.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
-    const fbResult = await fbResponse.json();
+    const result = await response.json();
 
-    if (!fbResponse.ok) {
-      return res.status(400).json({ error: 'Meta API Rejected Request', details: fbResult });
+    // إذا رفض فيسبوك البيانات (مثلاً الـ Token غير صحيح أو منتهي)
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Meta API Rejected Request', details: result });
     }
 
-    return res.status(200).json({ success: true, fbResult });
-
+    return res.status(200).json({ success: true, result });
+    
   } catch (error) {
-    // حماية السيرفر من الانهيار وإرجاع تفاصيل الخطأ بدقة
-    return res.status(500).json({ error: 'Server Crash', message: error.message });
+    // التقاط أي خطأ برمي برمجياً وإرساله للمتصفح فوراً لمعاينته
+    return res.status(500).json({ error: 'Server Catch Crash', message: error.message });
   }
 };
