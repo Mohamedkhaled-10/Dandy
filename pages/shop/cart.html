@@ -930,8 +930,9 @@ src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
   // Handle live updates on Governorates dropdown change
   window.handleGovChange = function() {
     const govDropdown = document.getElementById('f-gov');
+    if (!govDropdown) return; // Prevent TypeError if the cart is empty and the DOM is replaced
+
     const selectedGov = govDropdown.value;
-    
     const subtotal = calculateCartSubtotal();
     
     if (selectedGov) {
@@ -957,14 +958,25 @@ src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
     }
   }
 
+  // Update Cart Badge inside Navbar
+  function updateCartBadge() {
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+      const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
+      badge.textContent = totalQty;
+    }
+  }
+
   function renderStep1CartItems() {
+    updateCartBadge(); // Ensure badge is always up to date
+
     if (cart.length === 0) {
       document.getElementById('cartCheckoutContainer').innerHTML = `
         <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm);">
           <i class="fas fa-shopping-bag" style="font-size:4.5rem; color:var(--color-blush); margin-bottom:20px;"></i>
           <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8em; margin-bottom:10px;">Your shopping bag is empty!</h2>
           <p style="color:var(--color-muted); margin-bottom:24px; max-width:480px; margin-left:auto; margin-right:auto;">It looks like you haven't filled your cart with our lovely crowns of organic skincare yet. Browse and start pampering!</p>
-          <a href="all-products.html" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> Browse Dandy's Collections</a>
+          <a href="../shop/all-products.html" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> Browse Dandy's Collections</a>
         </div>
       `;
       return;
