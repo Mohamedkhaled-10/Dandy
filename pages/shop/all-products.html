@@ -101,97 +101,93 @@
     }
 
     .catalog-search-wrapper{
-  max-width:700px;
-  margin:40px auto 0;
-  position:relative;
-}
+      max-width:700px;
+      margin:40px auto 0;
+      position:relative;
+    }
 
-.catalog-search-box{
-  width:100%;
-  background:#fff;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:8px 14px;
-  border:2px solid transparent;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
-  transition:.3s;
-}
+    .catalog-search-box{
+      width:100%;
+      background:#fff;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:8px 14px;
+      border:2px solid transparent;
+      box-shadow:0 10px 25px rgba(0,0,0,.08);
+      transition:.3s;
+    }
 
-.catalog-search-box:focus-within{
-  border-color:var(--color-blush);
-  box-shadow:0 15px 35px rgba(204,90,108,.15);
-}
+    .catalog-search-box:focus-within{
+      border-color:var(--color-blush);
+      box-shadow:0 15px 35px rgba(204,90,108,.15);
+    }
 
-.catalog-search-box input{
-  flex:1;
-  border:none;
-  outline:none;
-  background:none;
-  font-size:1rem;
-}
+    .catalog-search-box input{
+      flex:1;
+      border:none;
+      outline:none;
+      background:none;
+      font-size:1rem;
+    }
 
-.clear-search{
-  width:36px;
-  height:36px;
-  border:none;
-  border-radius:50%;
-  background:#f5f5f5;
-  cursor:pointer;
-  display:none;
-}
+    .clear-search{
+      width:36px;
+      height:36px;
+      border:none;
+      border-radius:50%;
+      background:#f5f5f5;
+      cursor:pointer;
+      display:none;
+    }
 
-.clear-search:hover{
-  background:#ececec;
-}
+    .clear-search:hover{
+      background:#ececec;
+    }
 
-.search-meta{
-  margin-top:12px;
-  text-align:center;
-  color:var(--color-muted);
-  font-size:.9rem;
-}
+    .search-meta{
+      margin-top:12px;
+      text-align:center;
+      color:var(--color-muted);
+      font-size:.9rem;
+    }
 
-.search-suggestions{
-  position:absolute;
-  top:100%;
-  left:0;
-  right:0;
-  background:#fff;
-  border-radius:20px;
-  margin-top:10px;
-  overflow:hidden;
-  box-shadow:0 15px 40px rgba(0,0,0,.12);
-  display:none;
-  z-index:50;
-}
+    .search-suggestions{
+      position:absolute;
+      top:100%;
+      left:0;
+      right:0;
+      background:#fff;
+      border-radius:20px;
+      margin-top:10px;
+      overflow:hidden;
+      box-shadow:0 15px 40px rgba(0,0,0,.12);
+      display:none;
+      z-index:50;
+    }
 
-.search-suggestion-item{
-  padding:14px 18px;
-  cursor:pointer;
-  transition:.25s;
-}
+    .search-suggestion-item{
+      padding:14px 18px;
+      cursor:pointer;
+      transition:.25s;
+    }
 
-.search-suggestion-item:hover{
-  background:#faf7f8;
-}
+    .search-suggestion-item:hover{
+      background:#faf7f8;
+    }
 
-@media(max-width:650px){
-
-  .catalog-search-wrapper{
-    width:100%;
-  }
-
-  .catalog-search-box{
-    border-radius:18px;
-  }
-
-  .search-suggestions{
-    border-radius:16px;
-  }
-
-}
+    @media(max-width:650px){
+      .catalog-search-wrapper{
+        width:100%;
+      }
+      .catalog-search-box{
+        border-radius:18px;
+      }
+      .search-suggestions{
+        border-radius:16px;
+      }
+    }
 
     .catalog-search-box:focus-within {
       border-color: var(--color-blush-soft);
@@ -339,26 +335,66 @@
     gtag('config', 'G-NH8NG47PDV');
   </script>
 
-  <!-- Meta Pixel Code -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1016579674082555');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+  <script>
+    // دالة لجلب الكوكيز الخاصة بفيسبوك
+    function getFBCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      if (match) return match[2];
+      return null;
+    }
 
+    // دالة لإنشاء كود موحد للحدث (Event ID)
+    function generateEventId() {
+      return 'evt_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+    }
 
-</head>
+    // الدالة الرئيسية لإرسال البيانات إلى Vercel API
+    async function sendToCAPI(eventName, customData = {}, userData = {}, eventId = null) {
+      try {
+        await fetch('/api/capi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventName,
+            eventData: customData,
+            userData: {
+              fbp: getFBCookie('_fbp'),
+              fbc: getFBCookie('_fbc'),
+              ...userData
+            },
+            eventId
+          })
+        });
+      } catch (e) {
+        console.error("Failed to send to CAPI:", e);
+      }
+    }
+  </script>
+
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1016579674082555');
+
+  // توليد Event ID موحد
+  const pageViewEventId = generateEventId();
+
+  // إرسال للـ Pixel
+  fbq('track', 'PageView', {}, { eventID: pageViewEventId });
+
+  // إرسال للـ CAPI
+  sendToCAPI('PageView', {}, {}, pageViewEventId);
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
+  /></noscript>
+  </head>
 <body>
 
 <nav id="navbar" dir="ltr">
@@ -545,7 +581,7 @@ src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
     if (e.key === 'cart') updateCartCount();
   });
 
-    // Hamburger drawer menu toggle with animation and blur
+  // Hamburger drawer menu toggle with animation and blur
   function toggleNav() {
     const menubar = document.getElementById("menubar");
     const overlay = document.getElementById("menu-overlay");
@@ -614,7 +650,7 @@ src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
     });
   });
 
-  // دالة الإضافة السريعة للسلة
+  // دالة الإضافة السريعة للسلة مع CAPI
   window.quickAdd = function(id, name, price, image, discount, onSale) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const productItem = { id, name, price, image, discount, onSale };
@@ -630,16 +666,23 @@ src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
     localStorage.setItem("cart", JSON.stringify(cart));
     updateCartCount();
 
-    // إرسال حدث الإضافة للسلة إلى فيسبوك (Meta Pixel)
+    // تجهيز بيانات الحدث ومعرف منع التكرار
+    const addToCartEventId = generateEventId();
+    const eventData = {
+        content_ids: [id],
+        content_name: name,
+        content_type: 'product',
+        value: parseFloat(price),
+        currency: 'EGP'
+    };
+
+    // إرسال للـ Pixel
     if (typeof fbq === 'function') {
-        fbq('track', 'AddToCart', {
-            content_ids: [id],
-            content_name: name,
-            content_type: 'product',
-            value: parseFloat(price),
-            currency: 'EGP'
-        });
+        fbq('track', 'AddToCart', eventData, { eventID: addToCartEventId });
     }
+
+    // إرسال للـ CAPI
+    sendToCAPI('AddToCart', eventData, {}, addToCartEventId);
 
     // رسالة تنبيه أنيقة غير مزعجة
     const alertDiv = document.createElement("div");
@@ -771,32 +814,22 @@ src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
     // تطبيق الفلاتر تلقائياً إذا كان هناك فلتر مفعل بالفعل
     document.querySelector('.filter-bar input[type="checkbox"]')?.dispatchEvent(new Event('change'));
   });
-
-  
 </script>
-<script>
 
+<script>
 const searchInput = document.getElementById("search-input");
 const clearBtn = document.getElementById("clear-search");
 const resultsCount = document.getElementById("results-count");
 const suggestionsBox = document.getElementById("search-suggestions");
 
 function runLiveSearch(){
-
   const query = searchInput.value.trim().toLowerCase();
-
   const products = document.querySelectorAll(".product");
-
   let visibleCount = 0;
 
   products.forEach(product=>{
-
-    const title =
-      product.querySelector("h3")?.textContent.toLowerCase() || "";
-
-    const category =
-      product.dataset.category?.toLowerCase() || "";
-
+    const title = product.querySelector("h3")?.textContent.toLowerCase() || "";
+    const category = product.dataset.category?.toLowerCase() || "";
     const text = title + " " + category;
 
     if(text.includes(query)){
@@ -805,30 +838,19 @@ function runLiveSearch(){
     }else{
       product.style.display = "none";
     }
-
   });
 
   if(query){
-
     clearBtn.style.display = "flex";
-
-    resultsCount.textContent =
-      `${visibleCount} product(s) found`;
-
+    resultsCount.textContent = `${visibleCount} product(s) found`;
   }else{
-
     clearBtn.style.display = "none";
-
-    resultsCount.textContent =
-      `${visibleCount} product(s) available`;
-
+    resultsCount.textContent = `${visibleCount} product(s) available`;
   }
-
   buildSuggestions(query);
 }
 
 function buildSuggestions(query){
-
   if(!query){
     suggestionsBox.style.display="none";
     return;
@@ -837,16 +859,10 @@ function buildSuggestions(query){
   const names = [];
 
   document.querySelectorAll(".product h3").forEach(item=>{
-
     const name = item.textContent;
-
-    if(
-      name.toLowerCase().includes(query) &&
-      !names.includes(name)
-    ){
+    if(name.toLowerCase().includes(query) && !names.includes(name)){
       names.push(name);
     }
-
   });
 
   if(names.length===0){
@@ -868,45 +884,30 @@ function buildSuggestions(query){
   document
     .querySelectorAll(".search-suggestion-item")
     .forEach(item=>{
-
       item.addEventListener("click",()=>{
-
-        searchInput.value =
-          item.textContent.trim();
-
+        searchInput.value = item.textContent.trim();
         runLiveSearch();
-
         suggestionsBox.style.display="none";
-
       });
-
     });
-
 }
 
 searchInput.addEventListener("input", runLiveSearch);
 
 clearBtn.addEventListener("click",()=>{
-
   searchInput.value = "";
-
   runLiveSearch();
-
   searchInput.focus();
-
 });
 
 document.addEventListener("click",(e)=>{
-
   if(
     !suggestionsBox.contains(e.target) &&
     e.target !== searchInput
   ){
     suggestionsBox.style.display="none";
   }
-
 });
-
 </script>
 </body>
 </html>
