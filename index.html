@@ -494,7 +494,40 @@ src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
     }
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
-    alert(name + " has been added to your cart!");
+
+    // إرسال حدث الإضافة للسلة إلى فيسبوك (Meta Pixel)
+    if (typeof fbq === 'function') {
+        fbq('track', 'AddToCart', {
+            content_ids: [id],
+            content_name: name,
+            content_type: 'product',
+            value: parseFloat(price),
+            currency: 'EGP'
+        });
+    }
+
+    // رسالة تنبيه أنيقة غير مزعجة
+    const alertDiv = document.createElement("div");
+    alertDiv.style.position = "fixed";
+    alertDiv.style.bottom = "100px";
+    alertDiv.style.left = "50%";
+    alertDiv.style.transform = "translateX(-50%)";
+    alertDiv.style.background = "#2bae66";
+    alertDiv.style.color = "#fff";
+    alertDiv.style.padding = "14px 28px";
+    alertDiv.style.borderRadius = "8px";
+    alertDiv.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+    alertDiv.style.zIndex = "1030";
+    alertDiv.style.fontWeight = "700";
+    alertDiv.style.textAlign = "center";
+    alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-right:8px;"></i> Successfully added to bag!`;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+      alertDiv.style.opacity = "0";
+      alertDiv.style.transition = "opacity 0.4s ease";
+      setTimeout(() => alertDiv.remove(), 400);
+    }, 2800);
   }
 </script>
 
