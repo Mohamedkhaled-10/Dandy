@@ -1,46 +1,68 @@
-export default async function handler(req, res) {
+const crypto = require('crypto');
+
+// دالة لتشفير البيانات بصيغة SHA256 كما يطلب فيسبوك
+const hashData = (data) => {
+  if (!data) return undefined;
+  return crypto.createHash('sha256').update(data.trim().toLowerCase()).digest('hex');
+};
+
+module.exports = async function handler(req, res) {
   // السماح بطلبات POST فقط
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const accessToken = process.env.FB_ACCESS_TOKEN;
-    const pixelId = process.env.FB_PIXEL_ID;
+    // استخدام الأسماء الصحيحة التي قمت أنت بإنشائها في Vercel
+    const PIXEL_ID = process.env.META_PIXEL_ID;
+    const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
 
-    // فحص إذا كانت المتغيرات مفقودة وإرجاع إجابة واضحة للمتصفح
-    if (!accessToken || !pixelId) {
+    // فحص المتغيرات بشكل آمن لمنع الانهيار
+    if (!PIXEL_ID || !ACCESS_TOKEN) {
       return res.status(500).json({ 
-        error: 'Environment Variables Missing', 
-        details: `FB_ACCESS_TOKEN setup: ${!!accessToken}, FB_PIXEL_ID setup: ${!!pixelId}. Did you trigger a Redeploy after adding them?` 
+        error: 'Missing Meta credentials in Environment Variables',
+        diagnostics: { pixelIdExists: !!PIXEL_ID, accessTokenExists: !!ACCESS_TOKEN }
       });
     }
 
     const { eventName, eventData, userData, eventId } = req.body;
+    
+    // جلب الـ IP والـ User Agent الخاص بالعميل مباشرة من السيرفر لضمان الدقة
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
     const clientUserAgent = req.headers['user-agent'] || '';
+
+    // تجهيز بيانات المستخدم وتصفية الـ IP في حال وجود بروكسي
+    const hashedUserData = {
+      client_ip_address: clientIp.split(',')[0].trim(),
+      client_user_agent: clientUserAgent,
+      fbp: userData?.fbp || null,
+      fbc: userData?.fbc || null,
+    };
+
+    // تشفير البيانات الحساسة إن وجدت (مثل حدث الشراء)
+    if (userData?.em) hashedUserData.em = [hashData(userData.em)];
+    if (userData?.ph) {
+      let phone = userData.ph.replace(/[^0-9]/g, '');
+      if (phone.startsWith('01')) phone = '2' + phone; // إضافة كود مصر الدولي إذا كان مفقوداً
+      hashedUserData.ph = [hashData(phone)];
+    }
 
     const payload = {
       data: [
         {
           event_name: eventName,
           event_time: Math.floor(Date.now() / 1000),
-          event_id: eventId,
-          action_source: "website",
+          action_source: 'website',
           event_source_url: req.headers.referer || "https://dandy-ebon.vercel.app/",
-          user_data: {
-            client_ip_address: clientIp.split(',')[0].trim(),
-            client_user_agent: clientUserAgent,
-            fbp: userData?.fbp || null,
-            fbc: userData?.fbc || null,
-          },
-          custom_data: eventData || {}
-        }
-      ]
+          event_id: eventId, // الربط لمنع التكرار
+          user_data: hashedUserData,
+          custom_data: eventData || {},
+        },
+      ],
     };
 
-    // إرسال البيانات لفيسبوك
-    const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`, {
+    // إرسال الطلب إلى خوادم فيسبوك الرسمية
+    const fbResponse = await fetch(`https://graph.facebook.com/v19.0/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -55,7 +77,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, fbResult });
 
   } catch (error) {
-    // إرسال تفاصيل الانهيار البرمجي كاملة إلى المتصفح لمعاينتها فوراً
-    return res.status(500).json({ error: 'Server Crash', message: error.message, stack: error.stack });
+    // حماية السيرفر من الانهيار وإرجاع تفاصيل الخطأ بدقة
+    return res.status(500).json({ error: 'Server Crash', message: error.message });
   }
-}
+};
