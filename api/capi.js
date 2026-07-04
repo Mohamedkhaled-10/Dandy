@@ -1,9 +1,11 @@
 const crypto = require('crypto');
 
-// دالة لتشفير البيانات بصيغة SHA256 كما يطلب فيسبوك
+// دالة لتشفير البيانات بصيغة SHA256 كما يطلب فيسبوك (مُعدّلة لتتحمل أي نوع بيانات)
 const hashData = (data) => {
   if (!data) return undefined;
-  return crypto.createHash('sha256').update(data.trim().toLowerCase()).digest('hex');
+  // تحويل البيانات إلى نص بأمان لمنع الانهيار إذا أرسلها المتصفح كرقَم
+  const secureString = String(data).trim().toLowerCase();
+  return crypto.createHash('sha256').update(secureString).digest('hex');
 };
 
 module.exports = async function handler(req, res) {
@@ -37,10 +39,14 @@ module.exports = async function handler(req, res) {
       fbc: userData?.fbc || null,
     };
 
-    // تشفير الإيميل ورقم الهاتف إن وجدوا
-    if (userData?.em) hashedUserData.em = [hashData(userData.em)];
+    // تشفير الإيميل ورقم الهاتف إن وجدوا بأمان
+    if (userData?.em) {
+      hashedUserData.em = [hashData(userData.em)];
+    }
+    
     if (userData?.ph) {
-      let phone = userData.ph.replace(/[^0-9]/g, '');
+      // تحويل رقم الهاتف لنص أولاً لضمان عمل الـ replace بأمان
+      let phone = String(userData.ph).replace(/[^0-9]/g, '');
       if (phone.startsWith('01')) phone = '2' + phone; // إضافة كود مصر إذا كان مفقوداً
       hashedUserData.ph = [hashData(phone)];
     }
