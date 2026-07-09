@@ -6,7 +6,6 @@
   <title>تسجيل دخول الإدارة | Dandy Beauty</title>
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Stylesheet -->
   <link href="../../assets/css/style.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -91,7 +90,6 @@
     }
   </style>
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -102,7 +100,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav id="navbar" dir="rtl">
   <div class="logo" onclick="window.location.href='../../index.html'">
     <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
@@ -128,7 +125,6 @@
   </button>
 </nav>
 
-<!-- Mobile Menu -->
 <div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
   <ul>
     <li><a href="../../index.html">الرئيسية</a></li>
@@ -145,7 +141,6 @@
   </div>
 </div>
 
-<!-- Login main wrapper -->
 <main class="login-container container">
   <div class="login-box">
     <i class="fas fa-user-shield" style="font-size:3rem; color:var(--color-blush); margin-bottom:16px;"></i>
@@ -168,7 +163,6 @@
   </div>
 </main>
 
-<!-- Footer -->
 <footer>
   <div class="container footer-grid">
     <div class="footer-col">
@@ -205,7 +199,6 @@
   </div>
 </footer>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
@@ -255,7 +248,7 @@
   // Active check redirect if already signed in
   auth.onAuthStateChanged(user => {
     if (user) {
-      window.location.href = '../../index.html';
+      window.location.href = '../dashboard/dashboard.html';
     }
   });
 
