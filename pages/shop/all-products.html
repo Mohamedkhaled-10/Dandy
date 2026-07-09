@@ -34,213 +34,238 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* Styling specialized checkboxes to look like premium tactile category pills */
-    /* ==============================
-       Filter Buttons - Elegant Pills
-       ============================== */
-    .filter-bar {
+    /* New Shop Layout - Sidebar & Main Content */
+    .shop-layout {
       display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin: 40px auto 50px;
-      justify-content: center;
-      padding: 0 10px;
+      gap: 40px;
+      align-items: flex-start;
+      margin-top: 40px;
     }
 
-    .filter-bar input[type="checkbox"] {
-      display: none;
-    }
-
-    .filter-bar label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 26px;
+    .shop-sidebar {
+      width: 280px;
+      flex-shrink: 0;
       background: var(--color-surface);
-      color: var(--color-primary);
-      font-weight: 600;
       border: 1px solid var(--border-light);
-      border-radius: 99px;
+      border-radius: var(--border-radius-lg);
+      padding: 24px;
+      position: sticky;
+      top: 100px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .shop-main {
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Sidebar Filter Sections */
+    .filter-section {
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 24px;
+    }
+    .filter-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .filter-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      color: var(--color-primary);
+    }
+    .filter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .filter-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       cursor: pointer;
+      color: var(--color-text);
       font-size: 0.95rem;
-      box-shadow: 0 4px 12px rgba(76, 50, 46, 0.04);
-      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: color 0.3s;
     }
-
-    .filter-bar label:hover {
-      background: var(--color-surface-soft);
-      border-color: var(--color-gold);
-      transform: translateY(-2px);
+    .filter-label input[type="checkbox"], .filter-label input[type="radio"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+      flex-shrink: 0;
     }
-
-    .filter-bar input[type="checkbox"]:checked + label {
-      background: var(--color-blush);
-      color: #fff;
+    .filter-label input[type="radio"] {
+      border-radius: 50%;
+    }
+    .filter-label input:checked {
+      background-color: var(--color-blush);
       border-color: var(--color-blush);
-      box-shadow: 0 8px 24px rgba(204, 90, 108, 0.25);
-      transform: translateY(-3px);
+    }
+    .filter-label input[type="checkbox"]:checked::after {
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 10px;
+    }
+    .filter-label input[type="radio"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+    }
+    .filter-label:hover {
+      color: var(--color-blush);
     }
 
-    /* ==============================
-       Search Box - Premium Design
-       ============================== */
+    /* Professional Search Box */
+    .catalog-search-wrapper {
+      position: relative;
+      margin-bottom: 30px;
+    }
     .catalog-search-box {
-      max-width: 650px;
-      width: 95%;
-      margin: 40px auto 0;
-      background: #ffffff;
-      border: 2px solid transparent;
-      box-shadow: 0 8px 25px rgba(76, 50, 46, 0.08);
+      width: 100%;
+      background: var(--color-surface);
       border-radius: 99px;
-      padding: 6px 8px;
       display: flex;
       align-items: center;
       gap: 12px;
-      transition: all 0.35s ease;
-      position: relative;
+      padding: 6px 14px;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      transition: 0.3s;
     }
-
-    .catalog-search-wrapper{
-      max-width:700px;
-      margin:40px auto 0;
-      position:relative;
-    }
-
-    .catalog-search-box{
-      width:100%;
-      background:#fff;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:8px 14px;
-      border:2px solid transparent;
-      box-shadow:0 10px 25px rgba(0,0,0,.08);
-      transition:.3s;
-    }
-
-    .catalog-search-box:focus-within{
-      border-color:var(--color-blush);
-      box-shadow:0 15px 35px rgba(204,90,108,.15);
-    }
-
-    .catalog-search-box input{
-      flex:1;
-      border:none;
-      outline:none;
-      background:none;
-      font-size:1rem;
-    }
-
-    .clear-search{
-      width:36px;
-      height:36px;
-      border:none;
-      border-radius:50%;
-      background:#f5f5f5;
-      cursor:pointer;
-      display:none;
-    }
-
-    .clear-search:hover{
-      background:#ececec;
-    }
-
-    .search-meta{
-      margin-top:12px;
-      text-align:center;
-      color:var(--color-muted);
-      font-size:.9rem;
-    }
-
-    .search-suggestions{
-      position:absolute;
-      top:100%;
-      left:0;
-      right:0;
-      background:#fff;
-      border-radius:20px;
-      margin-top:10px;
-      overflow:hidden;
-      box-shadow:0 15px 40px rgba(0,0,0,.12);
-      display:none;
-      z-index:50;
-    }
-
-    .search-suggestion-item{
-      padding:14px 18px;
-      cursor:pointer;
-      transition:.25s;
-    }
-
-    .search-suggestion-item:hover{
-      background:#faf7f8;
-    }
-
-    @media(max-width:650px){
-      .catalog-search-wrapper{
-        width:100%;
-      }
-      .catalog-search-box{
-        border-radius:18px;
-      }
-      .search-suggestions{
-        border-radius:16px;
-      }
-    }
-
     .catalog-search-box:focus-within {
-      border-color: var(--color-blush-soft);
-      box-shadow: 0 12px 35px rgba(204, 90, 108, 0.15);
-      transform: translateY(-2px);
+      border-color: var(--color-blush);
+      box-shadow: 0 8px 25px rgba(204, 90, 108, 0.15);
     }
-
     .catalog-search-box i.search-icon {
       color: var(--color-gold);
-      font-size: 1.2rem;
-      padding-left: 14px;
+      font-size: 1.1rem;
     }
-
     .catalog-search-box input {
-      border: none;
-      background: transparent;
-      outline: none;
       flex: 1;
-      padding: 12px 5px;
-      font-size: 1.05rem;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.95rem;
       color: var(--color-primary);
       font-family: inherit;
     }
-
     .catalog-search-box input::placeholder {
       color: #a0908d;
-      font-weight: 400;
     }
-
-    .catalog-search-box button {
-      background: var(--color-primary);
-      color: #fff;
+    .clear-search {
+      width: 32px;
+      height: 32px;
       border: none;
-      border-radius: 99px;
-      padding: 14px 32px;
-      font-weight: 700;
-      font-size: 1rem;
+      border-radius: 50%;
+      background: #f5f5f5;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(39, 20, 18, 0.15);
-      transition: all 0.3s ease;
-      display: flex;
+      display: none;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      color: var(--color-muted);
+      transition: 0.2s;
+    }
+    .clear-search:hover {
+      background: #ececec;
+      color: var(--color-primary);
+    }
+    .search-meta {
+      margin-top: 10px;
+      color: var(--color-muted);
+      font-size: 0.85rem;
+      padding-left: 14px;
+    }
+    .search-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-radius: 16px;
+      margin-top: 10px;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+      display: none;
+      z-index: 50;
+      border: 1px solid var(--border-light);
+    }
+    .search-suggestion-item {
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: 0.25s;
+      font-size: 0.95rem;
+    }
+    .search-suggestion-item:hover {
+      background: var(--color-surface-soft);
+      color: var(--color-blush);
     }
 
-    .catalog-search-box button:hover {
-      background: var(--color-blush);
-      box-shadow: 0 8px 20px rgba(204, 90, 108, 0.3);
-      transform: scale(1.02);
+    /* Mobile Sidebar Toggle Button */
+    .mobile-filter-toggle {
+      display: none;
+      width: 100%;
+      padding: 14px;
+      background: var(--color-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-sm);
+      color: var(--color-primary);
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: 0.3s;
+    }
+    .mobile-filter-toggle:hover {
+      border-color: var(--color-blush);
+      color: var(--color-blush);
+    }
+
+    /* Responsive Design for Sidebar */
+    @media (max-width: 900px) {
+      .shop-layout {
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 20px;
+      }
+      .shop-sidebar {
+        width: 100%;
+        position: static;
+        display: none;
+        padding: 20px;
+      }
+      .shop-sidebar.active {
+        display: block;
+      }
+      .mobile-filter-toggle {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
     }
 
     .product.hidden {
-      display: none;
+      display: none !important;
     }
 
     /* أزرار الإضافة للموبايل والديسك توب */
@@ -458,56 +483,80 @@
     <h2>The Dandy Beauty Catalogue Goal</h2>
     <p class="header-desc">Explore our premium organic haircare, skincare essential oils, and luxury French fragrances designed to unleash your natural beauty.</p>
   </div>
-
-  <div class="catalog-search-wrapper">
-
-  <div class="catalog-search-box">
-    <i class="fas fa-search search-icon"></i>
-
-    <input
-      type="text"
-      id="search-input"
-      placeholder="Search products, ingredients, concerns..."
-      autocomplete="off"
-    >
-
-    <button type="button" id="clear-search" class="clear-search">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-
-  <div id="search-suggestions" class="search-suggestions"></div>
-
-  <div class="search-meta">
-    <span id="results-count">Showing all products</span>
-  </div>
-
-</div>
 </section>
 
-<section class="container">
-  <div class="filter-bar">
-    <input type="checkbox" id="filter1" value="skin care">
-    <label for="filter1">✨ Skin Care</label>
+<div class="shop-layout container" style="margin-bottom: 80px;">
+  <!-- Mobile Filter Toggle -->
+  <button class="mobile-filter-toggle" onclick="document.getElementById('shop-sidebar').classList.toggle('active')">
+    <i class="fas fa-filter"></i> Filter & Sort
+  </button>
 
-    <input type="checkbox" id="filter2" value="hair care">
-    <label for="filter2">🌿 Hair Care</label>
+  <aside class="shop-sidebar" id="shop-sidebar">
+    <div class="filter-section">
+      <h3>Search Catalog</h3>
+      <div class="catalog-search-wrapper">
+        <div class="catalog-search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search products..."
+            autocomplete="off"
+          >
+          <button type="button" id="clear-search" class="clear-search">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div id="search-suggestions" class="search-suggestions"></div>
+        <div class="search-meta">
+          <span id="results-count">Showing all products</span>
+        </div>
+      </div>
+    </div>
 
-    <input type="checkbox" id="filter3" value="body care">
-    <label for="filter3">🧴 Body Care</label>
+    <div class="filter-section">
+      <h3>Categories</h3>
+      <div class="filter-list" id="category-filters">
+        <label class="filter-label">
+          <input type="checkbox" value="skin care">
+          ✨ Skin Care
+        </label>
+        <label class="filter-label">
+          <input type="checkbox" value="hair care">
+          🌿 Hair Care
+        </label>
+        <label class="filter-label">
+          <input type="checkbox" value="body care">
+          🧴 Body Care
+        </label>
+        <label class="filter-label">
+          <input type="checkbox" value="perfume">
+          🌸 Fragrances
+        </label>
+      </div>
+    </div>
 
-    <input type="checkbox" id="filter4" value="perfume">
-    <label for="filter4">🌸 Fragrances</label>
-  </div>
-</section>
+    <div class="filter-section">
+      <h3>Special Status</h3>
+      <div class="filter-list" id="status-filters">
+        <label class="filter-label">
+          <input type="checkbox" value="offers">
+          💥 Special Offers
+        </label>
+        <label class="filter-label">
+          <input type="checkbox" value="bestseller">
+          ⭐ Best Sellers
+        </label>
+      </div>
+    </div>
+  </aside>
 
-<section class="products" style="padding: 20px 0 80px;">
-  <div class="container">
+  <main class="shop-main">
     <div class="product-grid" id="productContainer">
       <p style="text-align: center; grid-column: 1/-1; color: var(--color-muted);">Loading your beautiful collection...</p>
     </div>
-  </div>
-</section>
+  </main>
+</div>
 
 <footer>
   <div class="container footer-grid">
@@ -622,26 +671,43 @@
     lastScrollTop = scrollTop;
   });
 
-  // إعداد الفلاتر بشكل احترافي لتعمل مع قاعدة البيانات
-  const filterCheckboxes = document.querySelectorAll('.filter-bar input[type="checkbox"]');
+  // Professional Sidebar Filtering Logic
+  const filterCheckboxes = document.querySelectorAll('.shop-sidebar input[type="checkbox"]');
   filterCheckboxes.forEach(checkbox => {
     checkbox.addEventListener('change', () => {
-      const activeFilters = Array.from(filterCheckboxes)
+      const categoryFilters = Array.from(document.querySelectorAll('#category-filters input[type="checkbox"]'))
+        .filter(chk => chk.checked)
+        .map(chk => chk.value.toLowerCase());
+      
+      const statusFilters = Array.from(document.querySelectorAll('#status-filters input[type="checkbox"]'))
         .filter(chk => chk.checked)
         .map(chk => chk.value.toLowerCase());
 
       const products = document.querySelectorAll('.product');
       products.forEach(product => {
         const category = (product.getAttribute('data-category') || "").toLowerCase();
+        const isBestseller = product.getAttribute('data-bestseller') === "true";
+        const isOffer = product.getAttribute('data-offer') === "true";
         
-        // التحقق من توافق الفلتر مع حالة التصنيف باللغة الإنجليزية أو العربية
-        if (activeFilters.length === 0 || 
-            activeFilters.includes(category) ||
-            (category === 'منتجات الشعر' && activeFilters.includes('hair care')) ||
-            (category === 'منتجات الجسم' && activeFilters.includes('body care')) ||
-            (category === 'منتجات العطور' && activeFilters.includes('perfume')) ||
-            (category === 'عناية بالبشرة' && activeFilters.includes('skin care'))
+        let categoryMatch = false;
+        if (categoryFilters.length === 0 || 
+            categoryFilters.includes(category) ||
+            (category === 'منتجات الشعر' && categoryFilters.includes('hair care')) ||
+            (category === 'منتجات الجسم' && categoryFilters.includes('body care')) ||
+            (category === 'منتجات العطور' && categoryFilters.includes('perfume')) ||
+            (category === 'عناية بالبشرة' && categoryFilters.includes('skin care'))
         ) {
+          categoryMatch = true;
+        }
+
+        let statusMatch = true;
+        if (statusFilters.length > 0) {
+          statusMatch = false;
+          if (statusFilters.includes('bestseller') && isBestseller) statusMatch = true;
+          if (statusFilters.includes('offers') && isOffer) statusMatch = true;
+        }
+
+        if (categoryMatch && statusMatch) {
           product.classList.remove('hidden');
         } else {
           product.classList.add('hidden');
@@ -750,6 +816,8 @@
         const productEl = document.createElement("div");
         productEl.className = "product";
         productEl.setAttribute("data-category", data.category || 'Skin care');
+        productEl.setAttribute("data-bestseller", data.bestSeller ? "true" : "false");
+        productEl.setAttribute("data-offer", (data.onSale || data.originalPrice) ? "true" : "false");
 
         const priceRaw = parseFloat(data.price) || 0;
         
@@ -757,7 +825,15 @@
         let priceHtml = `<span class="price">${priceRaw} EGP</span>`;
         
         // نظام الخصم الجديد الواضح
-        if (data.onSale && data.discount) {
+        if (data.originalPrice) {
+          const oldPrice = parseFloat(data.originalPrice) || 0;
+          priceHtml = `
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <span class="price" style="color:var(--color-blush); font-size:1.15rem;">Now ${priceRaw.toFixed(0)} EGP</span>
+              <span style="font-size:0.85rem; color:var(--color-muted);">Instead of <del>${oldPrice.toFixed(0)} EGP</del></span>
+            </div>
+          `;
+        } else if (data.onSale && data.discount) {
           const discountPercent = parseFloat(data.discount) || 0;
           const oldPrice = priceRaw / (1 - (discountPercent/100));
           priceHtml = `
@@ -812,7 +888,7 @@
     }
 
     // تطبيق الفلاتر تلقائياً إذا كان هناك فلتر مفعل بالفعل
-    document.querySelector('.filter-bar input[type="checkbox"]')?.dispatchEvent(new Event('change'));
+    document.querySelector('.shop-sidebar input[type="checkbox"]')?.dispatchEvent(new Event('change'));
   });
 </script>
 

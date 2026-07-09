@@ -741,7 +741,18 @@
 
       // نظام الخصم الجديد الواضح
       const priceRaw = parseFloat(product.price) || 0;
-      if (product.onSale && product.discount) {
+      if (product.originalPrice) {
+        const oldPrice = parseFloat(product.originalPrice) || 0;
+        
+        document.getElementById("product-price-section").innerHTML = `
+          <div style="display:flex; flex-direction:column; padding: 20px 0;">
+            <span style="color:var(--color-blush); font-size:2.4rem; font-weight:800;">${priceRaw.toFixed(0)} EGP</span>
+            <span style="font-size:1.1rem; color:var(--color-muted); font-weight:600; margin-top:6px;">
+              Instead of <span style="text-decoration:line-through;">${oldPrice.toFixed(0)} EGP</span>
+            </span>
+          </div>
+        `;
+      } else if (product.onSale && product.discount) {
         const discountPercent = parseFloat(product.discount) || 0;
         const oldPrice = priceRaw / (1 - (discountPercent/100));
         

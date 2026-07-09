@@ -290,11 +290,15 @@
         let originalHtml = "";
         let discountBadgeHtml = "";
         
-        if (data.discount) {
+        if (data.originalPrice) {
+          const oldPrice = parseFloat(data.originalPrice) || 0;
+          originalHtml = `<span class="price-old" style="text-decoration:line-through; font-size:0.85rem; color:var(--color-muted);">${oldPrice.toFixed(0)} EGP</span>`;
+          discountBadgeHtml = `<span class="badge-discount" style="background:var(--color-danger); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; position:absolute; top:10px; left:10px; z-index:2;">Special Offer</span>`;
+        } else if (data.discount) {
           const discountPercent = parseFloat(data.discount) || 0;
           const oldPrice = priceRaw / (1 - (discountPercent/100));
-          originalHtml = `<span class="price-old">${oldPrice.toFixed(0)} EGP</span>`;
-          discountBadgeHtml = `<span class="badge-discount">-${data.discount}% OFF</span>`;
+          originalHtml = `<span class="price-old" style="text-decoration:line-through; font-size:0.85rem; color:var(--color-muted);">${oldPrice.toFixed(0)} EGP</span>`;
+          discountBadgeHtml = `<span class="badge-discount" style="background:var(--color-danger); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; position:absolute; top:10px; left:10px; z-index:2;">-${data.discount}% OFF</span>`;
         }
 
         // Map Category to premium English title

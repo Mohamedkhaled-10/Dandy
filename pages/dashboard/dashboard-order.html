@@ -878,7 +878,8 @@
     let totalSales = 0, newOrders = 0, processingOrders = 0, completedOrders = 0;
 
     rawOrders.forEach(o => {
-      const state = (o.status || 'جديد').trim();
+      let state = (o.status || 'جديد').trim();
+      if (state.toLowerCase() === 'new') state = 'جديد';
       
       if (state === 'جديد') newOrders++;
       else if (['قيد التجهيز', 'تم التواصل', 'تم الشحن', 'جاري الشحن'].includes(state)) processingOrders++;
@@ -888,8 +889,8 @@
         let orderTotal = 0;
         if (o.totalAmount && !isNaN(parseFloat(o.totalAmount))) {
           orderTotal = parseFloat(o.totalAmount);
-        } else if (o.products && Array.isArray(o.products)) {
-          let calcSum = o.products.reduce((acc, p) => acc + (parseFloat(p.price) || 0) * (parseInt(p.quantity) || 1), 0);
+        } else if (o.products) {
+          let calcSum = Object.values(o.products).reduce((acc, p) => acc + (parseFloat(p.price) || 0) * (parseInt(p.quantity) || 1), 0);
           orderTotal = calcSum + (parseFloat(o.shippingFee) || 0);
         }
         totalSales += orderTotal;
@@ -935,7 +936,8 @@
     selectAllCheckbox.checked = false;
     
     currentFiltered = rawOrders.filter(o => {
-      const state = (o.status || 'جديد').trim();
+      let state = (o.status || 'جديد').trim();
+      if (state.toLowerCase() === 'new') state = 'جديد';
       const matchesFilter = (selectedFilter === 'الكل' || state === selectedFilter);
       const searchStr = `${o.name || ''} ${o.phone || ''} ${o.invoiceCode || ''} ${o.id || ''}`.toLowerCase();
       const matchesSearch = searchStr.includes(searchQuery);
@@ -949,7 +951,8 @@
 
     currentFiltered.forEach(o => {
       const dateText = o.timestamp ? new Date(o.timestamp).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : '';
-      const state = (o.status || 'جديد').trim();
+      let state = (o.status || 'جديد').trim();
+      if (state.toLowerCase() === 'new') state = 'جديد';
       const isNew = (state === 'جديد');
       
       let dropdownClass = 'st-new';
@@ -1030,7 +1033,8 @@
       const phone = `"${o.phone || ''}"`;
       const gov = `"${o.governorate || ''}"`;
       const address = `"${(o.address || '').replace(/"/g, '""')}"`;
-      const status = `"${o.status || 'جديد'}"`;
+      let status = `"${o.status || 'جديد'}"`;
+      if (status.toLowerCase() === '"new"') status = '"جديد"';
       
       let orderTotal = o.totalAmount || 0;
       csvContent += `${code},${name},${phone},${gov},${address},${orderTotal},${status}\n`;
@@ -1105,8 +1109,8 @@
     
     let calculatedTotal = 0;
 
-    if (o.products && o.products.length > 0) {
-      o.products.forEach(p => {
+    if (o.products) {
+      Object.values(o.products).forEach(p => {
         const itemPrice = parseFloat(p.price) || 0;
         const itemQty = parseInt(p.quantity) || 1;
         const lineTotal = itemPrice * itemQty;

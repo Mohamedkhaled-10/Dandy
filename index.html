@@ -306,14 +306,6 @@
     <img id="heroImg1" src="" alt="Dandy Luxury Creams" class="active" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=1600&q=80';">
     <img id="heroImg2" src="" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1600&q=80';">
     <img id="heroImg3" src="" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1600&q=80';">
-    
-    <div class="slider-overlay">
-      <div class="hero-content">
-        <h1 id="heroTitle">Eternal Glow</h1>
-        <p id="heroSubtitle">Ultra-pure wellness care entirely free of toxic additives.</p>
-        <a href="pages/shop/all-products.html" class="btn-primary">Shop The Luxury Collection</a>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -325,12 +317,25 @@
   </div>
 </section>
 
-<section class="shop-categories container" style="margin-top: 60px;">
-  <div class="section-header" style="margin-bottom: 40px;">
-    <span class="sub">Discover by Category</span>
-    <h2>Shop Our Collections</h2>
+<section class="products" style="background-color: var(--color-blush-soft); padding: 60px 0; margin-top: 60px;">
+  <div class="container">
+    <div class="section-header">
+      <span class="sub" style="color: var(--color-danger);">Don't Miss Out</span>
+      <h2>Special Offers</h2>
+    </div>
+    <div class="product-grid" id="special-offers-products">
+    </div>
   </div>
-  <div class="cat-grid" id="dynamic-categories">
+</section>
+
+<section class="products bestsellers-section" style="margin-top: 0;">
+  <div class="container">
+    <div class="section-header">
+      <span class="sub">Most Loved</span>
+      <h2>Our Bestsellers</h2>
+    </div>
+    <div class="product-grid" id="bestseller-products">
+    </div>
   </div>
 </section>
 
@@ -343,16 +348,14 @@
     <div class="product-grid" id="home-products">
     </div>
   </div>
-</section> 
+</section>
 
-<section class="products bestsellers-section">
-  <div class="container">
-    <div class="section-header">
-      <span class="sub">Most Loved</span>
-      <h2>Our Bestsellers</h2>
-    </div>
-    <div class="product-grid" id="bestseller-products">
-    </div>
+<section class="shop-categories container" style="margin-top: 60px;">
+  <div class="section-header" style="margin-bottom: 40px;">
+    <span class="sub">Discover by Category</span>
+    <h2>Shop Our Collections</h2>
+  </div>
+  <div class="cat-grid" id="dynamic-categories">
   </div>
 </section>
 
@@ -452,8 +455,8 @@
         if(data.hero.img1) document.getElementById('heroImg1').src = data.hero.img1;
         if(data.hero.img2) document.getElementById('heroImg2').src = data.hero.img2;
         if(data.hero.img3) document.getElementById('heroImg3').src = data.hero.img3;
-        if(data.hero.title) document.getElementById('heroTitle').textContent = data.hero.title;
-        if(data.hero.subtitle) document.getElementById('heroSubtitle').textContent = data.hero.subtitle;
+        if(data.hero.title && document.getElementById('heroTitle')) document.getElementById('heroTitle').textContent = data.hero.title;
+        if(data.hero.subtitle && document.getElementById('heroSubtitle')) document.getElementById('heroSubtitle').textContent = data.hero.subtitle;
       }
 
       // 2. Trust Bar
@@ -641,11 +644,15 @@
     let originalHtml = "";
     let discountBadgeHtml = "";
     
-    if(data.onSale && data.discount) {
+    if (data.originalPrice) {
+      const oldPrice = parseFloat(data.originalPrice) || 0;
+      originalHtml = `<span class="price-old" style="text-decoration:line-through; font-size:0.85rem; color:var(--color-muted);">${oldPrice.toFixed(0)} EGP</span>`;
+      discountBadgeHtml = `<span class="badge-discount" style="background:var(--color-danger); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; position:absolute; top:10px; left:10px; z-index:2;">Special Offer</span>`;
+    } else if(data.onSale && data.discount) {
       const discountPercent = parseFloat(data.discount) || 0;
       const oldPrice = priceRaw / (1 - (discountPercent/100));
-      originalHtml = `<span class="price-old">${oldPrice.toFixed(0)} EGP</span>`;
-      discountBadgeHtml = `<span class="badge-discount">Sale ${data.discount}%</span>`;
+      originalHtml = `<span class="price-old" style="text-decoration:line-through; font-size:0.85rem; color:var(--color-muted);">${oldPrice.toFixed(0)} EGP</span>`;
+      discountBadgeHtml = `<span class="badge-discount" style="background:var(--color-danger); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; position:absolute; top:10px; left:10px; z-index:2;">Sale ${data.discount}%</span>`;
     }
     
     const productLink = data.slug ? `pages/shop/product.html?slug=${data.slug}` : `pages/shop/product.html?id=${child.key}`;
@@ -705,6 +712,31 @@
     bestsellersContainer.innerHTML = "";
     if(!snapshot.exists()){ return; }
     snapshot.forEach(child => { bestsellersContainer.appendChild(createProductCard(child, child.val())); });
+  });
+
+  // Special Offers
+  const specialOffersContainer = document.getElementById("special-offers-products");
+  db.ref("products").once("value", snapshot => {
+    specialOffersContainer.innerHTML = "";
+    if(!snapshot.exists()){ return; }
+    let offersCount = 0;
+    snapshot.forEach(child => {
+      const data = child.val();
+      if ((data.onSale && data.discount) || data.originalPrice) {
+        if (offersCount < 4) {
+          specialOffersContainer.appendChild(createProductCard(child, data));
+          offersCount++;
+        }
+      }
+    });
+    if (offersCount === 0) {
+      specialOffersContainer.innerHTML = `<p style="text-align:center; width:100%; grid-column:1/-1; color:var(--color-muted);">No special offers currently available.</p>`;
+    } else {
+      const moreBtn = document.createElement("div");
+      moreBtn.className = "browse-more";
+      moreBtn.innerHTML = `<a href="pages/shop/special-offers.html">View All Offers ✨</a>`;
+      specialOffersContainer.appendChild(moreBtn);
+    }
   });
 </script>
 

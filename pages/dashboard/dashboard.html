@@ -460,8 +460,8 @@
       });
 
     } catch (error) {
-      console.error("Error fetching logs: ", error);
-      logsTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red; padding: 20px;">حدث خطأ أثناء جلب السجل. يرجى التأكد من صلاحيات قاعدة البيانات (Firestore Rules).</td></tr>';
+      console.warn("Could not fetch change logs: ", error.message);
+      logsTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color:var(--color-muted);">لا توجد نشاطات مسجلة حتى الآن.</td></tr>';
     }
   }
 
