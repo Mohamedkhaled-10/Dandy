@@ -303,9 +303,9 @@
 
 <section class="hero-full">
   <div class="hero-slider" id="heroSlider">
-    <img id="heroImg1" src="" alt="Dandy Luxury Creams" class="active" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1615397323281-19d651586616?auto=format&fit=crop&w=1600&q=80';">
-    <img id="heroImg2" src="" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1600&q=80';">
-    <img id="heroImg3" src="" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=1600&q=80';">
+    <img id="heroImg1" src="" alt="Dandy Luxury Creams" class="active" fetchpriority="high" onerror="this.onerror=null;this.src='https://i.postimg.cc/RZrDJpp2/Whats-App-Image-2026-07-09-at-5-58-06-PM.jpg';">
+    <img id="heroImg2" src="" alt="Rose Petals Skincare" loading="lazy" onerror="this.onerror=null;this.src='https://i.postimg.cc/rmg06H7k/Whats-App-Image-2026-07-09-at-8-45-55-PM.jpg';">
+    <img id="heroImg3" src="" alt="Organic Serums" loading="lazy" onerror="this.onerror=null;this.src='https://i.postimg.cc/rmg06H7k/Whats-App-Image-2026-07-09-at-8-45-55-PM.jpg';">
   </div>
 </section>
 
@@ -365,9 +365,9 @@
     <h2>What Our Clients Say</h2>
   </div>
   <div class="polaroid-grid" id="reviewsContainer">
-    <div class="polaroid"><img src="https://i.postimg.cc/rmg06H7k/Whats-App-Image-2026-07-09-at-8-45-55-PM.jpg" alt="Client Review"><p class="polaroid-text">"The organic serum completely transformed my skin texture in just two weeks. Absolute luxury!"</p><span class="polaroid-author">- Sarah M.</span></div>
-    <div class="polaroid"><img src="https://i.postimg.cc/rmg06H7k/Whats-App-Image-2026-07-09-at-8-45-55-PM.jpg" alt="Client Review"><p class="polaroid-text">"I’ve finally found a reliable brand in Egypt that understands sensitive skin needs."</p><span class="polaroid-author">- Amina H.</span></div>
-    <div class="polaroid"><img src="https://i.postimg.cc/rmg06H7k/Whats-App-Image-2026-07-09-at-8-45-55-PM.jpg" alt="Client Review"><p class="polaroid-text">"Incredible packaging and the results are even better. The night cream is magic."</p><span class="polaroid-author">- Dina K.</span></div>
+    <div class="polaroid"><img src="https://i.postimg.cc/Z5K4Lpnh/493396407-122147820182434656-7421049591972157201-n.jpg" alt="Client Review" loading="lazy"><p class="polaroid-text">"The organic serum completely transformed my skin texture in just two weeks. Absolute luxury!"</p><span class="polaroid-author">- Sarah M.</span></div>
+    <div class="polaroid"><img src="https://i.postimg.cc/yYLNBS4V/IMG-6375.jpg" alt="Client Review" loading="lazy"><p class="polaroid-text">"I’ve finally found a reliable brand in Egypt that understands sensitive skin needs."</p><span class="polaroid-author">- Amina H.</span></div>
+    <div class="polaroid"><img src="https://i.postimg.cc/bwdwvNp1/IMG-7878.jpg" alt="Client Review" loading="lazy"><p class="polaroid-text">"Incredible packaging and the results are even better. The night cream is magic."</p><span class="polaroid-author">- Dina K.</span></div>
   </div>
 </section>
 
@@ -477,7 +477,7 @@
         for (let i = 1; i <= 3; i++) {
           if (data.reviews[`item${i}`]) {
             const item = data.reviews[`item${i}`];
-            reviewsHtml += `<div class="polaroid"><img src="${item.image}" alt="Client Review" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=400&q=80';"><p class="polaroid-text">"${item.text}"</p><span class="polaroid-author">- ${item.author}</span></div>`;
+            reviewsHtml += `<div class="polaroid"><img src="${item.image}" alt="Client Review" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=400&q=80';"><p class="polaroid-text">"${item.text}"</p><span class="polaroid-author">- ${item.author}</span></div>`;
           }
         }
         if (reviewsHtml) document.getElementById('reviewsContainer').innerHTML = reviewsHtml;
@@ -660,7 +660,7 @@
     productEl.innerHTML = `
       <div class="product-image-container">
         ${discountBadgeHtml}
-        <img src="${data.image}" alt="${data.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+        <img src="${data.image}" alt="${data.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
       </div>
       <span class="category">${data.category || 'Luxury Care'}</span>
       <h3>${data.name}</h3>
@@ -687,7 +687,7 @@
       const cat = child.val();
       dynamicCategoriesContainer.innerHTML += `
         <a href="pages/shop/all-products.html?category=${cat.name}" class="cat-card">
-          <img src="${cat.image}" alt="${cat.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80';">
+          <img src="${cat.image}" alt="${cat.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80';">
           <div class="cat-card-title">${cat.name}</div>
         </a>
       `;
