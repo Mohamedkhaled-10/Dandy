@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>إدارة الصفحة الرئيسية | Dandy Beauty Dashboard</title>
+  <title>إدارة الصفحة الرئيسية | Dandy Dashboard</title>
   <meta name="robots" content="noindex, nofollow">
 
   <link href="../../assets/css/style.css" rel="stylesheet" />
@@ -41,6 +41,22 @@
       outline: none;
       border-color: var(--color-blush);
     }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: var(--color-primary);
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--color-blush);
+    }
     .btn-save {
       background: var(--color-blush);
       color: white;
@@ -65,6 +81,18 @@
       background: var(--color-muted);
       cursor: not-allowed;
       transform: none;
+    }
+    .btn-secondary {
+       background: var(--color-surface);
+       color: var(--color-primary);
+       border: 1px solid var(--color-primary);
+       padding: 8px 16px;
+       border-radius: 4px;
+       cursor: pointer;
+       font-weight: bold;
+       font-family: inherit;
+       margin-bottom: 15px;
+       width: 100%;
     }
     .dashboard-grid {
       display: grid;
@@ -133,23 +161,17 @@
     .item-block {
       background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;
       border: 1px dashed #ccc;
+      position: relative;
     }
     .item-block h4 { margin-top: 0; color: var(--color-primary); font-size: 1rem; margin-bottom: 15px;}
+    .remove-input-btn { position: absolute; top: 10px; left: 10px; color: var(--color-danger); cursor: pointer; border: none; background: none; font-size: 1.1rem; }
   </style>
-
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-NH8NG47PDV');
-  </script>
 </head>
 <body>
 
 <nav id="navbar" dir="rtl">
   <div class="logo" onclick="window.location.href='../../index.html'">
-    <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
+    <img src="../../assets/images/logo.png" alt="Dandy Logo" />
     <h1>DANDY</h1>
   </div>
   <ul>
@@ -184,26 +206,88 @@
   <div class="section-header" style="text-align: right; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
     <div>
       <span class="sub">إعدادات واجهة المستخدم</span>
-      <h2>إدارة الصفحة الرئيسية</h2>
+      <h2>إدارة الصفحة الرئيسية وتنسيق الأقسام</h2>
     </div>
     <a href="dashboard.html" style="color: var(--color-muted); text-decoration: none; font-weight: bold;"><i class="fas fa-arrow-right"></i> عودة للوحة الرئيسية</a>
   </div>
 
   <div class="dashboard-grid">
     
+    <!-- قسم إدارة البانر الديناميكي -->
     <div class="bento-admin-card">
       <div class="bento-admin-icon"><i class="fas fa-images"></i></div>
-      <h3>البانر الرئيسي (Hero Slider)</h3>
+      <h3>البانر الرئيسي (الصور الديناميكية)</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">يمكنك إضافة أي عدد تريده من الصور لعرضها كـ Slider، وسيعمل بشكل تلقائي.</p>
       <form id="heroForm">
-        <div class="form-group"><label>رابط الصورة 1 (النشطة)</label><input type="url" id="heroImg1" required></div>
-        <div class="form-group"><label>رابط الصورة 2</label><input type="url" id="heroImg2" required></div>
-        <div class="form-group"><label>رابط الصورة 3</label><input type="url" id="heroImg3" required></div>
-        <div class="form-group"><label>العنوان الرئيسي (Headline)</label><input type="text" id="heroTitle" required></div>
-        <div class="form-group"><label>النص الفرعي (Subtitle)</label><textarea id="heroSubtitle" required></textarea></div>
+        <div id="dynamicHeroInputs">
+        </div>
+        <button type="button" class="btn-secondary" onclick="addHeroInput()"><i class="fas fa-plus"></i> إضافة صورة جديدة للبانر</button>
         <button type="submit" class="btn-save" id="btnSaveHero"><i class="fas fa-save"></i> حفظ البانر</button>
       </form>
     </div>
 
+    <!-- قسم تخصيص منتجات العروض الخاصة -->
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-bullhorn"></i></div>
+      <h3>تخصيص منتجات العروض</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">اختر المنتجات التي تريد إظهارها <strong>تحديداً</strong> في قسم العروض على الصفحة الرئيسية. (يتم عرض المنتجات المخفضة فقط).</p>
+      <form id="offersSelectionForm">
+        <div id="offersSelectionList" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid var(--border-light); padding: 10px; border-radius: 4px; background: #fafafa;">
+            <!-- سيتم إضافة قائمة المنتجات مع صناديق الاختيار هنا بواسطة جافاسكريبت -->
+        </div>
+        <button type="submit" class="btn-save" id="btnSaveSelectedOffers"><i class="fas fa-check-circle"></i> حفظ منتجات العروض</button>
+      </form>
+    </div>
+
+    <!-- قسم إدارة وإظهار الأقسام -->
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-layer-group"></i></div>
+      <h3>ترتيب وإدارة أقسام المتجر</h3>
+      <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">تحكم كامل في إظهار أو إخفاء أقسام الصفحة الرئيسية وتعديل عناوينها التسويقية.</p>
+      <form id="sectionsForm">
+        
+        <div class="item-block">
+          <label class="checkbox-group"><input type="checkbox" id="secOffersVis"> عرض قسم "العروض الخاصة"</label>
+          <div class="form-group"><input type="text" id="secOffersTitle" placeholder="العنوان الرئيسي (مثال: Special Offers)"></div>
+          <div class="form-group" style="margin-bottom:0;"><input type="text" id="secOffersSub" placeholder="النص الفرعي (مثال: Don't Miss Out)"></div>
+        </div>
+
+        <div class="item-block">
+          <label class="checkbox-group"><input type="checkbox" id="secNewArrVis"> عرض قسم "المنتجات العامة"</label>
+          <div class="form-group"><input type="text" id="secNewArrTitle" placeholder="العنوان الرئيسي"></div>
+          <div class="form-group" style="margin-bottom:0;"><input type="text" id="secNewArrSub" placeholder="النص الفرعي"></div>
+        </div>
+
+        <div class="item-block">
+          <label class="checkbox-group"><input type="checkbox" id="secBestVis"> عرض قسم "الأكثر مبيعاً"</label>
+          <div class="form-group"><input type="text" id="secBestTitle" placeholder="العنوان الرئيسي"></div>
+          <div class="form-group" style="margin-bottom:0;"><input type="text" id="secBestSub" placeholder="النص الفرعي"></div>
+        </div>
+
+        <div class="item-block">
+          <label class="checkbox-group"><input type="checkbox" id="secCatVis"> عرض قسم "المجموعات/الفئات"</label>
+          <div class="form-group"><input type="text" id="secCatTitle" placeholder="العنوان الرئيسي"></div>
+          <div class="form-group" style="margin-bottom:0;"><input type="text" id="secCatSub" placeholder="النص الفرعي"></div>
+        </div>
+
+        <button type="submit" class="btn-save" id="btnSaveSections"><i class="fas fa-save"></i> حفظ تنسيق الأقسام</button>
+      </form>
+    </div>
+
+    <!-- فئات المتجر (التصنيفات) -->
+    <div class="bento-admin-card">
+      <div class="bento-admin-icon"><i class="fas fa-tags"></i></div>
+      <h3>إدارة فئات الواجهة</h3>
+      <div id="categoriesList" style="margin-bottom: 25px; max-height: 250px; overflow-y: auto; padding-left: 10px;"></div>
+      <h4 style="margin-bottom: 15px; font-size: 1rem; color: var(--color-primary); border-top: 1px dashed var(--border-light); padding-top: 15px;">إضافة فئة جديدة</h4>
+      <form id="addCategoryForm">
+        <div class="form-group"><label>اسم الفئة الإنجليزي</label><input type="text" id="catName" required></div>
+        <div class="form-group"><label>رابط الصورة</label><input type="url" id="catImage" required></div>
+        <button type="submit" class="btn-save" style="background: var(--color-primary);"><i class="fas fa-plus"></i> إضافة فئة</button>
+      </form>
+    </div>
+
+    <!-- شريط الثقة -->
     <div class="bento-admin-card">
       <div class="bento-admin-icon"><i class="fas fa-shield-alt"></i></div>
       <h3>شريط الثقة (Trust Bar)</h3>
@@ -230,18 +314,7 @@
       </form>
     </div>
 
-    <div class="bento-admin-card">
-      <div class="bento-admin-icon"><i class="fas fa-layer-group"></i></div>
-      <h3>إدارة فئات الواجهة</h3>
-      <div id="categoriesList" style="margin-bottom: 25px; max-height: 250px; overflow-y: auto; padding-left: 10px;"></div>
-      <h4 style="margin-bottom: 15px; font-size: 1rem; color: var(--color-primary); border-top: 1px dashed var(--border-light); padding-top: 15px;">إضافة فئة جديدة</h4>
-      <form id="addCategoryForm">
-        <div class="form-group"><label>اسم الفئة الإنجليزي</label><input type="text" id="catName" required></div>
-        <div class="form-group"><label>رابط الصورة</label><input type="url" id="catImage" required></div>
-        <button type="submit" class="btn-save" style="background: var(--color-primary);"><i class="fas fa-plus"></i> إضافة فئة</button>
-      </form>
-    </div>
-
+    <!-- التقييمات -->
     <div class="bento-admin-card">
       <div class="bento-admin-icon"><i class="fas fa-comments"></i></div>
       <h3>آراء العملاء (Polaroid Style)</h3>
@@ -268,6 +341,7 @@
       </form>
     </div>
 
+    <!-- المميزات -->
     <div class="bento-admin-card">
       <div class="bento-admin-icon"><i class="fas fa-leaf"></i></div>
       <h3>مميزات العلامة التجارية</h3>
@@ -340,19 +414,90 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // --- Load All Homepage Data ---
+  function addHeroInput(val = '') {
+      const container = document.getElementById('dynamicHeroInputs');
+      const div = document.createElement('div');
+      div.className = 'item-block';
+      div.style.paddingTop = '35px'; 
+      div.innerHTML = `
+          <button type="button" class="remove-input-btn" onclick="this.parentElement.remove()" title="حذف هذه الصورة"><i class="fas fa-times"></i></button>
+          <div class="form-group" style="margin-bottom:0;">
+              <label>رابط الصورة المباشر</label>
+              <input type="url" class="hero-url-input" value="${val}" required placeholder="https://...">
+          </div>
+      `;
+      container.appendChild(div);
+  }
+
+  // --- دالة جلب منتجات العروض ليتم اختيارها ---
+  function loadSelectedOffersUI(selectedIds = {}) {
+      db.ref('products').once('value').then(snapshot => {
+          const list = document.getElementById('offersSelectionList');
+          list.innerHTML = '';
+          let hasOffers = false;
+          
+          if(snapshot.exists()){
+              snapshot.forEach(child => {
+                  const data = child.val();
+                  if ((data.onSale && data.discount) || data.originalPrice) {
+                      hasOffers = true;
+                      const isChecked = selectedIds[child.key] ? 'checked' : '';
+                      list.innerHTML += `
+                          <label class="checkbox-group" style="display: flex; align-items: center; justify-content: flex-start; margin-bottom: 10px; background: #fff; border: 1px solid #ddd; padding: 8px; border-radius: 4px; cursor: pointer;">
+                              <input type="checkbox" class="offer-cb" value="${child.key}" ${isChecked} style="margin-left: 10px; width: 18px; height: 18px; accent-color: var(--color-blush);">
+                              <img src="${data.image}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-left: 10px;" onerror="this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'">
+                              <span style="font-size: 0.9rem; color: var(--color-primary);">${data.name}</span>
+                          </label>
+                      `;
+                  }
+              });
+          }
+          
+          if(!hasOffers) {
+              list.innerHTML = '<p style="text-align:center; color:#888; font-size:0.9rem; padding: 10px;">لا توجد منتجات مخفضة حالياً في قاعدة البيانات.</p>';
+          }
+      });
+  }
+
+  // --- تحميل بيانات الصفحة بالكامل ---
   function loadHomepageData() {
     db.ref('homepage').once('value').then((snapshot) => {
       if (!snapshot.exists()) return;
       const data = snapshot.val();
       
-      // Hero
-      if(data.hero) {
-        document.getElementById('heroImg1').value = data.hero.img1 || '';
-        document.getElementById('heroImg2').value = data.hero.img2 || '';
-        document.getElementById('heroImg3').value = data.hero.img3 || '';
-        document.getElementById('heroTitle').value = data.hero.title || '';
-        document.getElementById('heroSubtitle').value = data.hero.subtitle || '';
+      // Load Dynamic Hero
+      const heroContainer = document.getElementById('dynamicHeroInputs');
+      heroContainer.innerHTML = '';
+      if(data.hero && data.hero.images && data.hero.images.length > 0) {
+          data.hero.images.forEach(img => {
+              if(img.trim() !== '') addHeroInput(img);
+          });
+      } else {
+          addHeroInput(); 
+      }
+
+      // Load Selected Offers UI
+      loadSelectedOffersUI(data.selectedOffers || {});
+
+      // Load Sections config
+      if(data.sections) {
+          document.getElementById('secOffersVis').checked = data.sections.offers?.visible ?? true;
+          document.getElementById('secOffersTitle').value = data.sections.offers?.title || 'Special Offers';
+          document.getElementById('secOffersSub').value = data.sections.offers?.subtitle || "Don't Miss Out";
+
+          document.getElementById('secNewArrVis').checked = data.sections.newArrivals?.visible ?? true;
+          document.getElementById('secNewArrTitle').value = data.sections.newArrivals?.title || 'Our Premium Products';
+          document.getElementById('secNewArrSub').value = data.sections.newArrivals?.subtitle || "Shop the Absolute Best";
+
+          document.getElementById('secBestVis').checked = data.sections.bestsellers?.visible ?? true;
+          document.getElementById('secBestTitle').value = data.sections.bestsellers?.title || 'Our Bestsellers';
+          document.getElementById('secBestSub').value = data.sections.bestsellers?.subtitle || "Most Loved";
+
+          document.getElementById('secCatVis').checked = data.sections.categories?.visible ?? true;
+          document.getElementById('secCatTitle').value = data.sections.categories?.title || 'Shop Our Collections';
+          document.getElementById('secCatSub').value = data.sections.categories?.subtitle || "Discover by Category";
+      } else {
+          ['secOffersVis', 'secNewArrVis', 'secBestVis', 'secCatVis'].forEach(id => document.getElementById(id).checked = true);
       }
       
       // Trust Bar
@@ -402,7 +547,6 @@
     });
   }
 
-  // --- Save Functions ---
   function saveSectionData(formId, btnId, dbNode, payloadBuilder) {
     document.getElementById(formId).addEventListener('submit', function(e) {
       e.preventDefault();
@@ -418,37 +562,56 @@
     });
   }
 
-  // Save Hero
-  saveSectionData('heroForm', 'btnSaveHero', 'hero', () => ({
-    img1: document.getElementById('heroImg1').value,
-    img2: document.getElementById('heroImg2').value,
-    img3: document.getElementById('heroImg3').value,
-    title: document.getElementById('heroTitle').value,
-    subtitle: document.getElementById('heroSubtitle').value
+  saveSectionData('heroForm', 'btnSaveHero', 'hero', () => {
+      const inputs = document.querySelectorAll('.hero-url-input');
+      const imagesArr = [];
+      inputs.forEach(inp => { if(inp.value.trim() !== '') imagesArr.push(inp.value.trim()); });
+      return { images: imagesArr };
+  });
+
+  // --- حفظ اختيارات منتجات العروض ---
+  document.getElementById('offersSelectionForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSaveSelectedOffers');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+      btn.disabled = true;
+
+      const cbs = document.querySelectorAll('.offer-cb:checked');
+      const selected = {};
+      cbs.forEach(cb => selected[cb.value] = true); // حفظ أيدي المنتج المحدد كـ true
+
+      db.ref('homepage/selectedOffers').set(selected)
+        .then(() => showToast('تم تحديد منتجات العروض بنجاح!'))
+        .catch((e) => { console.error(e); showToast('خطأ أثناء الحفظ', true); })
+        .finally(() => { btn.innerHTML = originalText; btn.disabled = false; });
+  });
+
+  saveSectionData('sectionsForm', 'btnSaveSections', 'sections', () => ({
+      offers: { visible: document.getElementById('secOffersVis').checked, title: document.getElementById('secOffersTitle').value, subtitle: document.getElementById('secOffersSub').value },
+      newArrivals: { visible: document.getElementById('secNewArrVis').checked, title: document.getElementById('secNewArrTitle').value, subtitle: document.getElementById('secNewArrSub').value },
+      bestsellers: { visible: document.getElementById('secBestVis').checked, title: document.getElementById('secBestTitle').value, subtitle: document.getElementById('secBestSub').value },
+      categories: { visible: document.getElementById('secCatVis').checked, title: document.getElementById('secCatTitle').value, subtitle: document.getElementById('secCatSub').value }
   }));
 
-  // Save Trust Bar
   saveSectionData('trustForm', 'btnSaveTrust', 'trust', () => ({
     item1: { icon: document.getElementById('trust1Icon').value, title: document.getElementById('trust1Title').value, desc: document.getElementById('trust1Desc').value },
     item2: { icon: document.getElementById('trust2Icon').value, title: document.getElementById('trust2Title').value, desc: document.getElementById('trust2Desc').value },
     item3: { icon: document.getElementById('trust3Icon').value, title: document.getElementById('trust3Title').value, desc: document.getElementById('trust3Desc').value }
   }));
 
-  // Save Reviews
   saveSectionData('reviewsForm', 'btnSaveReviews', 'reviews', () => ({
     item1: { image: document.getElementById('rev1Img').value, text: document.getElementById('rev1Text').value, author: document.getElementById('rev1Auth').value },
     item2: { image: document.getElementById('rev2Img').value, text: document.getElementById('rev2Text').value, author: document.getElementById('rev2Auth').value },
     item3: { image: document.getElementById('rev3Img').value, text: document.getElementById('rev3Text').value, author: document.getElementById('rev3Auth').value }
   }));
 
-  // Save Benefits
   saveSectionData('benefitsForm', 'btnSaveBenefits', 'benefits', () => ({
     item1: { icon: document.getElementById('ben1Icon').value, title: document.getElementById('ben1Title').value, desc: document.getElementById('ben1Desc').value },
     item2: { icon: document.getElementById('ben2Icon').value, title: document.getElementById('ben2Title').value, desc: document.getElementById('ben2Desc').value },
     item3: { icon: document.getElementById('ben3Icon').value, title: document.getElementById('ben3Title').value, desc: document.getElementById('ben3Desc').value }
   }));
 
-  // --- Categories Logic ---
   function loadCategories() {
     db.ref('categories').on('value', (snapshot) => {
         const listEl = document.getElementById('categoriesList');
