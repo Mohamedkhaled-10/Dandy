@@ -803,9 +803,26 @@
 
     allProductsData.forEach(data => {
       
-      // التعديل هنا: فحص حالة الإخفاء بصرامة تامة ضد أي مشاكل تخص تحول الـ boolean إلى نص في الداتا بيز
-      const isHidden = data.isHidden === true || String(data.isHidden).toLowerCase() === 'true';
-      if(isHidden) return;
+      // التعديل هنا: فحص شامل وصارم لحالة الإخفاء لضمان عدم ظهور المنتج مهما كان تنسيق البيانات (نص، منطقي، مسافات زائدة، إلخ)
+      let isItemHidden = false;
+      for (let key in data) {
+        const cleanKey = key.trim().toLowerCase();
+        if (cleanKey === 'ishidden' || cleanKey === 'hidden' || cleanKey === 'hide' || cleanKey === 'is_hidden') {
+          const val = data[key];
+          if (
+            val === true || 
+            val === 1 || 
+            (typeof val === 'string' && val.trim().toLowerCase() === 'true') ||
+            (typeof val === 'string' && val.trim() === '1')
+          ) {
+            isItemHidden = true;
+            break;
+          }
+        }
+      }
+
+      // تخطي المنتج بالكامل وعدم إضافته للصفحة إذا كان مخفياً
+      if (isItemHidden) return;
 
       const isSoldOut = data.isSoldOut === true || String(data.isSoldOut).toLowerCase() === 'true';
       const isBestSeller = data.bestSeller === true || String(data.bestSeller).toLowerCase() === 'true';
