@@ -802,8 +802,14 @@
     allProductsData.reverse();
 
     allProductsData.forEach(data => {
-      // إخفاء المنتج إذا كان مفعل له خيار الإخفاء في الداشبورد
-      if(data.isHidden) return;
+      
+      // التعديل هنا: فحص حالة الإخفاء بصرامة تامة ضد أي مشاكل تخص تحول الـ boolean إلى نص في الداتا بيز
+      const isHidden = data.isHidden === true || String(data.isHidden).toLowerCase() === 'true';
+      if(isHidden) return;
+
+      const isSoldOut = data.isSoldOut === true || String(data.isSoldOut).toLowerCase() === 'true';
+      const isBestSeller = data.bestSeller === true || String(data.bestSeller).toLowerCase() === 'true';
+      const onSale = data.onSale === true || String(data.onSale).toLowerCase() === 'true';
 
       const name = data.name?.toLowerCase() || "";
       const desc = data.description?.toLowerCase() || "";
@@ -815,8 +821,8 @@
         const productEl = document.createElement("div");
         productEl.className = "product";
         productEl.setAttribute("data-category", data.category || 'Skin care');
-        productEl.setAttribute("data-bestseller", data.bestSeller ? "true" : "false");
-        productEl.setAttribute("data-offer", (data.onSale || data.originalPrice) ? "true" : "false");
+        productEl.setAttribute("data-bestseller", isBestSeller ? "true" : "false");
+        productEl.setAttribute("data-offer", (onSale || data.originalPrice) ? "true" : "false");
 
         const priceRaw = parseFloat(data.price) || 0;
         
@@ -832,7 +838,7 @@
               <span style="font-size:0.85rem; color:var(--color-muted);">Instead of <del>${oldPrice.toFixed(0)} EGP</del></span>
             </div>
           `;
-        } else if (data.onSale && data.discount) {
+        } else if (onSale && data.discount) {
           const discountPercent = parseFloat(data.discount) || 0;
           const oldPrice = priceRaw / (1 - (discountPercent/100));
           priceHtml = `
@@ -845,10 +851,10 @@
         }
 
         let soldOutBadge = "";
-        let actionBtn = `<button onclick="quickAdd('${data.id}', \`${(data.name || '').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount || ''}', ${data.onSale || false})" class="action-btn-add"><i class="fas fa-shopping-basket"></i> Add</button>`;
+        let actionBtn = `<button onclick="quickAdd('${data.id}', \`${(data.name || '').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount || ''}', ${onSale})" class="action-btn-add"><i class="fas fa-shopping-basket"></i> Add</button>`;
         
         // نظام نفاذ الكمية
-        if (data.isSoldOut) {
+        if (isSoldOut) {
           soldOutBadge = `<span class="badge-soldout" style="background:#222; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; position:absolute; top:10px; right:10px; z-index:2;">Sold Out</span>`;
           actionBtn = `<button disabled class="action-btn-add" style="background:#aaa; color:#fff; border-color:#aaa; cursor:not-allowed;"><i class="fas fa-ban"></i> Sold Out</button>`;
         }

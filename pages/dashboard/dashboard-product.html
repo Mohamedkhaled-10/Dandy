@@ -796,9 +796,9 @@
 
   function updateStats() {
     document.getElementById('stat-total').textContent = rawProducts.length;
-    document.getElementById('stat-active').textContent = rawProducts.filter(p => !p.isHidden && !p.isSoldOut).length;
-    document.getElementById('stat-soldout').textContent = rawProducts.filter(p => p.isSoldOut).length;
-    document.getElementById('stat-sale').textContent = rawProducts.filter(p => p.onSale || p.originalPrice || p.discount).length;
+    document.getElementById('stat-active').textContent = rawProducts.filter(p => !(p.isHidden === true || String(p.isHidden).toLowerCase() === 'true') && !(p.isSoldOut === true || String(p.isSoldOut).toLowerCase() === 'true')).length;
+    document.getElementById('stat-soldout').textContent = rawProducts.filter(p => p.isSoldOut === true || String(p.isSoldOut).toLowerCase() === 'true').length;
+    document.getElementById('stat-sale').textContent = rawProducts.filter(p => (p.onSale === true || String(p.onSale).toLowerCase() === 'true') || p.originalPrice || p.discount).length;
   }
 
   window.exportProductsCSV = function() {
@@ -814,6 +814,11 @@
     const headers = ['اسم المنتج', 'الفئة', 'السعر الحالي (EGP)', 'السعر القديم (EGP)', 'نسبة الخصم (%)', 'التقييم', 'الأكثر مبيعاً', 'عروض خاصة', 'نفذت الكمية', 'مخفي'];
     
     const rows = rawProducts.map(p => {
+      const isBest = p.bestSeller === true || String(p.bestSeller).toLowerCase() === 'true';
+      const isOnSale = p.onSale === true || String(p.onSale).toLowerCase() === 'true';
+      const isSoldOut = p.isSoldOut === true || String(p.isSoldOut).toLowerCase() === 'true';
+      const isHidden = p.isHidden === true || String(p.isHidden).toLowerCase() === 'true';
+      
       return [
         `"${(p.name || '').replace(/"/g, '""')}"`,
         `"${normalizeCategory(p.category)}"`,
@@ -821,10 +826,10 @@
         p.originalPrice || '',
         p.discount || 0,
         p.rating || 5,
-        p.bestSeller ? 'نعم' : 'لا',
-        p.onSale ? 'نعم' : 'لا',
-        p.isSoldOut ? 'نعم' : 'لا',
-        p.isHidden ? 'نعم' : 'لا'
+        isBest ? 'نعم' : 'لا',
+        isOnSale ? 'نعم' : 'لا',
+        isSoldOut ? 'نعم' : 'لا',
+        isHidden ? 'نعم' : 'لا'
       ].join(',');
     });
 
@@ -876,17 +881,22 @@
     filtered.forEach(d => {
       const normCat = normalizeCategory(d.category);
       
+      const isBest = d.bestSeller === true || String(d.bestSeller).toLowerCase() === 'true';
+      const isOnSale = d.onSale === true || String(d.onSale).toLowerCase() === 'true';
+      const isHidden = d.isHidden === true || String(d.isHidden).toLowerCase() === 'true';
+      const isSoldOut = d.isSoldOut === true || String(d.isSoldOut).toLowerCase() === 'true';
+      
       let badgesHtml = '';
-      if(d.bestSeller) badgesHtml += '<span class="admin-badge admin-badge-best">الأكثر مبيعاً</span>';
-      if(d.onSale) badgesHtml += '<span class="admin-badge admin-badge-sale">خصم خاص</span>';
-      if(d.isHidden) badgesHtml += '<span class="admin-badge admin-badge-hidden">مخفي</span>';
-      if(d.isSoldOut) badgesHtml += '<span class="admin-badge admin-badge-soldout">نفذت الكمية</span>';
+      if(isBest) badgesHtml += '<span class="admin-badge admin-badge-best">الأكثر مبيعاً</span>';
+      if(isOnSale) badgesHtml += '<span class="admin-badge admin-badge-sale">خصم خاص</span>';
+      if(isHidden) badgesHtml += '<span class="admin-badge admin-badge-hidden">مخفي</span>';
+      if(isSoldOut) badgesHtml += '<span class="admin-badge admin-badge-soldout">نفذت الكمية</span>';
 
       // Price logic
       let priceHtml = `${d.price || 0} EGP`;
       if (d.originalPrice) {
         priceHtml = `${d.price} EGP <span class="old-price">${d.originalPrice} EGP</span>`;
-      } else if(d.onSale && d.discount) {
+      } else if(isOnSale && d.discount) {
         const originalPrice = ((d.price * 100) / (100 - d.discount)).toFixed(0);
         priceHtml = `${d.price} EGP <span class="old-price">${originalPrice} EGP</span>`;
       }
@@ -903,8 +913,8 @@
           <h4 class="admin-p-title" title="${d.name || ''}">${d.name || ''}</h4>
           
           <div class="quick-toggles-row">
-            <button class="btn-qt ${d.isSoldOut ? 'active-danger' : ''}" onclick="toggleStatus('${d.id}', 'isSoldOut', ${!!d.isSoldOut})" title="إيقاف / تشغيل: نفذت الكمية"><i class="fas fa-ban"></i> ${d.isSoldOut ? 'متوفر' : 'نفاذ'}</button>
-            <button class="btn-qt ${d.isHidden ? 'active-muted' : ''}" onclick="toggleStatus('${d.id}', 'isHidden', ${!!d.isHidden})" title="إخفاء / إظهار المنتج"><i class="fas ${d.isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${d.isHidden ? 'إظهار' : 'إخفاء'}</button>
+            <button class="btn-qt ${isSoldOut ? 'active-danger' : ''}" onclick="toggleStatus('${d.id}', 'isSoldOut', ${isSoldOut})" title="إيقاف / تشغيل: نفذت الكمية"><i class="fas fa-ban"></i> ${isSoldOut ? 'متوفر' : 'نفاذ'}</button>
+            <button class="btn-qt ${isHidden ? 'active-muted' : ''}" onclick="toggleStatus('${d.id}', 'isHidden', ${isHidden})" title="إخفاء / إظهار المنتج"><i class="fas ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${isHidden ? 'إظهار' : 'إخفاء'}</button>
           </div>
 
           <div class="admin-p-price">${priceHtml}</div>
@@ -928,7 +938,8 @@
   // Quick Toggles API
   window.toggleStatus = async function(id, field, currentValue) {
     try {
-      await db.ref(`products/${id}`).update({ [field]: !currentValue });
+      const isCurrentlyTrue = currentValue === true || String(currentValue).toLowerCase() === 'true';
+      await db.ref(`products/${id}`).update({ [field]: !isCurrentlyTrue });
     } catch(err) {
       alert('حدث خطأ أثناء تحديث حالة المنتج.');
     }
@@ -992,10 +1003,10 @@
     // Trigger image preview
     imgInput.dispatchEvent(new Event('input'));
 
-    document.getElementById('p-bestSeller').checked = !!p.bestSeller;
-    document.getElementById('p-onSale').checked = !!p.onSale;
-    document.getElementById('p-isSoldOut').checked = !!p.isSoldOut;
-    document.getElementById('p-isHidden').checked = !!p.isHidden;
+    document.getElementById('p-bestSeller').checked = (p.bestSeller === true || String(p.bestSeller).toLowerCase() === 'true');
+    document.getElementById('p-onSale').checked = (p.onSale === true || String(p.onSale).toLowerCase() === 'true');
+    document.getElementById('p-isSoldOut').checked = (p.isSoldOut === true || String(p.isSoldOut).toLowerCase() === 'true');
+    document.getElementById('p-isHidden').checked = (p.isHidden === true || String(p.isHidden).toLowerCase() === 'true');
 
     editIdEl.value = key;
     saveBtn.innerHTML = '<i class="fas fa-check"></i> حفظ تعديلات المستحضر';
