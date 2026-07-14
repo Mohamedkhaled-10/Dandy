@@ -23,12 +23,15 @@ export default async function handler(req, res) {
 
     const message = `🔔 *طلب جديد في متجر داندي!*
 ────────────────
-👤 *العميلة:* ${order.name || '-'}
+👤 *العميل\\ة:* ${order.name || '-'}
 📞 *رقم الهاتف:* ${order.phone || '-'}
 📍 *المحافظة:* ${order.governorate || '-'}
 📦 *العنوان:* ${order.address || '-'}
 💰 *كود الفاتورة:* ${order.invoiceCode || orderId}
-⏱ *الوقت:* ${dateText}`;
+⏱ *الوقت:* ${dateText}
+
+🔗 *تفاصيل الطلب:*
+https://dandy-ebon.vercel.app/pages/dashboard/dashboard-order.html`;
 
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 
