@@ -8,6 +8,7 @@
 
   <!-- Stylesheet -->
   <link href="../../assets/css/style.css" rel="stylesheet" />
+  <link href="../../assets/css/layout.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
@@ -114,50 +115,16 @@
     .badge-btn-del { background: rgba(220,100,100,0.1); color: var(--color-danger); }
     .badge-btn-del:hover { background: var(--color-danger); color: #fff; }
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <!-- Navigation -->
-<nav id="navbar" dir="rtl">
-  <div class="logo" onclick="window.location.href='../../index.html'">
-    <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
-    <h1>DANDY</h1>
-  </div>
-  <ul>
-    <li><a href="../../index.html">الرئيسية</a></li>
-    <li><a href="../shop/all-products.html">المنتجات</a></li>
-    <li><a href="../shop/special-offers.html">العروض</a></li>
-    <li><a href="../blog/blog.html">المقالات</a></li>
-    <li class="dropdown">
-      <a href="javascript:void(0)" class="active">لوحة التحكم ▾</a>
-      <ul class="dropdown-menu">
-        <li><a href="../../index.html">اللوحة الرئيسية</a></li>
-        <li><a href="javascript:void(0)" id="signoutLink">تسجيل خروج</a></li>
-      </ul>
-    </li>
-  </ul>
-  <button class="hamburger" aria-label="القائمة" onclick="toggleNav()">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-</nav>
+
 
 <!-- Mobile Menu -->
-<div class="menubar" id="menubar" dir="rtl" aria-hidden="true">
-  <ul>
-    <li><a href="../../index.html">الرئيسية</a></li>
-    <li><a href="../shop/all-products.html">المنتجات</a></li>
-    <li><a href="../shop/special-offers.html">العروض</a></li>
-    <li><a href="../blog/blog.html">المقالات</a></li>
-    <li><a href="dashboard.html">اللوحة الرئيسية</a></li>
-  </ul>
-  <div class="side-bottom-links">
-    <a href="../legal/privacy-policy.html">سياسة الخصوصية</a>
-    <span>|</span>
-    <a href="../legal/terms.html">الشروط والأحكام</a>
-  </div>
-</div>
+
 
 <!-- Main Section -->
 <section class="manager-section container">
@@ -239,41 +206,7 @@
 </section>
 
 <!-- Footer -->
-<footer>
-  <div class="container footer-grid">
-    <div class="footer-col">
-      <h4 style="font-family:'Cairo', sans-serif;">Dandy</h4>
-      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">وجهتكِ الأولى للجمال والنقاء المستوحى من خيرات الطبيعة الفعالة.</p>
-    </div>
-    <div class="footer-col">
-      <h4>روابط مفيدة</h4>
-      <ul style="margin: 0; padding: 0;">
-        <li><a href="../../index.html">الرئيسية</a></li>
-        <li><a href="../shop/all-products.html">كل المنتجات</a></li>
-        <li><a href="../shop/special-offers.html">العروض الخاصة</a></li>
-        <li><a href="../blog/blog.html">المدونة والمقالات</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>المساعدة والدعم</h4>
-      <ul style="margin: 0; padding: 0;">
-        <li><a href="../legal/about-us.html">من نحن</a></li>
-        <li><a href="../support/client-reviews.html">ثقة السيدات وآراء العملاء</a></li>
-        <li><a href="../legal/privacy-policy.html">سياسة الخصوصية والأمان</a></li>
-        <li><a href="../legal/terms.html">الشروط والأحكام العامة</a></li>
-      </ul>
-    </div>
-  </div>
-  
-  <div class="footer-social">
-    <div class="social-icons">
-      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-      <a href="https://wa.me/201038941005" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-    </div>
-    <p class="rights">© 2026 Dandy. جميع الحقوق فنية ومحتويات المتجر محفوظة.</p>
-  </div>
-</footer>
+
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -317,34 +250,9 @@
   if(signoutLink) signoutLink.addEventListener('click', performLogOut);
 
   // Toggle Menubar drawer for mobile
-  function toggleNav() {
-    const menubar = document.getElementById("menubar");
-    const hamburger = document.querySelector(".hamburger");
-    menubar.classList.toggle("active");
-    hamburger.classList.toggle("change");
-  }
-
+  
   // Navigation hide / show on scroll
-  let lastScrollTop = 0;
-  const nav = document.getElementById('navbar');
-  const navHeight = nav.offsetHeight;
-
-  window.addEventListener('scroll', function () {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    if (scrollTop > 80) {
-      nav.classList.add('scrolled');
-    } else {
-      nav.classList.remove('scrolled');
-    }
-
-    if (scrollTop > lastScrollTop && scrollTop > navHeight + 100) {
-      nav.style.top = `-${navHeight + 20}px`;
-    } else {
-      nav.style.top = `20px`;
-    }
-    lastScrollTop = scrollTop;
-  });
-</script>
+  </script>
 
 <script>
   const articleForm = document.getElementById('articleForm');
@@ -469,5 +377,6 @@
   };
 </script>
 
+<script src="../../assets/js/layout.js"></script>
 </body>
 </html>

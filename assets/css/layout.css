@@ -1,0 +1,455 @@
+
+:root {
+
+  /* Premium Skincare & Beauty Luxury Palette - Refined for feminine, soft luxury feel */
+  --color-canvas: #ffffff;        /* Soft alabaster pearl off-white with warm rose-tint */
+  --color-surface: #ffffff;       /* Pure radiant clean white */
+  --color-surface-soft: #fdf2f8;  /* Silk linen luxury background cashmere cream */
+  
+  --color-primary: #db2777;       /* Royal deep velvet espresso for supreme luxury headings */
+  --color-text: #262626;          /* Cashmere espresso dark cocoa for perfect legibility & high contrast */
+  --color-muted: #7a7a7a;         /* Dusty rose-gray for subtitles and helper texts */
+  
+  --color-blush: #db2777;
+  --color-primary-hover: #be185d;         /* Glamorous French dusty pink-red rose - refined for beautiful high-contrast */
+  --color-blush-soft: #fdf2f8;    /* Powder-puff warm rose-cream */
+  --color-gold: #f472b6;          /* Rich royal bronze gold - highly legible on light screens */
+  --color-gold-cream: #fdf2f8;    /* Gilded sunset mist gold-cream */
+  
+  --color-success: #2e6648;       /* Sophisticated organic herbal forest green */
+  --color-danger: #a82e3a;        /* Crimson silk/velvet rose */
+  --color-warning: #b37524;       /* Golden royal honey ochre */
+  
+  /* Borders, shadows and roundness */
+  --border-light: #fbcfe8; /* Warm bronze gold light border */
+  --border-blush: #fbcfe8;  /* French rose highlight border */
+  --border-radius-sm: 8px;
+  --border-radius-md: 14px;
+  --border-radius-lg: 24px;
+  
+  /* Soft organic shadow profiles */
+  --shadow-sm: 0 4px 12px rgba(76, 50, 46, 0.03);
+  --shadow-md: 0 12px 36px rgba(76, 50, 46, 0.06);
+  --shadow-lg: 0 24px 54px rgba(76, 50, 46, 0.08);
+  --shadow-gold: 0 8px 24px rgba(166, 116, 72, 0.1);
+  --shadow-blush: 0 8px 24px rgba(219, 39, 119, 0.15);
+  
+  --transition-smooth: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-fast: all 0.2s ease;
+
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--color-text);
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ===== Announcement bar ===== */
+.announce-bar {
+  background: var(--color-blush); color: #fff; overflow: hidden;
+  white-space: nowrap; position: relative; height: 38px; display: flex; align-items: center;
+}
+.announce-track {
+  display: inline-flex; animation: scrollBar 18s linear infinite; white-space: nowrap;
+}
+.announce-track span {
+  padding: 0 2.5rem; font-size: 0.82rem; font-weight: 500; letter-spacing: .02em;
+}
+@keyframes scrollBar { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* ===== Header ===== */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid #f0e6e2;
+  position: sticky; top: 0; background: #fff; z-index: 100;
+}
+.header-icon {
+  background: none; display: flex; align-items: center; color: var(--color-blush);
+  border: none; cursor: pointer;
+}
+.logo { font-family: 'Playfair Display', serif; text-align: center; line-height: 0.85; cursor: pointer; }
+.logo .cosmetics-label {
+  font-family: 'Poppins', sans-serif; font-size: 0.55rem; letter-spacing: 0.35em;
+  color: var(--color-blush); display: block; margin-bottom: 2px; font-weight: 500;
+}
+.logo .brand-name {
+  font-size: 2.1rem; font-weight: 700; color: var(--color-blush);
+  font-style: italic; position: relative; display: inline-block;
+}
+.logo .brand-name .flower { font-size: 0.9rem; position: relative; top: -8px; }
+.header-actions { display: flex; gap: 18px; align-items: center; }
+
+/* ===== Side Menu ===== */
+.menu-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); z-index: 1001;
+  opacity: 0; visibility: hidden; transition: 0.3s;
+}
+.menu-overlay.active { opacity: 1; visibility: visible; }
+.menubar {
+  position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+  background: #fff; z-index: 1002; transition: 0.3s;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding: 20px;
+}
+.menubar.active { left: 0; }
+.menubar .close-menu {
+  font-size: 1.5rem; color: var(--color-blush); background: none; border: none; cursor: pointer; margin-bottom: 20px;
+}
+.menubar ul { list-style: none; padding: 0; margin: 0; }
+.menubar ul li { margin-bottom: 15px; }
+.menubar ul li a { font-size: 1.1rem; font-weight: 500; color: var(--color-text); text-decoration: none; }
+.menubar .side-bottom-links { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9rem; }
+.menubar .side-bottom-links a { color: var(--color-muted); margin-right: 10px; text-decoration: none; }
+
+/* ===== Footer ===== */
+footer { background: var(--color-primary); color: #fff; padding: 56px 24px 30px; }
+.footer-logo {
+  font-family: 'Playfair Display', serif; font-style: italic; font-weight: 700;
+  font-size: 2.6rem; margin-bottom: 22px;
+}
+.footer-logo .cosmetics-label {
+  display: block; font-family: 'Poppins', sans-serif; font-style: normal;
+  font-size: 0.6rem; letter-spacing: 0.35em; margin-bottom: 4px; font-weight: 500;
+}
+footer .tagline { font-style: italic; font-size: 1.2rem; line-height: 1.5; margin-bottom: 30px; max-width: 420px; }
+.footer-menu { border-top: 1px solid rgba(255,255,255,0.25); }
+.footer-menu-item {
+  display: flex; justify-content: space-between; align-items: center; padding: 20px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.25); font-size: 1.15rem; font-weight: 500;
+}
+.footer-menu-item a { color: #fff; text-decoration: none; }
+.footer-social { display: flex; gap: 18px; margin: 34px 0 26px; }
+.footer-social a {
+  width: 38px; height: 38px; border: 1.5px solid #fff; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; text-decoration: none;
+}
+footer .copyright { font-size: 0.85rem; color: #d9bfc9; }
+footer .copyright a { text-decoration: underline; color: inherit; }
+
+/* ===== Bottom nav ===== */
+.bottom-nav {
+  position: sticky; bottom: 0; background: #fff; border-top: 1px solid #eee;
+  display: flex; justify-content: space-around; padding: 8px 0 10px; z-index: 90;
+}
+.bottom-nav a {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.68rem; color: var(--color-text); font-weight: 500; position:relative; text-decoration: none;
+}
+.bottom-nav svg { width: 20px; height: 20px; }
+
+.whatsapp-float {
+  position: fixed; bottom: 70px; right: 16px; width: 50px; height: 50px;
+  background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25); z-index: 95;
+}
+
+
+/* =========================================
+   UI Polish & Hover Effects (Added via request)
+   ========================================= */
+
+@media (hover: hover) {
+  /* 1. Product Cards Image Scale */
+  .product-image-container, .product-image-wrap {
+    overflow: hidden;
+  }
+  .product-image-container img, 
+  .product-image-wrap img {
+    transition: transform 0.3s ease !important;
+  }
+  
+  .product:hover .product-image-container img,
+  .product-card:hover .product-image-wrap img,
+  .product-item:hover .product-image-wrap img {
+    transform: scale(1.05) !important;
+  }
+
+  /* 2. Add To Cart Button over Image */
+  .buy-btn, 
+  .add-cart-btn {
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease !important;
+  }
+  
+  .product:hover .buy-btn,
+  .product-card:hover .add-cart-btn {
+    transform: translateX(-50%) translateY(-4px) !important;
+    box-shadow: 0 6px 14px rgba(219, 39, 119, 0.4) !important;
+    background: #be185d !important; background: var(--color-primary-hover) !important; border-color: var(--color-primary-hover) !important;
+  }
+
+  /* 3. Shop Now / Primary Buttons */
+  .shop-now-btn,
+  .cta-btn,
+  .btn-action {
+    transition: all 0.3s ease !important;
+  }
+  
+  .shop-now-btn:hover,
+  .cta-btn:hover {
+    background: #be185d !important; background: var(--color-primary-hover) !important; border-color: var(--color-primary-hover) !important;
+    box-shadow: 0 6px 16px rgba(219, 39, 119, 0.25) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  /* 4. Categories/Collections Cards */
+  .category-card {
+    transition: transform 0.3s ease !important;
+  }
+  .category-card:hover {
+    transform: translateY(-4px) !important;
+  }
+  .category-card img, .cat-image {
+    transition: transform 0.5s ease, filter 0.5s ease !important;
+  }
+  .category-card:hover img, .category-card:hover .cat-image {
+    transform: scale(1.05) !important;
+    filter: brightness(0.9) !important;
+  }
+  /* Arrow move */
+  .category-card .cat-arrow,
+  .category-link i {
+    transition: transform 0.3s ease !important;
+  }
+  .category-card:hover .cat-arrow,
+  .category-card:hover i {
+    transform: translateX(6px) !important;
+  }
+
+  /* 5. Header & Bottom Nav Icons */
+  .header-icon, .nav-actions a, .nav-actions button,
+  .bottom-nav a, .nav-cart {
+    transition: color 0.2s ease, transform 0.2s ease !important;
+  }
+  .header-icon:hover, .nav-actions a:hover, .nav-actions button:hover,
+  .bottom-nav a:hover, .nav-cart:hover {
+    color: var(--color-blush) !important;
+    transform: scale(1.1) !important;
+  }
+
+  /* 6. Footer Social Icons */
+  .footer-social a, .social-icons a {
+    transition: background-color 0.3s ease, transform 0.3s ease !important;
+  }
+  .footer-social a:hover, .social-icons a:hover { background: #be185d !important; background: var(--color-primary-hover) !important; border-color: var(--color-primary-hover) !important;
+    transform: translateY(-3px) !important;
+    color: #fff !important;
+  }
+
+  /* 7. Footer Menu Links */
+  .footer-menu-item a,
+  .footer-col ul li a {
+    position: relative;
+    transition: color 0.3s ease !important;
+    text-decoration: none !important;
+  }
+  .footer-menu-item a::after,
+  .footer-col ul li a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0; /* Or right: 0 for RTL depending on layout, left:0 is fine if inline block */
+    background-color: var(--color-blush, var(--color-blush));
+    transition: width 0.3s ease;
+  }
+  .footer-menu-item a:hover,
+  .footer-col ul li a:hover {
+    color: var(--color-blush, var(--color-blush)) !important;
+  }
+  .footer-menu-item a:hover::after,
+  .footer-col ul li a:hover::after {
+    width: 100%;
+  }
+
+  /* 8. Floating WhatsApp */
+  .whatsapp-float {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+  }
+  .whatsapp-float:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4) !important;
+  }
+}
+
+/* =========================================
+   Micro-interactions
+   ========================================= */
+
+/* Focus states for Accessibility */
+button:focus-visible, 
+input:focus-visible, 
+a:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-blush) !important;
+  outline-offset: 2px !important;
+}
+
+/* =========================================
+   Hero Slider Ken Burns Effect
+   ========================================= */
+.hero-slide {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out !important;
+  /* Ensure it has a transform origin so it zooms nicely */
+  transform-origin: center center;
+}
+.hero-slide.active {
+  opacity: 1;
+  /* Ken burns animation */
+  animation: kenBurns 6s ease-out forwards;
+}
+
+@keyframes kenBurns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.06); }
+}
+
+/* Hero Progress Indicator */
+.dot {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.dot.active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 0;
+  background-color: var(--color-blush);
+  animation: dotProgress 6s linear forwards;
+}
+/* If RTL, animation might grow left to right or right to left. 
+   Since .dot might be LTR in direction, left: 0 is standard. */
+
+@keyframes dotProgress {
+  to { width: 100%; }
+}
+
+/* Dot base background */
+.hero-dots .dot {
+  background: rgba(255,255,255,0.6);
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+
+
+/* Stagger animations for cards if we can just use simple nth-child */
+.product-grid .product-card:nth-child(1), .product-grid .product:nth-child(1) { animation-delay: 0.1s; }
+.product-grid .product-card:nth-child(2), .product-grid .product:nth-child(2) { animation-delay: 0.2s; }
+.product-grid .product-card:nth-child(3), .product-grid .product:nth-child(3) { animation-delay: 0.3s; }
+.product-grid .product-card:nth-child(4), .product-grid .product:nth-child(4) { animation-delay: 0.4s; }
+
+/* Scroll Reveal (Fade/Slide In) for elements */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out !important;
+}
+.reveal-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.category-card { overflow: hidden; border-radius: var(--border-radius-lg, 12px); }
+
+
+/* =========================================
+   New Collections/Categories Template
+   ========================================= */
+.new-category-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--border-radius-lg, 12px);
+  aspect-ratio: 3/4;
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+  background: #000;
+}
+
+.new-category-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease, filter 0.6s ease;
+  filter: brightness(0.85);
+}
+
+.new-category-card:hover img {
+  transform: scale(1.08);
+  filter: brightness(0.7);
+}
+
+.new-category-card .overlay-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  color: #fff;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%);
+}
+
+.new-category-card .tagline {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  color: #e9c7c0;
+  font-weight: 600;
+}
+
+.new-category-card h3 {
+  font-size: 1.8rem;
+  margin: 0 0 10px 0;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: #fff;
+}
+
+.new-category-card .bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  padding-top: 12px;
+  margin-top: auto; /* pushed to bottom of overlay */
+}
+
+.new-category-card .item-count {
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.new-category-card .arrow-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.new-category-card:hover .arrow-icon {
+  transform: translateX(5px) rotate(-45deg);
+  background: var(--color-blush);
+}
+
+/* =========================================
+   Dynamic Sections Grid Setup
+   ========================================= */
+.dynamic-section-container {
+  margin-bottom: 50px;
+}

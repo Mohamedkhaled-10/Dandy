@@ -9,7 +9,6 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://dandy-ebon.vercel.app//special-offers.html">
 
-  <!-- Favicons and Manifest Setup -->
   <link rel="icon" type="image/x-icon" href="../../assets/images/fav-icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/fav-icons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/fav-icons/favicon-32x32.png">
@@ -17,25 +16,22 @@
   <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/fav-icons/android-chrome-512x512.png">
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/fav-icons/apple-touch-icon.png">
   <link rel="manifest" href="../../assets/images/fav-icons/site.webmanifest">
-  <meta name="theme-color" content="#D98D99">
+  <meta name="theme-color" content="#DB2777">
 
-  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dandy-ebon.vercel.app//special-offers.html">
   <meta property="og:title" content="Special Offers & Premium Beauty Bundles | Dandy">
   <meta property="og:description" content="Save on premium organic skincare and natural haircare bundles from Dandy Egypt. Handcrafted with safe botanical assets.">
   <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Special Offers & Premium Beauty Bundles | Dandy">
   <meta name="twitter:description" content="Save on premium organic beauty routinely bundles from Dandy Egypt.">
   <meta name="twitter:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg">
 
-  <!-- Stylesheet -->
   <link href="../../assets/css/style.css" rel="stylesheet">
+  <link href="../../assets/css/layout.css" rel="stylesheet">
 
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
@@ -51,9 +47,27 @@
       text-transform: uppercase;
       box-shadow: 0 4px 12px rgba(184, 67, 79, 0.25);
     }
+    
+    /* Unified Product Card Styles (Matches index.html exactly) */
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 10px; }
+    .product-card { display: flex; flex-direction: column; cursor: pointer; transition: 0.3s; }
+    .product-image-wrap { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1/1; background: linear-gradient(135deg, #f3c9be, #f6dad2); margin-bottom: 10px; }
+    .product-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .discount-badge { position: absolute; top: 10px; left: 10px; background: var(--color-danger); color: #fff; font-size: 0.78rem; font-weight: 700; padding: 4px 9px; border-radius: 4px; z-index:2; }
+    .add-cart-btn { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: var(--color-primary); color: #fff; padding: 10px 18px; border-radius: 30px; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 6px; width: 88%; justify-content: center; white-space: nowrap; z-index:2; border:none; cursor:pointer; }
+    .add-cart-btn:hover { background: var(--color-primary-hover) !important; border-color: var(--color-primary-hover) !important; }
+    .add-cart-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .product-title { font-size: 0.92rem; color: var(--color-blush); font-weight: 500; line-height: 1.35; margin-bottom: 6px; min-height: 2.6em; }
+    .product-price { font-size: 1rem; font-weight: 700; color: var(--color-danger); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .product-price .old-price { color: #b79a95; font-weight: 400; text-decoration: line-through; font-size: 0.88rem; margin-left: 0; }
+    
+    @media(min-width: 720px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media(max-width: 650px) {
+      .product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+      .add-cart-btn { padding: 8px 12px; font-size: 0.75rem; width: 92%; }
+    }
   </style>
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NH8NG47PDV"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -61,66 +75,13 @@
     gtag('js', new Date());
     gtag('config', 'G-NH8NG47PDV');
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- Navigation -->
-<nav id="navbar" dir="ltr">
-  <div class="logo" onclick="window.location.href='../../index.html'">
-    <img src="../../assets/images/logo.png" alt="Dandy Logo" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';" />
-    <h1>DANDY</h1>
-  </div>
-  <ul>
-    <li><a href="../../index.html" class="active">Home</a></li>
-    <li><a href="all-products.html">Products</a></li>
-    <li><a href="special-offers.html">Offers</a></li>
-    <li><a href="../blog/blog.html">Blog</a></li>
-    <li class="dropdown">
-      <a href="javascript:void(0)">Help & Info ▾</a>
-      <ul class="dropdown-menu">
-        <li><a href="../support/help.html"><i class="fas fa-question-circle"></i> Help Guide</a></li>
-        <li><a href="../support/client-reviews.html"><i class="fas fa-heart"></i> Reviews</a></li>
-        <li><a href="../legal/about-us.html"><i class="fas fa-star"></i> About Us</a></li>
-      </ul>
-    </li>
-    <li><a href="track-order.html" class="nav-track-btn"><i class="fas fa-route"></i> Track Order</a></li>
-  </ul>
-  
-  <div class="nav-actions">
-    <a href="cart.html" class="nav-cart" aria-label="Shopping Cart">
-      <i class="fas fa-shopping-bag"></i>
-      <span class="cart-count" id="cart-count">0</span>
-    </a>
-    <button class="hamburger" aria-label="Menu" onclick="toggleNav()">
-      <i class="fas fa-bars"></i>
-    </button>
-  </div>
-</nav>
-
-<div class="menu-overlay" id="menu-overlay" onclick="toggleNav()"></div>
-
-<div class="menubar" id="menubar" dir="ltr" aria-hidden="true">
-  <button class="close-menu" onclick="toggleNav()"><i class="fas fa-times"></i></button>
-  <div class="menubar-content">
-    <ul>
-      <li><a href="../../index.html">Home</a></li>
-      <li><a href="all-products.html">Products</a></li>
-      <li><a href="special-offers.html">Offers</a></li>
-      <li><a href="track-order.html" style="background:var(--color-blush-soft); color:var(--color-blush); font-weight:bold; text-align:center;"><i class="fas fa-route"></i> Track Your Order</a></li>
-      <li><a href="../support/help.html"><i class="fas fa-question-circle"></i> Help & Gifting Guide</a></li>
-      <li><a href="../support/client-reviews.html">Client Reviews</a></li>
-      <li><a href="../blog/blog.html">Blog Posts</a></li>
-      <li><a href="../legal/about-us.html">About Us</a></li>
-    </ul>
-    <div class="side-bottom-links">
-      <a href="../legal/privacy-policy.html">Privacy Policy</a>
-      <span>|</span>
-      <a href="../legal/terms.html">Terms & Conditions</a>
-    </div>
-  </div>
 </div>
 
-<!-- Header Promo Section -->
 <section class="container" style="padding-top: 140px; text-align: center;">
   <span class="offers-hero-badge"><i class="fas fa-fire"></i> Limited Time Only</span>
   <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--color-primary); margin-bottom: 12px; font-family:'Space Grotesk', sans-serif;">Our Ongoing Beauty & Radiance Offers</h2>
@@ -129,7 +90,6 @@
 
 
 
-<!-- Offers Products -->
 <section class="products" style="padding: 20px 0 80px;">
   <div class="container">
     <div class="product-grid" id="offersContainer">
@@ -138,46 +98,6 @@
   </div>
 </section>
 
-<!-- Footer -->
-<footer>
-  <div class="container footer-grid">
-    <div class="footer-col">
-      <h4 style="font-family:'Space Grotesk', sans-serif;">Dandy</h4>
-      <p style="color: var(--color-muted); font-size: 0.95rem; margin-top: 14px; max-width: 250px;">Your premier destination for natural skincare and organic purity.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Useful Links</h4>
-      <ul style="margin: 0; padding: 0;">
-        <li><a href="../../index.html">Home</a></li>
-        <li><a href="all-products.html">All Products</a></li>
-        <li><a href="special-offers.html">Special Offers</a></li>
-        <li><a href="../blog/blog.html">Our Blog</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Help & Support</h4>
-      <ul style="margin: 0; padding: 0;">
-        <li><a href="../legal/about-us.html">About Us</a></li>
-        <li><a href="../support/client-reviews.html">Client Reviews</a></li>
-        <li><a href="../legal/privacy-policy.html">Privacy & Security Policy</a></li>
-        <li><a href="../legal/terms.html">Terms & Conditions</a></li>
-      </ul>
-    </div>
-  </div>
-  
-  <div class="footer-social">
-    <div class="social-icons">
-      <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-      <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-      <a href="https://wa.me/201038941005" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-    </div>
-    <p class="rights">© 2026 Dandy. All rights and media reserved.</p>
-  </div>
-</footer>
-
-
-
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -195,64 +115,48 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+</script>
 
-  // Floating Cart Badge counter
-  function updateCartCount(){
-    try {
-      const raw = localStorage.getItem('cart') || '[]';
-      const cart = JSON.parse(raw);
-      const count = Array.isArray(cart) ? cart.reduce((s, i) => s + (i.quantity ? Number(i.quantity) : 1), 0) : 0;
-      document.getElementById('cart-count').textContent = count;
-    } catch(e) {
-      document.getElementById('cart-count').textContent = 0;
-    }
-  }
+<script>
+  // اضافة دالة AddToCart مطابقة للصفحات الاخرى لضمان نفس سلوك الزر
+  window.quickAdd = function(id, name, price, image, discount, onSale) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const productItem = { id, name, price, image, discount, onSale };
 
-  document.addEventListener('DOMContentLoaded', updateCartCount);
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'cart') updateCartCount();
-  });
-
-    // Hamburger drawer menu toggle with animation and blur
-  function toggleNav() {
-    const menubar = document.getElementById("menubar");
-    const overlay = document.getElementById("menu-overlay");
-    const navbar = document.getElementById("navbar");
-    
-    menubar.classList.toggle("active");
-    overlay.classList.toggle("active");
-    
-    // إخفاء النافبار عند فتح القائمة
-    if (menubar.classList.contains("active")) {
-      navbar.style.transform = "translateY(-100%)";
+    const existIndex = cart.findIndex(item => item.id === id);
+    if(existIndex !== -1) {
+      cart[existIndex].quantity += 1;
     } else {
-      navbar.style.transform = "translateY(0)";
+      productItem.quantity = 1;
+      cart.push(productItem);
     }
-  }
 
-  // Navigation hide / show on scroll with smooth transitions
-  let lastScrollTop = 0;
-  const nav = document.getElementById('navbar');
+    localStorage.setItem("cart", JSON.stringify(cart));
+    if (typeof updateCartCount === 'function') updateCartCount();
 
-  window.addEventListener('scroll', function () {
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    // رسالة تنبيه أنيقة
+    const alertDiv = document.createElement("div");
+    alertDiv.style.position = "fixed";
+    alertDiv.style.bottom = "100px";
+    alertDiv.style.left = "50%";
+    alertDiv.style.transform = "translateX(-50%)";
+    alertDiv.style.background = "var(--color-blush, #db2777)";
+    alertDiv.style.color = "#fff";
+    alertDiv.style.padding = "10px 20px";
+    alertDiv.style.borderRadius = "8px";
+    alertDiv.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+    alertDiv.style.zIndex = "1030";
+    alertDiv.style.fontWeight = "bold";
+    alertDiv.style.textAlign = "center";
+    alertDiv.innerHTML = `Added to Cart!`;
+    document.body.appendChild(alertDiv);
     
-    if (scrollTop > 10) {
-      nav.classList.add('scrolled');
-    } else {
-      nav.classList.remove('scrolled');
-    }
-
-    // إخفاء الشريط عند النزول، وإظهاره عند الصعود (إلا إذا كانت قائمة الهاتف مفتوحة)
-    if (!document.getElementById("menubar").classList.contains("active")) {
-      if (scrollTop > lastScrollTop && scrollTop > 100) {
-        nav.style.transform = `translateY(-100%)`;
-      } else {
-        nav.style.transform = `translateY(0)`;
-      }
-    }
-    lastScrollTop = scrollTop;
-  });
+    setTimeout(() => {
+      alertDiv.style.opacity = "0";
+      alertDiv.style.transition = "opacity 0.4s ease";
+      setTimeout(() => alertDiv.remove(), 400);
+    }, 2000);
+  };
 </script>
 
 <script>
@@ -271,49 +175,53 @@
     snapshot.forEach(child => {
       const data = child.val();
       
-      // Filter discount status
-      if (data.onSale === true) {
+      // Filter discount status (يستمر المنطق كما هو لضمان بقاء العروض فقط)
+      if (data.onSale === true && !data.isHidden) {
         offerCount++;
         const productEl = document.createElement("div");
-        productEl.className = "product";
-        productEl.setAttribute("data-category", data.category);
+        
+        // المحافظة على كلاس product لتطابق القالب الموحد
+        productEl.className = "product-card product";
+        productEl.setAttribute("data-category", data.category || 'Special Promo');
+        productEl.onclick = function() { window.location.href = 'product.html?id=' + child.key; };
 
         const priceRaw = parseFloat(data.price) || 0;
-        let originalHtml = "";
-        let discountBadgeHtml = "";
-        
+        let priceStr = `<div class="product-price">${priceRaw} EGP</div>`;
+        let badgeStr = '';
+
         if (data.originalPrice) {
           const oldPrice = parseFloat(data.originalPrice) || 0;
-          originalHtml = `<span class="price-old" style="text-decoration:line-through; font-size:0.85rem; color:var(--color-muted);">${oldPrice.toFixed(0)} EGP</span>`;
-          discountBadgeHtml = `<span class="badge-discount" style="background:var(--color-danger); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; position:absolute; top:10px; left:10px; z-index:2;">Special Offer</span>`;
+          priceStr = `<div class="product-price"><span class="old-price">${oldPrice} EGP</span>${priceRaw} EGP</div>`;
+          badgeStr = `<div class="discount-badge">Special Offer</div>`;
         } else if (data.discount) {
           const discountPercent = parseFloat(data.discount) || 0;
           const oldPrice = priceRaw / (1 - (discountPercent/100));
-          originalHtml = `<span class="price-old" style="text-decoration:line-through; font-size:0.85rem; color:var(--color-muted);">${oldPrice.toFixed(0)} EGP</span>`;
-          discountBadgeHtml = `<span class="badge-discount" style="background:var(--color-danger); color:#fff; padding:4px 8px; border-radius:4px; font-size:0.75rem; font-weight:bold; position:absolute; top:10px; left:10px; z-index:2;">-${data.discount}% OFF</span>`;
+          priceStr = `<div class="product-price"><span class="old-price">${oldPrice.toFixed(0)} EGP</span>${priceRaw} EGP</div>`;
+          badgeStr = `<div class="discount-badge">-${data.discount}% OFF</div>`;
         }
 
-        // Map Category to premium English title
-        let catLabel = data.category || 'Special Promo';
-        if (data.category === 'منتجات الشعر') catLabel = 'Hair Care';
-        if (data.category === 'منتجات الجسم') catLabel = 'Body & Skin';
-        if (data.category === 'منتجات العطور') catLabel = 'Natural Fragrances';
+        let actionBtn = `<button class="add-cart-btn" onclick="event.stopPropagation(); quickAdd('${child.key}', \`${(data.name || '').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount || ''}', ${data.onSale || false})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              Add
+            </button>`;
+
+        if (data.isSoldOut) {
+            badgeStr += `<div class="discount-badge" style="background:#222; top: ${badgeStr ? '35px' : '10px'};">Sold Out</div>`;
+            actionBtn = `<button disabled class="add-cart-btn" style="background:#aaa; color:#fff; cursor:not-allowed;" onclick="event.stopPropagation();">
+                <i class="fas fa-ban"></i> Sold Out
+              </button>`;
+        }
 
         productEl.innerHTML = `
-          <div class="product-image-container">
-            ${discountBadgeHtml}
+          <div class="product-image-wrap">
+            ${badgeStr}
             <img src="${data.image}" alt="${data.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+            ${actionBtn}
           </div>
-          <span class="category">${catLabel}</span>
-          <h3>${data.name}</h3>
-          <div class="price-box">
-            <span class="price">${priceRaw} EGP</span>
-            ${originalHtml}
-          </div>
-          <a href="product.html?id=${child.key}" class="buy-btn" style="background: var(--color-danger);">
-            <i class="fas fa-shopping-bag"></i> Shop Special Offer
-          </a>
+          <h3 class="product-title">${data.name}</h3>
+          ${priceStr}
         `;
+        
         offersContainer.appendChild(productEl);
       }
     });
@@ -324,5 +232,6 @@
   });
 </script>
 
+<script src="../../assets/js/layout.js"></script>
 </body>
 </html>

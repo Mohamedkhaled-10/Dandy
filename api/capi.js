@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 // دالة لتشفير البيانات بصيغة SHA256 كما يطلب فيسبوك (مُعدّلة لتتحمل أي نوع بيانات)
 const hashData = (data) => {
@@ -8,7 +8,7 @@ const hashData = (data) => {
   return crypto.createHash('sha256').update(secureString).digest('hex');
 };
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // السماح بطلبات POST فقط
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });

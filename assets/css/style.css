@@ -7,26 +7,27 @@
 
 :root {
   /* Premium Skincare & Beauty Luxury Palette - Refined for feminine, soft luxury feel */
-  --color-canvas: #fefaf7;        /* Soft alabaster pearl off-white with warm rose-tint */
+  --color-canvas: #ffffff;        /* Soft alabaster pearl off-white with warm rose-tint */
   --color-surface: #ffffff;       /* Pure radiant clean white */
-  --color-surface-soft: #fbf0e8;  /* Silk linen luxury background cashmere cream */
+  --color-surface-soft: #fdf2f8;  /* Silk linen luxury background cashmere cream */
   
-  --color-primary: #271412;       /* Royal deep velvet espresso for supreme luxury headings */
-  --color-text: #4c322e;          /* Cashmere espresso dark cocoa for perfect legibility & high contrast */
-  --color-muted: #856a65;         /* Dusty rose-gray for subtitles and helper texts */
+  --color-primary: #db2777;       /* Royal deep velvet espresso for supreme luxury headings */
+  --color-text: #262626;          /* Cashmere espresso dark cocoa for perfect legibility & high contrast */
+  --color-muted: #7a7a7a;         /* Dusty rose-gray for subtitles and helper texts */
   
-  --color-blush: #cc5a6c;         /* Glamorous French dusty pink-red rose - refined for beautiful high-contrast */
-  --color-blush-soft: #fae4dc;    /* Powder-puff warm rose-cream */
-  --color-gold: #a67448;          /* Rich royal bronze gold - highly legible on light screens */
-  --color-gold-cream: #fbf3e6;    /* Gilded sunset mist gold-cream */
+  --color-blush: #db2777;
+  --color-primary-hover: #be185d;         /* Glamorous French dusty pink-red rose - refined for beautiful high-contrast */
+  --color-blush-soft: #fdf2f8;    /* Powder-puff warm rose-cream */
+  --color-gold: #f472b6;          /* Rich royal bronze gold - highly legible on light screens */
+  --color-gold-cream: #fdf2f8;    /* Gilded sunset mist gold-cream */
   
   --color-success: #2e6648;       /* Sophisticated organic herbal forest green */
   --color-danger: #a82e3a;        /* Crimson silk/velvet rose */
   --color-warning: #b37524;       /* Golden royal honey ochre */
   
   /* Borders, shadows and roundness */
-  --border-light: rgba(166, 116, 72, 0.16); /* Warm bronze gold light border */
-  --border-blush: rgba(204, 90, 108, 0.18);  /* French rose highlight border */
+  --border-light: #fbcfe8; /* Warm bronze gold light border */
+  --border-blush: #fbcfe8;  /* French rose highlight border */
   --border-radius-sm: 8px;
   --border-radius-md: 14px;
   --border-radius-lg: 24px;
@@ -36,7 +37,7 @@
   --shadow-md: 0 12px 36px rgba(76, 50, 46, 0.06);
   --shadow-lg: 0 24px 54px rgba(76, 50, 46, 0.08);
   --shadow-gold: 0 8px 24px rgba(166, 116, 72, 0.1);
-  --shadow-blush: 0 8px 24px rgba(204, 90, 108, 0.15);
+  --shadow-blush: 0 8px 24px rgba(219, 39, 119, 0.15);
   
   --transition-smooth: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
   --transition-fast: all 0.2s ease;
@@ -58,14 +59,14 @@ html, body {
 body {
   background-color: var(--color-canvas);
   color: var(--color-text);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Poppins', sans-serif;
   overflow-x: hidden;
   line-height: 1.7;
   direction: ltr;
 }
 
 h1, h2, h3, h4, .font-heading {
-  font-family: 'Space Grotesk', 'Playfair Display', sans-serif;
+  font-family: 'Playfair Display', serif;
   color: var(--color-primary);
   font-weight: 700;
   line-height: 1.3;
@@ -156,7 +157,7 @@ nav ul li a {
 
 nav ul li a:hover, nav ul li.active a {
   color: var(--color-blush);
-  background: rgba(204, 90, 108, 0.05);
+  background: rgba(219, 39, 119, 0.05);
 }
 
 nav ul li a.nav-track-btn {
@@ -172,8 +173,7 @@ nav ul li a.nav-track-btn {
   transition: var(--transition-smooth);
 }
 
-nav ul li a.nav-track-btn:hover {
-  background: var(--color-blush) !important;
+nav ul li a.nav-track-btn:hover { background: var(--color-primary-hover) !important;
   color: #fff !important;
   border-style: solid;
 }
@@ -224,8 +224,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   transition: var(--transition-fast);
 }
 
-.nav-cart:hover {
-  background: var(--color-blush);
+.nav-cart:hover { background: var(--color-primary-hover);
   color: #fff;
 }
 
@@ -495,7 +494,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   right: 20px;
   z-index: 2;
   color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Playfair Display', serif;
   font-size: 1.5rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -512,7 +511,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
 }
 
 .cat-card:hover .cat-card-title {
-  color: var(--color-blush-soft);
+  color: #ffffff;
   transform: translateY(-4px);
 }
 /* ==========================================
@@ -677,8 +676,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   font-size: 0.95rem;
 }
 
-.product .buy-btn:hover {
-  background: var(--color-blush);
+.product .buy-btn:hover { background: var(--color-primary-hover);
 }
 
 /* Browse more link banner */
@@ -704,10 +702,9 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   transition: var(--transition-smooth);
 }
 
-.browse-more a:hover {
-  background: var(--color-blush);
+.browse-more a:hover { background: var(--color-primary-hover);
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(204, 90, 108, 0.3);
+  box-shadow: 0 12px 28px rgba(219, 39, 119, 0.3);
 }
 
 /* ==========================================
@@ -885,7 +882,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
 }
 
 .btn-order { background: var(--color-primary); color: #fff; }
-.btn-order:hover { background: var(--color-blush); }
+.btn-order:hover { background: var(--color-primary-hover); }
 
 .btn-whatsapp { background: #25D366; color: #fff; }
 .btn-whatsapp:hover { opacity: 0.9; }
@@ -1111,8 +1108,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   transition: var(--transition-fast);
 }
 
-.cookie-popup button:hover {
-  background: var(--color-blush);
+.cookie-popup button:hover { background: var(--color-primary-hover);
 }
 
 /* ==========================================
@@ -1197,8 +1193,7 @@ footer {
   transition: var(--transition-fast);
 }
 
-.footer-social .social-icons a:hover {
-  background: var(--color-blush);
+.footer-social .social-icons a:hover { background: var(--color-primary-hover);
   color: #fff;
   transform: translateY(-3px);
 }
