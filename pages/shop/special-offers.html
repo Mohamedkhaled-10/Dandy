@@ -75,20 +75,35 @@
     gtag('js', new Date());
     gtag('config', 'G-NH8NG47PDV');
   </script>
+
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1678552386587380');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-</div>
 
 <section class="container" style="padding-top: 140px; text-align: center;">
   <span class="offers-hero-badge"><i class="fas fa-fire"></i> Limited Time Only</span>
   <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--color-primary); margin-bottom: 12px; font-family:'Space Grotesk', sans-serif;">Our Ongoing Beauty & Radiance Offers</h2>
   <p style="color: var(--color-muted); max-width: 600px; margin: 0 auto 40px; font-size: 1.05rem;">All the botanical magic you love, now at heartwarming prices configured to feed your skin and hair with luxury care. Explore our discounted collections today.</p>
 </section>
-
-
 
 <section class="products" style="padding: 20px 0 80px;">
   <div class="container">
@@ -133,6 +148,19 @@
 
     localStorage.setItem("cart", JSON.stringify(cart));
     if (typeof updateCartCount === 'function') updateCartCount();
+
+    const eventData = {
+        content_ids: [id],
+        content_name: name,
+        content_type: 'product',
+        value: parseFloat(price),
+        currency: 'EGP'
+    };
+
+    // إرسال للـ Pixel
+    if (typeof fbq === 'function') {
+        fbq('track', 'AddToCart', eventData);
+    }
 
     // رسالة تنبيه أنيقة
     const alertDiv = document.createElement("div");
