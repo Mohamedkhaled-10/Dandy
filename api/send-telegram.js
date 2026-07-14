@@ -21,13 +21,14 @@ export default async function handler(req, res) {
       ? new Date(order.timestamp).toLocaleString('ar-EG')
       : new Date().toLocaleString('ar-EG');
 
+    // تم إضافة علامات ` ` حول كود الفاتورة ورقم الهاتف لجعلهم قابلين للنسخ بضغطة واحدة
     const message = `🔔 *طلب جديد في متجر داندي!*
 ────────────────
 👤 *العميل\\ة:* ${order.name || '-'}
-📞 *رقم الهاتف:* ${order.phone || '-'}
+📞 *رقم الهاتف:* \`${order.phone || '-'}\`
 📍 *المحافظة:* ${order.governorate || '-'}
 📦 *العنوان:* ${order.address || '-'}
-💰 *كود الفاتورة:* ${order.invoiceCode || orderId}
+💰 *كود الفاتورة:* \`${order.invoiceCode || orderId}\`
 ⏱ *الوقت:* ${dateText}
 
 🔗 *تفاصيل الطلب:*
