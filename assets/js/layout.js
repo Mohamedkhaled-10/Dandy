@@ -3,10 +3,10 @@ const Layout = {
     return `
       <div class="announce-bar">
         <div class="announce-track">
-          <span>Enjoy Free Shipping on orders above 1500 LE</span>
-          <span>Enjoy Free Shipping on orders above 1500 LE</span>
-          <span>Enjoy Free Shipping on orders above 1500 LE</span>
-          <span>Enjoy Free Shipping on orders above 1500 LE</span>
+          <span>Enjoy Free Shipping on orders above 2000 LE</span>
+          <span>Enjoy Free Shipping on orders above 2000 LE</span>
+          <span>Enjoy Free Shipping on orders above 2000 LE</span>
+          <span>Enjoy Free Shipping on orders above 2000 LE</span>
         </div>
       </div>
     `;
