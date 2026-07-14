@@ -597,7 +597,6 @@
     gtag('config', 'G-NH8NG47PDV');
   </script>
 
-  <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -613,8 +612,6 @@
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
   /></noscript>
-  <!-- End Meta Pixel Code -->
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -655,7 +652,6 @@
         <span id="price-old-wrapper"></span>
       </div>
 
-      <!-- Updated Buttons Layout -->
       <div class="action-group">
         
         <div class="primary-action-row">
@@ -699,7 +695,6 @@
   </div>
 </main>
 
-<!-- New Related Products Section -->
 <section class="related-section" id="related-products-section">
   <div class="container">
     <h2 class="section-title plain">منتجات مشابهة</h2>
@@ -833,6 +828,17 @@
       loadedProduct = product;
       loadedProduct.id = id; 
 
+      // 🔥 إطلاق حدث ViewContent للفيسبوك بيكسل هنا
+      if (typeof fbq === 'function') {
+        fbq('track', 'ViewContent', {
+          content_name: loadedProduct.name,
+          content_ids: [loadedProduct.id],
+          content_type: 'product',
+          value: parseFloat(loadedProduct.price) || 0,
+          currency: 'EGP'
+        });
+      }
+
       document.getElementById("product-img").src = product.image || '';
       document.getElementById("product-title").textContent = product.name || 'Premium Essential';
       document.getElementById("product-desc").innerHTML = parseDescriptionToHtml(product.description);
@@ -961,6 +967,17 @@
   addToCartBtn.addEventListener("click", () => {
     if(!loadedProduct || loadedProduct.isSoldOut) return;
 
+    // 🔥 إطلاق حدث AddToCart للفيسبوك بيكسل هنا للمنتج الرئيسي
+    if (typeof fbq === 'function') {
+      fbq('track', 'AddToCart', {
+        content_name: loadedProduct.name,
+        content_ids: [loadedProduct.id],
+        content_type: 'product',
+        value: parseFloat(loadedProduct.price) || 0,
+        currency: 'EGP'
+      });
+    }
+
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const productItem = {
       id: id,
@@ -1070,6 +1087,18 @@
 
   // Global function for related product card 'Add to Cart' button
   window.addToCartCard = function(id, name, price, image, discount, onSale) {
+    
+    // 🔥 إطلاق حدث AddToCart للفيسبوك بيكسل هنا للمنتجات المشابهة
+    if (typeof fbq === 'function') {
+      fbq('track', 'AddToCart', {
+        content_name: name,
+        content_ids: [id],
+        content_type: 'product',
+        value: parseFloat(price) || 0,
+        currency: 'EGP'
+      });
+    }
+
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     let exist = cart.findIndex(i => i.id === id);
     if(exist !== -1) {
