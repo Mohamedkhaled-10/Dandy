@@ -451,7 +451,6 @@
     gtag('config', 'G-NH8NG47PDV');
   </script>
 
-  <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -467,8 +466,6 @@
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
   /></noscript>
-  <!-- End Meta Pixel Code -->
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -1103,6 +1100,22 @@
   };
 
   renderStep1CartItems();
+
+  // --- Meta Pixel: InitiateCheckout Event ---
+  // يتم الإطلاق بمجرد تحميل السلة واحتوائها على منتجات للبدء بتكوين جمهور الاستهداف المخصص
+  if (cart && cart.length > 0) {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const cartValue = calculateCartSubtotal();
+    
+    if (typeof fbq === 'function') {
+      fbq('track', 'InitiateCheckout', {
+        value: cartValue,
+        currency: 'EGP',
+        num_items: totalItems
+      });
+    }
+  }
+  // ------------------------------------------
 </script>
 
 <script src="../../assets/js/layout.js"></script>
