@@ -305,13 +305,6 @@
   </head>
 <body>
 
-
-
-
-
-
-</div>
-
 <section class="invoice-section">
   <div class="container" id="invoiceCard">
     
@@ -428,8 +421,6 @@
   </div>
 </section>
 
-
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -466,10 +457,7 @@
     })
     .catch(err => console.error("خطأ أثناء الاتصال بالسيرفر الخلفي:", err));
   }
-
-  
-
-  </script>
+</script>
 
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -629,6 +617,35 @@
       tableSubtotal.textContent = subtotalVal.toFixed(0) + " ج.م";
       tableShipping.textContent = shippingVal.toFixed(0) + " ج.م";
       tableGrandTotal.textContent = totalVal.toFixed(0) + " ج.م";
+
+      // =========================================================================
+      // إضافة حدث الشراء (Meta Pixel Purchase Event) - تم التعديل باحترافية
+      // =========================================================================
+      const transactionId = order.invoiceCode || key;
+      const storageKey = 'meta_pixel_purchase_fired_' + transactionId;
+
+      // التأكد من أن البيكسل موجود وأنه لم يتم إرسال الحدث مسبقاً في هذه الجلسة
+      if (typeof fbq !== 'undefined' && !sessionStorage.getItem(storageKey)) {
+        
+        // استخراج معرفات أو أسماء المنتجات ديناميكياً
+        const contentIds = order.products.map(p => p.id || p.productId || p.name);
+
+        fbq('track', 'Purchase', {
+          content_type: 'product',
+          content_ids: contentIds,
+          value: parseFloat(totalVal.toFixed(2)), // القيمة النهائية ديناميكياً
+          currency: 'EGP',                        // العملة: جنيه مصري
+          transaction_id: transactionId           // رقم المعاملة لمنع التكرار (Deduplication)
+        });
+
+        // حفظ الحالة في الـ Session لمنع تكرار الإرسال إذا قام المستخدم بتحديث الصفحة 
+        // أو إذا قام Firebase بتحديث حالة الطلب (Real-time updates)
+        sessionStorage.setItem(storageKey, 'true');
+        console.log('✅ Meta Pixel [Purchase] Event fired successfully for:', transactionId);
+      }
+      // =========================================================================
+      // نهاية كود البيكسل
+      // =========================================================================
 
     } else {
       itemsBody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--color-muted);padding:20px;">سلة المشتريات فارغة.</td></tr>';
