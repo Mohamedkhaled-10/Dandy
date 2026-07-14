@@ -454,6 +454,10 @@
   'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '1678552386587380');
   fbq('track', 'PageView');
+  fbq('track', 'ViewContent', {
+    content_name: document.title,
+    content_type: 'product_category'
+  });
   </script>
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
