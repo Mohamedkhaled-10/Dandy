@@ -318,27 +318,7 @@
     gtag('js', new Date());
     gtag('config', 'G-NH8NG47PDV');
   </script>
-  <script>
-    function getFBCookie(name) {
-      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      if (match) return match[2];
-      return null;
-    }
-    function generateEventId() { return 'evt_' + Date.now() + '_' + Math.floor(Math.random() * 1000000); }
-    async function sendToCAPI(eventName, customData = {}, userData = {}, eventId = null) {
-      try {
-        await fetch('/api/capi', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            eventName, eventData: customData,
-            userData: { fbp: getFBCookie('_fbp'), fbc: getFBCookie('_fbc'), ...userData },
-            eventId
-          })
-        });
-      } catch (e) { console.error("Failed to send to CAPI:", e); }
-    }
-  </script>
+  
   <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -348,12 +328,10 @@
   t.src=v;s=b.getElementsByTagName(e)[0];
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '1016579674082555');
-  const pageViewEventId = generateEventId();
-  fbq('track', 'PageView', {}, { eventID: pageViewEventId });
-  sendToCAPI('PageView', {}, {}, pageViewEventId);
+  fbq('init', '1678552386587380');
+  fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1" /></noscript>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1" /></noscript>
   <link href="assets/css/layout.css" rel="stylesheet">
 </head>
 <body>
@@ -616,7 +594,7 @@
                   <div class="product-image-wrap">
                     ${badgeStr}
                     <img src="${prod.image || ''}" alt="${prod.name || 'Product'}">
-                    <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart('${prod.id}', '${(prod.name||'').replace(/'/g, "\'")}', ${prod.price}, '${prod.image||''}')">
+                    <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart('${prod.id}', '${(prod.name||'').replace(/'/g, "'")}', ${prod.price}, '${prod.image||''}')">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                       Add
                     </button>
