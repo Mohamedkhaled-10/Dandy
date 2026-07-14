@@ -451,42 +451,7 @@
     gtag('config', 'G-NH8NG47PDV');
   </script>
 
-  <script>
-    // دالة لجلب الكوكيز الخاصة بفيسبوك
-    function getFBCookie(name) {
-      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-      if (match) return match[2];
-      return null;
-    }
-
-    // دالة لإنشاء كود موحد للحدث (Event ID)
-    function generateEventId() {
-      return 'evt_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
-    }
-
-    // الدالة الرئيسية لإرسال البيانات إلى Vercel API
-    async function sendToCAPI(eventName, customData = {}, userData = {}, eventId = null) {
-      try {
-        await fetch('/api/capi', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            eventName,
-            eventData: customData,
-            userData: {
-              fbp: getFBCookie('_fbp'),
-              fbc: getFBCookie('_fbc'),
-              ...userData
-            },
-            eventId
-          })
-        });
-      } catch (e) {
-        console.error("Failed to send to CAPI:", e);
-      }
-    }
-  </script>
-
+  <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -496,21 +461,15 @@
   t.src=v;s=b.getElementsByTagName(e)[0];
   s.parentNode.insertBefore(t,s)}(window, document,'script',
   'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '1016579674082555');
-
-  // توليد Event ID موحد
-  const pageViewEventId = generateEventId();
-
-  // إرسال للـ Pixel
-  fbq('track', 'PageView', {}, { eventID: pageViewEventId });
-
-  // إرسال للـ CAPI
-  sendToCAPI('PageView', {}, {}, pageViewEventId);
+  fbq('init', '1678552386587380');
+  fbq('track', 'PageView');
   </script>
   <noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=1016579674082555&ev=PageView&noscript=1"
+  src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
   /></noscript>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- End Meta Pixel Code -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -1096,11 +1055,10 @@
       await orderRef.set(orderData);
       const generatedKey = orderRef.key;
 
-      // --- كود الـ Meta Pixel & CAPI للـ Purchase ---
+      // --- كود الـ Meta Pixel للـ Purchase ---
       
       // تجهيز بيانات المنتجات المشتراة
       const contentIds = cart.map(item => item.id);
-      const purchaseEventId = generateEventId();
 
       const purchaseData = {
           value: parseFloat(totalAmount),
@@ -1110,19 +1068,10 @@
           num_items: cart.length
       };
 
-      // بيانات العميل الحقيقية التي سيتم تشفيرها في السيرفر لزيادة دقة CAPI (Event Match Quality)
-      const capiUserData = {
-          em: email !== 'N/A' && email !== '' ? email : undefined,
-          ph: phone
-      };
-
       // إرسال للـ Pixel
       if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', purchaseData, { eventID: purchaseEventId });
+          fbq('track', 'Purchase', purchaseData);
       }
-
-      // إرسال للـ CAPI
-      sendToCAPI('Purchase', purchaseData, capiUserData, purchaseEventId);
       
       // ----------------------------------------------
 
