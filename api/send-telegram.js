@@ -9,16 +9,16 @@ export default async function handler(req, res) {
   try {
     const { order, orderId } = req.body;
 
-    // جلب التوكن والـ Chat ID من متغيرات البيئة السرية في Vercel
+    // جلب التوكن والـ Chat IDs من متغيرات البيئة السرية في Vercel
     const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
-    const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+    const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_ID;
 
-    if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
+    if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_IDS) {
       return res.status(500).json({ error: 'Server configuration missing tokens' });
     }
 
-    const dateText = order.timestamp 
-      ? new Date(order.timestamp).toLocaleString('ar-EG') 
+    const dateText = order.timestamp
+      ? new Date(order.timestamp).toLocaleString('ar-EG')
       : new Date().toLocaleString('ar-EG');
 
     const message = `🔔 *طلب جديد في متجر داندي!*
@@ -32,19 +32,29 @@ export default async function handler(req, res) {
 
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 
-    const response = await fetch(telegramUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: "Markdown"
-      })
-    });
+    // دعم أكثر من Chat ID مفصولين بفاصلة ,
+    const chatIds = TELEGRAM_CHAT_IDS
+      .split(',')
+      .map(id => id.trim())
+      .filter(Boolean);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      return res.status(502).json({ error: 'Telegram API error', details: errorData });
+    for (const chatId of chatIds) {
+      const response = await fetch(telegramUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: "Markdown"
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(`Telegram API error for Chat ID ${chatId}:`, errorData);
+      }
     }
 
     return res.status(200).json({ success: true });
