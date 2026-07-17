@@ -161,6 +161,8 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="../../assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -175,7 +177,7 @@
 <!-- Blog View Post -->
 <main class="container">
   <article class="post-container" id="postArticleArea">
-    <img id="postImage" class="header-img" src="" alt="Dandy Luxury Beauty Blog Cover">
+    <img loading="lazy" id="postImage" class="header-img" src="" alt="Dandy Luxury Beauty Blog Cover">
     <h1 id="postTitle">...جاري جلب العنوان</h1>
     <div class="post-date" id="postDate">📅 ...</div>
     <div class="post-body-content" id="postContent">
@@ -352,7 +354,7 @@
         const dateText = d.date || 'روتين الجمال';
 
         cardEl.innerHTML = `
-          <img src="${img}" alt="${title}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80';">
+          <img loading="lazy" src="${img}" alt="${title}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80';">
           <div style="padding:16px; display:flex; flex-direction:column; flex:1;">
             <span style="font-size:0.8rem; color:var(--color-gold); font-weight:700; margin-bottom:6px;">📅 ${dateText}</span>
             <h3 style="font-size:1.05rem; font-weight:700; color:var(--color-primary); line-height:1.4; margin-bottom:12px; height:44px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${title}</h3>

@@ -463,11 +463,13 @@
   fbq('init', '1678552386587380');
   fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none"
+  <noscript><img loading="lazy" height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
   /></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="../../assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -867,7 +869,7 @@
       itemCard.className = 'cart-product-list-item';
       itemCard.innerHTML = `
         <div class="cart-item-info">
-          <img src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+          <img loading="lazy" src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
           <div class="cart-item-meta">
             <h3>${item.name}</h3>
             <p>${Number(priceVal).toFixed(0)} EGP each</p>
@@ -1051,26 +1053,6 @@
       const orderRef = db.ref('orders').push();
       await orderRef.set(orderData);
       const generatedKey = orderRef.key;
-
-      // --- كود الـ Meta Pixel للـ Purchase ---
-      
-      // تجهيز بيانات المنتجات المشتراة
-      const contentIds = cart.map(item => item.id);
-
-      const purchaseData = {
-          value: parseFloat(totalAmount),
-          currency: 'EGP',
-          content_ids: contentIds,
-          content_type: 'product',
-          num_items: cart.length
-      };
-
-      // إرسال للـ Pixel
-      if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', purchaseData);
-      }
-      
-      // ----------------------------------------------
 
       try {
         await fetch('https://hook.eu1.make.com/vx6ie8k20cw0difkin21bx4dvkw7rful', {

@@ -82,6 +82,8 @@
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="../../assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -165,7 +167,7 @@
           <label for="p-image">رابط صورة المستحضر الثابتة</label>
           <div class="img-preview-wrapper">
             <input type="url" id="p-image" placeholder="https://unsplash.com/... أو رابط مباشر آخر" required style="flex: 1;">
-            <img id="imagePreview" class="img-preview-box" alt="Preview">
+            <img loading="lazy" id="imagePreview" class="img-preview-box" alt="Preview">
           </div>
         </div>
 

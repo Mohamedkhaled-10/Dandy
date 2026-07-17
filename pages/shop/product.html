@@ -606,11 +606,13 @@
   fbq('init', '1678552386587380');
   fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none"
+  <noscript><img loading="lazy" height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
   /></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="../../assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -624,7 +626,7 @@
   </div>
   <div class="detail-grid" id="detailFrame">
     <div class="detail-image-box">
-      <img id="product-img" src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="Loading Product Image...">
+      <img loading="lazy" id="product-img" src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="Loading Product Image...">
     </div>
 
     <div class="detail-info-box">
@@ -1067,7 +1069,7 @@
               <div class="product-card" onclick="window.location.href='product.html?id=${prod.id}'">
                 <div class="product-image-wrap">
                   ${badgeStr}
-                  <img src="${prod.image || ''}" alt="${prod.name || 'Product'}"></div>
+                  <img loading="lazy" src="${prod.image || ''}" alt="${prod.name || 'Product'}"></div>
                   <h3 class="product-title-card">${prod.name || ''}</h3>
                   ${priceStr}
                   <button class="add-cart-btn" onclick="event.stopPropagation(); addToCartCard('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${priceRaw}, '${prod.image||''}', ${prod.discount||0}, ${prod.onSale||false})">

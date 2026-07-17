@@ -459,7 +459,7 @@
     content_type: 'product_category'
   });
   </script>
-  <noscript><img height="1" width="1" style="display:none"
+  <noscript><img loading="lazy" height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
   /></noscript>
   <!-- End Meta Pixel Code -->
@@ -486,6 +486,8 @@
       "url": "https://dandy-ebon.vercel.app/pages/shop/all-products.html"
     }
   </script>
+
+  <script src="../../assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -495,8 +497,6 @@
 <section class="container" style="padding-top: 130px; text-align: center;">
   <div class="section-header" style="margin-bottom: 20px;">
     <span class="sub">Our Special Collections</span>
-    <h1 style="font-size: 2rem; color: var(--color-primary); margin-bottom: 10px;">جميع منتجات دندي كوزمتيك (Dandy Cosmetics)</h1>
-    <p class="header-desc">Explore our premium organic haircare, skincare essential oils, and luxury French fragrances designed to unleash your natural beauty.</p>
   </div>
 </section>
 
@@ -573,7 +573,7 @@
 
   <main class="shop-main">
     <div class="product-grid" id="productContainer">
-      <p style="text-align: center; grid-column: 1/-1; color: var(--color-muted);">Loading your beautiful collection...</p>
+      <p style="text-align: center; grid-column: 1/-1; color: var(--color-muted);"></p>
     </div>
   </main>
 </div>
@@ -696,6 +696,17 @@
   window.quickAdd = function(id, name, price, image, discount, onSale) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const productItem = { id, name, price, image, discount, onSale };
+
+    // إرسال حدث AddToCart للفيسبوك بيكسل
+    if (typeof fbq === 'function') {
+      fbq('track', 'AddToCart', {
+        content_name: name,
+        content_ids: [id],
+        content_type: 'product',
+        value: parseFloat(price) || 0,
+        currency: 'EGP'
+      });
+    }
 
     const existIndex = cart.findIndex(item => item.id === id);
     if(existIndex !== -1) {

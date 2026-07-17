@@ -387,7 +387,7 @@
   fbq('init', '1678552386587380');
   fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1" /></noscript>
+  <noscript><img loading="lazy" height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1" /></noscript>
   <link href="assets/css/layout.css" rel="stylesheet">
 
   <meta property="og:type" content="website">
@@ -427,6 +427,8 @@
       ]
     }
   </script>
+
+  <script src="assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -726,6 +728,17 @@
     else cart.push({ id, name, price, image, quantity: 1 });
     localStorage.setItem("cart", JSON.stringify(cart));
     
+    // إرسال حدث AddToCart للفيسبوك بيكسل
+    if (typeof fbq === 'function') {
+      fbq('track', 'AddToCart', {
+        content_name: name,
+        content_ids: [id],
+        content_type: 'product',
+        value: parseFloat(price) || 0,
+        currency: 'EGP'
+      });
+    }
+
     if (typeof window.updateSharedCartCount === 'function') {
         window.updateSharedCartCount();
     }

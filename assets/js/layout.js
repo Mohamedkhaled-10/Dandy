@@ -304,7 +304,7 @@ function performSearch(query, basePath) {
         return;
     }
 
-    resultsContainer.innerHTML = '<div style="text-align:center; padding:20px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><br><small style="color:#7a7a7a; margin-top:10px; display:inline-block;">جاري البحث...</small></div>';
+    resultsContainer.innerHTML = '<div style="text-align:center; padding:20px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><br><small style="color:#7a7a7a; margin-top:10px; display:inline-block;"></small></div>';
 
     // Fetch products
     if(typeof window.db === 'undefined') {
@@ -380,7 +380,7 @@ function renderSearchResults(data, query, basePath, container) {
         
         html += `
             <div style="display:flex; align-items:center; gap:12px; padding:10px; border:1px solid #f0e6e2; border-radius:8px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='transparent'" onclick="window.location.href='${basePath}pages/shop/product.html?id=${p.id}'">
-                <img src="${p.image || ''}" alt="" style="width:60px; height:60px; object-fit:cover; border-radius:6px; background:#f9f9f9;">
+                <img src="${p.image || ''}" alt="" loading="lazy" style="width:60px; height:60px; object-fit:cover; border-radius:6px; background:#f9f9f9;">
                 <div style="flex:1;">
                     <h4 style="margin:0 0 4px 0; font-size:0.95rem; color:var(--color-text);">${p.name}</h4>
                     <div style="font-size:0.85rem; color:#7a7a7a;">${priceStr}</div>

@@ -57,6 +57,8 @@
     .flex-row > div { flex: 1; }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="../../assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -483,7 +485,7 @@
             const data = child.val();
             listEl.innerHTML += `
                 <div class="category-item">
-                    <img src="${data.image}">
+                    <img loading="lazy" src="${data.image}">
                     <div class="category-item-info">
                         <h4>${data.name}</h4>
                         <small style="color:#888;">${data.tagline || ''} | ${data.count || ''}</small>

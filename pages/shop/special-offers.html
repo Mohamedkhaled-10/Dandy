@@ -89,7 +89,7 @@
   fbq('init', '1678552386587380');
   fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none"
+  <noscript><img loading="lazy" height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1678552386587380&ev=PageView&noscript=1"
   /></noscript>
   <!-- End Meta Pixel Code -->
@@ -116,6 +116,8 @@
       "url": "https://dandy-ebon.vercel.app/pages/shop/special-offers.html"
     }
   </script>
+
+  <script src="../../assets/js/loading.js"></script>
 </head>
 <body>
 
@@ -157,6 +159,17 @@
   window.quickAdd = function(id, name, price, image, discount, onSale) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const productItem = { id, name, price, image, discount, onSale };
+
+    // إرسال حدث AddToCart للفيسبوك بيكسل
+    if (typeof fbq === 'function') {
+      fbq('track', 'AddToCart', {
+        content_name: name,
+        content_ids: [id],
+        content_type: 'product',
+        value: parseFloat(price) || 0,
+        currency: 'EGP'
+      });
+    }
 
     const existIndex = cart.findIndex(item => item.id === id);
     if(existIndex !== -1) {
@@ -263,7 +276,7 @@
         productEl.innerHTML = `
           <div class="product-image-wrap">
             ${badgeStr}
-            <img src="${data.image}" alt="${data.name} - عروض دندي كوزمتيك" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';"></div>
+            <img loading="lazy" src="${data.image}" alt="${data.name} - عروض دندي كوزمتيك" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';"></div>
           <h3 class="product-title">${data.name}</h3>
           ${priceStr}
           ${actionBtn}
