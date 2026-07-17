@@ -529,10 +529,7 @@
     }
     
     .add-cart-btn {
-      position: absolute; 
-      bottom: 12px; 
-      left: 50%; 
-      transform: translateX(-50%);
+      margin: 12px auto 0; transition: transform 0.3s ease;
       background: #d81b60;
       color: #fff; 
       padding: 10px 18px; 
@@ -554,7 +551,7 @@
     
     .add-cart-btn:hover { 
       background: #b0124b;
-      transform: translateX(-50%) scale(1.02);
+      transform: scale(1.02);
     }
     
     .product-title-card {
@@ -1070,13 +1067,12 @@
               <div class="product-card" onclick="window.location.href='product.html?id=${prod.id}'">
                 <div class="product-image-wrap">
                   ${badgeStr}
-                  <img src="${prod.image || ''}" alt="${prod.name || 'Product'}">
+                  <img src="${prod.image || ''}" alt="${prod.name || 'Product'}"></div>
+                  <h3 class="product-title-card">${prod.name || ''}</h3>
+                  ${priceStr}
                   <button class="add-cart-btn" onclick="event.stopPropagation(); addToCartCard('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${priceRaw}, '${prod.image||''}', ${prod.discount||0}, ${prod.onSale||false})">
                     <i class="fas fa-shopping-bag"></i> Add
                   </button>
-                </div>
-                <h3 class="product-title-card">${prod.name || ''}</h3>
-                ${priceStr}
               </div>
             `;
         });

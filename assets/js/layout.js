@@ -24,7 +24,7 @@ const Layout = {
           <span class="brand-name">Dandy<span class="flower">✳</span></span>
         </div>
         <div class="header-actions">
-          <button class="header-icon" aria-label="Search" onclick="window.location.href='${basePath}pages/shop/all-products.html'">
+          <button class="header-icon" aria-label="Search" onclick="window.toggleSearchPanel()">
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
         </div>
@@ -50,6 +50,24 @@ const Layout = {
             <a href="${basePath}pages/legal/privacy-policy.html" style="color:#666; margin-right:10px; text-decoration:none;">Privacy Policy</a>
             <a href="${basePath}pages/legal/terms.html" style="color:#666; text-decoration:none;">Terms & Conditions</a>
           </div>
+        </div>
+      </div>
+
+      <div class="search-overlay" id="search-overlay" onclick="window.toggleSearchPanel()"></div>
+      <div class="search-panel" id="search-panel">
+        <button class="close-search-panel" onclick="window.toggleSearchPanel()" style="background:none; border:none; color:var(--color-primary); font-size:1.5rem; cursor:pointer; margin-bottom:20px; align-self:flex-start; position:static;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="search-input-wrap" style="position:relative; margin-bottom:20px;">
+           <input type="text" id="live-search-input" placeholder="ابحث عن منتج..." style="width:100%; padding:12px 12px 12px 40px; border:1px solid var(--border-light, #fbcfe8); border-radius:8px; font-family:inherit; font-size:1rem; color:var(--color-text, #262626); outline:none; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--border-light, #fbcfe8)'" oninput="window.handleLiveSearch(this.value, '${basePath}')">
+           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#7a7a7a;"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div id="live-search-results" style="flex:1; overflow-y:auto; padding-right:5px; scrollbar-width:thin;">
+            <p style="color:#7a7a7a; text-align:center; font-size:0.95rem; margin-top:20px;">اقتراحات البحث:<br><br>
+                <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='عناية'; window.handleLiveSearch('عناية', '${basePath}')">عناية</span>
+                <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='شعر'; window.handleLiveSearch('شعر', '${basePath}')">شعر</span>
+                <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='بشرة'; window.handleLiveSearch('بشرة', '${basePath}')">بشرة</span>
+            </p>
         </div>
       </div>
     `.replace(/<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"\/><line x1="3" y1="12" x2="21" y2="18"\/><\/svg> <!-- using bars but inline svg is easy: -->\n\s*/, '');
@@ -146,6 +164,14 @@ const Layout = {
 window.toggleNav = function() {
   const menubar = document.getElementById("menubar");
   const overlay = document.getElementById("menu-overlay");
+  
+  if (menubar && !menubar.classList.contains("active")) {
+      const searchPanel = document.getElementById("search-panel");
+      const searchOverlay = document.getElementById("search-overlay");
+      if(searchPanel) searchPanel.classList.remove("active");
+      if(searchOverlay) searchOverlay.classList.remove("active");
+  }
+  
   if (menubar) menubar.classList.toggle("active");
   if (overlay) overlay.classList.toggle("active");
 };
@@ -212,3 +238,158 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   bodyObserver.observe(document.body, { childList: true, subtree: true });
 });
+
+
+window.toggleSearchPanel = function() {
+  const panel = document.getElementById("search-panel");
+  const overlay = document.getElementById("search-overlay");
+  const menubar = document.getElementById("menubar");
+  const menuOverlay = document.getElementById("menu-overlay");
+  
+  if (panel) {
+      const isActive = panel.classList.contains("active");
+      if (!isActive) {
+          // Open search
+          panel.classList.add("active");
+          if(overlay) overlay.classList.add("active");
+          // Close menubar if open
+          if(menubar) menubar.classList.remove("active");
+          if(menuOverlay) menuOverlay.classList.remove("active");
+          
+          // focus input
+          setTimeout(() => {
+              const inp = document.getElementById("live-search-input");
+              if(inp) inp.focus();
+          }, 300);
+      } else {
+          // Close search
+          panel.classList.remove("active");
+          if(overlay) overlay.classList.remove("active");
+      }
+  }
+};
+
+window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const panel = document.getElementById("search-panel");
+        const overlay = document.getElementById("search-overlay");
+        if (panel && panel.classList.contains("active")) {
+            panel.classList.remove("active");
+            if(overlay) overlay.classList.remove("active");
+        }
+    }
+});
+
+let liveSearchTimeout = null;
+window.handleLiveSearch = function(query, basePath) {
+    clearTimeout(liveSearchTimeout);
+    liveSearchTimeout = setTimeout(() => {
+        performSearch(query, basePath);
+    }, 300);
+};
+
+function performSearch(query, basePath) {
+    const resultsContainer = document.getElementById("live-search-results");
+    if(!resultsContainer) return;
+    
+    query = (query || "").trim().toLowerCase();
+    if(!query) {
+        resultsContainer.innerHTML = `
+            <p style="color:#7a7a7a; text-align:center; font-size:0.95rem; margin-top:20px;">اقتراحات البحث:<br><br>
+                <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='عناية'; window.handleLiveSearch('عناية', '${basePath}')">عناية</span>
+                <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='شعر'; window.handleLiveSearch('شعر', '${basePath}')">شعر</span>
+                <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='بشرة'; window.handleLiveSearch('بشرة', '${basePath}')">بشرة</span>
+            </p>
+        `;
+        return;
+    }
+
+    resultsContainer.innerHTML = '<div style="text-align:center; padding:20px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><br><small style="color:#7a7a7a; margin-top:10px; display:inline-block;">جاري البحث...</small></div>';
+
+    // Fetch products
+    if(typeof window.db === 'undefined') {
+        // if db is not defined globally in layout, we might need to fetch from REST
+        fetch("https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app/products.json")
+        .then(res => res.json())
+        .then(data => {
+            renderSearchResults(data, query, basePath, resultsContainer);
+        })
+        .catch(err => {
+            console.error(err);
+            resultsContainer.innerHTML = '<p style="color:var(--color-danger); text-align:center;">حدث خطأ أثناء البحث.</p>';
+        });
+    } else {
+        window.db.ref('products').once('value').then(snap => {
+            renderSearchResults(snap.val(), query, basePath, resultsContainer);
+        }).catch(err => {
+            console.error(err);
+            resultsContainer.innerHTML = '<p style="color:var(--color-danger); text-align:center;">حدث خطأ أثناء البحث.</p>';
+        });
+    }
+}
+
+function renderSearchResults(data, query, basePath, container) {
+    if(!data) {
+        container.innerHTML = '<p style="color:#7a7a7a; text-align:center; padding:20px;">عذراً، لم نتمكن من العثور على منتجات.</p>';
+        return;
+    }
+    
+    let products = [];
+    Object.keys(data).forEach(k => {
+        let p = data[k];
+        p.id = k;
+        if(p.name) products.push(p);
+    });
+    
+    // Calculate score
+    products.forEach(p => {
+        let score = 0;
+        let n = p.name.toLowerCase();
+        let c = (p.category || "").toLowerCase();
+        
+        if(n === query) score = 100;
+        else if(n.startsWith(query)) score = 80;
+        else if(n.includes(query)) score = 50;
+        
+        if(c === query) score += 30;
+        else if(c.includes(query)) score += 10;
+        
+        p._score = score;
+    });
+    
+    products = products.filter(p => p._score > 0).sort((a,b) => b._score - a._score);
+    
+    if(products.length === 0) {
+        container.innerHTML = '<p style="color:#7a7a7a; text-align:center; padding:20px;">لا توجد نتائج مطابقة لـ "' + query + '"<br><br>جرب البحث بكلمات أخرى.</p>';
+        return;
+    }
+    
+    let html = '<div style="display:flex; flex-direction:column; gap:12px; padding:10px 0;">';
+    products.forEach(p => {
+        let priceStr = p.price + ' EGP';
+        if(p.onSale && p.discount) {
+            let priceRaw = parseFloat(p.price);
+            let discountPercent = parseFloat(p.discount) || 0;
+            let oldPrice = priceRaw / (1 - (discountPercent/100));
+            priceStr = `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem; margin-left:6px;">${oldPrice.toFixed(0)}</span> <strong style="color:var(--color-danger);">${priceRaw} EGP</strong>`;
+        } else if (p.originalPrice) {
+            priceStr = `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem; margin-left:6px;">${p.originalPrice}</span> <strong style="color:var(--color-danger);">${p.price} EGP</strong>`;
+        } else {
+            priceStr = `<strong style="color:var(--color-danger);">${p.price} EGP</strong>`;
+        }
+        
+        html += `
+            <div style="display:flex; align-items:center; gap:12px; padding:10px; border:1px solid #f0e6e2; border-radius:8px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='transparent'" onclick="window.location.href='${basePath}pages/shop/product.html?id=${p.id}'">
+                <img src="${p.image || ''}" alt="" style="width:60px; height:60px; object-fit:cover; border-radius:6px; background:#f9f9f9;">
+                <div style="flex:1;">
+                    <h4 style="margin:0 0 4px 0; font-size:0.95rem; color:var(--color-text);">${p.name}</h4>
+                    <div style="font-size:0.85rem; color:#7a7a7a;">${priceStr}</div>
+                    ${p.category ? `<span style="display:inline-block; padding:2px 6px; background:#f0f0f0; border-radius:4px; font-size:0.7rem; margin-top:4px;">${p.category}</span>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    container.innerHTML = html;
+}

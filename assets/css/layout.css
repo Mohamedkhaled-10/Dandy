@@ -69,6 +69,7 @@ header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 20px; border-bottom: 1px solid #f0e6e2;
   position: sticky; top: 0; background: #fff; z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .header-icon {
   background: none; display: flex; align-items: center; color: var(--color-blush);
@@ -137,6 +138,7 @@ footer .copyright a { text-decoration: underline; color: inherit; }
 .bottom-nav {
   position: sticky; bottom: 0; background: #fff; border-top: 1px solid #eee;
   display: flex; justify-content: space-around; padding: 8px 0 10px; z-index: 90;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
 }
 .bottom-nav a {
   display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.68rem; color: var(--color-text); font-weight: 500; position:relative; text-decoration: none;
@@ -178,7 +180,7 @@ footer .copyright a { text-decoration: underline; color: inherit; }
   
   .product:hover .buy-btn,
   .product-card:hover .add-cart-btn {
-    transform: translateX(-50%) translateY(-4px) !important;
+    transform: translateY(-4px) !important;
     box-shadow: 0 6px 14px rgba(219, 39, 119, 0.4) !important;
     background: #be185d !important; background: var(--color-primary-hover) !important; border-color: var(--color-primary-hover) !important;
   }
@@ -452,4 +454,24 @@ textarea:focus-visible {
    ========================================= */
 .dynamic-section-container {
   margin-bottom: 50px;
+}
+
+
+/* ===== Search Panel ===== */
+.search-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); z-index: 1001;
+  opacity: 0; visibility: hidden; transition: 0.3s;
+}
+.search-overlay.active { opacity: 1; visibility: visible; }
+
+.search-panel {
+  position: fixed; top: 0; right: -350px; width: 350px; max-width: 100vw; height: 100%;
+  background: var(--color-surface, #fff); z-index: 1002; transition: right 0.3s ease;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1); padding: 20px;
+  display: flex; flex-direction: column;
+}
+.search-panel.active { right: 0; }
+@media (max-width: 500px) {
+  .search-panel { width: 100%; right: -100%; }
 }

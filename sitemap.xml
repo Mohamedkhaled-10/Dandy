@@ -8,58 +8,61 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
-
 
 <url>
   <loc>https://dandy-ebon.vercel.app/</loc>
-  <lastmod>2026-06-29T15:00:46+00:00</lastmod>
+  <changefreq>daily</changefreq>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/index.html</loc>
+  <changefreq>daily</changefreq>
   <priority>1.00</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/pages/shop/all-products.html</loc>
-  <lastmod>2026-06-29T15:00:47+00:00</lastmod>
-  <priority>0.80</priority>
+  <changefreq>daily</changefreq>
+  <priority>0.90</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/pages/shop/special-offers.html</loc>
-  <lastmod>2026-06-29T15:00:47+00:00</lastmod>
-  <priority>0.80</priority>
+  <changefreq>daily</changefreq>
+  <priority>0.90</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/blog/blog.html</loc>
-  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
+  <loc>https://dandy-ebon.vercel.app/pages/shop/track-order.html</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.10</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/pages/support/client-reviews.html</loc>
+  <changefreq>weekly</changefreq>
   <priority>0.80</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/pages/support/help.html</loc>
-  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
+  <changefreq>monthly</changefreq>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/support/client-reviews.html</loc>
-  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
-  <priority>0.80</priority>
+  <loc>https://dandy-ebon.vercel.app/pages/blog/blog.html</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.70</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/pages/legal/about-us.html</loc>
-  <lastmod>2026-06-29T15:00:48+00:00</lastmod>
-  <priority>0.80</priority>
+  <changefreq>monthly</changefreq>
+  <priority>0.50</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/pages/legal/privacy-policy.html</loc>
-  <lastmod>2026-06-29T15:00:49+00:00</lastmod>
-  <priority>0.80</priority>
+  <changefreq>monthly</changefreq>
+  <priority>0.50</priority>
 </url>
 <url>
   <loc>https://dandy-ebon.vercel.app/pages/legal/terms.html</loc>
-  <lastmod>2026-06-29T15:00:49+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/index.html</loc>
-  <lastmod>2026-06-29T15:00:49+00:00</lastmod>
-  <priority>0.64</priority>
+  <changefreq>monthly</changefreq>
+  <priority>0.50</priority>
 </url>
 
 </urlset>
