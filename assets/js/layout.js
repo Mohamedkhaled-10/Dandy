@@ -20,8 +20,7 @@ const Layout = {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <div class="logo" onclick="window.location.href='${basePath}index.html'">
-          <span class="cosmetics-label">COSMETICS</span>
-          <span class="brand-name">Dandy<span class="flower">✳</span></span>
+          <img src="${basePath}assets/images/logo.png" alt="Dandy Cosmetics" style="max-height: 45px; width: auto; object-fit: contain;">
         </div>
         <div class="header-actions">
           <button class="header-icon" aria-label="Search" onclick="window.toggleSearchPanel()">
@@ -77,8 +76,7 @@ const Layout = {
     return `
       <footer>
         <div class="footer-logo">
-          <span class="cosmetics-label">COSMETICS</span>
-          Dandy<span style="font-size:1rem;">✳</span>
+          <img src="${basePath}assets/images/logo.png" alt="Dandy Cosmetics" style="max-height: 60px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
         </div>
         <p class="tagline">Elevate your beauty ritual with premium, luxurious cosmetics.</p>
         <div class="footer-menu">
@@ -95,9 +93,14 @@ const Layout = {
         <p class="copyright">© 2026 Dandy Cosmetics.</p>
       </footer>
       
-      <a class="whatsapp-float" href="https://wa.me/201038941005" target="_blank" aria-label="WhatsApp">
+      <div id="whatsapp-widget" class="whatsapp-widget">
+        <div class="whatsapp-handle" id="whatsapp-handle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <a class="whatsapp-float" draggable="false" href="https://wa.me/201038941005" target="_blank" aria-label="WhatsApp">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.2-.4.1-.2 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2 1 2.4c.1.2 1.6 2.5 4 3.4.5.2 1 .3 1.3.5.6.2 1.1.1 1.5.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
       </a>
+      </div>
       
       <nav class="bottom-nav">
         <a href="${basePath}index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
@@ -393,3 +396,85 @@ function renderSearchResults(data, query, basePath, container) {
     
     container.innerHTML = html;
 }
+
+setTimeout(() => {
+  const widget = document.getElementById("whatsapp-widget");
+  const handle = document.getElementById("whatsapp-handle");
+  if (!widget || !handle) return;
+  
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+  let isOpen = false;
+  let movedDuringDrag = false;
+  const maxDrag = -70;
+
+  const dragStart = (e) => {
+    isDragging = true;
+    movedDuringDrag = false;
+    startX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
+    widget.style.transition = "none";
+  };
+
+  const dragMove = (e) => {
+    if (!isDragging) return;
+    const clientX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
+    const dx = clientX - startX;
+    if (Math.abs(dx) > 5) movedDuringDrag = true;
+    
+    let newX = isOpen ? maxDrag + dx : dx;
+    if (newX > 0) newX = 0;
+    if (newX < maxDrag) newX = maxDrag;
+    
+    widget.style.transform = `translateX(${newX}px)`;
+    currentX = newX;
+  };
+
+  const dragEnd = (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    widget.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
+    
+    if (currentX < maxDrag / 2) {
+      isOpen = true;
+      currentX = maxDrag;
+      widget.classList.add("open");
+      widget.style.transform = "";
+      handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M9 18l6-6-6-6"/></svg>`;
+    } else {
+      isOpen = false;
+      currentX = 0;
+      widget.classList.remove("open");
+      widget.style.transform = "";
+      handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M15 18l-6-6 6-6"/></svg>`;
+    }
+  };
+
+  widget.addEventListener("touchstart", dragStart, { passive: true });
+  document.addEventListener("touchmove", dragMove, { passive: true });
+  document.addEventListener("touchend", dragEnd);
+
+  widget.addEventListener("mousedown", dragStart);
+  document.addEventListener("mousemove", dragMove);
+  document.addEventListener("mouseup", dragEnd);
+  
+  handle.addEventListener("click", (e) => {
+    if(!movedDuringDrag) {
+      isOpen = !isOpen;
+      currentX = isOpen ? maxDrag : 0;
+      if (isOpen) {
+        widget.classList.add("open");
+        handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M9 18l6-6-6-6"/></svg>`;
+      } else {
+        widget.classList.remove("open");
+        handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M15 18l-6-6 6-6"/></svg>`;
+      }
+    }
+  });
+  const link = document.querySelector(".whatsapp-float");
+  if(link) {
+    link.addEventListener("click", (e) => {
+      if(movedDuringDrag) e.preventDefault();
+    });
+  }
+}, 500);
