@@ -1,0 +1,1038 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Shopping Cart & Secure Checkout | Dandy"
+  description="View your cart status, configure your governorate-based shipping option, and secure your organic purity order at Dandy Egypt."
+  keywords="Cart Dandy, Secure Checkout Egypt, Skincare Order Cairo"
+  canonical="https://dandy-ebon.vercel.app/pages/shop/cart.html"
+>
+  <slot name="head" slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dandy-ebon.vercel.app/pages/shop/cart.html" />
+    <meta property="og:title" content="Shopping Cart & Secure Checkout | Dandy" />
+    <meta property="og:description" content="Securely finalize your purchase of premium organic botanical items." />
+    <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
+
+    <style is:global>
+      .cart-section {
+        padding: 130px 0 80px;
+        min-height: 80vh;
+      }
+
+      .cart-checkout-container {
+        max-width: 1040px;
+        margin: 0 auto;
+      }
+
+      /* Stepper Component */
+      .checkout-stepper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        position: relative;
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 20px 30px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .stepper-line {
+        position: absolute;
+        top: 50%;
+        left: 15%;
+        right: 15%;
+        height: 3px;
+        background: var(--border-light);
+        z-index: 1;
+        transform: translateY(-50%);
+      }
+
+      .stepper-line-progress {
+        position: absolute;
+        top: 50%;
+        left: 15%;
+        height: 3px;
+        background: var(--color-blush);
+        z-index: 2;
+        transform: translateY(-50%);
+        transition: width 0.4s ease;
+        width: 0%;
+      }
+
+      .stepper-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        position: relative;
+        z-index: 3;
+        background: var(--color-surface);
+        padding: 0 10px;
+        flex: 1;
+      }
+
+      .step-num-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--color-surface-soft);
+        border: 2px solid var(--border-light);
+        color: var(--color-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: var(--transition-smooth);
+      }
+
+      .stepper-step.active .step-num-icon {
+        background: var(--color-blush);
+        border-color: var(--color-blush);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(217,141,153,0.3);
+      }
+
+      .stepper-step.completed .step-num-icon {
+        background: var(--color-success);
+        border-color: var(--color-success);
+        color: #fff;
+      }
+
+      .step-text {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--color-muted);
+        transition: var(--transition-fast);
+      }
+
+      .stepper-step.active .step-text {
+        color: var(--color-primary);
+      }
+
+      /* Info Bubbles Design */
+      .info-bubbles-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+
+      .info-bubble {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(217, 141, 153, 0.08);
+        color: var(--color-primary);
+        border: 1px solid rgba(217, 141, 153, 0.2);
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      }
+
+      .info-bubble i {
+        color: var(--color-blush);
+        font-size: 0.9rem;
+      }
+
+      /* Checkout Steps panels */
+      .checkout-step-panel {
+        display: none;
+      }
+
+      .checkout-step-panel.active {
+        display: block;
+        animation: fadeIn 0.4s ease;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Cart layout cards */
+      .catalog-checkout-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+      }
+
+      @media (max-width: 900px) {
+        .catalog-checkout-grid {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+      }
+
+      .panel-main-card {
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-lg);
+        padding: 30px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .panel-side-summary {
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-lg);
+        padding: 30px;
+        box-shadow: var(--shadow-sm);
+        height: fit-content;
+      }
+
+      /* Tactile control +/- button overrides */
+      .qty-tactile-selector {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--border-light);
+        border-radius: 99px;
+        padding: 4px;
+        background: var(--color-surface-soft);
+      }
+
+      .qty-btn-adjust {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: #fff;
+        color: var(--color-primary);
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-fast);
+      }
+
+      .qty-btn-adjust:hover {
+        background: var(--color-blush);
+        color: #fff;
+      }
+
+      .qty-display-box {
+        width: 34px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        border: none;
+        background: transparent;
+        outline: none;
+        color: var(--color-primary);
+      }
+
+      /* Cart List items custom elements */
+      .cart-product-list-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border-light);
+        padding: 16px 0;
+        gap: 16px;
+      }
+
+      .cart-product-list-item:last-child {
+        border-bottom: none;
+      }
+
+      .cart-item-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+      }
+
+      .cart-item-info img {
+        width: 76px;
+        height: 76px;
+        object-fit: cover;
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--border-light);
+      }
+
+      .cart-item-meta h3 {
+        font-size: 1.05rem;
+        color: var(--color-primary);
+        margin-bottom: 4px;
+      }
+
+      .cart-item-meta p {
+        font-size: 0.85rem;
+        color: var(--color-muted);
+      }
+
+      .action-btn-delete {
+        color: var(--color-muted);
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 6px;
+        transition: var(--transition-fast);
+      }
+
+      .action-btn-delete:hover {
+        color: var(--color-danger);
+      }
+
+      /* Step 2 Inputs */
+      .form-group-checkout {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 20px;
+      }
+
+      .form-group-checkout label {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--color-text);
+      }
+
+      .form-group-checkout input, .form-group-checkout select {
+        padding: 12px 16px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-sm);
+        outline: none;
+        font-size: 0.95rem;
+        background: var(--color-canvas);
+        transition: var(--transition-fast);
+        width: 100%;
+      }
+
+      .form-group-checkout input:focus, .form-group-checkout select:focus {
+        border-color: var(--color-blush);
+        background: #fff;
+      }
+
+      .form-row-double {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      @media (max-width: 600px) {
+        .form-row-double {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+      }
+
+      /* Badging trust checks */
+      .trust-checkout-tag {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: var(--color-muted);
+        margin-top: 15px;
+        border-top: 1px solid var(--border-light);
+        padding-top: 12px;
+      }
+
+      .trust-checkout-tag i {
+        color: var(--color-success);
+      }
+
+      /* Confirmation summary card */
+      .final-review-section-header {
+        font-size: 0.92rem;
+        color: var(--color-gold);
+        font-weight: 700;
+        margin-bottom: 10px;
+        border-bottom: 2px solid var(--color-gold-cream);
+        padding-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .final-review-block {
+        background: var(--color-surface-soft);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+
+      .final-review-block p {
+        margin-bottom: 6px;
+        font-size: 0.95rem;
+      }
+      
+      .final-review-block p strong {
+        color: var(--color-primary);
+      }
+
+      .final-summary-total-lg {
+        font-size: 2.22rem;
+        font-weight: 800;
+        color: var(--color-primary);
+      }
+
+      /* Navigation CTA buttons */
+      .checkout-nav-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        gap: 16px;
+      }
+
+      .btn-checkout-primary {
+        background: var(--color-blush);
+        color: #fff;
+        border: none;
+        border-radius: 99px;
+        padding: 14px 36px;
+        font-weight: 700;
+        font-size: 1.05rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: var(--transition-smooth);
+        box-shadow: 0 8px 18px rgba(217, 141, 153, 0.2);
+      }
+
+      .btn-checkout-primary:hover {
+        background: var(--color-primary);
+        transform: translateY(-2px);
+      }
+
+      .btn-checkout-secondary {
+        background: #fff;
+        border: 1px solid var(--border-light);
+        color: var(--color-muted);
+        border-radius: 99px;
+        padding: 14px 28px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: var(--transition-fast);
+      }
+
+      .btn-checkout-secondary:hover {
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+      }
+    </style>
+  </slot>
+
+  <section class="cart-section container">
+    <div class="cart-checkout-container" id="cartCheckoutContainer">
+      
+      <div class="checkout-stepper">
+        <div class="stepper-line"></div>
+        <div class="stepper-line-progress" id="stepperLineProgress"></div>
+
+        <div class="stepper-step active" id="stepper-step-1">
+          <div class="step-num-icon"><i class="fas fa-shopping-basket"></i></div>
+          <span class="step-text">Shopping Bag</span>
+        </div>
+        
+        <div class="stepper-step" id="stepper-step-2">
+          <div class="step-num-icon"><i class="fas fa-truck"></i></div>
+          <span class="step-text">تفاصيل الشحن</span>
+        </div>
+        
+        <div class="stepper-step" id="stepper-step-3">
+          <div class="step-num-icon"><i class="fas fa-check-double"></i></div>
+          <span class="step-text">مراجعة وتأكيد الطلب</span>
+        </div>
+      </div>
+
+      <div class="info-bubbles-container" dir="rtl">
+        <span class="info-bubble"><i class="fas fa-gift"></i> شحن مجاني للمشتريات فوق 2000 جنيه</span>
+        <span class="info-bubble"><i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام</span>
+        <span class="info-bubble"><i class="fas fa-bolt"></i> توصيل سريع لجميع المحافظات</span>
+        <span class="info-bubble"><i class="fas fa-sparkles"></i> منتجات طبيعية وأصلية 100%</span>
+      </div>
+
+      <div id="checkoutFlowViews">
+        
+        <div id="step-panel-1" class="checkout-step-panel active">
+          <div class="catalog-checkout-grid">
+            
+            <div class="panel-main-card">
+              <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary); text-align: right;" dir="rtl"><i class="fas fa-shopping-bag"></i> مراجعة المنتجات المختارة في حقيبتك</h2>
+              
+              <div id="cartItemsList">
+              </div>
+            </div>
+
+            <div class="panel-side-summary">
+              <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:16px;">Billing Summary</h3>
+              
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700;">
+                <span style="color:var(--color-muted);">Items Subtotal:</span>
+                <span id="subtotalValSummary">00.00 EGP</span>
+              </div>
+              
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.9rem; color:var(--color-muted);">
+                <span>Shipping cost:</span>
+                <span style="color:var(--color-muted); font-style:italic;" id="shippingCostSummary1">Calculated at next step</span>
+              </div>
+
+              <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">Estimated Total:</span>
+                <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue1">00 EGP</strong>
+              </div>
+
+              <button class="btn-checkout-primary" style="width:100%; justify-content:center;" onclick="goToStep(2)">Proceed to Delivery <i class="fas fa-long-arrow-alt-right"></i></button>
+              
+              <div class="trust-checkout-tag">
+                <i class="fas fa-shield-alt"></i>
+                <span>100% Secure browsing and connection.</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div id="step-panel-2" class="checkout-step-panel" dir="rtl">
+          <div class="catalog-checkout-grid">
+            
+            <div class="panel-main-card">
+              <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> أين يجب أن نقوم بتوصيل طلبك؟</h2>
+              
+              <form id="shippingFormElement" onsubmit="event.preventDefault();">
+                <div class="form-group-checkout">
+                  <label for="f-name">الاسم بالكامل</label>
+                  <input type="text" id="f-name" placeholder="اكتب اسمك بالكامل لضمان دقة التوصيل" required>
+                </div>
+
+                <div class="form-row-double">
+                  <div class="form-group-checkout">
+                    <label for="f-phone">رقم هاتف فعال (للمندوب وشركة الشحن)</label>
+                    <input type="tel" id="f-phone" placeholder="مثال: 01012345678" required style="text-align: right;" dir="ltr">
+                  </div>
+                  <div class="form-group-checkout">
+                    <label for="f-email">البريد الإلكتروني (اختياري)</label>
+                    <input type="email" id="f-email" placeholder="لاستلام تحديثات تتبع الطلب" style="text-align: right;" dir="ltr">
+                  </div>
+                </div>
+
+                <div class="form-row-double">
+                  <div class="form-group-checkout">
+                    <label for="f-gov">المحافظة</label>
+                    <select id="f-gov" required onchange="handleGovChange()">
+                      <option value="">اختر المحافظة</option>
+                      <option value="Cairo">القاهرة</option>
+                      <option value="Giza">الجيزة</option>
+                      <option value="Alexandria">الإسكندرية</option>
+                      <option value="Gharbia">الغربية</option>
+                      <option value="Dakahlia">الدقهلية</option>
+                      <option value="Sharqia">الشرقية</option>
+                      <option value="Kafr El Sheikh">كفر الشيخ</option>
+                      <option value="Qalyubia">القليوبية</option>
+                      <option value="Port Said">بورسعيد</option>
+                      <option value="Damietta">دمياط</option>
+                      <option value="Suez">السويس</option>
+                      <option value="Ismailia">الإسماعيلية</option>
+                      <option value="Beheira">البحيرة</option>
+                      <option value="Monufia">المنوفية</option>
+                      <option value="Fayoum">الفيوم</option>
+                      <option value="Beni Suef">بني سويف</option>
+                      <option value="Minya">المنيا</option>
+                      <option value="Luxor">الأقصر</option>
+                      <option value="Aswan">أسوان</option>
+                      <option value="Assiut">أسيوط</option>
+                      <option value="Sohag">سوهاج</option>
+                      <option value="Qena">قنا</option>
+                      <option value="North Sinai">شمال سيناء</option>
+                      <option value="South Sinai">جنوب سيناء</option>
+                      <option value="New Valley">الوادي الجديد</option>
+                      <option value="Red Sea">البحر الأحمر</option>
+                      <option value="Matrouh">مطروح</option>
+                    </select>
+                  </div>
+                  <div class="form-group-checkout">
+                    <label for="f-city">المدينة / المنطقة</label>
+                    <input type="text" id="f-city" placeholder="مثال: مدينة نصر، الدقي، سان ستيفانو" required>
+                  </div>
+                </div>
+
+                <div class="form-group-checkout">
+                  <label for="f-address">العنوان بالتفصيل (الشارع، المبنى، الشقة، الدور، علامة مميزة)</label>
+                  <input type="text" id="f-address" placeholder="اكتب التفاصيل الكاملة، اسم الشارع، رقم المبنى، علامة مميزة..." required>
+                </div>
+              </form>
+
+              <div class="checkout-nav-row">
+                <button class="btn-checkout-secondary" onclick="goToStep(1)"><i class="fas fa-long-arrow-alt-right"></i> العودة لحقيبة التسوق</button>
+                <button class="btn-checkout-primary" onclick="validateAndGoToReview()">الانتقال للمراجعة النهائية <i class="fas fa-long-arrow-alt-left"></i></button>
+              </div>
+            </div>
+
+            <div class="panel-side-summary">
+              <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;"><i class="fas fa-receipt"></i> ملخص الطلب</h3>
+              
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span style="color:var(--color-muted); font-size: 0.9rem;">المجموع الفرعي:</span>
+                <span id="subtotalValSummary2" style="font-weight:700;">00.00 ج.م</span>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items: center;">
+                <span style="color:var(--color-muted); font-size: 0.9rem;">مصاريف الشحن:</span>
+                <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-blush); font-size: 0.8rem;">شحن مجاني عندما تتخطى القيمة 2000 جنيه</span>
+              </div>
+
+              <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">الإجمالي الكلي:</span>
+                <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue2">00 ج.م</strong>
+              </div>
+
+              <div style="background:var(--color-surface-soft); font-size:0.8rem; padding:12px; border-radius:8px; margin-top:14px; border:1px solid var(--border-light); font-weight:700; color:var(--color-primary);">
+                <i class="fas fa-info-circle"></i> تتم عملية التوصيل خلال 2 - 5 أيام عمل من تاريخ تأكيد الطلب.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div id="step-panel-3" class="checkout-step-panel" dir="rtl">
+          <div class="catalog-checkout-grid">
+            
+            <div class="panel-main-card">
+              <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-clipboard-check"></i> المراجعة النهائية لتفاصيل طلبك</h2>
+              
+              <div class="final-review-section-header">
+                <i class="fas fa-map-marked-alt"></i> تفاصيل التوصيل وجهة الاتصال
+              </div>
+              <div class="final-review-block">
+                <p>اسم المستلم: <strong id="revCustName">...</strong></p>
+                <p>رقم التواصل: <strong id="revCustPhone" style="direction:ltr; display:inline-block;">...</strong></p>
+                <p>البريد الإلكتروني: <span id="revCustEmail">...</span></p>
+                <p style="margin-top:10px; border-top:1px solid rgba(0,0,0,0.03); padding-top:10px;">المدينة والمحافظة: <strong id="revCustLocation">...</strong></p>
+                <p>العنوان بالتفصيل: <strong id="revCustAddress">...</strong></p>
+              </div>
+
+              <div class="final-review-section-header">
+                <i class="fas fa-shopping-basket"></i> المنتجات المختارة في شحنتك
+              </div>
+              <div id="revProductsList" style="margin-bottom:30px;">
+              </div>
+
+              <div class="checkout-nav-row">
+                <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-right"></i> تعديل تفاصيل العنوان</button>
+                <button class="btn-checkout-primary" style="background:var(--color-success); border-color:var(--color-success); box-shadow: 0 8px 24px rgba(60, 119, 90, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()"><i class="fas fa-check"></i> تأكيد وإتمام الطلب</button>
+              </div>
+            </div>
+
+            <div class="panel-side-summary">
+              <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;">تفاصيل الدفع</h3>
+              
+              <div style="background:rgba(60, 119, 90, 0.05); color:var(--color-success); padding:16px; border-radius:12px; font-weight:700; font-size:0.88rem; line-height:1.7; margin-bottom:20px; border:1px solid rgba(60, 119, 90, 0.1);">
+                <i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام (COD)
+                <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px;">يمكنك فحص جميع المنتجات عند الاستلام قبل الدفع لضمان رضاك التام.</p>
+              </div>
+
+              <div style="margin-bottom:12px; line-height:1.5;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
+                  <span style="color:var(--color-muted);">المجموع الفرعي:</span>
+                  <span id="summSubtotal" style="font-weight:700;">00 ج.م</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
+                  <span style="color:var(--color-muted);">مصاريف الشحن:</span>
+                  <span id="summShipping" style="font-weight:700; color:var(--color-success);">00 ج.م</span>
+                </div>
+                <div style="border-top:1px dashed var(--border-light); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                  <span style="color:var(--color-muted); font-size:0.85rem; font-weight:700;">الإجمالي الكلي:</span>
+                  <strong style="font-size: 1.6rem; color:var(--color-primary);" id="finalSummaryTotal">00 ج.م</strong>
+                </div>
+              </div>
+              
+              <p style="font-size:0.8rem; color:var(--color-muted); margin-top:8px;" id="savingTextLoader"><i class="fas fa-info-circle"></i> تأكيد الطلب يسجله بأمان ويوفر لك كود تتبع فوري.</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <script is:inline>
+    const db = firebase.database();
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let currentStep = 1;
+
+    // English shipping fees mapped to Egyptian governorate zones
+    const shippingRates = {
+      "Gharbia": 70,
+      "Dakahlia": 85,
+      "Sharqia": 85,
+      "Kafr El Sheikh": 85,
+      "Qalyubia": 85,
+      "Port Said": 85,
+      "Damietta": 85,
+      "Suez": 85,
+      "Ismailia": 85,
+      "Cairo": 85,
+      "Giza": 85,
+      "Beheira": 85,
+      "Monufia": 85,
+      "Alexandria": 85,
+      "Fayoum": 100,
+      "Beni Suef": 100,
+      "Minya": 100,
+      "Luxor": 120,
+      "Aswan": 120,
+      "Assiut": 120,
+      "Sohag": 120,
+      "North Sinai": 120,
+      "South Sinai": 120,
+      "Qena": 120,
+      "New Valley": 120,
+      "Red Sea": 120,
+      "Matrouh": 120
+    };
+
+    function getShippingFeeForGov(govName) {
+      if (!govName) return null;
+      return shippingRates[govName] || 120;
+    }
+
+    // Render elements references
+    const cartItemsList = document.getElementById('cartItemsList');
+    const subtotalValSummary = document.getElementById('subtotalValSummary');
+    const subtotalValSummary2 = document.getElementById('subtotalValSummary2');
+    const grandTotalSummaryValue1 = document.getElementById('grandTotalSummaryValue1');
+    const grandTotalSummaryValue2 = document.getElementById('grandTotalSummaryValue2');
+    const finalSummaryTotal = document.getElementById('finalSummaryTotal');
+
+    const shippingCostSummary2 = document.getElementById('shippingCostSummary2');
+
+    // Final review text references
+    const revCustName = document.getElementById('revCustName');
+    const revCustPhone = document.getElementById('revCustPhone');
+    const revCustEmail = document.getElementById('revCustEmail');
+    const revCustLocation = document.getElementById('revCustLocation');
+    const revCustAddress = document.getElementById('revCustAddress');
+    const revProductsList = document.getElementById('revProductsList');
+
+    const summSubtotal = document.getElementById('summSubtotal');
+    const summShipping = document.getElementById('summShipping');
+
+    function calculateCartSubtotal() {
+      let subtotal = 0;
+      cart.forEach(item => {
+        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        subtotal += priceVal * item.quantity;
+      });
+      return subtotal;
+    }
+
+    // Handle live updates on Governorates dropdown change
+    window.handleGovChange = function() {
+      const govDropdown = document.getElementById('f-gov');
+      if (!govDropdown) return; // Prevent TypeError if the cart is empty and the DOM is replaced
+
+      const selectedGov = govDropdown.value;
+      const subtotal = calculateCartSubtotal();
+      
+      if (selectedGov) {
+        let fee = getShippingFeeForGov(selectedGov);
+        if (subtotal > 2000) {
+          fee = 0;
+          shippingCostSummary2.textContent = "شحن مجاني";
+          shippingCostSummary2.style.color = "var(--color-success)";
+        } else {
+          shippingCostSummary2.textContent = fee + " ج.م";
+          shippingCostSummary2.style.color = "var(--color-primary)";
+        }
+        grandTotalSummaryValue2.textContent = (subtotal + fee).toFixed(0) + " ج.م";
+      } else {
+        if (subtotal > 2000) {
+          shippingCostSummary2.textContent = "شحن مجاني";
+          shippingCostSummary2.style.color = "var(--color-success)";
+        } else {
+          shippingCostSummary2.textContent = "شحن مجاني عندما تتخطى القيمة 2000 جنيه";
+          shippingCostSummary2.style.color = "var(--color-blush)";
+        }
+        grandTotalSummaryValue2.textContent = subtotal.toFixed(0) + " ج.م";
+      }
+    };
+
+    // Update Cart Badge inside Navbar
+    function updateCartBadge() {
+      if (typeof window.updateSharedCartCount === 'function') {
+        window.updateSharedCartCount();
+      } else {
+        const badge = document.getElementById('cart-count');
+        if (badge) {
+          const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
+          badge.textContent = totalQty;
+        }
+      }
+    }
+
+    function renderStep1CartItems() {
+      updateCartBadge(); // Ensure badge is always up to date
+
+      if (cart.length === 0) {
+        document.getElementById('cartCheckoutContainer').innerHTML = `
+          <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm);">
+            <i class="fas fa-shopping-bag" style="font-size:4.5rem; color:var(--color-blush); margin-bottom:20px;"></i>
+            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8em; margin-bottom:10px;">Your shopping bag is empty!</h2>
+            <p style="color:var(--color-muted); margin-bottom:24px; max-width:480px; margin-left:auto; margin-right:auto;">It looks like you haven't filled your cart with our lovely crowns of organic skincare yet. Browse and start pampering!</p>
+            <a href="/pages/shop/all-products.html" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> Browse Dandy's Collections</a>
+          </div>
+        `;
+        return;
+      }
+
+      cartItemsList.innerHTML = '';
+      cart.forEach((item, index) => {
+        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const rowSubtotal = priceVal * item.quantity;
+
+        const itemCard = document.createElement('div');
+        itemCard.className = 'cart-product-list-item';
+        itemCard.innerHTML = `
+          <div class="cart-item-info">
+            <img loading="lazy" src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+            <div class="cart-item-meta">
+              <h3>${item.name}</h3>
+              <p>${Number(priceVal).toFixed(0)} EGP each</p>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div class="qty-tactile-selector">
+              <button class="qty-btn-adjust" onclick="changeQty(${index}, -1)">-</button>
+              <input type="text" readonly class="qty-display-box" value="${item.quantity}">
+              <button class="qty-btn-adjust" onclick="changeQty(${index}, 1)">+</button>
+            </div>
+
+            <div style="font-weight:800; color:var(--color-blush); font-size:1.1rem; width:100px; text-align:right;">
+              ${Number(rowSubtotal).toFixed(0)} EGP
+            </div>
+
+            <button class="action-btn-delete" onclick="removeItemFromCart(${index})" title="Delete from Cart">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        `;
+        cartItemsList.appendChild(itemCard);
+      });
+
+      const sub = calculateCartSubtotal();
+      subtotalValSummary.textContent = sub.toFixed(0) + ' EGP';
+      subtotalValSummary2.textContent = sub.toFixed(0) + ' ج.م';
+      grandTotalSummaryValue1.textContent = sub.toFixed(0) + ' EGP';
+      grandTotalSummaryValue2.textContent = sub.toFixed(0) + ' ج.م';
+
+      const shippingCostSummary1 = document.getElementById('shippingCostSummary1');
+      if (shippingCostSummary1) {
+        if (sub > 2000) {
+          shippingCostSummary1.textContent = 'Free Shipping';
+          shippingCostSummary1.style.color = 'var(--color-success)';
+          shippingCostSummary1.style.fontWeight = 'bold';
+        } else {
+          shippingCostSummary1.textContent = 'Calculated at next step';
+          shippingCostSummary1.style.color = 'var(--color-muted)';
+          shippingCostSummary1.style.fontWeight = 'normal';
+        }
+      }
+    }
+
+    window.changeQty = function(index, delta) {
+      if (cart[index]) {
+        cart[index].quantity += delta;
+        if (cart[index].quantity < 1) cart[index].quantity = 1;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderStep1CartItems();
+        handleGovChange();
+      }
+    };
+
+    window.removeItemFromCart = function(index) {
+      cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderStep1CartItems();
+      handleGovChange();
+    };
+
+    window.goToStep = function(step) {
+      currentStep = step;
+
+      document.querySelectorAll('.checkout-step-panel').forEach(panel => panel.classList.remove('active'));
+      document.querySelectorAll('.stepper-step').forEach((s, idx) => {
+        s.classList.remove('active', 'completed');
+        if (idx + 1 < step) {
+          s.classList.add('completed');
+        } else if (idx + 1 === step) {
+          s.classList.add('active');
+        }
+      });
+
+      const pct = ((step - 1) / 2) * 100;
+      document.getElementById('stepperLineProgress').style.width = pct + '%';
+      document.getElementById(`step-panel-${step}`).classList.add('active');
+      
+      window.scrollTo({ top: 40, behavior: 'smooth' });
+    };
+
+    window.validateAndGoToReview = function() {
+      const name = document.getElementById('f-name').value.trim();
+      const phone = document.getElementById('f-phone').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      
+      const govSelect = document.getElementById('f-gov');
+      const governorate = govSelect.value;
+      const govText = governorate ? govSelect.options[govSelect.selectedIndex].text : '';
+      
+      const city = document.getElementById('f-city').value.trim();
+      const address = document.getElementById('f-address').value.trim();
+
+      if (!name || name.length < 5) {
+        alert('يرجى إدخال الاسم بالكامل (كلمتين على الأقل) لضمان دقة الشحن.');
+        return;
+      }
+      if (!/^01[0125][0-9]{8}$/.test(phone)) {
+        alert('يرجى كتابة رقم هاتف مصري صحيح (11 رقم، يبدأ بـ 010, 011, 012, أو 015)');
+        return;
+      }
+      if (!governorate || !city || !address) {
+        alert('يرجى ملء جميع التفاصيل، واختيار المحافظة، والمدينة، وعنوان الشارع بدقة.');
+        return;
+      }
+
+      const subtotal = calculateCartSubtotal();
+      let fee = getShippingFeeForGov(governorate);
+      if (subtotal > 2000) fee = 0;
+      const orderTotal = subtotal + fee;
+
+      revCustName.textContent = name;
+      revCustPhone.textContent = phone;
+      revCustEmail.textContent = email || 'لا يوجد';
+      revCustLocation.textContent = city + '، محافظة ' + govText;
+      revCustAddress.textContent = address;
+
+      revProductsList.innerHTML = '';
+      cart.forEach(item => {
+        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const sub = priceVal * item.quantity;
+        const divItem = document.createElement('div');
+        divItem.style.display = 'flex';
+        divItem.style.justifyContent = 'space-between';
+        divItem.style.padding = '10px 0';
+        divItem.style.borderBottom = '1px solid rgba(0,0,0,0.03)';
+        divItem.innerHTML = `
+          <span style="font-weight:700;"><i class="fas fa-feather-alt" style="color:var(--color-blush); font-size:0.8rem; margin-left:6px;"></i> ${item.name} <span style="color:var(--color-muted); font-size:0.8rem;">× ${item.quantity}</span></span>
+          <span style="font-weight:800; color:var(--color-primary);">${sub.toFixed(0)} ج.م</span>
+        `;
+        revProductsList.appendChild(divItem);
+      });
+
+      summSubtotal.textContent = subtotal.toFixed(0) + " ج.م";
+      summShipping.textContent = fee === 0 ? "شحن مجاني" : fee.toFixed(0) + " ج.م";
+      finalSummaryTotal.textContent = orderTotal.toFixed(0) + " ج.م";
+
+      goToStep(3);
+    };
+
+    window.submitFinalOrder = async function() {
+      const finalBtn = document.getElementById('finalPlaceOrderBtn');
+      const savingTextLoader = document.getElementById('savingTextLoader');
+
+      finalBtn.disabled = true;
+      finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ طلبك...';
+      savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع تفاصيل الفاتورة وحجز منتجاتك...</span>';
+
+      const name = document.getElementById('f-name').value.trim();
+      const phone = document.getElementById('f-phone').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const governorate = document.getElementById('f-gov').value;
+      const city = document.getElementById('f-city').value.trim();
+      const address = document.getElementById('f-address').value.trim();
+
+      const subtotal = calculateCartSubtotal();
+      let shippingFee = getShippingFeeForGov(governorate);
+      if (subtotal > 2000) shippingFee = 0;
+      const totalAmount = subtotal + shippingFee;
+
+      const invoiceCode = 'DNY-' + Math.floor(100000 + Math.random() * 900000);
+
+      const orderData = {
+        name,
+        email: email || 'N/A',
+        phone,
+        governorate,
+        city,
+        address,
+        products: cart,
+        subtotal: parseFloat(subtotal),
+        shippingFee: parseFloat(shippingFee),
+        totalAmount: parseFloat(totalAmount),
+        invoiceCode,
+        status: 'New',
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        const orderRef = db.ref('orders').push();
+        await orderRef.set(orderData);
+        const generatedKey = orderRef.key;
+
+        try {
+          await fetch('https://hook.eu1.make.com/vx6ie8k20cw0difkin21bx4dvkw7rful', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+          });
+        } catch(webhookError) {
+          console.error('Webhook sending failed:', webhookError);
+        }
+
+        localStorage.removeItem('cart');
+
+        let recent = JSON.parse(localStorage.getItem('dandy_recent_lookups')) || [];
+        recent.unshift({ code: invoiceCode, phone: phone, time: new Date().getTime() });
+        localStorage.setItem('dandy_recent_lookups', JSON.stringify(recent));
+
+        window.location.href = `/pages/shop/invoice.html?id=${encodeURIComponent(generatedKey)}&invoice=${encodeURIComponent(invoiceCode)}`;
+
+      } catch(err) {
+        console.error(err);
+        alert('حدث خطأ أثناء الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى.');
+        finalBtn.disabled = false;
+        finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإتمام الطلب';
+        savingTextLoader.innerHTML = '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> حدث خطأ. يرجى المحاولة مرة أخرى.';
+      }
+    };
+
+    renderStep1CartItems();
+
+    // --- Meta Pixel: InitiateCheckout Event ---
+    if (cart && cart.length > 0) {
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const cartValue = calculateCartSubtotal();
+      
+      if (typeof fbq === 'function') {
+        fbq('track', 'InitiateCheckout', {
+          value: cartValue,
+          currency: 'EGP',
+          num_items: totalItems
+        });
+      }
+    }
+  </script>
+</BaseLayout>

@@ -1,0 +1,98 @@
+---
+// BaseLayout.astro
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  canonical?: string;
+  lang?: string;
+  dir?: string;
+  showHeader?: boolean;
+  showFooter?: boolean;
+  robots?: string;
+}
+
+const {
+  title = 'داندي | Dandy Cosmetics - منتجات طبيعية للعناية بالبشرة والشعر',
+  description = 'تسوقي الآن من متجر داندي (Dandy Cosmetics)، وجهتك الأولى لأفضل منتجات العناية بالبشرة والشعر الطبيعية في مصر. اكتشفي الجمال الطبيعي اليوم!',
+  keywords = 'Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل طبيعية, منتجات دندي, Natural Skincare, Beauty Store Egypt',
+  canonical = 'https://dandy-ebon.vercel.app/',
+  lang = 'ar',
+  dir = 'rtl',
+  showHeader = true,
+  showFooter = true,
+  robots = 'index, follow',
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang={lang} dir={dir}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  {keywords && <meta name="keywords" content={keywords} />}
+  <meta name="robots" content={robots} />
+  {canonical && <link rel="canonical" href={canonical} />}
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/assets/images/fav-icons/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/fav-icons/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/fav-icons/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/fav-icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/images/fav-icons/site.webmanifest" />
+  <meta name="theme-color" content="#db2777" />
+
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="stylesheet" href="/assets/css/layout.css" />
+
+  <!-- Firebase Compat SDKs with verified SRI Hashes -->
+  <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" integrity="sha384-ajMUFBUFMCyjh8uxJg6bkGcKe9RTolyjwbxB3yES0QQMenP3Oztj/W9vA2SJPcIh" crossorigin="anonymous"></script>
+  <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js" integrity="sha384-xD1t9dGSVKobUztxDkv6xUI0H4AnFz0NxwlgDJJ7FDlblG9xxr1Z9iauCZuJYj6p" crossorigin="anonymous"></script>
+  <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js" integrity="sha384-f6/UpzjTjIXASlp20cArQsaRh1EvHVJd5kegy/gYR9W2D0a32TnEqUEiW4Zm/5O0" crossorigin="anonymous"></script>
+  <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
+
+  <!-- Central Firebase Initialization -->
+  <script is:inline>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      authDomain: "dandy-562fc.firebaseapp.com",
+      databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "dandy-562fc",
+      storageBucket: "dandy-562fc.appspot.com",
+      messagingSenderId: "454972972842",
+      appId: "1:454972972842:web:fedc5e92e258a06ca08853"
+    };
+
+    if (typeof firebase !== 'undefined') {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      window.db = firebase.database();
+      window.auth = firebase.auth();
+      window.firestore = firebase.firestore();
+    }
+  </script>
+
+  <slot name="head" />
+</head>
+<body data-astro-layout="true">
+  {showHeader && <Header />}
+  
+  <slot />
+
+  {showFooter && <Footer />}
+</body>
+</html>

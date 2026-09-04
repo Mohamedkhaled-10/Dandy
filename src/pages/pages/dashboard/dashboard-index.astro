@@ -1,0 +1,527 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="إدارة الصفحة الرئيسية | Dandy Dashboard"
+  description="تحكم كامل بكافة أجزاء الواجهة الأمامية لمتجر داندي بشكل ديناميكي"
+  robots="noindex, nofollow"
+>
+  <slot name="head" slot="head">
+    <style is:global>
+      .dashboard-hero { padding: 130px 0 40px; text-align: right; }
+      .form-group { margin-bottom: 20px; }
+      .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--color-primary, #333); font-size: 0.9rem; }
+      .form-group input[type="text"], .form-group input[type="url"], .form-group input[type="number"], .form-group textarea, .form-group select {
+        width: 100%; padding: 12px; border: 1px solid var(--border-light, #eaeaea); border-radius: 6px; font-family: inherit; font-size: 0.9rem;
+      }
+      .form-group input:focus, .form-group textarea:focus { border-color: var(--color-blush, #DB2777); outline: none; }
+      .checkbox-group { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; color: var(--color-primary, #333); margin-bottom: 15px;}
+      .btn-save {
+        background: var(--color-success, #2e7d32); color: #fff; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer;
+        font-weight: bold; font-size: 1rem; transition: background 0.2s; width: 100%; margin-top: 15px;
+      }
+      .btn-save:hover { background: #224d35; }
+      .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+      
+      .bento-admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; margin-bottom: 80px; }
+      .bento-admin-card {
+        background: var(--color-surface, #fff); border: 1px solid var(--border-light, #eaeaea); border-radius: var(--border-radius-lg, 16px);
+        padding: 30px; text-align: right; box-shadow: var(--shadow-sm, 0 4px 10px rgba(0,0,0,0.03)); position: relative; transition: var(--transition-smooth, 0.3s ease);
+      }
+      .bento-admin-card:hover { box-shadow: var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.08)); }
+      .bento-admin-icon { font-size: 2rem; color: var(--color-blush, #DB2777); margin-bottom: 15px; }
+      .bento-admin-card h3 { font-size: 1.25rem; font-weight: 800; color: var(--color-primary, #333); margin-bottom: 20px; border-bottom: 1px solid var(--border-light, #eaeaea); padding-bottom: 10px; }
+      
+      .category-item { display: flex; align-items: center; gap: 15px; padding: 10px; background: var(--color-gold-cream, #fdf5e6); border-radius: var(--border-radius-sm, 8px); margin-bottom: 10px; border: 1px solid var(--border-light, #eaeaea); }
+      .category-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+      .category-item-info { flex: 1; }
+      .category-item-info h4 { margin: 0 0 5px 0; font-size: 0.95rem; color: var(--color-primary, #333); }
+      .btn-delete { color: var(--color-danger, #dc3545); background: none; border: none; cursor: pointer; font-size: 1.1rem; transition: transform 0.2s; }
+      .btn-delete:hover { transform: scale(1.2); }
+      
+      .toast { position: fixed; bottom: 20px; left: 20px; background: #4CAF50; color: white; padding: 15px 25px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(150%); transition: transform 0.3s ease-in-out; z-index: 1000; font-weight: bold; }
+      .toast.show { transform: translateY(0); }
+      .toast.error { background: #F44336; }
+      
+      .item-block { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #ccc; position: relative; }
+      .item-block h4 { margin-top: 0; color: var(--color-primary, #333); font-size: 1rem; margin-bottom: 15px;}
+      .remove-input-btn { position: absolute; top: 10px; left: 10px; color: var(--color-danger, #dc3545); cursor: pointer; border: none; background: none; font-size: 1.1rem; }
+      
+      .drag-handle { cursor: grab; margin-left: 10px; color: #888; font-size: 1.2rem; }
+      .drag-handle:active { cursor: grabbing; }
+
+      .flex-row { display: flex; gap: 10px; align-items: center; }
+      .flex-row > div { flex: 1; }
+    </style>
+  </slot>
+
+  <main class="container">
+    <div class="dashboard-hero">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--color-primary); margin-bottom: 10px;">إدارة الصفحة الرئيسية (Dynamic)</h1>
+      <p style="color: var(--color-muted);">تحكم كامل بكافة أجزاء الواجهة الأمامية بشكل ديناميكي.</p>
+    </div>
+
+    <div class="bento-admin-grid">
+      <!-- Hero Dynamic Slider -->
+      <div class="bento-admin-card">
+        <div class="bento-admin-icon"><i class="fas fa-images"></i></div>
+        <h3>بانر الهيرو (Hero Slider)</h3>
+        <p style="font-size:0.85rem; color:var(--color-muted); margin-bottom:15px;">أضف الصور، رتبها، وحدد مدة العرض لكل منها بالثواني.</p>
+        <form id="heroForm">
+          <div id="dynamicHeroInputs"></div>
+          <button type="button" class="btn-save" style="background:var(--color-primary); margin-bottom:15px;" onclick="addHeroInput()"><i class="fas fa-plus"></i> إضافة صورة جديدة</button>
+          <button type="submit" class="btn-save" id="btnSaveHero"><i class="fas fa-save"></i> حفظ الهيرو</button>
+        </form>
+      </div>
+
+      <!-- Dynamic Sections -->
+      <div class="bento-admin-card">
+        <div class="bento-admin-icon"><i class="fas fa-layer-group"></i></div>
+        <h3>الأقسام الديناميكية (Sections)</h3>
+        <p style="font-size:0.85rem; color:var(--color-muted); margin-bottom:15px;">أضف أي عدد من الأقسام المخصصة وحدد منتجاتها.</p>
+        <form id="sectionsForm">
+          <div id="dynamicSectionsList"></div>
+          <button type="button" class="btn-save" style="background:var(--color-primary); margin-bottom:15px;" onclick="addSectionInput()"><i class="fas fa-plus"></i> إضافة قسم جديد</button>
+          <button type="submit" class="btn-save" id="btnSaveSections"><i class="fas fa-save"></i> حفظ الأقسام</button>
+        </form>
+      </div>
+
+      <!-- Categories / Collections -->
+      <div class="bento-admin-card">
+        <div class="bento-admin-icon"><i class="fas fa-tags"></i></div>
+        <h3>إدارة المجموعات (Collections)</h3>
+        <div id="categoriesList" style="margin-bottom: 25px; max-height: 250px; overflow-y: auto; padding-left: 10px;"></div>
+        <h4 style="margin-bottom: 15px; font-size: 1rem; color: var(--color-primary); border-top: 1px dashed var(--border-light); padding-top: 15px;">إضافة مجموعة جديدة</h4>
+        <form id="addCategoryForm">
+          <div class="form-group"><label>اسم المجموعة الإنجليزي</label><input type="text" id="catName" required /></div>
+          <div class="form-group"><label>النص التسويقي (Tagline)</label><input type="text" id="catTagline" placeholder="مثال: BEST SELLERS" /></div>
+          <div class="form-group"><label>رابط الصورة</label><input type="url" id="catImage" required /></div>
+          <div class="form-group"><label>عدد المنتجات (اختياري - يظهر بالنص)</label><input type="text" id="catCount" placeholder="مثال: 12 Items" /></div>
+          <button type="submit" class="btn-save" style="background: var(--color-primary);"><i class="fas fa-plus"></i> إضافة مجموعة</button>
+        </form>
+      </div>
+
+      <!-- Dynamic Reviews -->
+      <div class="bento-admin-card">
+        <div class="bento-admin-icon"><i class="fas fa-comments"></i></div>
+        <h3>آراء العملاء (Reviews)</h3>
+        <p style="font-size:0.85rem; color:var(--color-muted); margin-bottom:15px;">أضف أي عدد من التقييمات بحرية تامة.</p>
+        <form id="reviewsForm">
+          <div id="dynamicReviewsList"></div>
+          <button type="button" class="btn-save" style="background:var(--color-primary); margin-bottom:15px;" onclick="addReviewInput()"><i class="fas fa-plus"></i> إضافة رأي عميل</button>
+          <button type="submit" class="btn-save" id="btnSaveReviews"><i class="fas fa-save"></i> حفظ الآراء</button>
+        </form>
+      </div>
+      
+      <!-- Trust Bar -->
+      <div class="bento-admin-card">
+        <div class="bento-admin-icon"><i class="fas fa-shield-alt"></i></div>
+        <h3>شريط الثقة (Trust Bar)</h3>
+        <form id="trustForm">
+          <div class="item-block">
+            <h4>العنصر الأول</h4>
+            <div class="form-group"><input type="text" id="trust1Icon" placeholder="الأيقونة (مثال: 🚚 أو أيقونة FontAwesome)" /></div>
+            <div class="form-group"><input type="text" id="trust1Title" placeholder="العنوان" /></div>
+            <div class="form-group"><input type="text" id="trust1Desc" placeholder="الوصف القصير" /></div>
+          </div>
+          <div class="item-block">
+            <h4>العنصر الثاني</h4>
+            <div class="form-group"><input type="text" id="trust2Icon" placeholder="الأيقونة" /></div>
+            <div class="form-group"><input type="text" id="trust2Title" placeholder="العنوان" /></div>
+            <div class="form-group"><input type="text" id="trust2Desc" placeholder="الوصف القصير" /></div>
+          </div>
+          <div class="item-block">
+            <h4>العنصر الثالث</h4>
+            <div class="form-group"><input type="text" id="trust3Icon" placeholder="الأيقونة" /></div>
+            <div class="form-group"><input type="text" id="trust3Title" placeholder="العنوان" /></div>
+            <div class="form-group"><input type="text" id="trust3Desc" placeholder="الوصف القصير" /></div>
+          </div>
+          <button type="submit" class="btn-save" id="btnSaveTrust"><i class="fas fa-save"></i> حفظ شريط الثقة</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="toast">تم الحفظ بنجاح</div>
+
+  <script is:inline>
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+    
+    let allProductsCache = {};
+
+    if (auth) {
+      auth.onAuthStateChanged(user => {
+        if (!user) {
+          window.location.href = '../auth/login.html';
+        } else { 
+          loadProducts().then(() => {
+            performMigrationIfNeeded().then(() => {
+              loadHomepageDynamicData(); 
+              loadCategories();
+            });
+          });
+        }
+      });
+    }
+
+    function showToast(msg, isError=false) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    // Fetch products once to use in section selectors
+    function loadProducts() {
+      if (!db) return Promise.resolve();
+      return db.ref('products').once('value').then(snap => {
+        if(snap.exists()) {
+          allProductsCache = snap.val();
+        }
+      });
+    }
+
+    // Smart Migration Function
+    function performMigrationIfNeeded() {
+      if (!db) return Promise.resolve();
+      return db.ref('homepage').once('value').then(snap => {
+        if (snap.exists() && snap.hasChild('dynamicSections')) {
+          return Promise.resolve();
+        }
+        const migrationPromises = [];
+
+        // 1. Migrate Hero
+        let heroPromise = db.ref('settings/hero_slides').once('value').then(hSnap => {
+          let slides = [];
+          if (hSnap.exists()) {
+            hSnap.forEach(c => { slides.push({ ...c.val(), duration: 5 }); });
+          } else {
+            return db.ref('homepage/hero/images').once('value').then(ohSnap => {
+              if(ohSnap.exists()) {
+                ohSnap.val().forEach(img => {
+                  if(img) slides.push({ image: img, duration: 5, title: '', subtitle: '', buttonText: 'Shop Now', link: '' });
+                });
+              }
+              return slides;
+            });
+          }
+          return slides;
+        }).then(slides => {
+          if(slides.length > 0) return db.ref('homepage/dynamicHero').set(slides);
+        });
+        migrationPromises.push(heroPromise);
+
+        // 2. Migrate Reviews
+        let revPromise = db.ref('homepage/reviews').once('value').then(rSnap => {
+          let reviews = [];
+          if(rSnap.exists()) {
+            const rv = rSnap.val();
+            if(rv.item1 && rv.item1.text) reviews.push(rv.item1);
+            if(rv.item2 && rv.item2.text) reviews.push(rv.item2);
+            if(rv.item3 && rv.item3.text) reviews.push(rv.item3);
+          }
+          if(reviews.length > 0) return db.ref('homepage/dynamicReviews').set(reviews);
+        });
+        migrationPromises.push(revPromise);
+
+        // 3. Migrate Sections
+        let secPromise = db.ref('homepage/sections').once('value').then(sSnap => {
+          let sections = [];
+          return db.ref('homepage/selectedOffers').once('value').then(soSnap => {
+            let selOffers = soSnap.exists() ? soSnap.val() : {};
+            if (sSnap.exists()) {
+              const ss = sSnap.val();
+              if(ss.offers) sections.push({ id: 'sec-special-offers', type: 'offers', title: ss.offers.title, subtitle: ss.offers.subtitle, visible: ss.offers.visible, order: 1, manualProducts: selOffers });
+              if(ss.newArrivals) sections.push({ id: 'sec-new-arrivals', type: 'newArrivals', title: ss.newArrivals.title, subtitle: ss.newArrivals.subtitle, visible: ss.newArrivals.visible, order: 2, manualProducts: {} });
+              if(ss.bestsellers) sections.push({ id: 'sec-bestsellers', type: 'bestsellers', title: ss.bestsellers.title, subtitle: ss.bestsellers.subtitle, visible: ss.bestsellers.visible, order: 3, manualProducts: {} });
+            }
+            if(sections.length > 0) return db.ref('homepage/dynamicSections').set(sections);
+          });
+        });
+        migrationPromises.push(secPromise);
+
+        // 4. Copy Trust bar
+        let trustPromise = db.ref('homepage/trust').once('value').then(tSnap => {
+          if(tSnap.exists()) return db.ref('homepage/trust').set(tSnap.val());
+        });
+        migrationPromises.push(trustPromise);
+
+        return Promise.all(migrationPromises);
+      });
+    }
+
+    // Load All Dynamic Data
+    function loadHomepageDynamicData() {
+      if (!db) return;
+      db.ref('homepage').once('value').then(snap => {
+        if(!snap.exists()) return;
+        const data = snap.val();
+
+        // 1. Hero
+        const heroCont = document.getElementById('dynamicHeroInputs');
+        if (heroCont) {
+          heroCont.innerHTML = '';
+          if (data.dynamicHero && data.dynamicHero.length > 0) {
+            data.dynamicHero.forEach(h => addHeroInput(h));
+          } else {
+            addHeroInput();
+          }
+        }
+
+        // 2. Sections
+        const secCont = document.getElementById('dynamicSectionsList');
+        if (secCont) {
+          secCont.innerHTML = '';
+          if (data.dynamicSections && data.dynamicSections.length > 0) {
+            data.dynamicSections.forEach(s => addSectionInput(s));
+          } else {
+            addSectionInput();
+          }
+        }
+
+        // 3. Reviews
+        const revCont = document.getElementById('dynamicReviewsList');
+        if (revCont) {
+          revCont.innerHTML = '';
+          if (data.dynamicReviews && data.dynamicReviews.length > 0) {
+            data.dynamicReviews.forEach(r => addReviewInput(r));
+          } else {
+            addReviewInput();
+          }
+        }
+
+        // 4. Trust
+        if(data.trust) {
+          for(let i=1; i<=3; i++) {
+            if(data.trust['item'+i]) {
+              const iconEl = document.getElementById('trust'+i+'Icon');
+              const titleEl = document.getElementById('trust'+i+'Title');
+              const descEl = document.getElementById('trust'+i+'Desc');
+              if (iconEl) iconEl.value = data.trust['item'+i].icon || '';
+              if (titleEl) titleEl.value = data.trust['item'+i].title || '';
+              if (descEl) descEl.value = data.trust['item'+i].desc || '';
+            }
+          }
+        }
+      });
+    }
+
+    // HERO DYNAMIC UI
+    window.addHeroInput = function(data = { image: '', title: '', subtitle: '', link: '', buttonText: 'Shop Now', duration: 5 }) {
+      const container = document.getElementById('dynamicHeroInputs');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = 'item-block hero-block';
+      div.innerHTML = `
+        <button type="button" class="remove-input-btn" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        <div style="margin-left:25px;">
+          <div class="flex-row">
+            <div class="form-group"><label>رابط الصورة</label><input type="url" class="h-img" value="${data.image}" required></div>
+            <div class="form-group"><label>مدة العرض (ثواني)</label><input type="number" class="h-dur" value="${data.duration}" min="1" required></div>
+          </div>
+          <div class="flex-row">
+            <div class="form-group"><label>العنوان (Title)</label><input type="text" class="h-title" value="${data.title}"></div>
+            <div class="form-group"><label>النص الفرعي (Subtitle)</label><input type="text" class="h-sub" value="${data.subtitle}"></div>
+          </div>
+          <div class="flex-row">
+            <div class="form-group"><label>نص الزر</label><input type="text" class="h-btn" value="${data.buttonText}"></div>
+            <div class="form-group"><label>رابط الزر</label><input type="text" class="h-link" value="${data.link}"></div>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    };
+
+    document.getElementById('heroForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!db) return;
+      const btn = document.getElementById('btnSaveHero');
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+      const blocks = document.querySelectorAll('.hero-block');
+      let arr = [];
+      blocks.forEach(b => {
+        arr.push({
+          image: b.querySelector('.h-img').value.trim(),
+          duration: parseFloat(b.querySelector('.h-dur').value) || 5,
+          title: b.querySelector('.h-title').value.trim(),
+          subtitle: b.querySelector('.h-sub').value.trim(),
+          buttonText: b.querySelector('.h-btn').value.trim(),
+          link: b.querySelector('.h-link').value.trim()
+        });
+      });
+      db.ref('homepage/dynamicHero').set(arr).then(() => showToast('تم حفظ الهيرو!')).finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> حفظ الهيرو'; });
+    });
+
+    // SECTIONS DYNAMIC UI
+    window.addSectionInput = function(data = { id: 'sec-' + Date.now(), title: 'قسم جديد', subtitle: '', visible: true, type: 'manual', manualProducts: {} }) {
+      const container = document.getElementById('dynamicSectionsList');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = 'item-block sec-block';
+      div.dataset.id = data.id || ('sec-' + Date.now());
+      
+      let productsHtml = '<div style="max-height:150px; overflow-y:auto; border:1px solid #ddd; padding:10px; border-radius:6px; background:#fff;">';
+      for(let key in allProductsCache) {
+        const p = allProductsCache[key];
+        const isChecked = data.manualProducts && data.manualProducts[key] ? 'checked' : '';
+        productsHtml += `<label style="display:block; margin-bottom:5px; font-size:0.85rem;"><input type="checkbox" class="s-prod" value="${key}" ${isChecked}> ${p.name} (${p.price} EGP)</label>`;
+      }
+      productsHtml += '</div>';
+
+      div.innerHTML = `
+        <button type="button" class="remove-input-btn" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        <div style="margin-left:25px;">
+          <label class="checkbox-group"><input type="checkbox" class="s-vis" ${data.visible ? 'checked' : ''}> عرض هذا القسم</label>
+          <div class="flex-row">
+            <div class="form-group"><label>العنوان</label><input type="text" class="s-title" value="${data.title}" required></div>
+            <div class="form-group"><label>النص الفرعي</label><input type="text" class="s-sub" value="${data.subtitle}"></div>
+            <div class="form-group"><label>نوع المنتجات</label>
+              <select class="s-type">
+                <option value="manual" ${data.type === 'manual' ? 'selected' : ''}>اختيار يدوي (حدد أدناه)</option>
+                <option value="bestsellers" ${data.type === 'bestsellers' ? 'selected' : ''}>الأكثر مبيعاً تلقائي</option>
+                <option value="offers" ${data.type === 'offers' ? 'selected' : ''}>منتجات مخفضة تلقائي</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group manual-prod-group" ${data.type && data.type !== 'manual' ? 'style="display:none;"' : ''}>
+            <label>اختر منتجات هذا القسم:</label>
+            ${productsHtml}
+          </div>
+        </div>
+      `;
+      
+      div.querySelector('.s-type').addEventListener('change', function() {
+        div.querySelector('.manual-prod-group').style.display = this.value === 'manual' ? 'block' : 'none';
+      });
+
+      container.appendChild(div);
+    };
+
+    document.getElementById('sectionsForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!db) return;
+      const btn = document.getElementById('btnSaveSections');
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+      const blocks = document.querySelectorAll('.sec-block');
+      let arr = [];
+      blocks.forEach((b, idx) => {
+        let selectedProds = {};
+        b.querySelectorAll('.s-prod:checked').forEach(cb => selectedProds[cb.value] = true);
+        arr.push({
+          id: b.dataset.id,
+          order: idx,
+          visible: b.querySelector('.s-vis').checked,
+          title: b.querySelector('.s-title').value.trim(),
+          subtitle: b.querySelector('.s-sub').value.trim(),
+          type: b.querySelector('.s-type').value,
+          manualProducts: selectedProds
+        });
+      });
+      db.ref('homepage/dynamicSections').set(arr).then(() => showToast('تم حفظ الأقسام!')).finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> حفظ الأقسام'; });
+    });
+
+    // REVIEWS DYNAMIC UI
+    window.addReviewInput = function(data = { author: '', text: '', image: '' }) {
+      const container = document.getElementById('dynamicReviewsList');
+      if (!container) return;
+      const div = document.createElement('div');
+      div.className = 'item-block rev-block';
+      div.innerHTML = `
+        <button type="button" class="remove-input-btn" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        <div style="margin-left:25px;">
+          <div class="flex-row">
+            <div class="form-group"><label>اسم العميل</label><input type="text" class="r-auth" value="${data.author}" required></div>
+            <div class="form-group"><label>رابط الصورة</label><input type="url" class="r-img" value="${data.image}" required></div>
+          </div>
+          <div class="form-group"><label>نص التقييم</label><textarea class="r-text" rows="3" required>${data.text}</textarea></div>
+        </div>
+      `;
+      container.appendChild(div);
+    };
+
+    document.getElementById('reviewsForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!db) return;
+      const btn = document.getElementById('btnSaveReviews');
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+      const blocks = document.querySelectorAll('.rev-block');
+      let arr = [];
+      blocks.forEach(b => {
+        arr.push({
+          author: b.querySelector('.r-auth').value.trim(),
+          image: b.querySelector('.r-img').value.trim(),
+          text: b.querySelector('.r-text').value.trim()
+        });
+      });
+      db.ref('homepage/dynamicReviews').set(arr).then(() => showToast('تم حفظ التقييمات!')).finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> حفظ الآراء'; });
+    });
+
+    // CATEGORIES / COLLECTIONS
+    function loadCategories() {
+      if (!db) return;
+      db.ref('categories').on('value', (snapshot) => {
+        const listEl = document.getElementById('categoriesList');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        if (!snapshot.exists()) { listEl.innerHTML = '<p>لا توجد فئات.</p>'; return; }
+        snapshot.forEach((child) => {
+          const data = child.val();
+          listEl.innerHTML += `
+            <div class="category-item">
+              <img loading="lazy" src="${data.image}">
+              <div class="category-item-info">
+                <h4>${data.name}</h4>
+                <small style="color:#888;">${data.tagline || ''} | ${data.count || ''}</small>
+              </div>
+              <button class="btn-delete" onclick="deleteCategory('${child.key}')" aria-label="حذف الفئة"><i class="fas fa-trash-alt"></i></button>
+            </div>`;
+        });
+      });
+    }
+
+    document.getElementById('addCategoryForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!db) return;
+      const nameInput = document.getElementById('catName');
+      const taglineInput = document.getElementById('catTagline');
+      const countInput = document.getElementById('catCount');
+      const imageInput = document.getElementById('catImage');
+      const btn = this.querySelector('button');
+      btn.disabled = true;
+      
+      db.ref('categories').push({ 
+        name: nameInput.value, 
+        tagline: taglineInput.value,
+        count: countInput.value,
+        image: imageInput.value, 
+        createdAt: new Date().toISOString() 
+      })
+      .then(() => { 
+        nameInput.value = ''; imageInput.value = ''; taglineInput.value=''; countInput.value=''; 
+        showToast('تمت الإضافة!'); 
+      })
+      .finally(() => btn.disabled = false);
+    });
+
+    window.deleteCategory = function(key) {
+      if (!db) return;
+      if(confirm('هل أنت متأكد من الحذف؟')) db.ref('categories/' + key).remove().then(() => showToast('تم الحذف'));
+    };
+
+    // TRUST BAR
+    document.getElementById('trustForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!db) return;
+      const btn = document.getElementById('btnSaveTrust');
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+      db.ref('homepage/trust').set({
+        item1: { icon: document.getElementById('trust1Icon').value, title: document.getElementById('trust1Title').value, desc: document.getElementById('trust1Desc').value },
+        item2: { icon: document.getElementById('trust2Icon').value, title: document.getElementById('trust2Title').value, desc: document.getElementById('trust2Desc').value },
+        item3: { icon: document.getElementById('trust3Icon').value, title: document.getElementById('trust3Title').value, desc: document.getElementById('trust3Desc').value }
+      }).then(() => showToast('تم حفظ شريط الثقة!')).finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> حفظ شريط الثقة'; });
+    });
+  </script>
+</BaseLayout>

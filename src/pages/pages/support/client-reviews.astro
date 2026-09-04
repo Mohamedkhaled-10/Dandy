@@ -1,0 +1,212 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="آراء العملاء | Dandy Cosmetics - تقييمات وتجارب حقيقية"
+  description="اقرئي تجارب وآراء عملائنا الكرام حول منتجات داندي (Dandy Cosmetics). تقييمات حقيقية تعكس جودة وفعالية منتجاتنا للعناية بالبشرة والشعر."
+  keywords="Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, آراء العملاء, تجارب العملاء, تقييمات دندي, ريفيو دندي, Client Reviews"
+  canonical="https://dandy-ebon.vercel.app/pages/support/client-reviews.html"
+>
+  <slot name="head" slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dandy-ebon.vercel.app/pages/support/client-reviews.html" />
+    <meta property="og:title" content="آراء العملاء | Dandy Cosmetics - تقييمات وتجارب حقيقية" />
+    <meta property="og:description" content="اقرئي تجارب وآراء عملائنا الكرام حول منتجات داندي (Dandy Cosmetics). تقييمات حقيقية تعكس جودة وفعالية منتجاتنا." />
+    <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="آراء العملاء | Dandy Cosmetics - تقييمات وتجارب حقيقية" />
+    <meta name="twitter:description" content="اقرئي تجارب وآراء عملائنا الكرام حول منتجات داندي (Dandy Cosmetics). تقييمات حقيقية تعكس جودة وفعالية منتجاتنا." />
+    <meta name="twitter:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
+
+    <!-- GLightbox CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+
+    <script type="application/ld+json" is:inline>
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "آراء العملاء | Dandy Cosmetics",
+        "description": "تجارب وآراء عملاء داندي.",
+        "url": "https://dandy-ebon.vercel.app/pages/support/client-reviews.html"
+      }
+    </script>
+
+    <style is:global>
+      .reviews-hero {
+        padding: 130px 0 40px;
+        text-align: center;
+      }
+
+      .gallery-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin-bottom: 30px;
+        text-align: center;
+        position: relative;
+      }
+
+      .gallery-title::after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 3px;
+        background: var(--color-blush);
+        border-radius: 9px;
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 50px;
+      }
+
+      .review-capsule {
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition-smooth);
+      }
+
+      .review-capsule:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--color-blush);
+      }
+
+      .review-capsule img {
+        width: 100%;
+        height: 340px;
+        object-fit: cover;
+        display: block;
+        transition: var(--transition-smooth);
+      }
+
+      .review-capsule:hover img {
+        transform: scale(1.03);
+      }
+
+      .video-thumbnail-play {
+        background: #111;
+        width: 100%;
+        height: 340px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .video-thumbnail-play i {
+        font-size: 3.5rem;
+        color: var(--color-blush);
+        margin-bottom: 12px;
+        transition: var(--transition-fast);
+      }
+
+      .review-capsule:hover .video-thumbnail-play i {
+        transform: scale(1.1);
+      }
+    </style>
+  </slot>
+
+  <!-- Header Reviews -->
+  <section class="reviews-hero container">
+    <div class="section-header">
+      <span class="sub">Stories From Our Beloved Community</span>
+      <h1 style="font-size: 2.2rem; font-family:'Space Grotesk', sans-serif; color:var(--color-primary); margin-bottom:15px;">آراء وتجارب عملاء داندي (Dandy Cosmetics)</h1>
+      <p style="color: var(--color-muted); max-width: 630px; margin: 10px auto 0;">We are delighted to show organic results and real skincare reactions shared by our clients. Browse through our botanical transformations.</p>
+    </div>
+  </section>
+
+  <!-- Reviews Lists grids -->
+  <section class="container" style="padding-bottom: 80px;">
+    <h2 class="gallery-title" style="font-family:'Space Grotesk', sans-serif; margin-bottom: 40px;">📸 Photo Transformations & Reviews</h2>
+    <div class="gallery-grid" id="testimonial-images">
+      <!-- Testimonial cards loaded dynamically -->
+      <p style="text-align: center; grid-column:1/-1; color:var(--color-muted);">Gathering the verified photo reviews gallery...</p>
+    </div>
+
+    <h2 class="gallery-title" style="font-family:'Space Grotesk', sans-serif; margin-top: 60px; margin-bottom: 40px;">🎬 Video Stories & Live Impressions</h2>
+    <div class="gallery-grid" id="testimonial-videos">
+      <!-- Testimonial videos loaded dynamically -->
+      <p style="text-align: center; grid-column:1/-1; color:var(--color-muted);">Preparing the video experiences gallery...</p>
+    </div>
+  </section>
+
+  <!-- GLightbox JS plugin -->
+  <script is:inline src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
+  <script is:inline>
+    const db = window.db || firebase.database();
+    const imageSection = document.getElementById("testimonial-images");
+    const videoSection = document.getElementById("testimonial-videos");
+
+    db.ref('testimonials').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!imageSection || !videoSection) return;
+      imageSection.innerHTML = '';
+      videoSection.innerHTML = '';
+
+      if (!data) {
+        imageSection.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);">No reviews posted yet. Dandy welcomes your feedback anytime!</p>';
+        videoSection.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);">No video reviews posted yet.</p>';
+        return;
+      }
+
+      Object.values(data).forEach(item => {
+        const capsule = document.createElement('div');
+        capsule.className = 'review-capsule';
+
+        if (item.type === 'image') {
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'testimonial-images');
+          link.setAttribute('data-title', 'Dandy skincare outcome');
+
+          const img = document.createElement('img');
+          img.src = item.url;
+          img.alt = "نتيجة استخدام منتجات داندي - رأي عميل";
+          img.loading = "lazy";
+
+          link.appendChild(img);
+          capsule.appendChild(link);
+          imageSection.appendChild(capsule);
+        } else if (item.type === 'video') {
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.className = 'glightbox';
+          link.setAttribute('data-gallery', 'testimonial-videos');
+          link.setAttribute('data-type', 'video');
+          link.setAttribute('data-title', 'My selfcare journey with Dandy');
+
+          const thumb = document.createElement('div');
+          thumb.className = 'video-thumbnail-play';
+          thumb.innerHTML = `
+            <i class="fas fa-play-circle"></i>
+            <span style="font-weight:700; font-size:0.9rem;">Click to play video review</span>
+          `;
+
+          link.appendChild(thumb);
+          capsule.appendChild(link);
+          videoSection.appendChild(capsule);
+        }
+      });
+
+      if (window.GLightbox) {
+        GLightbox({ selector: '.glightbox' });
+      }
+    });
+  </script>
+</BaseLayout>

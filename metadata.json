@@ -1,6 +1,6 @@
 {
-  "name": "Dandy",
-  "description": "Premium Arabic beauty, skincare, and natural cosmetics store.",
+  "name": "Dandy Cosmetics",
+  "description": "Store and catalog for Dandy Cosmetics natural skincare and haircare products in Egypt.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

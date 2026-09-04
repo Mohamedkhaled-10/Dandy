@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const proto = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers.host;
     const selfUrl = `${proto}://${host}/api/product?id=${encodeURIComponent(id)}`;
-    const humanUrl = `${proto}://${host}/product.html?id=${encodeURIComponent(id)}`;
+    const humanUrl = `${proto}://${host}/pages/shop/product.html?id=${encodeURIComponent(id)}`;
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.status(200).send(`<!DOCTYPE html>
