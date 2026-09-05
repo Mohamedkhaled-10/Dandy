@@ -1,110 +1,46 @@
-// نسخة توثيقية من القواعد الحالية المنشورة فعليًا على Firebase Console بتاريخ 4 سبتمبر 2026. أي تعديل فعلي على الصلاحيات نفسها يتم في مرحلة أمان منفصلة لاحقًا — لا تُعدَّل هنا.
 {
   "rules": {
     "homepage": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
     },
     "categories": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
     },
     "products": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
     },
     "orders": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com' || !data.exists()",
+      ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || !data.exists()",
       "$orderId": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'orders@dandy.com' || !data.exists()",
+        ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || !data.exists()",
         ".validate": "newData.hasChildren(['name','phone','governorate','city','address','totalAmount','invoiceCode','products','status'])",
-        "name": {
-          ".validate": "newData.isString() && newData.val().length >= 2"
-        },
-        "phone": {
-          ".validate": "newData.isString() && newData.val().length >= 10"
-        },
-        "governorate": {
-          ".validate": "newData.isString() && newData.val().length >= 2"
-        },
-        "city": {
-          ".validate": "newData.isString()"
-        },
-        "address": {
-          ".validate": "newData.isString() && newData.val().length >= 3"
-        },
-        "invoiceCode": {
-          ".validate": "newData.isString() && newData.val().beginsWith('DNY-')"
-        },
-        "totalAmount": {
-          ".validate": "newData.isNumber() && newData.val() > 0"
-        },
-        "products": {
-          ".validate": "newData.exists()"
-        },
-        "status": {
-          ".validate": "newData.isString()"
-        }
-      }
-    },
-    "visits": {
-      ".read": "auth != null && auth.token.email == 'orders@dandy.com'",
-      ".write": true,
-      "$visitId": {
-        ".validate": "newData.exists()"
-      }
-    },
-    "abandoned_carts": {
-      ".read": "auth != null && auth.token.email == 'orders@dandy.com'",
-      "$cartId": {
-        ".read": "auth != null && auth.token.email == 'orders@dandy.com'",
-        ".write": true,
-        ".validate": "newData.hasChildren(['email','cart','timestamp'])"
-      }
-    },
-    "reviews": {
-      ".read": true,
-      ".indexOn": ["productId", "isApproved"],
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
-    },
-    "coupons": {
-      ".read": true,
-      ".indexOn": ["code", "isActive"],
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
-    },
-    "customers": {
-      ".read": "auth != null && auth.token.email == 'orders@dandy.com'",
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'",
-      "$uid": {
-        ".read": "auth != null && (auth.token.email == 'orders@dandy.com' || auth.uid == $uid)",
-        ".write": "auth != null && (auth.token.email == 'orders@dandy.com' || auth.uid == $uid)"
-      }
-    },
-    "wishlists": {
-      ".read": "auth != null && auth.token.email == 'orders@dandy.com'",
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'",
-      "$uid": {
-        ".read": "auth != null && (auth.token.email == 'orders@dandy.com' || auth.uid == $uid)",
-        ".write": "auth != null && (auth.token.email == 'orders@dandy.com' || auth.uid == $uid)"
-      }
-    },
-    "user_orders": {
-      ".read": "auth != null && auth.token.email == 'orders@dandy.com'",
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'",
-      "$uid": {
-        ".read": "auth != null && (auth.token.email == 'orders@dandy.com' || auth.uid == $uid)",
-        ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
+        "name": { ".validate": "newData.isString() && newData.val().length >= 2" },
+        "phone": { ".validate": "newData.isString() && newData.val().length >= 10" },
+        "governorate": { ".validate": "newData.isString() && newData.val().length >= 2" },
+        "city": { ".validate": "newData.isString()" },
+        "address": { ".validate": "newData.isString() && newData.val().length >= 3" },
+        "invoiceCode": { ".validate": "newData.isString() && newData.val().beginsWith('DNY-')" },
+        "totalAmount": { ".validate": "newData.isNumber() && newData.val() > 0" },
+        "products": { ".validate": "newData.exists()" },
+        "status": { ".validate": "newData.isString()" }
       }
     },
     "settings": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
     },
     "testimonials": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'orders@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+    },
+    "_archive": {
+      ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
     }
   }
 }
