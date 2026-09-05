@@ -942,16 +942,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         container.innerHTML = `
           <div class="variant-all-unavailable-box">
             <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
-            <span>نعتذر، لا توجد روائح متاحة حالياً لهذا المستحضر.</span>
+            <span>نعتذر، جميع خيارات الروائح لهذا المستحضر غير متوفرة حالياً.</span>
           </div>
         `;
-        const btn = document.getElementById("add-to-cart-btn");
-        if (btn) {
-          btn.innerHTML = `<i class="fas fa-ban"></i> غير متوفر حالياً`;
-          btn.style.background = "#555";
-          btn.style.cursor = "not-allowed";
-          btn.disabled = true;
-        }
         return;
       }
 
@@ -998,7 +991,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <i class="fas fa-spray-can" style="color:var(--color-blush);"></i>
             <span>اختاري الروائح</span>
           </label>
-          <span id="selected-scent-display" class="selected-scent-display" aria-live="polite">يرجى اختيار رائحة واحدة على الأقل</span>
+          <span id="selected-scent-display" class="selected-scent-display" aria-live="polite">اختياري — يمكنك اختيار أكثر من رائحة</span>
         </div>
         <div class="variant-pills-list" role="group" aria-labelledby="scent-group-label">
           ${pillsHtml}
@@ -1032,7 +1025,6 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       // Update active state on all pill buttons
       const container = document.getElementById("variant-section-container");
       if (container) {
-        container.classList.remove("has-error");
         container.querySelectorAll(".variant-pill-btn").forEach(btn => {
           const isSelected = selectedVariants.some(item => item.id === btn.dataset.id);
           btn.classList.toggle("active", isSelected);
@@ -1044,7 +1036,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       const disp = document.getElementById("selected-scent-display");
       if (disp) {
         if (selectedVariants.length === 0) {
-          disp.textContent = "يرجى اختيار رائحة واحدة على الأقل";
+          disp.textContent = "اختياري — يمكنك اختيار أكثر من رائحة";
           disp.classList.remove("chosen");
         } else if (selectedVariants.length === 1) {
           disp.textContent = `الرائحة المختارة: ${selectedVariants[0].name}`;
@@ -1216,68 +1208,21 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         return;
       }
 
-      // 2. Validate and check scent variants if product has variants
+      // 2. Validate and sort chosen variants if any
       let validSelectedVariants = [];
       const hasVars = typeof hasSelectableVariants === 'function'
         ? hasSelectableVariants(loadedProduct)
         : (loadedProduct.hasVariants === true || loadedProduct.hasVariants === 'true');
 
-      if (hasVars) {
+      if (hasVars && Array.isArray(selectedVariants) && selectedVariants.length > 0) {
         const rawVariants = typeof getProductVariants === 'function' 
           ? getProductVariants(loadedProduct) 
           : (Array.isArray(loadedProduct.variants) ? loadedProduct.variants : []);
-        const availableVariants = rawVariants.filter(rv => rv && rv.isAvailable !== false);
 
-        if (availableVariants.length === 0) {
-          alert('نعتذر، لا توجد روائح متاحة حالياً لهذا المستحضر.');
-          return;
-        }
-
-        // Filter out unavailable or removed variants from selection
-        if (Array.isArray(selectedVariants) && selectedVariants.length > 0) {
-          validSelectedVariants = selectedVariants.filter(sv => {
-            return rawVariants.some(rv => String(rv.id) === String(sv.id) && rv.isAvailable !== false);
-          });
-        }
-
-        // Must select at least 1 variant
-        if (validSelectedVariants.length === 0) {
-          const wrapper = document.getElementById("variant-section-container");
-          if (wrapper) {
-            wrapper.classList.remove("has-error");
-            void wrapper.offsetWidth; // trigger reflow for animation
-            wrapper.classList.add("has-error");
-            wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-
-          const existingToast = document.getElementById("scent-validation-toast");
-          if (existingToast) existingToast.remove();
-
-          const alertDiv = document.createElement("div");
-          alertDiv.id = "scent-validation-toast";
-          alertDiv.style.position = "fixed";
-          alertDiv.style.bottom = "100px";
-          alertDiv.style.left = "50%";
-          alertDiv.style.transform = "translateX(-50%)";
-          alertDiv.style.background = "#dc2626";
-          alertDiv.style.color = "#fff";
-          alertDiv.style.padding = "14px 28px";
-          alertDiv.style.borderRadius = "50px";
-          alertDiv.style.boxShadow = "0 8px 24px rgba(220, 38, 38, 0.35)";
-          alertDiv.style.zIndex = "1030";
-          alertDiv.style.fontWeight = "800";
-          alertDiv.style.textAlign = "center";
-          alertDiv.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-left:8px;"></i> يرجى اختيار رائحة واحدة على الأقل`;
-          document.body.appendChild(alertDiv);
-          
-          setTimeout(() => {
-            alertDiv.style.opacity = "0";
-            alertDiv.style.transition = "opacity 0.4s ease";
-            setTimeout(() => alertDiv.remove(), 400);
-          }, 3500);
-
-          return; // Strictly STOP - do not touch cart or localStorage
-        }
+        // Filter out unavailable or removed variants
+        validSelectedVariants = selectedVariants.filter(sv => {
+          return rawVariants.some(rv => String(rv.id) === String(sv.id) && rv.isAvailable !== false);
+        });
 
         // Deterministic sort by ID to ensure order of clicks does not matter
         validSelectedVariants.sort((a, b) => String(a.id).localeCompare(String(b.id)));
