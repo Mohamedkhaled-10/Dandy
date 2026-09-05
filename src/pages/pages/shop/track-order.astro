@@ -526,12 +526,35 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           calculatedSubtotal += price * qty;
 
           const imgHtml = p.image ? `<img loading="lazy" src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">` : '';
+          
+          // الاعتماد الحصري على snapshot المخزن داخل الطلب (order.products)
+          const varInfo = typeof getVariantsDisplayInfo === 'function'
+            ? getVariantsDisplayInfo(p)
+            : (p.selectedVariant && p.selectedVariant.name ? { count: 1, label: 'الرائحة', text: p.selectedVariant.name } : null);
+
+          let variantRow = '';
+          if (varInfo && varInfo.text && String(varInfo.text).trim() !== '' && varInfo.text !== 'undefined') {
+            variantRow = `
+              <div style="font-size:0.86rem; color:var(--color-blush); font-weight:700; margin-top:4px; display:inline-flex; align-items:center; gap:5px;">
+                <i class="fas fa-spray-can" style="font-size:0.75rem;"></i>
+                <span>${varInfo.label}: <strong>${varInfo.text}</strong></span>
+              </div>
+            `;
+          }
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td>${imgHtml}<strong>${p.name}</strong></td>
-            <td style="text-align:center;">${qty}</td>
-            <td style="text-align:left; font-weight:700; color:var(--color-blush);">${(price * qty).toFixed(0)} ج.م</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                ${imgHtml}
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                  <strong style="color:var(--color-primary); font-size:0.95rem;">${p.name}</strong>
+                  ${variantRow}
+                </div>
+              </div>
+            </td>
+            <td style="text-align:center; font-weight:700; font-size:0.95rem;">${qty}</td>
+            <td style="text-align:left; font-weight:800; color:var(--color-blush); font-size:0.95rem; white-space:nowrap;">${(price * qty).toFixed(0)} ج.م</td>
           `;
           resProductsBody.appendChild(tr);
         });

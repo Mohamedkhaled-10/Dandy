@@ -26,7 +26,19 @@
         "address": { ".validate": "newData.isString() && newData.val().length >= 3" },
         "invoiceCode": { ".validate": "newData.isString() && newData.val().beginsWith('DNY-')" },
         "totalAmount": { ".validate": "newData.isNumber() && newData.val() > 0" },
-        "products": { ".validate": "newData.exists()" },
+        "products": {
+          ".validate": "newData.exists()",
+          "$itemIndex": {
+            "selectedVariant": {
+              ".validate": "!newData.exists() || newData.hasChildren(['name']) || newData.isString()",
+              "id": { ".validate": "!newData.exists() || newData.isString()" },
+              "name": { ".validate": "!newData.exists() || newData.isString()" }
+            },
+            "variantName": {
+              ".validate": "!newData.exists() || newData.isString()"
+            }
+          }
+        },
         "status": { ".validate": "newData.isString()" }
       }
     },

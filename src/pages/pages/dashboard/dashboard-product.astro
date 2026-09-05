@@ -72,6 +72,21 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       .stat-info span { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); }
       .btn-export { background: var(--color-surface-soft); border: 1px solid var(--border-light); color: var(--color-primary); padding: 9px 16px; border-radius: 99px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s; }
       .btn-export:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+      .variants-admin-card { border: 1px solid rgba(219,39,119,0.25); background: rgba(219,39,119,0.02); border-radius: 12px; padding: 18px; margin: 18px 0; }
+      .variant-item-row { display: flex; gap: 8px; align-items: center; background: #fff; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 12px; transition: all 0.2s ease; }
+      .variant-item-row:hover { border-color: rgba(219,39,119,0.4); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+      .v-order-num { font-weight: 800; color: var(--color-muted); font-size: 0.82rem; width: 22px; text-align: center; }
+      .variant-item-row .v-name-input { flex: 1; min-width: 140px; padding: 8px 12px; font-size: 0.9rem; border: 1px solid var(--border-light); border-radius: 6px; outline: none; transition: 0.2s; }
+      .variant-item-row .v-name-input:focus { border-color: var(--color-blush); background: #fff; box-shadow: 0 0 0 3px rgba(219,39,119,0.1); }
+      .variant-item-row .v-avail-label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap; padding: 5px 10px; border-radius: 6px; background: var(--color-surface-soft); border: 1px solid var(--border-light); }
+      .variant-item-row .v-avail-label input { accent-color: var(--color-blush); width: 15px; height: 15px; cursor: pointer; }
+      .v-reorder-btns { display: flex; gap: 3px; align-items: center; }
+      .v-reorder-btn { width: 28px; height: 28px; border: 1px solid var(--border-light); background: #fff; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; color: var(--color-muted); cursor: pointer; transition: all 0.2s; }
+      .v-reorder-btn:hover:not(:disabled) { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+      .v-reorder-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+      .variant-item-row .v-del-btn { background: #fee2e2; border: 1px solid #fecaca; color: #ef4444; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+      .variant-item-row .v-del-btn:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+      .admin-badge-variants { background: #4f46e5; }
       @media (max-width: 768px) {
         .controls-wrapper { justify-content: flex-start; width: 100%; }
         .admin-search-input { max-width: 100%; }
@@ -171,6 +186,42 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <textarea id="p-description" rows="8" placeholder="اكتبي المكونات وطريقة الاستخدام والمميزات الطبيعية المبهرة بشرح وافٍ..." required></textarea>
           </div>
 
+          <!-- نظام خيارات الروائح والأنواع (Product Variants) -->
+          <div class="variants-admin-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <label class="chk-label" style="font-weight: 800; font-size: 0.95rem; cursor: pointer; color: var(--color-primary);">
+                <input type="checkbox" id="p-hasVariants" />
+                <i class="fas fa-spray-can" style="color: var(--color-blush);"></i> تفعيل خيارات الروائح لهذا المنتج
+              </label>
+              <span style="font-size: 0.75rem; background: rgba(219, 39, 119, 0.1); color: var(--color-blush); font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                مسك، عطور، بودي سبلاش، إلخ
+              </span>
+            </div>
+            
+            <div id="variantsAdminBody" style="display: none; margin-top: 14px; border-top: 1px dashed var(--border-light); padding-top: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--color-primary); margin: 0;">
+                  <i class="fas fa-list-ul" style="color: var(--color-gold);"></i> خيارات الروائح
+                </h4>
+                <span id="variantCountText" style="font-size: 0.8rem; color: var(--color-muted); font-weight: 700;">0 روائح مسجلة</span>
+              </div>
+              
+              <p style="font-size: 0.82rem; color: var(--color-muted); margin-bottom: 12px; line-height: 1.5;">
+                أضيفي أسماء الروائح المتاحة. يمكنك تعديل الاسم، التحكم بحالة التوفر (متاح)، إعادة ترتيب الروائح بالأزرار، أو حذف أي رائحة.
+              </p>
+              
+              <div id="variantRowsList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+                <!-- الصفوف تضاف ديناميكياً -->
+              </div>
+              
+              <div>
+                <button type="button" class="btn" style="background: #fff; border: 1.5px dashed var(--color-blush); color: var(--color-blush); padding: 9px 18px; border-radius: 8px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;" onclick="addVariantRow()" onmouseover="this.style.background='rgba(219,39,119,0.05)'" onmouseout="this.style.background='#fff'">
+                  <i class="fas fa-plus"></i> إضافة رائحة
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="chk-row">
             <label class="chk-label">
               <input type="checkbox" id="p-bestSeller" /> تمييز كـ "الأكثر مبيعاً"
@@ -248,6 +299,121 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     const cancelEditBtn = document.getElementById('cancelEdit');
     const imgInput = document.getElementById('p-image');
     const imgPreview = document.getElementById('imagePreview');
+
+    const hasVariantsCheckbox = document.getElementById('p-hasVariants');
+    const variantsAdminBody = document.getElementById('variantsAdminBody');
+    const variantRowsList = document.getElementById('variantRowsList');
+    const variantCountText = document.getElementById('variantCountText');
+
+    let currentVariants = [];
+
+    function toggleVariantsAdmin(forceState) {
+      const show = typeof forceState === 'boolean' ? forceState : (hasVariantsCheckbox && hasVariantsCheckbox.checked);
+      if (hasVariantsCheckbox) hasVariantsCheckbox.checked = show;
+      if (variantsAdminBody) variantsAdminBody.style.display = show ? 'block' : 'none';
+      if (show && currentVariants.length === 0) {
+        addVariantRow();
+      }
+    }
+    if (hasVariantsCheckbox) {
+      hasVariantsCheckbox.addEventListener('change', () => toggleVariantsAdmin());
+    }
+
+    function generateSafeVariantId(name, existingIds) {
+      let slug = (name || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_]+/g, '-')
+        .replace(/[^\w\u0621-\u064A-]+/g, '')
+        .replace(/^-+|-+$/g, '');
+      if (!slug) slug = 'scent';
+      let candidate = slug;
+      let counter = 1;
+      while (existingIds.has(candidate)) {
+        candidate = `${slug}-${counter}`;
+        counter++;
+      }
+      return candidate;
+    }
+
+    function renderVariantRows() {
+      if (!variantRowsList) return;
+      variantRowsList.innerHTML = '';
+      currentVariants.forEach((v, idx) => {
+        const row = document.createElement('div');
+        row.className = 'variant-item-row';
+        row.dataset.id = v.id;
+        row.innerHTML = `
+          <span class="v-order-num">${idx + 1}</span>
+          <input type="text" class="v-name-input" placeholder="اسم الرائحة (مثال: مسك أبيض)" value="${v.name || ''}" oninput="updateVariantName(${idx}, this.value)" required />
+          <label class="v-avail-label" title="حالة توفر هذه الرائحة">
+            <input type="checkbox" class="v-avail-input" ${v.isAvailable !== false ? 'checked' : ''} onchange="updateVariantAvail(${idx}, this.checked)" />
+            <span>متاح</span>
+          </label>
+          <div class="v-reorder-btns">
+            <button type="button" class="v-reorder-btn" onclick="moveVariantUp(${idx})" ${idx === 0 ? 'disabled' : ''} title="تحريك لأعلى">
+              <i class="fas fa-chevron-up"></i>
+            </button>
+            <button type="button" class="v-reorder-btn" onclick="moveVariantDown(${idx})" ${idx === currentVariants.length - 1 ? 'disabled' : ''} title="تحريك لأسفل">
+              <i class="fas fa-chevron-down"></i>
+            </button>
+          </div>
+          <button type="button" class="v-del-btn" onclick="removeVariantRow(${idx})" title="حذف الرائحة"><i class="fas fa-trash-alt"></i></button>
+        `;
+        variantRowsList.appendChild(row);
+      });
+
+      if (variantCountText) {
+        variantCountText.textContent = `${currentVariants.length} روائح مسجلة`;
+      }
+    }
+
+    window.addVariantRow = function(name = '', id = '', isAvailable = true) {
+      const existingIds = new Set(currentVariants.map(v => v.id).filter(Boolean));
+      const finalId = id || (name ? generateSafeVariantId(name, existingIds) : generateSafeVariantId('', existingIds));
+      currentVariants.push({
+        id: finalId,
+        name: name,
+        isAvailable: isAvailable !== false,
+        price: null
+      });
+      renderVariantRows();
+    };
+
+    window.removeVariantRow = function(idx) {
+      currentVariants.splice(idx, 1);
+      renderVariantRows();
+    };
+
+    window.updateVariantName = function(idx, value) {
+      if (!currentVariants[idx]) return;
+      currentVariants[idx].name = value;
+      if (!currentVariants[idx].id || currentVariants[idx].id.startsWith('scent-') || currentVariants[idx].id === 'scent') {
+        const otherIds = new Set(currentVariants.map((v, i) => i !== idx ? v.id : null).filter(Boolean));
+        currentVariants[idx].id = generateSafeVariantId(value, otherIds);
+      }
+    };
+
+    window.updateVariantAvail = function(idx, isAvail) {
+      if (!currentVariants[idx]) return;
+      currentVariants[idx].isAvailable = Boolean(isAvail);
+    };
+
+    window.moveVariantUp = function(idx) {
+      if (idx <= 0 || idx >= currentVariants.length) return;
+      const temp = currentVariants[idx];
+      currentVariants[idx] = currentVariants[idx - 1];
+      currentVariants[idx - 1] = temp;
+      renderVariantRows();
+    };
+
+    window.moveVariantDown = function(idx) {
+      if (idx < 0 || idx >= currentVariants.length - 1) return;
+      const temp = currentVariants[idx];
+      currentVariants[idx] = currentVariants[idx + 1];
+      currentVariants[idx + 1] = temp;
+      renderVariantRows();
+    };
 
     if (imgInput && imgPreview) {
       imgInput.addEventListener('input', () => {
@@ -382,6 +548,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         const normCat = normalizeCategory(d.category);
         
         let badgesHtml = '';
+        if(d.hasVariants && Array.isArray(d.variants) && d.variants.length > 0) {
+          badgesHtml += `<span class="admin-badge admin-badge-variants" title="يحتوي على ${d.variants.length} خيارات روائح"><i class="fas fa-spray-can"></i> ${d.variants.length} روائح</span>`;
+        }
         if(d.bestSeller) badgesHtml += '<span class="admin-badge admin-badge-best">الأكثر مبيعاً</span>';
         if(d.onSale) badgesHtml += '<span class="admin-badge admin-badge-sale">خصم خاص</span>';
         if(d.isHidden) badgesHtml += '<span class="admin-badge admin-badge-hidden">مخفي</span>';
@@ -445,6 +614,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         saveBtn.disabled = true;
 
         const name = document.getElementById('p-name').value.trim();
+        if (!name) {
+          alert('يرجى إدخال اسم المستحضر (لا يمكن ترك اسم المنتج فارغاً).');
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = editIdEl && editIdEl.value ? '<i class="fas fa-check"></i> حفظ تعديلات المستحضر' : '<i class="fas fa-plus"></i> إضافة المستحضر للرفوف';
+          return;
+        }
         const price = parseFloat(document.getElementById('p-price').value) || 0;
         const originalPrice = parseFloat(document.getElementById('p-originalPrice').value) || '';
         const discount = parseFloat(document.getElementById('p-discount').value) || 0;
@@ -460,10 +635,62 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
         const editId = editIdEl ? editIdEl.value : '';
 
+        const hasVariants = hasVariantsCheckbox ? hasVariantsCheckbox.checked : false;
+        let variantsPayload = [];
+
+        if (hasVariants) {
+          const seenIds = new Set();
+          for (let i = 0; i < currentVariants.length; i++) {
+            const v = currentVariants[i];
+            const vName = (v.name || '').trim();
+            let vId = (v.id || '').trim();
+            const vAvail = v.isAvailable !== false;
+
+            if (!vName) {
+              alert(`الرائحة رقم ${i + 1}: يرجى كتابة اسم الرائحة (لا يمكن حفظ خيار بدون اسم).`);
+              saveBtn.disabled = false;
+              saveBtn.innerHTML = editId ? '<i class="fas fa-check"></i> حفظ تعديلات المستحضر' : '<i class="fas fa-plus"></i> إضافة المستحضر للرفوف';
+              return;
+            }
+
+            if (!vId) {
+              vId = generateSafeVariantId(vName, seenIds);
+            }
+
+            if (seenIds.has(vId)) {
+              vId = generateSafeVariantId(vId, seenIds);
+            }
+
+            seenIds.add(vId);
+            variantsPayload.push({
+              id: vId,
+              name: vName,
+              isAvailable: vAvail,
+              price: v.price !== undefined ? v.price : null
+            });
+          }
+
+          if (variantsPayload.length === 0) {
+            alert('لقد قمتِ بتفعيل خيارات الروائح ولكن لم يتم إضافة أي رائحة. يرجى إضافة رائحة واحدة على الأقل أو إلغاء تفعيل الخيار.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = editId ? '<i class="fas fa-check"></i> حفظ تعديلات المستحضر' : '<i class="fas fa-plus"></i> إضافة المستحضر للرفوف';
+            return;
+          }
+        }
+
         const payload = {
           name, price, originalPrice: originalPrice || '', discount: discount || '', category, rating, image, description,
-          bestSeller, onSale, isSoldOut, isHidden
+          bestSeller, onSale, isSoldOut, isHidden,
+          hasVariants: Boolean(hasVariants)
         };
+
+        if (hasVariants) {
+          payload.variantType = "scent";
+          payload.variants = variantsPayload;
+        } else if (editId) {
+          payload.variants = null;
+          payload.variantType = null;
+        }
 
         try {
           if(editId) {
@@ -500,6 +727,18 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       document.getElementById('p-isSoldOut').checked = !!p.isSoldOut;
       document.getElementById('p-isHidden').checked = !!p.isHidden;
 
+      // تحميل الـ Variants الحالية للمنتج بدقة
+      const hasVariants = Boolean(p.hasVariants);
+      const rawVariants = Array.isArray(p.variants) ? p.variants : [];
+      currentVariants = rawVariants.map(v => ({
+        id: String(v.id || '').trim() || generateSafeVariantId(v.name, new Set()),
+        name: String(v.name || '').trim(),
+        isAvailable: v.isAvailable !== false,
+        price: v.price !== undefined ? v.price : null
+      }));
+      toggleVariantsAdmin(hasVariants);
+      renderVariantRows();
+
       if (editIdEl) editIdEl.value = key;
       if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-check"></i> حفظ تعديلات المستحضر';
       if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
@@ -514,6 +753,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         imgPreview.style.display = 'none';
         imgPreview.src = '';
       }
+      currentVariants = [];
+      toggleVariantsAdmin(false);
+      renderVariantRows();
       if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-plus"></i> إضافة المستحضر للرفوف';
       if (cancelEditBtn) cancelEditBtn.style.display = 'none';
     }

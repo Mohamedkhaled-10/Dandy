@@ -279,9 +279,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <thead>
               <tr>
                 <th style="width: 60px;">صورة</th>
-                <th>اسم المنتج</th>
-                <th style="text-align: center;">الكمية</th>
-                <th style="text-align: left;">السعر الإجمالي</th>
+                <th>المنتج والتفاصيل</th>
+                <th style="text-align: center; width: 90px;">الكمية</th>
+                <th style="text-align: left; width: 140px;">السعر الإجمالي</th>
               </tr>
             </thead>
             <tbody id="md-items-body">
@@ -598,11 +598,22 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       document.getElementById('md-coords').textContent = fullLocation || '-';
       document.getElementById('md-address').textContent = o.address || 'لا يوجد تفاصيل للعنوان';
 
-      const wpSum = `مرحباً ${o.name ?? 'يا فندم'}، نتواصل معكِ من Dandy لتأكيد تفاصيل طلبك:\n- كود الفاتورة: ${o.invoiceCode || o.id}\n- العنوان: ${o.address ?? ''}\n\nنتمنى لكِ يوماً سعيداً!`;
+      let productsListText = '';
+      if (o.products && Object.keys(o.products).length > 0) {
+        productsListText = Object.values(o.products).map(p => {
+          const varInfo = typeof getVariantsDisplayInfo === 'function' ? getVariantsDisplayInfo(p) : (p.selectedVariant && p.selectedVariant.name ? { count: 1, label: 'الرائحة', text: p.selectedVariant.name } : null);
+          const vInfo = (varInfo && varInfo.text && varInfo.text !== 'undefined') ? `\n   ${varInfo.label}: ${varInfo.text}` : '';
+          const pPrice = parseFloat(p.price) || 0;
+          const pQty = parseInt(p.quantity) || 1;
+          return `- ${p.name || 'منتج'}${vInfo}\n   الكمية: ${pQty} | السعر: ${currencyFormatter.format(pPrice)} ج.م`;
+        }).join('\n');
+      }
+
+      const wpSum = `مرحباً ${o.name ?? 'يا فندم'}، نتواصل معكِ من Dandy لتأكيد تفاصيل طلبك:\n- كود الفاتورة: ${o.invoiceCode || o.id}\n- العنوان: ${fullLocation} - ${o.address ?? ''}\n\nالمنتجات:\n${productsListText}\n\nنتمنى لكِ يوماً سعيداً!`;
       document.getElementById('md-whatsapp').href = `https://wa.me/${(o.phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(wpSum)}`;
 
       const copyBtn = document.getElementById('md-copy-btn');
-      const copyText = `الاسم: ${o.name || '-'}\nالهاتف: ${o.phone || '-'}\nالعنوان: ${fullLocation} - ${o.address || ''}\nالفاتورة: ${o.invoiceCode || o.id}`;
+      const copyText = `طلب رقم: ${o.invoiceCode || o.id}\nالاسم: ${o.name || '-'}\nالهاتف: ${o.phone || '-'}\nالعنوان: ${fullLocation} - ${o.address || ''}\n\nالمنتجات:\n${productsListText}`;
       
       copyBtn.onclick = () => {
         navigator.clipboard.writeText(copyText).then(() => {
@@ -631,24 +642,41 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           const itemQty = parseInt(p.quantity) || 1;
           const lineTotal = itemPrice * itemQty;
           calculatedTotal += lineTotal;
+          const varInfo = typeof getVariantsDisplayInfo === 'function' ? getVariantsDisplayInfo(p) : (p.selectedVariant && p.selectedVariant.name ? { count: 1, label: 'الرائحة', text: p.selectedVariant.name } : null);
+          
+          let variantBadge = '';
+          if (varInfo && varInfo.text && String(varInfo.text).trim() !== '' && varInfo.text !== 'undefined') {
+            variantBadge = `
+              <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--color-blush); font-weight:700; background:rgba(219,39,119,0.08); padding:3px 10px; border-radius:99px; border:1px solid rgba(219,39,119,0.22); margin-top:4px;">
+                <i class="fas fa-spray-can" style="font-size:0.75rem;"></i>
+                <span>${varInfo.label}: <strong>${varInfo.text}</strong></span>
+              </div>
+            `;
+          }
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><img loading="lazy" src="${p.image}" alt="صورة المنتج" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light); display:block;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';"></td>
-            <td style="font-weight:700; color: var(--color-primary);">${p.name ?? 'منتج غير معروف'}</td>
-            <td style="text-align: center; font-weight: bold; background: var(--color-surface-soft); border-radius: 4px;">${itemQty}</td>
-            <td style="font-weight:800; color:var(--color-blush); text-align: left;">${lineTotal} EGP</td>
+            <td><img loading="lazy" src="${p.image}" alt="صورة المنتج" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light); display:block;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';"></td>
+            <td style="color: var(--color-primary);">
+              <div style="font-weight:700; font-size:0.98rem;">${p.name ?? 'منتج غير معروف'}</div>
+              ${variantBadge}
+              <div style="font-size:0.84rem; color:var(--color-muted); font-weight:600; margin-top:3px;">
+                السعر: ${currencyFormatter.format(itemPrice)} ج.م
+              </div>
+            </td>
+            <td style="text-align: center; font-weight: 800; font-size: 1.05rem; background: var(--color-surface-soft); border-radius: 4px; color: var(--color-primary);">${itemQty}</td>
+            <td style="font-weight:800; color:var(--color-blush); text-align: left; font-size: 1rem; white-space: nowrap;">${currencyFormatter.format(lineTotal)} ج.م</td>
           `;
           itemsBody.appendChild(tr);
         });
         
         const shippingFee = parseFloat(o.shippingFee) || 0;
         const finalTotal = (parseFloat(o.totalAmount) || (calculatedTotal + shippingFee));
-        grandTotalEl.textContent = currencyFormatter.format(finalTotal) + ' EGP';
+        grandTotalEl.textContent = currencyFormatter.format(finalTotal) + ' ج.م';
 
       } else {
         itemsBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--color-muted); padding: 20px;">السلة خالية من المنتجات أو غير متوفرة.</td></tr>';
-        grandTotalEl.textContent = '0 EGP';
+        grandTotalEl.textContent = '0 ج.م';
       }
 
       const printHeader = document.getElementById('printHeader');

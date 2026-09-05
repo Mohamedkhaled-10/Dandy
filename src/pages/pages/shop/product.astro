@@ -301,6 +301,149 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         transform: translateY(-2px);
       }
 
+      /* Product Variants Selector Styling */
+      .variant-selector-wrapper {
+        margin-bottom: 6px;
+        padding: 16px 18px;
+        background: rgba(219, 39, 119, 0.03);
+        border: 1.5px solid rgba(219, 39, 119, 0.18);
+        border-radius: 16px;
+        transition: all 0.25s ease;
+      }
+      .variant-selector-wrapper.has-error {
+        border-color: #ef4444;
+        background: #fef2f2;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        animation: variantShake 0.35s ease-in-out;
+      }
+      @keyframes variantShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+      .variant-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .variant-title-label {
+        font-weight: 800;
+        font-size: 1rem;
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .selected-scent-display {
+        font-size: 0.85rem;
+        color: var(--color-muted);
+        font-weight: 700;
+        background: #fff;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid var(--border-light);
+        transition: all 0.2s ease;
+      }
+      .selected-scent-display.chosen {
+        color: var(--color-blush);
+        border-color: rgba(219, 39, 119, 0.3);
+        background: rgba(219, 39, 119, 0.06);
+      }
+      .variant-pills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        role: radiogroup;
+      }
+      .variant-pill-btn {
+        background: #fff;
+        border: 1.5px solid var(--border-light);
+        color: var(--color-text);
+        padding: 9px 18px;
+        border-radius: 50px;
+        font-family: 'Cairo', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        outline: none;
+        user-select: none;
+        position: relative;
+      }
+      .variant-pill-btn:hover:not(.disabled) {
+        border-color: var(--color-blush);
+        color: var(--color-blush);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(219, 39, 119, 0.12);
+      }
+      .variant-pill-btn:focus-visible {
+        outline: none;
+        border-color: var(--color-blush);
+        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.25);
+      }
+      .variant-pill-btn.active {
+        background: var(--color-blush);
+        border-color: var(--color-blush);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(219, 39, 119, 0.35);
+        transform: translateY(-2px);
+      }
+      .variant-pill-btn.active .variant-check-icon {
+        display: inline-flex;
+        transform: scale(1);
+        opacity: 1;
+      }
+      .variant-check-icon {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+      .variant-pill-btn.disabled {
+        background: #f9fafb;
+        border: 1px dashed #d1d5db;
+        color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.65;
+        text-decoration: line-through;
+      }
+      .variant-out-tag {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        opacity: 0.9;
+        margin-right: 4px;
+      }
+      .variant-validation-msg {
+        color: #dc2626;
+        font-size: 0.88rem;
+        font-weight: 800;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .variant-all-unavailable-box {
+        background: #fff;
+        border: 1.5px dashed #ef4444;
+        color: #dc2626;
+        font-size: 0.92rem;
+        font-weight: 700;
+        padding: 14px 18px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
       .action-group .btn-wa {
         background: #25D366;
         color: #fff;
@@ -610,6 +753,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
         <div class="action-group">
           
+          <!-- منطقة اختيار الرائحة للمنتجات ذات الـ Variants -->
+          <div id="variant-section-container" style="display: none;"></div>
+
           <div class="primary-action-row">
             <div class="qty-selector">
               <button class="qty-btn" id="qty-minus">-</button>
@@ -664,6 +810,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     let loadedProduct = null;
+    let selectedVariants = []; // Array of { id, name }
 
     const detailFrame = document.getElementById("detailFrame");
 
@@ -761,6 +908,156 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         }
       } catch (e) {}
     }
+
+    // Render Variants / Scent selector (Optional Multi-Selection)
+    function renderProductVariants(product) {
+      const container = document.getElementById("variant-section-container");
+      if (!container) return;
+
+      selectedVariants = [];
+
+      if (!product || product.hasVariants !== true || product.variantType !== "scent") {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+      }
+
+      const rawVariants = product.variants;
+      const variantsList = Array.isArray(rawVariants) 
+        ? rawVariants 
+        : (rawVariants && typeof rawVariants === "object" ? Object.values(rawVariants) : []);
+
+      if (variantsList.length === 0) {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+      }
+
+      container.style.display = "block";
+      container.className = "variant-selector-wrapper";
+
+      const availableVariants = variantsList.filter(v => v && v.isAvailable !== false);
+
+      if (availableVariants.length === 0) {
+        container.innerHTML = `
+          <div class="variant-all-unavailable-box">
+            <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
+            <span>نعتذر، لا توجد روائح متاحة حالياً لهذا المستحضر.</span>
+          </div>
+        `;
+        const btn = document.getElementById("add-to-cart-btn");
+        if (btn) {
+          btn.innerHTML = `<i class="fas fa-ban"></i> غير متوفر حالياً`;
+          btn.style.background = "#555";
+          btn.style.cursor = "not-allowed";
+          btn.disabled = true;
+        }
+        return;
+      }
+
+      let pillsHtml = variantsList.map(v => {
+        if (!v || !v.name) return '';
+        const isAvail = v.isAvailable !== false;
+        if (isAvail) {
+          return `
+            <button 
+              type="button" 
+              role="button" 
+              aria-pressed="false" 
+              aria-label="رائحة ${v.name}" 
+              tabindex="0" 
+              class="variant-pill-btn" 
+              data-id="${v.id}" 
+              onclick="toggleScentVariant('${v.id}')"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); toggleScentVariant('${v.id}');}">
+              <span class="variant-check-icon"><i class="fas fa-check"></i></span>
+              <span>${v.name}</span>
+            </button>
+          `;
+        } else {
+          return `
+            <button 
+              type="button" 
+              role="button" 
+              aria-disabled="true" 
+              aria-label="رائحة ${v.name} (غير متوفر)" 
+              tabindex="-1" 
+              class="variant-pill-btn disabled" 
+              disabled 
+              title="غير متوفر حالياً">
+              <span>${v.name}</span>
+              <span class="variant-out-tag">(غير متوفر)</span>
+            </button>
+          `;
+        }
+      }).join('');
+
+      container.innerHTML = `
+        <div class="variant-header-row">
+          <label id="scent-group-label" class="variant-title-label">
+            <i class="fas fa-spray-can" style="color:var(--color-blush);"></i>
+            <span>اختاري الروائح</span>
+          </label>
+          <span id="selected-scent-display" class="selected-scent-display" aria-live="polite">يرجى اختيار رائحة واحدة على الأقل</span>
+        </div>
+        <div class="variant-pills-list" role="group" aria-labelledby="scent-group-label">
+          ${pillsHtml}
+        </div>
+      `;
+    }
+
+    // Toggle Scent Variant Selection (Multi-selection + Deselect support)
+    window.toggleScentVariant = function(variantId) {
+      if (!loadedProduct) return;
+      const rawVariants = loadedProduct.variants;
+      const variantsList = Array.isArray(rawVariants) 
+        ? rawVariants 
+        : (rawVariants && typeof rawVariants === "object" ? Object.values(rawVariants) : []);
+
+      const v = variantsList.find(item => item && item.id === variantId);
+      if (!v || v.isAvailable === false) return;
+
+      const existingIndex = selectedVariants.findIndex(item => item.id === variantId);
+      if (existingIndex !== -1) {
+        // Unselect / Deselect
+        selectedVariants.splice(existingIndex, 1);
+      } else {
+        // Select
+        selectedVariants.push({
+          id: v.id,
+          name: v.name
+        });
+      }
+
+      // Update active state on all pill buttons
+      const container = document.getElementById("variant-section-container");
+      if (container) {
+        container.classList.remove("has-error");
+        container.querySelectorAll(".variant-pill-btn").forEach(btn => {
+          const isSelected = selectedVariants.some(item => item.id === btn.dataset.id);
+          btn.classList.toggle("active", isSelected);
+          btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
+        });
+      }
+
+      // Update badge display text
+      const disp = document.getElementById("selected-scent-display");
+      if (disp) {
+        if (selectedVariants.length === 0) {
+          disp.textContent = "يرجى اختيار رائحة واحدة على الأقل";
+          disp.classList.remove("chosen");
+        } else if (selectedVariants.length === 1) {
+          disp.textContent = `الرائحة المختارة: ${selectedVariants[0].name}`;
+          disp.classList.add("chosen");
+        } else {
+          disp.textContent = `الروائح المختارة: ${selectedVariants.map(item => item.name).join("، ")}`;
+          disp.classList.add("chosen");
+        }
+      }
+    };
+
+    // Alias for backward compatibility
+    window.selectScentVariant = window.toggleScentVariant;
 
     // Fetch product data
     db.ref("products/" + id).once("value").then(snapshot => {
@@ -861,6 +1158,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         // -- FETCH RELATED PRODUCTS --
         fetchRelatedProducts(product.category, id);
 
+        // -- RENDER VARIANTS / SCENTS --
+        renderProductVariants(product);
+
       } else {
         detailFrame.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:60px 0;"><i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-gold);margin-bottom:14px;"></i><p style="font-size:1.2rem;font-weight:700;">The product you are looking for is currently unavailable. Please check other collections.</p></div>';
       }
@@ -906,7 +1206,82 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     // Primary Add To Cart Logic
     const addToCartBtn = document.getElementById("add-to-cart-btn");
     addToCartBtn.addEventListener("click", () => {
-      if(!loadedProduct || loadedProduct.isSoldOut) return;
+      // 1. Validation: Product must exist and not be sold out
+      if (!loadedProduct) {
+        alert('لم يتم العثور على بيانات المنتج.');
+        return;
+      }
+      if (loadedProduct.isSoldOut === true || loadedProduct.isSoldOut === 'true') {
+        alert('نعتذر، هذا المنتج غير متوفر حالياً (نفدت الكمية).');
+        return;
+      }
+
+      // 2. Validate and check scent variants if product has variants
+      let validSelectedVariants = [];
+      const hasVars = typeof hasSelectableVariants === 'function'
+        ? hasSelectableVariants(loadedProduct)
+        : (loadedProduct.hasVariants === true || loadedProduct.hasVariants === 'true');
+
+      if (hasVars) {
+        const rawVariants = typeof getProductVariants === 'function' 
+          ? getProductVariants(loadedProduct) 
+          : (Array.isArray(loadedProduct.variants) ? loadedProduct.variants : []);
+        const availableVariants = rawVariants.filter(rv => rv && rv.isAvailable !== false);
+
+        if (availableVariants.length === 0) {
+          alert('نعتذر، لا توجد روائح متاحة حالياً لهذا المستحضر.');
+          return;
+        }
+
+        // Filter out unavailable or removed variants from selection
+        if (Array.isArray(selectedVariants) && selectedVariants.length > 0) {
+          validSelectedVariants = selectedVariants.filter(sv => {
+            return rawVariants.some(rv => String(rv.id) === String(sv.id) && rv.isAvailable !== false);
+          });
+        }
+
+        // Must select at least 1 variant
+        if (validSelectedVariants.length === 0) {
+          const wrapper = document.getElementById("variant-section-container");
+          if (wrapper) {
+            wrapper.classList.remove("has-error");
+            void wrapper.offsetWidth; // trigger reflow for animation
+            wrapper.classList.add("has-error");
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+
+          const existingToast = document.getElementById("scent-validation-toast");
+          if (existingToast) existingToast.remove();
+
+          const alertDiv = document.createElement("div");
+          alertDiv.id = "scent-validation-toast";
+          alertDiv.style.position = "fixed";
+          alertDiv.style.bottom = "100px";
+          alertDiv.style.left = "50%";
+          alertDiv.style.transform = "translateX(-50%)";
+          alertDiv.style.background = "#dc2626";
+          alertDiv.style.color = "#fff";
+          alertDiv.style.padding = "14px 28px";
+          alertDiv.style.borderRadius = "50px";
+          alertDiv.style.boxShadow = "0 8px 24px rgba(220, 38, 38, 0.35)";
+          alertDiv.style.zIndex = "1030";
+          alertDiv.style.fontWeight = "800";
+          alertDiv.style.textAlign = "center";
+          alertDiv.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-left:8px;"></i> يرجى اختيار رائحة واحدة على الأقل`;
+          document.body.appendChild(alertDiv);
+          
+          setTimeout(() => {
+            alertDiv.style.opacity = "0";
+            alertDiv.style.transition = "opacity 0.4s ease";
+            setTimeout(() => alertDiv.remove(), 400);
+          }, 3500);
+
+          return; // Strictly STOP - do not touch cart or localStorage
+        }
+
+        // Deterministic sort by ID to ensure order of clicks does not matter
+        validSelectedVariants.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      }
 
       // إطلاق حدث AddToCart للفيسبوك بيكسل هنا للمنتج الرئيسي
       if (typeof fbq === 'function') {
@@ -920,22 +1295,51 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       }
 
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const hasChosenVariants = validSelectedVariants.length > 0;
+      const sortedIdsStr = hasChosenVariants ? validSelectedVariants.map(v => v.id).join('_') : '';
+      const cartItemId = hasChosenVariants ? `${id}::${sortedIdsStr}` : id;
+      const qty = parseInt(document.getElementById('qty-input').value) || 1;
+
       const productItem = {
-        id: id,
+        id: cartItemId,
+        productId: id,
         name: loadedProduct.name,
         price: loadedProduct.price,
         image: loadedProduct.image,
         discount: loadedProduct.discount || null,
-        onSale: loadedProduct.onSale || false
+        onSale: loadedProduct.onSale || false,
+        quantity: qty
       };
 
-      const existIndex = cart.findIndex(item => item.id === productItem.id);
-      if(existIndex !== -1) {
-        const qty = parseInt(document.getElementById('qty-input').value) || 1;
-        cart[existIndex].quantity += qty;
+      if (hasChosenVariants) {
+        productItem.hasVariants = true;
+        productItem.variantType = "scent";
+        productItem.selectedVariants = validSelectedVariants;
+        // Backward compatibility
+        if (validSelectedVariants.length === 1) {
+          productItem.selectedVariant = validSelectedVariants[0];
+          productItem.variantId = validSelectedVariants[0].id;
+          productItem.variantName = validSelectedVariants[0].name;
+        } else {
+          productItem.variantName = validSelectedVariants.map(v => v.name).join('، ');
+        }
+      }
+
+      // Check if this exact combination (same product + same set of variants) already exists in cart
+      const targetItemKey = typeof getCartItemKey === 'function' ? getCartItemKey(productItem) : cartItemId;
+      const existIndex = cart.findIndex(item => {
+        const itemKey = typeof getCartItemKey === 'function' ? getCartItemKey(item) : (item.id || item.productId);
+        return itemKey === targetItemKey;
+      });
+
+      if (existIndex !== -1) {
+        cart[existIndex].quantity = (parseInt(cart[existIndex].quantity) || 0) + qty;
+        if (hasChosenVariants) {
+          cart[existIndex].selectedVariants = validSelectedVariants;
+          cart[existIndex].id = cartItemId;
+          cart[existIndex].productId = id;
+        }
       } else {
-        const qty = parseInt(document.getElementById('qty-input').value) || 1;
-        productItem.quantity = qty;
         cart.push(productItem);
       }
 
@@ -956,7 +1360,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       alertDiv.style.zIndex = "1030";
       alertDiv.style.fontWeight = "700";
       alertDiv.style.textAlign = "center";
-      alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-right:8px;"></i> Successfully added to your shopping bag!`;
+      
+      let itemTitle = loadedProduct.name || "المستحضر";
+      if (hasChosenVariants) {
+        itemTitle += ` (${validSelectedVariants.map(v => v.name).join('، ')})`;
+      }
+      alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-left:8px;"></i> تمت إضافة ${itemTitle} إلى سلتك بنجاح!`;
       document.body.appendChild(alertDiv);
       
       setTimeout(() => {
@@ -1006,6 +1415,17 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
                 badgeStr = `<div class="discount-badge">خصم ${prod.discount}%</div>`;
               }
               
+              const hasVars = typeof hasSelectableVariants === 'function' 
+                ? hasSelectableVariants(prod) 
+                : (prod.hasVariants === true || prod.hasVariants === 'true');
+              let actionBtn = hasVars
+                ? `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/pages/shop/product.html?id=${prod.id}'">
+                    <i class="fas fa-spray-can"></i> اختاري الرائحة
+                   </button>`
+                : `<button class="add-cart-btn" onclick="event.stopPropagation(); addToCartCard('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${priceRaw}, '${prod.image||''}', ${prod.discount||0}, ${prod.onSale||false}, false)">
+                    <i class="fas fa-shopping-bag"></i> Add
+                   </button>`;
+
               gridHtml += `
                 <div class="product-card" onclick="window.location.href='/pages/shop/product.html?id=${prod.id}'">
                   <div class="product-image-wrap">
@@ -1013,9 +1433,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
                     <img loading="lazy" src="${prod.image || ''}" alt="${prod.name || 'Product'}"></div>
                     <h3 class="product-title-card">${prod.name || ''}</h3>
                     ${priceStr}
-                    <button class="add-cart-btn" onclick="event.stopPropagation(); addToCartCard('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${priceRaw}, '${prod.image||''}', ${prod.discount||0}, ${prod.onSale||false})">
-                      <i class="fas fa-shopping-bag"></i> Add
-                    </button>
+                    ${actionBtn}
                 </div>
               `;
           });
@@ -1025,7 +1443,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     }
 
     // Global function for related product card 'Add to Cart' button
-    window.addToCartCard = function(id, name, price, image, discount, onSale) {
+    window.addToCartCard = function(id, name, price, image, discount, onSale, hasVariants) {
+      if (hasVariants) {
+        window.location.href = '/pages/shop/product.html?id=' + id;
+        return;
+      }
       if (typeof fbq === 'function') {
         fbq('track', 'AddToCart', {
           content_name: name,
@@ -1037,11 +1459,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       }
 
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      let exist = cart.findIndex(i => i.id === id);
+      let exist = cart.findIndex(i => (i.productId || i.id) === id && (!i.selectedVariants || i.selectedVariants.length === 0) && !i.selectedVariant);
       if(exist !== -1) {
-        cart[exist].quantity++;
+        cart[exist].quantity = (parseInt(cart[exist].quantity) || 0) + 1;
       } else {
-        cart.push({ id, name, price, image, discount, onSale, quantity: 1 });
+        cart.push({ id, productId: id, name, price, image, discount, onSale, quantity: 1 });
       }
       localStorage.setItem("cart", JSON.stringify(cart));
       

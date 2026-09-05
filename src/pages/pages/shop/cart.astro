@@ -261,15 +261,43 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         border: 1px solid var(--border-light);
       }
 
-      .cart-item-meta h3 {
-        font-size: 1.05rem;
-        color: var(--color-primary);
-        margin-bottom: 4px;
+      .cart-item-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
       }
 
-      .cart-item-meta p {
-        font-size: 0.85rem;
+      .cart-item-meta h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin: 0;
+        line-height: 1.35;
+      }
+
+      .cart-item-scent-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--color-blush);
+        background: rgba(219, 39, 119, 0.08);
+        border: 1px solid rgba(219, 39, 119, 0.22);
+        padding: 3px 12px;
+        border-radius: 99px;
+        width: fit-content;
+        margin: 3px 0;
+      }
+
+      .cart-item-scent-badge i {
+        font-size: 0.78rem;
+      }
+
+      .cart-item-unit-price {
+        font-size: 0.88rem;
         color: var(--color-muted);
+        font-weight: 500;
       }
 
       .action-btn-delete {
@@ -734,7 +762,8 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       let subtotal = 0;
       cart.forEach(item => {
         const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
-        subtotal += priceVal * item.quantity;
+        const qtyVal = parseInt(item.quantity) || 1;
+        subtotal += priceVal * qtyVal;
       });
       return subtotal;
     }
@@ -801,7 +830,20 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       cartItemsList.innerHTML = '';
       cart.forEach((item, index) => {
         const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
-        const rowSubtotal = priceVal * item.quantity;
+        const qtyVal = parseInt(item.quantity) || 1;
+        const rowSubtotal = priceVal * qtyVal;
+        
+        const varInfo = typeof getVariantsDisplayInfo === 'function' 
+          ? getVariantsDisplayInfo(item) 
+          : (item.selectedVariant && item.selectedVariant.name ? { count: 1, label: 'الرائحة', text: item.selectedVariant.name } : null);
+        
+        // إذا كان المنتج لا يحتوي variants: لا تعرض أي سطر متعلق بالرائحة
+        const variantHtml = (varInfo && varInfo.text)
+          ? `<div class="cart-item-scent-badge">
+               <i class="fas fa-spray-can"></i>
+               <span>${varInfo.label}: <strong>${varInfo.text}</strong></span>
+             </div>`
+          : '';
 
         const itemCard = document.createElement('div');
         itemCard.className = 'cart-product-list-item';
@@ -810,22 +852,23 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <img loading="lazy" src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
             <div class="cart-item-meta">
               <h3>${item.name}</h3>
-              <p>${Number(priceVal).toFixed(0)} EGP each</p>
+              ${variantHtml}
+              <div class="cart-item-unit-price">السعر: ${Number(priceVal).toFixed(0)} ج.م</div>
             </div>
           </div>
 
-          <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
             <div class="qty-tactile-selector">
-              <button class="qty-btn-adjust" onclick="changeQty(${index}, -1)">-</button>
-              <input type="text" readonly class="qty-display-box" value="${item.quantity}">
-              <button class="qty-btn-adjust" onclick="changeQty(${index}, 1)">+</button>
+              <button class="qty-btn-adjust" onclick="changeQty(${index}, -1)" aria-label="تقليل الكمية">-</button>
+              <input type="text" readonly class="qty-display-box" value="${qtyVal}" aria-label="الكمية">
+              <button class="qty-btn-adjust" onclick="changeQty(${index}, 1)" aria-label="زيادة الكمية">+</button>
             </div>
 
-            <div style="font-weight:800; color:var(--color-blush); font-size:1.1rem; width:100px; text-align:right;">
-              ${Number(rowSubtotal).toFixed(0)} EGP
+            <div style="font-weight:800; color:var(--color-blush); font-size:1.1rem; min-width:85px; text-align:right;">
+              ${Number(rowSubtotal).toFixed(0)} ج.م
             </div>
 
-            <button class="action-btn-delete" onclick="removeItemFromCart(${index})" title="Delete from Cart">
+            <button class="action-btn-delete" onclick="removeItemFromCart(${index})" title="حذف من السلة" aria-label="حذف المنتج">
               <i class="fas fa-trash-alt"></i>
             </button>
           </div>
@@ -855,11 +898,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
     window.changeQty = function(index, delta) {
       if (cart[index]) {
-        cart[index].quantity += delta;
+        cart[index].quantity = (parseInt(cart[index].quantity) || 1) + delta;
         if (cart[index].quantity < 1) cart[index].quantity = 1;
         localStorage.setItem('cart', JSON.stringify(cart));
         renderStep1CartItems();
         handleGovChange();
+        if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
       }
     };
 
@@ -868,6 +912,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       localStorage.setItem('cart', JSON.stringify(cart));
       renderStep1CartItems();
       handleGovChange();
+      if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
     };
 
     window.goToStep = function(step) {
@@ -929,15 +974,39 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       revProductsList.innerHTML = '';
       cart.forEach(item => {
         const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
-        const sub = priceVal * item.quantity;
+        const qtyVal = parseInt(item.quantity) || 1;
+        const sub = priceVal * qtyVal;
+        
+        const varInfo = typeof getVariantsDisplayInfo === 'function'
+          ? getVariantsDisplayInfo(item)
+          : (item.selectedVariant && item.selectedVariant.name ? { count: 1, label: 'الرائحة', text: item.selectedVariant.name } : null);
+
         const divItem = document.createElement('div');
         divItem.style.display = 'flex';
         divItem.style.justifyContent = 'space-between';
-        divItem.style.padding = '10px 0';
-        divItem.style.borderBottom = '1px solid rgba(0,0,0,0.03)';
+        divItem.style.alignItems = 'flex-start';
+        divItem.style.padding = '12px 0';
+        divItem.style.borderBottom = '1px solid rgba(0,0,0,0.05)';
+        divItem.style.gap = '12px';
+
         divItem.innerHTML = `
-          <span style="font-weight:700;"><i class="fas fa-feather-alt" style="color:var(--color-blush); font-size:0.8rem; margin-left:6px;"></i> ${item.name} <span style="color:var(--color-muted); font-size:0.8rem;">× ${item.quantity}</span></span>
-          <span style="font-weight:800; color:var(--color-primary);">${sub.toFixed(0)} ج.م</span>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="font-weight:700; font-size:0.95rem; color:var(--color-primary); display:flex; align-items:center; gap:6px;">
+              <i class="fas fa-feather-alt" style="color:var(--color-blush); font-size:0.8rem;"></i>
+              <span>${item.name}</span>
+            </div>
+            ${(varInfo && varInfo.text)
+              ? `<div style="font-size:0.88rem; color:var(--color-blush); font-weight:700; padding-right:18px;">
+                   ${varInfo.label}: ${varInfo.text} × ${qtyVal}
+                 </div>`
+              : `<div style="font-size:0.85rem; color:var(--color-muted); padding-right:18px;">
+                   الكمية: × ${qtyVal}
+                 </div>`
+            }
+          </div>
+          <div style="font-weight:800; color:var(--color-primary); font-size:1rem; white-space:nowrap;">
+            ${sub.toFixed(0)} ج.م
+          </div>
         `;
         revProductsList.appendChild(divItem);
       });
@@ -971,6 +1040,47 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
       const invoiceCode = 'DNY-' + Math.floor(100000 + Math.random() * 900000);
 
+      // إنشاء snapshot مستقل تماماً لما اشتراه العميل وغير معتمد على قاعدة بيانات المنتجات لاحقاً
+      const productsSnapshot = cart.map(item => {
+        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const qtyVal = parseInt(item.quantity) || 1;
+        const productId = item.productId || String(item.id).split('::')[0];
+
+        const snap = {
+          id: productId,
+          name: item.name,
+          price: priceVal,
+          quantity: qtyVal,
+          image: item.image || ''
+        };
+
+        if (item.discount) snap.discount = item.discount;
+        if (item.onSale) snap.onSale = item.onSale;
+
+        // استخراج الروائح المتعددة أو المفردة بدقة
+        const rawVariants = (Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0)
+          ? item.selectedVariants
+          : (item.selectedVariant ? [item.selectedVariant] : (item.variantName ? [{ id: item.variantId || 'scent-variant', name: item.variantName }] : []));
+
+        if (rawVariants.length > 0) {
+          const cleanVariants = rawVariants.map(v => ({
+            id: v.id || 'scent-variant',
+            name: v.name || String(v)
+          }));
+          snap.selectedVariants = cleanVariants;
+          
+          // الحفاظ الكامل على backward compatibility
+          if (cleanVariants.length === 1) {
+            snap.selectedVariant = cleanVariants[0];
+            snap.variantName = cleanVariants[0].name;
+          } else {
+            snap.variantName = cleanVariants.map(v => v.name).join('، ');
+          }
+        }
+
+        return snap;
+      });
+
       const orderData = {
         name,
         email: email || 'N/A',
@@ -978,7 +1088,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         governorate,
         city,
         address,
-        products: cart,
+        products: productsSnapshot,
         subtotal: parseFloat(subtotal),
         shippingFee: parseFloat(shippingFee),
         totalAmount: parseFloat(totalAmount),

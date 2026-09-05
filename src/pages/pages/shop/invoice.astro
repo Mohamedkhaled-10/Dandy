@@ -345,26 +345,27 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         <table class="invoice-table">
           <thead>
             <tr>
-              <th style="text-align: right;">المنتج والكمية</th>
-              <th style="text-align: left; width: 150px;">السعر الإجمالي</th>
+              <th style="text-align: right;">المنتج</th>
+              <th style="text-align: right;">التفاصيل</th>
+              <th style="text-align: left; width: 140px;">السعر الإجمالي</th>
             </tr>
           </thead>
           <tbody id="itemsBody">
             <tr>
-              <td colspan="2" style="text-align: center; color: var(--color-muted); padding: 24px;">جاري تحميل المنتجات...</td>
+              <td colspan="3" style="text-align: center; color: var(--color-muted); padding: 24px;">جاري تحميل المنتجات...</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
-              <td style="text-align: left; font-weight: 700; color: var(--color-muted);">المجموع الفرعي:</td>
+              <td colspan="2" style="text-align: left; font-weight: 700; color: var(--color-muted);">المجموع الفرعي:</td>
               <td id="tableSubtotal" style="text-align: left; font-weight: 700;">...</td>
             </tr>
             <tr>
-              <td style="text-align: left; font-weight: 700; color: var(--color-muted);">مصاريف الشحن:</td>
+              <td colspan="2" style="text-align: left; font-weight: 700; color: var(--color-muted);">مصاريف الشحن:</td>
               <td id="tableShipping" style="text-align: left; font-weight: 700; color: var(--color-success);">...</td>
             </tr>
             <tr>
-              <td style="text-align: left; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">الإجمالي الكلي:</td>
+              <td colspan="2" style="text-align: left; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">الإجمالي الكلي:</td>
               <td id="tableGrandTotal" style="text-align: left; font-weight: 800; color: var(--color-primary); font-size: 1.1rem; border-top: 2px solid var(--color-primary);">...</td>
             </tr>
           </tfoot>
@@ -553,13 +554,37 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
           calculatedSubtotal += finalPrice * quantity;
 
+          // استخراج الرائحة حصراً من snapshot المحفوظ داخل order.products
+          const varInfo = typeof getVariantsDisplayInfo === 'function'
+            ? getVariantsDisplayInfo(p)
+            : (p.selectedVariant && p.selectedVariant.name ? { count: 1, label: 'الرائحة', text: p.selectedVariant.name } : null);
+
+          let detailsHtml = '';
+          if (varInfo && varInfo.text && String(varInfo.text).trim() !== '' && varInfo.text !== 'undefined') {
+            detailsHtml = `
+              <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--color-blush); font-weight:600;">
+                <i class="fas fa-spray-can" style="font-size:0.75rem;"></i>
+                <span>${varInfo.label}: <strong>${varInfo.text}</strong> × ${quantity}</span>
+              </div>
+            `;
+          } else {
+            detailsHtml = `
+              <span style="font-size:0.88rem; color:var(--color-muted); font-weight:600;">× ${quantity}</span>
+            `;
+          }
+
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>
-              <img loading="lazy" src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
-              <strong>${p.name}</strong> × ${quantity}
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img loading="lazy" src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+                <strong style="color:var(--color-primary); font-size:0.95rem;">${p.name}</strong>
+              </div>
             </td>
-            <td style="text-align: left; font-weight:800; color:var(--color-blush);">${displayPriceText}</td>
+            <td>
+              ${detailsHtml}
+            </td>
+            <td style="text-align: left; font-weight:800; color:var(--color-blush); white-space:nowrap;">${displayPriceText}</td>
           `;
           itemsBody.appendChild(tr);
         });

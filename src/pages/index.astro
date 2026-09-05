@@ -660,7 +660,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               priceStr = `<div class="product-price"><span class="old-price" style="text-decoration:line-through;color:var(--color-muted);font-size:0.8rem;margin-right:6px;white-space:nowrap;display:inline-block;direction:ltr;unicode-bidi:isolate;">${prod.originalPrice} EGP</span><span style="white-space:nowrap;display:inline-block;direction:ltr;unicode-bidi:isolate;">${prod.price} EGP</span></div>`;
             }
           }
-          gridHtml += `
+              const hasVars = typeof hasSelectableVariants === 'function' 
+                ? hasSelectableVariants(prod) 
+                : (prod.hasVariants === true || prod.hasVariants === 'true');
+              let cardBtn = hasVars
+                ? `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/pages/shop/product.html?id=${prod.id}'">
+                    <i class="fas fa-spray-can" style="margin-left:4px;"></i> اختاري الرائحة
+                   </button>`
+                : `<button class="add-cart-btn" onclick="event.stopPropagation(); addToCart('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${prod.price}, '${prod.image||''}', false)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                    Add
+                   </button>`;
+
+              gridHtml += `
             <div class="product-card" onclick="window.location.href='/pages/shop/product.html?id=${prod.id}'">
               <div class="product-image-wrap">
                 ${badgeStr}
@@ -668,10 +680,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               </div>
               <h3 class="product-title">${prod.name || ''}</h3>
               ${priceStr}
-              <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${prod.price}, '${prod.image||''}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                Add
-              </button>
+              ${cardBtn}
             </div>
           `;
         });
@@ -763,11 +772,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.body.style.overflow = 'hidden';
     }
 
-    window.addToCart = function(id, name, price, image) {
+    window.addToCart = function(id, name, price, image, hasVariants) {
+      if (hasVariants) {
+        window.location.href = '/pages/shop/product.html?id=' + id;
+        return;
+      }
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      let exist = cart.findIndex(i => i.id === id);
-      if(exist !== -1) cart[exist].quantity++;
-      else cart.push({ id, name, price, image, quantity: 1 });
+      let exist = cart.findIndex(i => (i.productId || i.id) === id && (!i.selectedVariants || i.selectedVariants.length === 0) && !i.selectedVariant);
+      if(exist !== -1) {
+        cart[exist].quantity = (parseInt(cart[exist].quantity) || 0) + 1;
+      } else {
+        cart.push({ id, productId: id, name, price, image, quantity: 1 });
+      }
       localStorage.setItem("cart", JSON.stringify(cart));
       
       // إرسال حدث AddToCart للفيسبوك بيكسل

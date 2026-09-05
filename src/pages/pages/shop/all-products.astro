@@ -620,9 +620,13 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     });
 
     // دالة الإضافة السريعة للسلة
-    window.quickAdd = function(id, name, price, image, discount, onSale) {
+    window.quickAdd = function(id, name, price, image, discount, onSale, hasVariants) {
+      if (hasVariants) {
+        window.location.href = '/pages/shop/product.html?id=' + id;
+        return;
+      }
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      const productItem = { id, name, price, image, discount, onSale };
+      const productItem = { id, productId: id, name, price, image, discount, onSale };
 
       if (typeof fbq === 'function') {
         fbq('track', 'AddToCart', {
@@ -634,9 +638,9 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         });
       }
 
-      const existIndex = cart.findIndex(item => item.id === id);
+      const existIndex = cart.findIndex(item => (item.productId || item.id) === id && (!item.selectedVariants || item.selectedVariants.length === 0) && !item.selectedVariant);
       if(existIndex !== -1) {
-        cart[existIndex].quantity += 1;
+        cart[existIndex].quantity = (parseInt(cart[existIndex].quantity) || 0) + 1;
       } else {
         productItem.quantity = 1;
         cart.push(productItem);
@@ -728,10 +732,20 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             badgeStr = `<div class="discount-badge">Sale ${data.discount}%</div>`;
           }
           
-          let actionBtn = `<button class="add-cart-btn" onclick="event.stopPropagation(); quickAdd('${data.id}', \`${(data.name||'').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount||''}', ${data.onSale||false})">
+          const hasVars = typeof hasSelectableVariants === 'function' 
+            ? hasSelectableVariants(data) 
+            : (data.hasVariants === true || data.hasVariants === 'true');
+          
+          let actionBtn = `<button class="add-cart-btn" onclick="event.stopPropagation(); quickAdd('${data.id}', \`${(data.name||'').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount||''}', ${data.onSale||false}, false)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                 Add
               </button>`;
+
+          if (hasVars) {
+            actionBtn = `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/pages/shop/product.html?id=${data.id}'">
+                <i class="fas fa-spray-can" style="margin-left:4px;"></i> اختاري الرائحة
+              </button>`;
+          }
           
           if (data.isSoldOut) {
               badgeStr += `<div class="discount-badge" style="background:#222; top: ${badgeStr ? '35px' : '10px'};">Sold Out</div>`;
