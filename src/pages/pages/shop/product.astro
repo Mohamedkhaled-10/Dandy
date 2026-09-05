@@ -1214,6 +1214,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         ? hasSelectableVariants(loadedProduct)
         : (loadedProduct.hasVariants === true || loadedProduct.hasVariants === 'true');
 
+     // منع إضافة المنتج للسلة إذا كان يتطلب اختيار رائحة ولم يتم اختيار أي رائحة
+if (hasVars && (!Array.isArray(selectedVariants) || selectedVariants.length === 0)) {
+  alert('يرجى اختيار الرائحة أولاً');
+  return;
+}
+
       if (hasVars && Array.isArray(selectedVariants) && selectedVariants.length > 0) {
         const rawVariants = typeof getProductVariants === 'function' 
           ? getProductVariants(loadedProduct) 
