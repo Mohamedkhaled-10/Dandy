@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "astro dev --host 0.0.0.0 --port 3000",
     "build": "astro build",
-    "preview": "astro preview --host 0.0.0.0 --port 3000"
+    "preview": "astro preview --host 0.0.0.0 --port 3000",
+    "start": "node server.js"
   },
   "dependencies": {
+    "@astrojs/node": "^11.1.5",
     "astro": "^7.3.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2"

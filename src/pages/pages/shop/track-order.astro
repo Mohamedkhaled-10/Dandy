@@ -523,7 +523,10 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         order.products.forEach(p => {
           const price = parseFloat(p.price) || 0;
           const qty = parseInt(p.quantity) || 1;
-          calculatedSubtotal += price * qty;
+          const lineTotal = (typeof p.lineTotal === 'number')
+            ? p.lineTotal
+            : (Number(p.price) || 0) * (Number(p.quantity) || 1);
+          calculatedSubtotal += lineTotal;
 
           const imgHtml = p.image ? `<img loading="lazy" src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">` : '';
           
@@ -554,7 +557,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
               </div>
             </td>
             <td style="text-align:center; font-weight:700; font-size:0.95rem;">${qty}</td>
-            <td style="text-align:left; font-weight:800; color:var(--color-blush); font-size:0.95rem; white-space:nowrap;">${(price * qty).toFixed(0)} ج.م</td>
+            <td style="text-align:left; font-weight:800; color:var(--color-blush); font-size:0.95rem; white-space:nowrap;">${lineTotal.toFixed(0)} ج.م</td>
           `;
           resProductsBody.appendChild(tr);
         });

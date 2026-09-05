@@ -761,9 +761,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     function calculateCartSubtotal() {
       let subtotal = 0;
       cart.forEach(item => {
-        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const unitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : (parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0);
         const qtyVal = parseInt(item.quantity) || 1;
-        subtotal += priceVal * qtyVal;
+        subtotal += unitPrice * qtyVal;
       });
       return subtotal;
     }
@@ -829,9 +831,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
       cartItemsList.innerHTML = '';
       cart.forEach((item, index) => {
-        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const unitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : (parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0);
         const qtyVal = parseInt(item.quantity) || 1;
-        const rowSubtotal = priceVal * qtyVal;
+        const rowSubtotal = unitPrice * qtyVal;
         
         const varInfo = typeof getVariantsDisplayInfo === 'function' 
           ? getVariantsDisplayInfo(item) 
@@ -853,7 +857,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <div class="cart-item-meta">
               <h3>${item.name}</h3>
               ${variantHtml}
-              <div class="cart-item-unit-price">السعر: ${Number(priceVal).toFixed(0)} ج.م</div>
+              <div class="cart-item-unit-price">السعر: ${Number(unitPrice).toFixed(0)} ج.م</div>
             </div>
           </div>
 
@@ -973,9 +977,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
       revProductsList.innerHTML = '';
       cart.forEach(item => {
-        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const unitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : (parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0);
         const qtyVal = parseInt(item.quantity) || 1;
-        const sub = priceVal * qtyVal;
+        const sub = unitPrice * qtyVal;
         
         const varInfo = typeof getVariantsDisplayInfo === 'function'
           ? getVariantsDisplayInfo(item)
@@ -1042,14 +1048,20 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
       // إنشاء snapshot مستقل تماماً لما اشتراه العميل وغير معتمد على قاعدة بيانات المنتجات لاحقاً
       const productsSnapshot = cart.map(item => {
-        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const basePriceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const unitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : basePriceVal;
         const qtyVal = parseInt(item.quantity) || 1;
         const productId = item.productId || String(item.id).split('::')[0];
+        const lineTotal = unitPrice * qtyVal;
 
         const snap = {
           id: productId,
           name: item.name,
-          price: priceVal,
+          price: basePriceVal,
+          effectiveUnitPrice: unitPrice,
+          lineTotal: lineTotal,
           quantity: qtyVal,
           image: item.image || ''
         };

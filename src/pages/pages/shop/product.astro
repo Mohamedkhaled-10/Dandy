@@ -1038,12 +1038,18 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         if (selectedVariants.length === 0) {
           disp.textContent = "اختياري — يمكنك اختيار أكثر من رائحة";
           disp.classList.remove("chosen");
-        } else if (selectedVariants.length === 1) {
-          disp.textContent = `الرائحة المختارة: ${selectedVariants[0].name}`;
-          disp.classList.add("chosen");
         } else {
-          disp.textContent = `الروائح المختارة: ${selectedVariants.map(item => item.name).join("، ")}`;
-          disp.classList.add("chosen");
+          const effectivePrice = typeof getEffectiveUnitPrice === 'function'
+            ? getEffectiveUnitPrice({ price: loadedProduct.price, selectedVariants: selectedVariants })
+            : (Number(loadedProduct.price) || 0) * (selectedVariants.length || 1);
+
+          if (selectedVariants.length === 1) {
+            disp.textContent = `الرائحة المختارة: ${selectedVariants[0].name} | السعر: ${effectivePrice} ج.م`;
+            disp.classList.add("chosen");
+          } else {
+            disp.textContent = `الروائح المختارة: ${selectedVariants.map(item => item.name).join("، ")} | السعر: ${effectivePrice} ج.م`;
+            disp.classList.add("chosen");
+          }
         }
       }
     };

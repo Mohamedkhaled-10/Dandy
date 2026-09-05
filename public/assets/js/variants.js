@@ -160,6 +160,31 @@
     return info ? info.text : '';
   }
 
+  /**
+   * يحسب عدد "وحدات السعر" المطلوبة بناءً على عدد الروائح المختارة.
+   * منتج بدون variants أو برائحة واحدة = 1 (بدون أي ضرب إضافي).
+   * @param {Object} item
+   * @returns {number}
+   */
+  function getVariantPriceMultiplier(item) {
+    if (!item) return 1;
+    if (Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0) {
+      return item.selectedVariants.length;
+    }
+    return 1;
+  }
+
+  /**
+   * يحسب السعر الفعلي للوحدة الواحدة بعد ضرب عدد الروائح المختارة.
+   * @param {Object} item - يجب أن يحتوي على price
+   * @returns {number}
+   */
+  function getEffectiveUnitPrice(item) {
+    if (!item) return 0;
+    const basePrice = Number(item.price) || 0;
+    return basePrice * getVariantPriceMultiplier(item);
+  }
+
   // Export to global window object
   const DandyVariants = {
     getProductVariants,
@@ -167,7 +192,9 @@
     isVariantAvailable,
     getCartItemKey,
     getVariantsDisplayInfo,
-    getVariantDisplayName
+    getVariantDisplayName,
+    getVariantPriceMultiplier,
+    getEffectiveUnitPrice
   };
 
   window.DandyVariants = DandyVariants;
@@ -177,5 +204,7 @@
   window.getCartItemKey = getCartItemKey;
   window.getVariantsDisplayInfo = getVariantsDisplayInfo;
   window.getVariantDisplayName = getVariantDisplayName;
+  window.getVariantPriceMultiplier = getVariantPriceMultiplier;
+  window.getEffectiveUnitPrice = getEffectiveUnitPrice;
 
 })(typeof window !== 'undefined' ? window : globalThis);

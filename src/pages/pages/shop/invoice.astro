@@ -543,16 +543,19 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         order.products.forEach(p => {
           const price = parseFloat(p.price) || 0;
           const quantity = parseInt(p.quantity) || 1;
-          let finalPrice = price;
+          const lineTotal = (typeof p.lineTotal === 'number')
+            ? p.lineTotal
+            : (Number(p.price) || 0) * (Number(p.quantity) || 1);
 
-          let displayPriceText = price.toFixed(0) + " ج.م";
+          let finalPrice = lineTotal;
+          let displayPriceText = lineTotal.toFixed(0) + " ج.م";
           if (p.discount) {
-            const discountAmount = (price * parseFloat(p.discount)) / 100;
-            finalPrice = price - discountAmount;
-            displayPriceText = `${finalPrice.toFixed(0)} ج.م <span class="price-crossed">${price.toFixed(0)}</span>`;
+            const discountAmount = (lineTotal * parseFloat(p.discount)) / 100;
+            finalPrice = lineTotal - discountAmount;
+            displayPriceText = `${finalPrice.toFixed(0)} ج.م <span class="price-crossed">${lineTotal.toFixed(0)}</span>`;
           }
 
-          calculatedSubtotal += finalPrice * quantity;
+          calculatedSubtotal += finalPrice;
 
           // استخراج الرائحة حصراً من snapshot المحفوظ داخل order.products
           const varInfo = typeof getVariantsDisplayInfo === 'function'
