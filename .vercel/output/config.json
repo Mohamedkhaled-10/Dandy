@@ -1,0 +1,594 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"src": "^/pages/auth/login$",
+			"headers": {
+				"Location": "/login"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/auth/login\\.html$",
+			"headers": {
+				"Location": "/login"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/blog/blog$",
+			"headers": {
+				"Location": "/blog"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/blog/blog\\.html$",
+			"headers": {
+				"Location": "/blog"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/blog/post$",
+			"headers": {
+				"Location": "/post"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/blog/post\\.html$",
+			"headers": {
+				"Location": "/post"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard$",
+			"headers": {
+				"Location": "/dashboard"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-blog$",
+			"headers": {
+				"Location": "/dashboard-blog"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-blog\\.html$",
+			"headers": {
+				"Location": "/dashboard-blog"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-index$",
+			"headers": {
+				"Location": "/dashboard-index"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-index\\.html$",
+			"headers": {
+				"Location": "/dashboard-index"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-order$",
+			"headers": {
+				"Location": "/dashboard-order"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-order\\.html$",
+			"headers": {
+				"Location": "/dashboard-order"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-product$",
+			"headers": {
+				"Location": "/dashboard-product"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-product\\.html$",
+			"headers": {
+				"Location": "/dashboard-product"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/dashboard\\.html$",
+			"headers": {
+				"Location": "/dashboard"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/statues$",
+			"headers": {
+				"Location": "/statues"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/dashboard/statues\\.html$",
+			"headers": {
+				"Location": "/statues"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/about-us$",
+			"headers": {
+				"Location": "/about-us"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/about-us\\.html$",
+			"headers": {
+				"Location": "/about-us"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/contact-us$",
+			"headers": {
+				"Location": "/contact-us"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/contact-us\\.html$",
+			"headers": {
+				"Location": "/contact-us"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/privacy-policy$",
+			"headers": {
+				"Location": "/privacy-policy"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/privacy-policy\\.html$",
+			"headers": {
+				"Location": "/privacy-policy"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/terms$",
+			"headers": {
+				"Location": "/terms"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/legal/terms\\.html$",
+			"headers": {
+				"Location": "/terms"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/all-products$",
+			"headers": {
+				"Location": "/all-products"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/all-products\\.html$",
+			"headers": {
+				"Location": "/all-products"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/cart$",
+			"headers": {
+				"Location": "/cart"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/cart\\.html$",
+			"headers": {
+				"Location": "/cart"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/invoice$",
+			"headers": {
+				"Location": "/invoice"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/invoice\\.html$",
+			"headers": {
+				"Location": "/invoice"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/product$",
+			"headers": {
+				"Location": "/product"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/product\\.html$",
+			"headers": {
+				"Location": "/product"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/special-offers$",
+			"headers": {
+				"Location": "/special-offers"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/special-offers\\.html$",
+			"headers": {
+				"Location": "/special-offers"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/track-order$",
+			"headers": {
+				"Location": "/track-order"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/shop/track-order\\.html$",
+			"headers": {
+				"Location": "/track-order"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/support/client-reviews$",
+			"headers": {
+				"Location": "/client-reviews"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/support/client-reviews\\.html$",
+			"headers": {
+				"Location": "/client-reviews"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/support/help$",
+			"headers": {
+				"Location": "/help"
+			},
+			"status": 301
+		},
+		{
+			"src": "^/pages/support/help\\.html$",
+			"headers": {
+				"Location": "/help"
+			},
+			"status": 301
+		},
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/404/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/about-us/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/all-products/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/health/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/send-telegram/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/blog/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/cart/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/client-reviews/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/contact-us/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-blog/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-index/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-order/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/help/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/invoice/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/auth/login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/auth/login\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/blog/blog/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/blog/blog\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/blog/post/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/blog/post\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-blog/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-blog\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-index/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-index\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-order/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-order\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard-product\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/dashboard\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/statues/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/dashboard/statues\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/about-us/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/about-us\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/contact-us/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/contact-us\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/privacy-policy/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/privacy-policy\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/terms/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/legal/terms\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/all-products/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/all-products\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/cart/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/cart\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/invoice/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/invoice\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/product\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/special-offers/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/special-offers\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/track-order/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/shop/track-order\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/support/client-reviews/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/support/client-reviews\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/support/help/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/pages/support/help\\.html/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/post/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/privacy-policy/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/special-offers/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/statues/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/terms/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/track-order/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/.*$",
+			"dest": "_render",
+			"status": 404
+		}
+	]
+}

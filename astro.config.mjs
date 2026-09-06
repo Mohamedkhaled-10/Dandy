@@ -1,16 +1,11 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-  build: {
-    format: 'directory'
-  },
-  adapter: node({
-    mode: 'standalone'
-  }),
+  adapter: vercel(),
   redirects: {
     '/pages/shop/all-products.html': '/all-products',
     '/pages/shop/all-products': '/all-products',
@@ -53,28 +48,6 @@ export default defineConfig({
     '/pages/dashboard/dashboard-index.html': '/dashboard-index',
     '/pages/dashboard/dashboard-index': '/dashboard-index',
     '/pages/dashboard/statues.html': '/statues',
-    '/pages/dashboard/statues': '/statues',
-    '/index.html': '/',
-    '/all-products.html': '/all-products',
-    '/special-offers.html': '/special-offers',
-    '/product.html': '/product',
-    '/cart.html': '/cart',
-    '/invoice.html': '/invoice',
-    '/track-order.html': '/track-order',
-    '/help.html': '/help',
-    '/client-reviews.html': '/client-reviews',
-    '/blog.html': '/blog',
-    '/post.html': '/post',
-    '/about-us.html': '/about-us',
-    '/contact-us.html': '/contact-us',
-    '/privacy-policy.html': '/privacy-policy',
-    '/terms.html': '/terms',
-    '/login.html': '/login',
-    '/dashboard.html': '/dashboard',
-    '/dashboard-order.html': '/dashboard-order',
-    '/dashboard-product.html': '/dashboard-product',
-    '/dashboard-blog.html': '/dashboard-blog',
-    '/dashboard-index.html': '/dashboard-index',
-    '/statues.html': '/statues'
+    '/pages/dashboard/statues': '/statues'
   }
 });

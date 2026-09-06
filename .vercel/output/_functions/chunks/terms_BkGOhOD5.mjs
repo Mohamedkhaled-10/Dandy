@@ -1,0 +1,24 @@
+import { t as __exportAll } from "./rolldown-runtime_D7D4PA-g.mjs";
+import { A as maybeRenderHead, k as renderTemplate, w as renderComponent } from "./sequence_BGeKp411.mjs";
+import { t as createComponent } from "./compiler_Bovpdavx.mjs";
+import { t as $$BaseLayout } from "./BaseLayout_BhK_tACD.mjs";
+//#region src/pages/terms.astro
+var terms_exports = /* @__PURE__ */ __exportAll({
+	default: () => $$Terms,
+	file: () => $$file,
+	url: () => $$url
+});
+var $$Terms = createComponent(($$result, $$props, $$slots) => {
+	return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, {
+		"title": "الشروط والأحكام العامة للمتجر | Dandy",
+		"description": "الشروط والأحكام الخاصة بالتسوق والطلب وسياسات الشحن والاسترجاع في متجر داندي (Dandy Cosmetics) لمستحضرات التجميل والعناية الطبيعية في مصر.",
+		"canonical": "https://dandy-ebon.vercel.app/terms"
+	}, { "default": ($$result) => renderTemplate`${maybeRenderHead($$result)}<main class="container" style="padding-top: 140px; padding-bottom: 80px;"><div class="section-header" style="text-align: center; margin-bottom: 40px;"><span class="sub">تنظيم الخدمة والطلب</span><h2>وثيقة الشروط والأحكام للمشتريات</h2></div><div class="product" style="text-align: right; max-width: 800px; margin: 0 auto; padding: 40px; animation: none; opacity: 1;"><p class="p-desc" style="margin-bottom: 24px;">مرحباً بكم في <strong>Dandy</strong>. تصفح الطلب أو حجز المستحضرات على هذه المنصة يعني ضمناً موافقتكم الوافية على تفاصيل الشروط التنظيمية المبينة أدناه:</p><h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-hand-holding-heart" style="color:var(--color-blush)"></i> 1. دقة وأحقية الاستخدام</h3><p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">يسمح لجميع زوارنا تصفح مجموعات داندي وعروضها والانتفاع بالقراءة الهادفة للمقالات لأغراض شخصية فردية، مع حظر محاولة نسخ أو نسب المحتويات أو المواد البرمجية لأي جهات مروجة دون إذن خطي.</p><h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-phone-alt" style="color:var(--color-blush)"></i> 2. شروط التواصل والطلب المباشر</h3><p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">إن المعاملات والتفاهمات اللاحقة تتم بصورة مباشرة وتفاعلية بين المشتري والتاجر عبر حزمة قنوات الاتصال الفعالة المبيّنة (مثل الواتساب والمدير الفني للمنصة). نحن نيسر تنسيق هذا الربط دون اللجوء لبوابات بنكية تجبركن على الدفع التقليدي المعقد.</p><h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-undo" style="color:var(--color-blush)"></i> 3. الاستبدال والتعويضات</h3><p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">لأن ثقتكِ هي جوهر تواجدنا، نلتزم تماماً باستقبال أي مراجعات أو شكاوى تخص سلامة تغليف الشحنات أو عدم ملاءمة المنتجات، ونسرع في خدمتكن لمعالجة التعويضات بأرقى وأسرع معاملة تليق بكن.</p><hr style="margin: 30px 0; border: none; border-top: 1px dashed var(--border-light);"><p style="color: var(--color-muted); font-size: 0.9rem;">📅 تاريخ آخر تعديل وتوثيق للبنود: <strong>12 يونيو 2026</strong></p></div></main>` })}`;
+}, "/app/applet/src/pages/terms.astro", void 0);
+var $$file = "/app/applet/src/pages/terms.astro";
+var $$url = "/terms";
+//#endregion
+//#region \0virtual:astro:page:src/pages/terms@_@astro
+var page = () => terms_exports;
+//#endregion
+export { page };
