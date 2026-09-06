@@ -15,52 +15,52 @@
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/index.html</loc>
-  <changefreq>daily</changefreq>
-  <priority>1.00</priority>
-</url>
-<url>
-  <loc>https://dandy-ebon.vercel.app/pages/shop/all-products.html</loc>
+  <loc>https://dandy-ebon.vercel.app/all-products</loc>
   <changefreq>daily</changefreq>
   <priority>0.90</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/shop/special-offers.html</loc>
+  <loc>https://dandy-ebon.vercel.app/special-offers</loc>
   <changefreq>daily</changefreq>
   <priority>0.90</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/shop/track-order.html</loc>
+  <loc>https://dandy-ebon.vercel.app/track-order</loc>
   <changefreq>monthly</changefreq>
   <priority>0.10</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/support/client-reviews.html</loc>
+  <loc>https://dandy-ebon.vercel.app/client-reviews</loc>
   <changefreq>weekly</changefreq>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/support/help.html</loc>
+  <loc>https://dandy-ebon.vercel.app/help</loc>
   <changefreq>monthly</changefreq>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/blog/blog.html</loc>
+  <loc>https://dandy-ebon.vercel.app/blog</loc>
   <changefreq>weekly</changefreq>
   <priority>0.70</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/legal/about-us.html</loc>
+  <loc>https://dandy-ebon.vercel.app/about-us</loc>
   <changefreq>monthly</changefreq>
   <priority>0.50</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/legal/privacy-policy.html</loc>
+  <loc>https://dandy-ebon.vercel.app/contact-us</loc>
+  <changefreq>monthly</changefreq>
+  <priority>0.60</priority>
+</url>
+<url>
+  <loc>https://dandy-ebon.vercel.app/privacy-policy</loc>
   <changefreq>monthly</changefreq>
   <priority>0.50</priority>
 </url>
 <url>
-  <loc>https://dandy-ebon.vercel.app/pages/legal/terms.html</loc>
+  <loc>https://dandy-ebon.vercel.app/terms</loc>
   <changefreq>monthly</changefreq>
   <priority>0.50</priority>
 </url>

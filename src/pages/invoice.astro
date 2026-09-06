@@ -1,11 +1,11 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
   title="Invoice Details & Tracking | Dandy"
   description="تفاصيل الفاتورة وتتبع مسار شحن وتوصيل الطلب من متجر داندي."
-  canonical="https://dandy-ebon.vercel.app/pages/shop/invoice.html"
+  canonical="https://dandy-ebon.vercel.app/invoice"
 >
   <slot name="head" slot="head">
     <meta name="robots" content="noindex, nofollow" />
@@ -541,18 +541,20 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
       if (order.products && order.products.length > 0) {
         order.products.forEach(p => {
-          const price = parseFloat(p.price) || 0;
           const quantity = parseInt(p.quantity) || 1;
-          let finalPrice = price;
+          const lineTotal = (typeof p.lineTotal === 'number')
+            ? p.lineTotal
+            : (Number(p.price) || 0) * (Number(p.quantity) || 1);
 
-          let displayPriceText = price.toFixed(0) + " ج.م";
-          if (p.discount) {
+          calculatedSubtotal += lineTotal;
+
+          let displayPriceText = lineTotal.toFixed(0) + " ج.م";
+          if (p.discount && typeof p.lineTotal !== 'number') {
+            const price = parseFloat(p.price) || 0;
             const discountAmount = (price * parseFloat(p.discount)) / 100;
-            finalPrice = price - discountAmount;
-            displayPriceText = `${finalPrice.toFixed(0)} ج.م <span class="price-crossed">${price.toFixed(0)}</span>`;
+            const finalPrice = price - discountAmount;
+            displayPriceText = `${(finalPrice * quantity).toFixed(0)} ج.م <span class="price-crossed">${(price * quantity).toFixed(0)}</span>`;
           }
-
-          calculatedSubtotal += finalPrice * quantity;
 
           // استخراج الرائحة حصراً من snapshot المحفوظ داخل order.products
           const varInfo = typeof getVariantsDisplayInfo === 'function'

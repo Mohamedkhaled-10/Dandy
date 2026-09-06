@@ -1,17 +1,17 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
   title="Shopping Cart & Secure Checkout | Dandy"
   description="View your cart status, configure your governorate-based shipping option, and secure your organic purity order at Dandy Egypt."
   keywords="Cart Dandy, Secure Checkout Egypt, Skincare Order Cairo"
-  canonical="https://dandy-ebon.vercel.app/pages/shop/cart.html"
+  canonical="https://dandy-ebon.vercel.app/cart"
 >
   <slot name="head" slot="head">
     <meta name="robots" content="noindex, nofollow" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dandy-ebon.vercel.app/pages/shop/cart.html" />
+    <meta property="og:url" content="https://dandy-ebon.vercel.app/cart" />
     <meta property="og:title" content="Shopping Cart & Secure Checkout | Dandy" />
     <meta property="og:description" content="Securely finalize your purchase of premium organic botanical items." />
     <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
@@ -761,9 +761,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     function calculateCartSubtotal() {
       let subtotal = 0;
       cart.forEach(item => {
-        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
+        const unitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : (Number(item.price) || 0);
         const qtyVal = parseInt(item.quantity) || 1;
-        subtotal += priceVal * qtyVal;
+        subtotal += unitPrice * qtyVal;
       });
       return subtotal;
     }
@@ -821,7 +823,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <i class="fas fa-shopping-bag" style="font-size:4.5rem; color:var(--color-blush); margin-bottom:20px;"></i>
             <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8em; margin-bottom:10px;">Your shopping bag is empty!</h2>
             <p style="color:var(--color-muted); margin-bottom:24px; max-width:480px; margin-left:auto; margin-right:auto;">It looks like you haven't filled your cart with our lovely crowns of organic skincare yet. Browse and start pampering!</p>
-            <a href="/pages/shop/all-products.html" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> Browse Dandy's Collections</a>
+            <a href="/all-products" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> Browse Dandy's Collections</a>
           </div>
         `;
         return;
@@ -829,9 +831,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
       cartItemsList.innerHTML = '';
       cart.forEach((item, index) => {
-        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
         const qtyVal = parseInt(item.quantity) || 1;
-        const rowSubtotal = priceVal * qtyVal;
+        const unitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : (Number(item.price) || 0);
+        const rowSubtotal = unitPrice * qtyVal;
         
         const varInfo = typeof getVariantsDisplayInfo === 'function' 
           ? getVariantsDisplayInfo(item) 
@@ -853,7 +857,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <div class="cart-item-meta">
               <h3>${item.name}</h3>
               ${variantHtml}
-              <div class="cart-item-unit-price">السعر: ${Number(priceVal).toFixed(0)} ج.م</div>
+              <div class="cart-item-unit-price">السعر: ${Number(unitPrice).toFixed(0)} ج.م</div>
             </div>
           </div>
 
@@ -973,9 +977,11 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
       revProductsList.innerHTML = '';
       cart.forEach(item => {
-        const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
         const qtyVal = parseInt(item.quantity) || 1;
-        const sub = priceVal * qtyVal;
+        const unitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : (Number(item.price) || 0);
+        const sub = unitPrice * qtyVal;
         
         const varInfo = typeof getVariantsDisplayInfo === 'function'
           ? getVariantsDisplayInfo(item)
@@ -1033,17 +1039,16 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       const city = document.getElementById('f-city').value.trim();
       const address = document.getElementById('f-address').value.trim();
 
-      const subtotal = calculateCartSubtotal();
-      let shippingFee = getShippingFeeForGov(governorate);
-      if (subtotal > 2000) shippingFee = 0;
-      const totalAmount = subtotal + shippingFee;
-
       const invoiceCode = 'DNY-' + Math.floor(100000 + Math.random() * 900000);
 
       // إنشاء snapshot مستقل تماماً لما اشتراه العميل وغير معتمد على قاعدة بيانات المنتجات لاحقاً
       const productsSnapshot = cart.map(item => {
         const priceVal = parseFloat(String(item.price).replace(/[^0-9.-]+/g, '')) || 0;
         const qtyVal = parseInt(item.quantity) || 1;
+        const effectiveUnitPrice = typeof getEffectiveUnitPrice === 'function'
+          ? getEffectiveUnitPrice(item)
+          : priceVal;
+        const lineTotal = effectiveUnitPrice * qtyVal;
         const productId = item.productId || String(item.id).split('::')[0];
 
         const snap = {
@@ -1051,6 +1056,8 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           name: item.name,
           price: priceVal,
           quantity: qtyVal,
+          effectiveUnitPrice: effectiveUnitPrice,
+          lineTotal: lineTotal,
           image: item.image || ''
         };
 
@@ -1080,6 +1087,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
         return snap;
       });
+
+      // حساب المجموع الفرعي من مجموع lineTotal لكل العناصر
+      const subtotal = productsSnapshot.reduce((sum, p) => sum + (p.lineTotal || 0), 0);
+      let shippingFee = getShippingFeeForGov(governorate);
+      if (subtotal > 2000) shippingFee = 0;
+      const totalAmount = subtotal + shippingFee;
 
       const orderData = {
         name,
@@ -1118,7 +1131,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         recent.unshift({ code: invoiceCode, phone: phone, time: new Date().getTime() });
         localStorage.setItem('dandy_recent_lookups', JSON.stringify(recent));
 
-        window.location.href = `/pages/shop/invoice.html?id=${encodeURIComponent(generatedKey)}&invoice=${encodeURIComponent(invoiceCode)}`;
+        window.location.href = `/invoice?id=${encodeURIComponent(generatedKey)}&invoice=${encodeURIComponent(invoiceCode)}`;
 
       } catch(err) {
         console.error(err);

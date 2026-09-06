@@ -1,19 +1,19 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
   title="ركن الجمال والمقالات | Dandy"
   description="تصفح وتابع أحدث نصائح العناية العضوية بالبشرة والشعر من خبراء داندي بيوتي. أسرار الطبيعة لإشراقة تدوم."
   keywords="داندي, مقالات داندي, العناية بالبشرة, جمال طبيعي, العناية بالبشرة مصر, زيوت طبيعية للشعر"
-  canonical="https://dandy-ebon.vercel.app/pages/blog/post.html"
+  canonical="https://dandy-ebon.vercel.app/post"
 >
   <slot name="head" slot="head">
     <meta property="og:type" content="article" />
     <meta property="og:title" id="og-title-meta" content="ركن الجمال | Dandy" />
     <meta property="og:description" id="og-desc-meta" content="نصائح وأسرار الجمال الطبيعي للعناية بالبشرة والشعر بتركيبات داندي العضوية." />
     <meta property="og:image" id="og-image-meta" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
-    <meta property="og:url" id="og-url-meta" content="https://dandy-ebon.vercel.app/pages/blog/post.html" />
+    <meta property="og:url" id="og-url-meta" content="https://dandy-ebon.vercel.app/post" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" id="tw-title-meta" content="ركن الجمال | Dandy" />
@@ -175,7 +175,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
               <div style="text-align:center; padding:40px 10px;">
                 <i class="fas fa-exclamation-circle" style="font-size:3.5rem; color:var(--color-gold); margin-bottom:16px;"></i>
                 <h2 style="font-family:'Cairo', sans-serif;">المقالة غير متوفرة أو قد تم إزالتها</h2>
-                <a href="/pages/blog/blog.html" class="cta-btn" style="margin-top:20px; border-radius:99px; padding:12px 24px;">العودة لصفحة المقالات</a>
+                <a href="/blog" class="cta-btn" style="margin-top:20px; border-radius:99px; padding:12px 24px;">العودة لصفحة المقالات</a>
               </div>
             `;
           }
@@ -299,7 +299,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             <div style="padding:16px; display:flex; flex-direction:column; flex:1;">
               <span style="font-size:0.8rem; color:var(--color-gold); font-weight:700; margin-bottom:6px;">📅 ${dateText}</span>
               <h3 style="font-size:1.05rem; font-weight:700; color:var(--color-primary); line-height:1.4; margin-bottom:12px; height:44px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${title}</h3>
-              <a href="/pages/blog/post.html?id=${doc.id}" style="color:var(--color-blush); text-decoration:none; font-weight:700; font-size:0.85rem; margin-top:auto;"><i class="fas fa-book-open"></i> قراءة المقال ⟵</a>
+              <a href="/post?id=${doc.id}" style="color:var(--color-blush); text-decoration:none; font-weight:700; font-size:0.85rem; margin-top:auto;"><i class="fas fa-book-open"></i> قراءة المقال ⟵</a>
             </div>
           `;
           container.appendChild(cardEl);

@@ -1,16 +1,16 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
   title="مدونة داندي للعناية | أسرار ونصائح الجمال الطبيعي"
   description="تصفحى مدونة داندي بيوتي واكتشفي أسرار ونِقاط العناية العضوية بالبشرة والروتين الصحي للشهر مع تركيبات طبيعية 100% لإشراقة ملكية دائمًا."
   keywords="مدونة داندي بيوتي، العناية بالبشرة، العناية بالشعر، خلطات تجميلية طبيعية، روتين صحي للبشرة مصر"
-  canonical="https://dandy-ebon.vercel.app/pages/blog/blog.html"
+  canonical="https://dandy-ebon.vercel.app/blog"
 >
   <slot name="head" slot="head">
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dandy-ebon.vercel.app/pages/blog/blog.html" />
+    <meta property="og:url" content="https://dandy-ebon.vercel.app/blog" />
     <meta property="og:title" content="مدونة داندي للعناية | أسرار ونصائح الجمال الطبيعي" />
     <meta property="og:description" content="تصفحى مدونة داندي بيوتي واكتشفي أسرار ونِقاط العناية العضوية بالبشرة والروتين الصحي للشهر" />
     <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
@@ -193,7 +193,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
               </div>
               <h3>${title}</h3>
               <p>${excerpt}</p>
-              <a href="/pages/blog/post.html?id=${doc.id}" class="read-more-btn">
+              <a href="/post?id=${doc.id}" class="read-more-btn">
                 اقرئي المقال <i class="fas fa-arrow-left"></i>
               </a>
             </div>

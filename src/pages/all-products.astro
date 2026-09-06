@@ -1,16 +1,16 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
   title="جميع المنتجات | Dandy Cosmetics - منتجات طبيعية للعناية"
   description="تصفحي جميع منتجات داندي (Dandy Cosmetics) للعناية بالبشرة والشعر. تشكيلة واسعة من مستحضرات التجميل الطبيعية والمضمونة بأسعار ممتازة."
   keywords="Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, جميع المنتجات, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل, Skincare, Haircare"
-  canonical="https://dandy-ebon.vercel.app/pages/shop/all-products.html"
+  canonical="https://dandy-ebon.vercel.app/all-products"
 >
   <slot name="head" slot="head">
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dandy-ebon.vercel.app/pages/shop/all-products.html" />
+    <meta property="og:url" content="https://dandy-ebon.vercel.app/all-products" />
     <meta property="og:title" content="جميع المنتجات | Dandy Cosmetics - منتجات طبيعية للعناية" />
     <meta property="og:description" content="تصفحي جميع منتجات داندي (Dandy Cosmetics) للعناية بالبشرة والشعر. تشكيلة واسعة من مستحضرات التجميل الطبيعية والمضمونة بأسعار ممتازة." />
     <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
@@ -25,7 +25,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         "@type": "CollectionPage",
         "name": "جميع المنتجات | Dandy Cosmetics",
         "description": "تصفحي جميع منتجات داندي للعناية بالبشرة والشعر الطبيعية.",
-        "url": "https://dandy-ebon.vercel.app/pages/shop/all-products.html"
+        "url": "https://dandy-ebon.vercel.app/all-products"
       }
     </script>
 
@@ -622,7 +622,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     // دالة الإضافة السريعة للسلة
     window.quickAdd = function(id, name, price, image, discount, onSale, hasVariants) {
       if (hasVariants) {
-        window.location.href = '/pages/shop/product.html?id=' + id;
+        window.location.href = '/product?id=' + id;
         return;
       }
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -715,7 +715,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           productEl.setAttribute("data-category", data.category || 'Skin care');
           productEl.setAttribute("data-bestseller", data.bestSeller ? "true" : "false");
           productEl.setAttribute("data-offer", (data.onSale || data.originalPrice) ? "true" : "false");
-          productEl.onclick = function() { window.location.href = '/pages/shop/product.html?id=' + data.id; };
+          productEl.onclick = function() { window.location.href = '/product?id=' + data.id; };
 
           const priceRaw = parseFloat(data.price) || 0;
           let priceStr = `<div class="product-price">${priceRaw} EGP</div>`;
@@ -742,7 +742,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
               </button>`;
 
           if (hasVars) {
-            actionBtn = `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/pages/shop/product.html?id=${data.id}'">
+            actionBtn = `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/product?id=${data.id}'">
                 <i class="fas fa-spray-can" style="margin-left:4px;"></i> اختاري الرائحة
               </button>`;
           }

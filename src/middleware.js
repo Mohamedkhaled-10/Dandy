@@ -1,17 +1,9 @@
-// @ts-check
-import { defineConfig } from 'astro/config';
-import node from '@astrojs/node';
+// Astro Server Middleware for legacy redirect handling
+export async function onRequest({ url, redirect }, next) {
+  const pathname = url.pathname;
 
-// https://astro.build/config
-export default defineConfig({
-  output: 'server',
-  build: {
-    format: 'directory'
-  },
-  adapter: node({
-    mode: 'standalone'
-  }),
-  redirects: {
+  // Known legacy route mapping
+  const legacyMap = {
     '/pages/shop/all-products.html': '/all-products',
     '/pages/shop/all-products': '/all-products',
     '/pages/shop/special-offers.html': '/special-offers',
@@ -55,26 +47,26 @@ export default defineConfig({
     '/pages/dashboard/statues.html': '/statues',
     '/pages/dashboard/statues': '/statues',
     '/index.html': '/',
-    '/all-products.html': '/all-products',
-    '/special-offers.html': '/special-offers',
-    '/product.html': '/product',
-    '/cart.html': '/cart',
-    '/invoice.html': '/invoice',
-    '/track-order.html': '/track-order',
-    '/help.html': '/help',
-    '/client-reviews.html': '/client-reviews',
-    '/blog.html': '/blog',
-    '/post.html': '/post',
-    '/about-us.html': '/about-us',
-    '/contact-us.html': '/contact-us',
-    '/privacy-policy.html': '/privacy-policy',
-    '/terms.html': '/terms',
-    '/login.html': '/login',
-    '/dashboard.html': '/dashboard',
-    '/dashboard-order.html': '/dashboard-order',
-    '/dashboard-product.html': '/dashboard-product',
-    '/dashboard-blog.html': '/dashboard-blog',
-    '/dashboard-index.html': '/dashboard-index',
-    '/statues.html': '/statues'
+  };
+
+  if (legacyMap[pathname]) {
+    return redirect(legacyMap[pathname] + url.search, 301);
   }
-});
+
+  // Handle generic trailing .html on top-level or sub-routes
+  if (pathname.endsWith('.html') && !pathname.startsWith('/assets/')) {
+    const cleanPath = pathname.replace(/\.html$/, '');
+    const finalDest = (cleanPath === '/index' || cleanPath === '') ? '/' : cleanPath;
+    return redirect(finalDest + url.search, 301);
+  }
+
+  // Handle any other legacy /pages/ sub-routes
+  if (pathname.startsWith('/pages/')) {
+    const segments = pathname.split('/').filter(Boolean);
+    const lastSegment = (segments[segments.length - 1] || '').replace(/\.html$/, '');
+    const finalDest = (lastSegment === 'index' || lastSegment === '') ? '/' : '/' + lastSegment;
+    return redirect(finalDest + url.search, 301);
+  }
+
+  return next();
+}

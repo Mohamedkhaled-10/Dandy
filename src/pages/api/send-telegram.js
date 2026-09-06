@@ -32,7 +32,7 @@ export async function POST({ request }) {
 ⏱ *الوقت:* ${dateText}
 
 🔗 *تفاصيل الطلب:*
-https://dandy-ebon.vercel.app/pages/dashboard/dashboard-order.html`;
+https://dandy-ebon.vercel.app/dashboard-order`;
 
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 

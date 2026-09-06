@@ -1,11 +1,13 @@
 User-agent: *
-Disallow: /login.html
-Disallow: /dashboard.html
-Disallow: /admin-chat.html
-Disallow: /pages/dashboard/
-Disallow: /pages/auth/
-Disallow: /pages/shop/cart.html
-Disallow: /pages/shop/invoice.html
+Disallow: /login
+Disallow: /dashboard
+Disallow: /dashboard-order
+Disallow: /dashboard-product
+Disallow: /dashboard-blog
+Disallow: /dashboard-index
+Disallow: /statues
+Disallow: /cart
+Disallow: /invoice
 Allow: /
 
 Sitemap: https://dandy-ebon.vercel.app/sitemap.xml

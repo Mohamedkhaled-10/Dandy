@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
@@ -441,7 +441,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
     if (auth) {
       auth.onAuthStateChanged(user => {
         if (!user) {
-          window.location.href = '../auth/login.html';
+          window.location.href = '/login';
         } else {
           listenToProducts();
         }
@@ -584,7 +584,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
             
             <div class="admin-p-actions">
               <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${d.id}')"><i class="fas fa-edit"></i> تعديل</button>
-              <a href="../shop/product.html?id=${d.id}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
+              <a href="/product?id=${d.id}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
               <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${d.id}')" aria-label="حذف"><i class="fas fa-trash"></i></button>
             </div>
           </div>

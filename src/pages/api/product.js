@@ -28,7 +28,7 @@ export async function GET({ request, url }) {
     const proto = request.headers.get("x-forwarded-proto") || "https";
     const host = request.headers.get("host") || url.host;
     const selfUrl = `${proto}://${host}/api/product?id=${encodeURIComponent(id)}`;
-    const humanUrl = `${proto}://${host}/pages/shop/product.html?id=${encodeURIComponent(id)}`;
+    const humanUrl = `${proto}://${host}/product?id=${encodeURIComponent(id)}`;
 
     const html = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">

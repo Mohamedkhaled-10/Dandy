@@ -19,13 +19,19 @@ const {
   title = 'داندي | Dandy Cosmetics - منتجات طبيعية للعناية بالبشرة والشعر',
   description = 'تسوقي الآن من متجر داندي (Dandy Cosmetics)، وجهتك الأولى لأفضل منتجات العناية بالبشرة والشعر الطبيعية في مصر. اكتشفي الجمال الطبيعي اليوم!',
   keywords = 'Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل طبيعية, منتجات دندي, Natural Skincare, Beauty Store Egypt',
-  canonical = 'https://dandy-ebon.vercel.app/',
+  canonical,
   lang = 'ar',
   dir = 'rtl',
   showHeader = true,
   showFooter = true,
   robots = 'index, follow',
 } = Astro.props;
+
+const pathname = (Astro.url.pathname || '').replace(/\/$/, '');
+const defaultCanonical = `https://dandy-ebon.vercel.app${pathname || '/'}`;
+const resolvedCanonical = canonical || defaultCanonical;
+
+const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU";
 ---
 
 <!DOCTYPE html>
@@ -37,7 +43,7 @@ const {
   <meta name="description" content={description} />
   {keywords && <meta name="keywords" content={keywords} />}
   <meta name="robots" content={robots} />
-  {canonical && <link rel="canonical" href={canonical} />}
+  <link rel="canonical" href={resolvedCanonical} />
 
   <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="/assets/images/fav-icons/favicon.ico" />
@@ -68,9 +74,9 @@ const {
   <script is:inline src="/assets/js/variants.js"></script>
 
   <!-- Central Firebase Initialization -->
-  <script is:inline>
+  <script is:inline define:vars={{ firebaseApiKey }}>
     const firebaseConfig = {
-      apiKey: "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU",
+      apiKey: firebaseApiKey,
       authDomain: "dandy-562fc.firebaseapp.com",
       databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "dandy-562fc",

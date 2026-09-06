@@ -1,16 +1,16 @@
 ---
-import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
   title="العروض الخاصة | Dandy Cosmetics - خصومات وتخفيضات مذهلة"
   description="استفيدي من العروض الخاصة والخصومات الحصرية من داندي (Dandy Cosmetics). منتجات أصلية للعناية بالبشرة والشعر بأسعار لا تقبل المنافسة."
   keywords="Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, عروض مستحضرات تجميل, خصومات العناية بالبشرة, تخفيضات دندي, Special Offers Cosmetics"
-  canonical="https://dandy-ebon.vercel.app/pages/shop/special-offers.html"
+  canonical="https://dandy-ebon.vercel.app/special-offers"
 >
   <slot name="head" slot="head">
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dandy-ebon.vercel.app/pages/shop/special-offers.html" />
+    <meta property="og:url" content="https://dandy-ebon.vercel.app/special-offers" />
     <meta property="og:title" content="العروض الخاصة | Dandy Cosmetics - خصومات وتخفيضات مذهلة" />
     <meta property="og:description" content="استفيدي من العروض الخاصة والخصومات الحصرية من داندي (Dandy Cosmetics). منتجات أصلية بأسعار لا تقبل المنافسة." />
     <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
@@ -25,7 +25,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
         "@type": "CollectionPage",
         "name": "العروض الخاصة | Dandy Cosmetics",
         "description": "استفيدي من العروض الخاصة والخصومات الحصرية من داندي.",
-        "url": "https://dandy-ebon.vercel.app/pages/shop/special-offers.html"
+        "url": "https://dandy-ebon.vercel.app/special-offers"
       }
     </script>
 
@@ -83,7 +83,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 
     window.quickAdd = function(id, name, price, image, discount, onSale, hasVariants) {
       if (hasVariants) {
-        window.location.href = '/pages/shop/product.html?id=' + id;
+        window.location.href = '/product?id=' + id;
         return;
       }
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -155,7 +155,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           
           productEl.className = "product-card product";
           productEl.setAttribute("data-category", data.category || 'Special Promo');
-          productEl.onclick = function() { window.location.href = '/pages/shop/product.html?id=' + child.key; };
+          productEl.onclick = function() { window.location.href = '/product?id=' + child.key; };
 
           const priceRaw = parseFloat(data.price) || 0;
           let priceStr = `<div class="product-price">${priceRaw} EGP</div>`;
@@ -182,7 +182,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
               </button>`;
 
           if (hasVars) {
-            actionBtn = `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/pages/shop/product.html?id=${child.key}'">
+            actionBtn = `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/product?id=${child.key}'">
                 <i class="fas fa-spray-can" style="margin-left:4px;"></i> اختاري الرائحة
               </button>`;
           }
