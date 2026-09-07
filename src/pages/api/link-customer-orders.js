@@ -1,3 +1,5 @@
+export const prerender = false;
+
 // src/pages/api/link-customer-orders.js
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
