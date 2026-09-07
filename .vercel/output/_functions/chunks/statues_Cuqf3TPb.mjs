@@ -1,0 +1,337 @@
+import { t as __exportAll } from "./rolldown-runtime_D7D4PA-g.mjs";
+import { A as maybeRenderHead, E as renderSlot, k as renderTemplate, w as renderComponent } from "./sequence_lUswI9jr.mjs";
+import { t as createComponent } from "./compiler_BZhHLwe9.mjs";
+import { t as renderScript } from "./script_fp08M6Yh.mjs";
+import { t as $$BaseLayout } from "./BaseLayout_TSlOutx5.mjs";
+//#region src/pages/statues.astro
+var statues_exports = /* @__PURE__ */ __exportAll({
+	default: () => $$Statues,
+	file: () => $$file,
+	url: () => $$url
+});
+var $$Statues = createComponent(($$result, $$props, $$slots) => {
+	return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, {
+		"title": "لوحة تسيير الإحصائيات وبصمة الاتصال | Dandy",
+		"description": "إحصائيات وقراءات حية لتدفق عمليات متجر داندي وأداء خوادم وقواعد البيانات",
+		"robots": "noindex, nofollow",
+		"showDashboardNav": true
+	}, {
+		"default": async ($$result) => renderTemplate`${maybeRenderHead($$result)}<section class="analytics-sec container"><div class="section-header" style="text-align: right; margin-bottom: 30px;"><span class="sub">تحليلات المبيعات والأداء الحية</span><h2>مؤشرات التجارة وبصمة تدفق متجر داندي</h2></div><!-- Stat KPI Panels --><div class="stat-card-grid"><div class="single-stat-panel highlight-panel"><h4><i class="fas fa-coins" style="color:var(--color-blush);"></i> إجمالي الإيرادات الفعالة</h4><div class="stat-num" id="stat-revenue">0 ج.م</div><p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">مجموع المبيعات (باستثناء الطلبات الملغاة).</p></div><div class="single-stat-panel"><h4><i class="fas fa-shopping-bag" style="color:#0284c7;"></i> إجمالي فواتير الطلبات</h4><div class="stat-num" id="stat-orders">0</div><p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">إجمالي الطلبات المسجلة بقاعدة البيانات.</p></div><div class="single-stat-panel"><h4><i class="fas fa-boxes" style="color:#16a34a;"></i> إجمالي مستحضرات الرفوف</h4><div class="stat-num" id="stat-products">0</div><p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">المنتجات المتاحة للتوصيل والعروض الحالية.</p></div><div class="single-stat-panel"><h4><i class="fas fa-signal" style="color:#9333ea;"></i> معدل سرعة الاستجابة</h4><div class="stat-num">99.8%</div><p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">سرعة اتصال الخوادم وتدفق مقابس RTDB.</p></div></div><!-- Charts Row: Timeline and Status Distribution --><div class="analytics-charts-grid"><!-- Revenue Timeline Chart --><div class="analytics-card"><div class="analytics-card-header"><h3><i class="fas fa-chart-line" style="color:var(--color-blush);"></i> الإيرادات عبر الوقت (يوميًا)</h3><span style="font-size:0.8rem; color:#64748b;">تراكم المبيعات اليومية</span></div><div class="chart-container-box"><canvas id="revenueLineChart"></canvas></div></div><!-- Order Status Breakdown Pie Chart --><div class="analytics-card"><div class="analytics-card-header"><h3><i class="fas fa-chart-pie" style="color:#0284c7;"></i> توزيع حالات الطلبات</h3><span style="font-size:0.8rem; color:#64748b;">حسب حالة المعالجة</span></div><div class="chart-container-box"><canvas id="statusDoughnutChart"></canvas></div></div></div><!-- Top 5 Products Table --><div class="analytics-card" style="margin-bottom: 30px;"><div class="analytics-card-header"><h3><i class="fas fa-fire" style="color:#f59e0b;"></i> أكثر 5 منتجات مبيعًا</h3><span style="font-size:0.8rem; color:#64748b;">بناءً على كميات المنتجات المباعة في كل الطلبات</span></div><div class="top-products-table-box"><table class="top-prod-table"><thead><tr><th style="width: 60px;">#</th><th>اسم المستحضر</th><th style="width: 140px; text-align: center;">إجمالي القطع المباعة</th><th style="width: 160px; text-align: left;">إجمالي المبيعات</th></tr></thead><tbody id="topProductsBody"><tr><td colspan="4" style="text-align:center; padding: 24px; color:#64748b;">جاري استخراج وتحليل بيانات المبيعات...</td></tr></tbody></table></div></div><!-- Realtime System logs --><h3 style="font-family:'Cairo', sans-serif; font-size:1.15rem; color:var(--color-primary); margin-bottom:12px;">سير تدفق اتصالات الخادم المعتمد (Firebase RTDB Socket Logs)</h3><div class="sys-logs-box" id="sys-logs-area">[INFO] INITIALIZING SECURE SHELL SYSTEM AUTHENTICATION HOOK DANDY PORTAL<br>[INFO] DATABASE CONNECTED TO URL: firebaseio.com/rtdb_live_nodes<br>[INFO] FIRESTORE CLIENT READY FOR BULK READ-WRITE TRANSACTIONS ON COLLECTION 'articles'<br>[SOCKET] WEBSOCKET LISTENER ON CHANNEL 'orders' FORKED SUCCESSFULLY<br></div></section><script>
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+    const logBox = document.getElementById('sys-logs-area');
+    const statOrders = document.getElementById('stat-orders');
+    const statProducts = document.getElementById('stat-products');
+    const statRevenue = document.getElementById('stat-revenue');
+    const topProductsBody = document.getElementById('topProductsBody');
+
+    let revenueChartInstance = null;
+    let statusChartInstance = null;
+
+    const currencyFormatter = new Intl.NumberFormat('en-EG', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+
+    function addLog(msg) {
+      if (!logBox) return;
+      const t = new Date().toLocaleTimeString('en-US', {hour12:false});
+      const d = new Date().toISOString().split('T')[0];
+      logBox.innerHTML += \`[LIVE] \${d} \${t} - \${msg}<br>\`;
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    if (auth) {
+      auth.onAuthStateChanged(user => {
+        if (!user) {
+          window.location.href = '/login';
+        } else {
+          initializeLiveMetrics();
+          loadFullSalesAnalytics();
+        }
+      });
+    }
+
+    function initializeLiveMetrics() {
+      if (!db) return;
+      // العداد الحي الموجود بالفعل كما هو دون حذفه
+      db.ref('orders').on('value', snap => {
+        const count = snap.exists() ? snap.numChildren() : 0;
+        if (statOrders) statOrders.textContent = count;
+        addLog(\`RETRIEVED Orders Node successfully: count is \${count}\`);
+      });
+
+      db.ref('products').on('value', snap => {
+        const count = snap.exists() ? snap.numChildren() : 0;
+        if (statProducts) statProducts.textContent = count;
+        addLog(\`RETRIEVED Products Node successfully: count is \${count}\`);
+      });
+    }
+
+    function normalizeStatusVal(status) {
+      let s = (status ?? 'جديد').toString().trim();
+      if (s.toLowerCase() === 'new') return 'جديد';
+      return s;
+    }
+
+    async function loadFullSalesAnalytics() {
+      if (!db) return;
+      try {
+        const snap = await db.ref('orders').once('value');
+        const orders = [];
+        if (snap.exists()) {
+          snap.forEach(child => {
+            orders.push({ id: child.key, ...child.val() });
+          });
+        }
+
+        // 1. حساب إجمالي الإيرادات (باستثناء الطلبات بحالة "ملغي")
+        let totalRevenue = 0;
+        const statusDistribution = {};
+        const productSalesMap = {};
+        const dailyRevenueMap = {};
+
+        orders.forEach(o => {
+          const status = normalizeStatusVal(o.status);
+          
+          // توزيع الحالات
+          statusDistribution[status] = (statusDistribution[status] || 0) + 1;
+
+          // حساب المبلغ للطلب غير الملغي
+          if (status !== 'ملغي') {
+            let orderTotal = 0;
+            if (o.totalAmount && !isNaN(parseFloat(o.totalAmount))) {
+              orderTotal = parseFloat(o.totalAmount);
+            } else if (o.products) {
+              const calcSum = Object.values(o.products).reduce((acc, p) => {
+                const lineTotal = (typeof p.lineTotal === 'number')
+                  ? p.lineTotal
+                  : (Number(p.price) || 0) * (Number(p.quantity) || 1);
+                return acc + lineTotal;
+              }, 0);
+              orderTotal = calcSum + (parseFloat(o.shippingFee) || 0);
+            }
+            totalRevenue += orderTotal;
+
+            // تجميع الإيرادات حسب التاريخ (يوميًا)
+            let dateKey = 'غير محدد';
+            if (o.timestamp) {
+              try {
+                const d = new Date(o.timestamp);
+                if (!isNaN(d.getTime())) {
+                  dateKey = d.toISOString().split('T')[0];
+                }
+              } catch(e) {}
+            }
+            if (dateKey !== 'غير محدد') {
+              dailyRevenueMap[dateKey] = (dailyRevenueMap[dateKey] || 0) + orderTotal;
+            }
+
+            // أكثر المنتجات مبيعًا من داخل order.products[]
+            if (o.products && typeof o.products === 'object') {
+              Object.values(o.products).forEach(p => {
+                if (!p) return;
+                const prodKey = p.id || p.productId || p.name || 'منتج';
+                const pName = p.name || 'مستحضر داندي';
+                const pQty = parseInt(p.quantity, 10) || 1;
+                const pLineTotal = (typeof p.lineTotal === 'number')
+                  ? p.lineTotal
+                  : (Number(p.price) || 0) * pQty;
+
+                if (!productSalesMap[prodKey]) {
+                  productSalesMap[prodKey] = {
+                    name: pName,
+                    quantity: 0,
+                    revenue: 0
+                  };
+                }
+                productSalesMap[prodKey].quantity += pQty;
+                productSalesMap[prodKey].revenue += pLineTotal;
+              });
+            }
+          }
+        });
+
+        if (statRevenue) {
+          statRevenue.textContent = currencyFormatter.format(totalRevenue) + ' ج.م';
+        }
+
+        renderStatusChart(statusDistribution);
+        renderRevenueChart(dailyRevenueMap);
+        renderTopProducts(productSalesMap);
+
+        addLog(\`ANALYSIS COMPLETED: \${orders.length} orders processed. Active Revenue: \${totalRevenue} EGP\`);
+      } catch (err) {
+        console.error('Failed to load sales analytics:', err);
+        addLog(\`ERROR IN ANALYTICS PIPELINE: \${err.message}\`);
+      }
+    }
+
+    function renderStatusChart(statusMap) {
+      const canvas = document.getElementById('statusDoughnutChart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const labels = Object.keys(statusMap);
+      const data = Object.values(statusMap);
+
+      if (statusChartInstance) {
+        statusChartInstance.destroy();
+      }
+
+      const statusColors = {
+        'جديد': '#38bdf8',
+        'قيد التجهيز': '#f59e0b',
+        'تم التواصل': '#fbbf24',
+        'تم الشحن': '#818cf8',
+        'جاري الشحن': '#a78bfa',
+        'تم التوصيل': '#10b981',
+        'مكتمل': '#059669',
+        'ملغي': '#ef4444'
+      };
+
+      const backgroundColors = labels.map(l => statusColors[l] || '#94a3b8');
+
+      statusChartInstance = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: backgroundColors,
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              rtl: true,
+              labels: {
+                boxWidth: 14,
+                font: { family: 'Cairo, sans-serif', size: 12 }
+              }
+            },
+            tooltip: {
+              rtl: true,
+              callbacks: {
+                label: function(ctx) {
+                  const val = ctx.raw || 0;
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                  return \` \${ctx.label}: \${val} طلب (\${pct}%)\`;
+                }
+              }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    function renderRevenueChart(dailyMap) {
+      const canvas = document.getElementById('revenueLineChart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const sortedDates = Object.keys(dailyMap).sort();
+      const labels = sortedDates.map(d => {
+        const parts = d.split('-');
+        return parts.length === 3 ? \`\${parts[1]}/\${parts[2]}\` : d;
+      });
+      const data = sortedDates.map(d => dailyMap[d]);
+
+      if (revenueChartInstance) {
+        revenueChartInstance.destroy();
+      }
+
+      revenueChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'إجمالي المبيعات (ج.م)',
+            data: data,
+            borderColor: '#DB2777',
+            backgroundColor: 'rgba(219, 39, 119, 0.08)',
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#DB2777',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              rtl: true,
+              callbacks: {
+                label: function(ctx) {
+                  return \` \${currencyFormatter.format(ctx.raw)} ج.م\`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Cairo, sans-serif', size: 11 } }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                font: { family: 'Cairo, sans-serif', size: 11 },
+                callback: function(val) {
+                  return val + ' ج.م';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderTopProducts(salesMap) {
+      if (!topProductsBody) return;
+
+      const sortedProds = Object.values(salesMap).sort((a, b) => b.quantity - a.quantity);
+      const top5 = sortedProds.slice(0, 5);
+
+      if (top5.length === 0) {
+        topProductsBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#64748b;">لا توجد بيانات مبيعات منتجات مسجلة حتى الآن.</td></tr>';
+        return;
+      }
+
+      topProductsBody.innerHTML = '';
+      top5.forEach((p, idx) => {
+        const rankClass = idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : (idx === 2 ? 'rank-3' : ''));
+        const tr = document.createElement('tr');
+        tr.innerHTML = \`
+          <td><span class="rank-badge \${rankClass}">\${idx + 1}</span></td>
+          <td style="font-weight: 700; color: #1e293b;">\${p.name}</td>
+          <td style="text-align: center;"><span class="qty-pill">\${p.quantity} قطعة</span></td>
+          <td style="text-align: left; font-weight: 700; color: var(--color-blush, #DB2777);">\${currencyFormatter.format(p.revenue)} ج.م</td>
+        \`;
+        topProductsBody.appendChild(tr);
+      });
+    }
+  <\/script>`,
+		"head": ($$result) => renderTemplate`${renderSlot($$result, $$slots["head"], renderTemplate`${renderScript($$result, "/app/applet/src/pages/statues.astro?astro&type=script&index=0&lang.ts")}`)}`
+	})}`;
+}, "/app/applet/src/pages/statues.astro", void 0);
+var $$file = "/app/applet/src/pages/statues.astro";
+var $$url = "/statues";
+//#endregion
+//#region \0virtual:astro:page:src/pages/statues@_@astro
+var page = () => statues_exports;
+//#endregion
+export { page };

@@ -1,0 +1,148 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/404/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/about-us/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/account/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/account-login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/account-signup/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/all-products/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/health/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/link-customer-orders/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/send-telegram/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/blog/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/cart/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/client-reviews/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/contact-us/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-blog/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-index/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-order/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard-product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/help/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/invoice/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/post/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/privacy-policy/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/product/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/special-offers/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/statues/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/terms/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/track-order/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/.*$",
+			"dest": "_render",
+			"status": 404
+		}
+	]
+}
