@@ -845,9 +845,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <script is:inline>
     const db = firebase.database();
 
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const isSlugRoute = pathParts[0] === 'product' && pathParts[1];
+    const slugFromPath = isSlugRoute ? decodeURIComponent(pathParts[1]) : null;
+
     const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
+    const idFromQuery = params.get('id');
+
     let loadedProduct = null;
+    let productKey = null;
+    let id = null;
     let selectedVariants = []; // Array of { id, name }
 
     const detailFrame = document.getElementById("detailFrame");
@@ -1099,11 +1106,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     window.selectScentVariant = window.toggleScentVariant;
 
     // Fetch product data
-    db.ref("products/" + id).once("value").then(snapshot => {
-      if (snapshot.exists() && !snapshot.val().isHidden) {
-        const product = snapshot.val();
-        loadedProduct = product;
-        loadedProduct.id = id; 
+    async function loadProductDetails() {
+      try {
+        if (slugFromPath) {
+          const snap = await db.ref('products').orderByChild('slug').equalTo(slugFromPath).once('value');
+          if (snap.exists()) {
+            snap.forEach(child => {
+              productKey = child.key;
+              loadedProduct = child.val();
+            });
+          }
+        }
+
+        if (!loadedProduct && idFromQuery) {
+          const snap = await db.ref('products/' + idFromQuery).once('value');
+          if (snap.exists()) {
+            productKey = idFromQuery;
+            loadedProduct = snap.val();
+          }
+        }
+
+        id = productKey;
+
+        if (loadedProduct && !loadedProduct.isHidden) {
+          const product = loadedProduct;
+          loadedProduct.id = productKey; 
 
         // إطلاق حدث ViewContent للفيسبوك بيكسل هنا
         if (typeof fbq === 'function') {
@@ -1204,7 +1231,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             },
             "offers": {
               "@type": "Offer",
-              "url": window.location.origin + `/product?id=${encodeURIComponent(id)}`,
+              "url": window.location.origin + (product.slug ? `/product/${encodeURIComponent(product.slug)}` : `/product?id=${encodeURIComponent(id)}`),
               "priceCurrency": "EGP",
               "price": schemaOfferPrice,
               "priceValidUntil": "2027-12-31",
@@ -1228,7 +1255,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         document.getElementById("facebook-link").href = "https://www.facebook.com/profile.php?id=61563039704396";
         document.getElementById("instagram-link").href = "https://www.instagram.com/dandy_skincare_cosmotics";
         
-        const shareURL = window.location.origin + `/product?id=${encodeURIComponent(id)}`;
+        const shareURL = window.location.origin + (product.slug ? `/product/${encodeURIComponent(product.slug)}` : `/product?id=${encodeURIComponent(id)}`);
         const whatsappShare = document.getElementById('share-whatsapp');
         const facebookShare = document.getElementById('share-facebook');
         const instagramShare = document.getElementById('share-instagram');
@@ -1246,10 +1273,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       } else {
         detailFrame.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:60px 0;"><i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-gold);margin-bottom:14px;"></i><p style="font-size:1.2rem;font-weight:700;">The product you are looking for is currently unavailable. Please check other collections.</p></div>';
       }
-    }).catch(error => {
+    } catch (error) {
       console.error(error);
       detailFrame.innerHTML = '<p style="text-align:center;grid-column:1/-1;padding:60px 0;">An error occurred while loading product details. Please try again later.</p>';
-    });
+    }
+  }
+
+  loadProductDetails();
 
     // Quantity Selector
     const qtyInput = document.getElementById('qty-input');
@@ -1456,19 +1486,22 @@ if (hasVars && (!Array.isArray(selectedVariants) || selectedVariants.length === 
                 badgeStr = `<div class="discount-badge">خصم ${prod.discount}%</div>`;
               }
               
+              const relatedProductLink = prod.slug
+                ? `/product/${encodeURIComponent(prod.slug)}`
+                : `/product?id=${prod.id}`;
               const hasVars = typeof hasSelectableVariants === 'function' 
                 ? hasSelectableVariants(prod) 
                 : (prod.hasVariants === true || prod.hasVariants === 'true');
               let actionBtn = hasVars
-                ? `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/product?id=${prod.id}'">
+                ? `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='${relatedProductLink}'">
                     <i class="fas fa-spray-can"></i> اختاري الرائحة
                    </button>`
-                : `<button class="add-cart-btn" onclick="event.stopPropagation(); addToCartCard('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${priceRaw}, '${prod.image||''}', ${prod.discount||0}, ${prod.onSale||false}, false)">
+                : `<button class="add-cart-btn" onclick="event.stopPropagation(); addToCartCard('${prod.id}', '${(prod.name||'').replace(/'/g, "\\'")}', ${priceRaw}, '${prod.image||''}', ${prod.discount||0}, ${prod.onSale||false}, false, '${prod.slug || ''}')">
                     <i class="fas fa-shopping-bag"></i> Add
                    </button>`;
 
               gridHtml += `
-                <div class="product-card" onclick="window.location.href='/product?id=${prod.id}'">
+                <div class="product-card" onclick="window.location.href='${relatedProductLink}'">
                   <div class="product-image-wrap">
                     ${badgeStr}
                     <img loading="lazy" src="${prod.image || ''}" alt="${prod.name || 'Product'}"></div>
@@ -1484,9 +1517,12 @@ if (hasVars && (!Array.isArray(selectedVariants) || selectedVariants.length === 
     }
 
     // Global function for related product card 'Add to Cart' button
-    window.addToCartCard = function(id, name, price, image, discount, onSale, hasVariants) {
+    window.addToCartCard = function(id, name, price, image, discount, onSale, hasVariants, slug) {
       if (hasVariants) {
-        window.location.href = '/product?id=' + id;
+        const productLink = slug
+          ? `/product/${encodeURIComponent(slug)}`
+          : `/product?id=${id}`;
+        window.location.href = productLink;
         return;
       }
       if (typeof fbq === 'function') {

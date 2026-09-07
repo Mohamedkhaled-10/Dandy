@@ -2,6 +2,7 @@
 // BaseLayout.astro
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import DashboardNav from '../components/DashboardNav.astro';
 
 export interface Props {
   title?: string;
@@ -12,6 +13,7 @@ export interface Props {
   dir?: string;
   showHeader?: boolean;
   showFooter?: boolean;
+  showDashboardNav?: boolean;
   robots?: string;
 }
 
@@ -24,6 +26,7 @@ const {
   dir = 'rtl',
   showHeader = true,
   showFooter = true,
+  showDashboardNav = false,
   robots = 'index, follow',
 } = Astro.props;
 
@@ -99,6 +102,7 @@ const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmW
 </head>
 <body data-astro-layout="true">
   {showHeader && <Header />}
+  {showDashboardNav && <DashboardNav />}
   
   <slot />
 

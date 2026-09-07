@@ -1,0 +1,203 @@
+---
+// src/components/DashboardNav.astro
+const currentPath = (Astro.url.pathname || '').replace(/\/$/, '') || '/';
+
+const navItems = [
+  { href: '/dashboard', label: 'الرئيسية', icon: 'fa-tachometer-alt' },
+  { href: '/dashboard-order', label: 'الطلبات', icon: 'fa-shopping-bag' },
+  { href: '/dashboard-product', label: 'المنتجات', icon: 'fa-boxes' },
+  { href: '/dashboard-blog', label: 'المدونة', icon: 'fa-newspaper' },
+  { href: '/dashboard-index', label: 'تخصيص الواجهة', icon: 'fa-sliders-h' },
+  { href: '/statues', label: 'الإحصائيات', icon: 'fa-chart-line' },
+];
+
+function isItemActive(itemHref: string) {
+  const normHref = itemHref.replace(/\/$/, '');
+  if (normHref === '/dashboard') {
+    return currentPath === '/dashboard';
+  }
+  return currentPath === normHref || currentPath.startsWith(normHref + '/');
+}
+---
+
+<nav class="dashboard-unified-nav" aria-label="شريط تنقل لوحة التحكم">
+  <div class="dash-nav-container container">
+    <div class="dash-nav-brand">
+      <span class="dash-badge"><i class="fas fa-shield-alt"></i> الإدارة</span>
+    </div>
+    
+    <div class="dash-nav-scroll">
+      <ul class="dash-nav-list">
+        {navItems.map((item) => {
+          const active = isItemActive(item.href);
+          return (
+            <li>
+              <a 
+                href={item.href} 
+                class:list={['dash-nav-link', { 'active': active }]}
+                aria-current={active ? 'page' : undefined}
+              >
+                <i class:list={['fas', item.icon, 'nav-icon']}></i>
+                <span class="nav-text">{item.label}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    <div class="dash-nav-actions">
+      <a href="/" target="_blank" class="dash-store-link" title="معاينة المتجر المباشر">
+        <i class="fas fa-external-link-alt"></i>
+        <span>المتجر</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<style>
+  .dashboard-unified-nav {
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+    position: sticky;
+    top: 70px;
+    z-index: 900;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    font-family: inherit;
+    direction: rtl;
+  }
+
+  .dash-nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .dash-nav-brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .dash-badge {
+    background: #fdf2f8;
+    color: var(--color-blush, #DB2777);
+    border: 1px solid rgba(219, 39, 119, 0.2);
+    padding: 6px 12px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .dash-nav-scroll {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+  }
+  .dash-nav-scroll::-webkit-scrollbar {
+    display: none; /* WebKit */
+  }
+
+  .dash-nav-list {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .dash-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: #4b5563;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .dash-nav-link:hover {
+    color: var(--color-blush, #DB2777);
+    background: #fdf2f8;
+  }
+
+  .dash-nav-link.active {
+    background: var(--color-blush, #DB2777);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(219, 39, 119, 0.25);
+  }
+
+  .dash-nav-link.active .nav-icon {
+    color: #ffffff;
+  }
+
+  .nav-icon {
+    font-size: 0.9rem;
+    transition: transform 0.2s ease;
+  }
+  .dash-nav-link:hover .nav-icon {
+    transform: scale(1.1);
+  }
+
+  .dash-nav-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .dash-store-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .dash-store-link:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-unified-nav {
+      top: 60px;
+    }
+    .dash-nav-container {
+      padding-top: 6px;
+      padding-bottom: 6px;
+      gap: 10px;
+    }
+    .dash-nav-brand {
+      display: none;
+    }
+    .dash-nav-link {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+  }
+</style>

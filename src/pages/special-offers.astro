@@ -81,9 +81,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <script is:inline>
     const db = window.db || firebase.database();
 
-    window.quickAdd = function(id, name, price, image, discount, onSale, hasVariants) {
+    window.quickAdd = function(id, name, price, image, discount, onSale, hasVariants, slug) {
       if (hasVariants) {
-        window.location.href = '/product?id=' + id;
+        const productLink = slug
+          ? `/product/${encodeURIComponent(slug)}`
+          : `/product?id=${id}`;
+        window.location.href = productLink;
         return;
       }
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -155,7 +158,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           
           productEl.className = "product-card product";
           productEl.setAttribute("data-category", data.category || 'Special Promo');
-          productEl.onclick = function() { window.location.href = '/product?id=' + child.key; };
+          const productLink = data.slug
+            ? `/product/${encodeURIComponent(data.slug)}`
+            : `/product?id=${child.key}`;
+          productEl.onclick = function() { window.location.href = productLink; };
 
           const priceRaw = parseFloat(data.price) || 0;
           let priceStr = `<div class="product-price">${priceRaw} EGP</div>`;
@@ -176,13 +182,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             ? hasSelectableVariants(data) 
             : (data.hasVariants === true || data.hasVariants === 'true');
 
-          let actionBtn = `<button class="add-cart-btn" onclick="event.stopPropagation(); quickAdd('${child.key}', \`${(data.name || '').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount || ''}', ${data.onSale || false}, false)">
+          let actionBtn = `<button class="add-cart-btn" onclick="event.stopPropagation(); quickAdd('${child.key}', \`${(data.name || '').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount || ''}', ${data.onSale || false}, false, '${data.slug || ''}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                 Add
               </button>`;
 
           if (hasVars) {
-            actionBtn = `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='/product?id=${child.key}'">
+            actionBtn = `<button class="add-cart-btn" style="background:var(--color-primary); color:#fff;" onclick="event.stopPropagation(); window.location.href='${productLink}'">
                 <i class="fas fa-spray-can" style="margin-left:4px;"></i> اختاري الرائحة
               </button>`;
           }

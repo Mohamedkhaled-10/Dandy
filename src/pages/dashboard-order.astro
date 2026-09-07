@@ -6,6 +6,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="مدير وتوزيع الطلبات والفواتير | لوحة داندي"
   description="إدارة ومتابعة طلبات وفواتير متجر داندي وتحديث حالات الشحن لحظياً"
   robots="noindex, nofollow"
+  showDashboardNav={true}
 >
   <slot name="head" slot="head">
     <style is:global>
@@ -320,6 +321,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
     const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
+    async function logAdminAction(actionText) {
+      try {
+        const user = firebase.auth().currentUser;
+        await firebase.firestore().collection('change_logs').add({
+          adminEmail: user ? user.email : 'غير معروف',
+          action: actionText,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (err) {
+        console.error('Failed to log admin action:', err);
+      }
+    }
+
     // State Variables
     let initialLoad = true;
     let previousOrdersCount = 0;
@@ -532,6 +546,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
         try {
           await db.ref().update(updates);
+          logAdminAction('تم تحديث حالة ' + selectedIds.length + ' طلب إلى: ' + action);
           if (selectEl) selectEl.value = '';
           if (selectAllCheckbox) selectAllCheckbox.checked = false;
         } catch(err) {
@@ -572,8 +587,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     window.changeOrderStatus = async function(id, val){
+      const orderObj = rawOrders.find(o => o.id === id);
+      const invoiceCode = orderObj ? (orderObj.invoiceCode || id) : id;
       try {
         await db.ref(`orders/${id}`).update({status: val});
+        logAdminAction('تم تغيير حالة الطلب ' + invoiceCode + ' إلى: ' + val);
       } catch(err) {
         console.error('Status Update Error:', err);
         alert('حدث خطأ أثناء تحديث حالة الطلب.');
@@ -582,8 +600,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     window.deleteOrder = async function(id) {
       if(!confirm('هل أنتِ متأكدة من مسح هذا الطلب بالكامل من قاعدة البيانات؟ (هذا الإجراء لا يمكن التراجع عنه)')) return;
+      const orderObj = rawOrders.find(o => o.id === id);
+      const invoiceCode = orderObj ? (orderObj.invoiceCode || id) : id;
       try {
         await db.ref(`orders/${id}`).remove();
+        logAdminAction('تم حذف الطلب: ' + invoiceCode);
       } catch(err) {
         console.error('Delete Error:', err);
         alert('فشل في مسح الطلب.');

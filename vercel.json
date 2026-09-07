@@ -44,6 +44,10 @@
     { "source": "/dashboard-index.html", "destination": "/dashboard-index", "permanent": true },
     { "source": "/statues.html", "destination": "/statues", "permanent": true }
   ],
+  "rewrites": [
+    { "source": "/product/:slug", "destination": "/product" },
+    { "source": "/blog/:slug", "destination": "/post" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

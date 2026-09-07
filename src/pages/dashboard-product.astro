@@ -6,6 +6,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="مدير مخزن ومستحضرات الشحن | لوحة داندي"
   description="إدارة منتجات ومخزن متجر داندي وإضافة وتعديل المستحضرات والعروض الخاصة"
   robots="noindex, nofollow"
+  showDashboardNav={true}
 >
   <slot name="head" slot="head">
     <style is:global>
@@ -287,6 +288,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
     const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
+    async function logAdminAction(actionText) {
+      try {
+        const user = firebase.auth().currentUser;
+        await firebase.firestore().collection('change_logs').add({
+          adminEmail: user ? user.email : 'غير معروف',
+          action: actionText,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (err) {
+        console.error('Failed to log admin action:', err);
+      }
+    }
+
     let rawProducts = [];
 
     const adminFilterSelect = document.getElementById('admin-filter-select');
@@ -330,6 +344,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       let candidate = slug;
       let counter = 1;
       while (existingIds.has(candidate)) {
+        candidate = `${slug}-${counter}`;
+        counter++;
+      }
+      return candidate;
+    }
+
+    function generateProductSlug(name, existingSlugs) {
+      let slug = (name || '')
+        .trim()
+        .replace(/[^\u0621-\u064Aa-zA-Z0-9\s-]/g, '')
+        .replace(/\s+/g, '-');
+      if (!slug) slug = 'product';
+      let candidate = slug;
+      let counter = 2;
+      while (existingSlugs.has(candidate)) {
         candidate = `${slug}-${counter}`;
         counter++;
       }
@@ -584,7 +613,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             
             <div class="admin-p-actions">
               <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${d.id}')"><i class="fas fa-edit"></i> تعديل</button>
-              <a href="/product?id=${d.id}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
+              <a href="${d.slug ? `/product/${encodeURIComponent(d.slug)}` : `/product?id=${d.id}`}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
               <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${d.id}')" aria-label="حذف"><i class="fas fa-trash"></i></button>
             </div>
           </div>
@@ -684,6 +713,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           hasVariants: Boolean(hasVariants)
         };
 
+        if (!editId) {
+          const existingSlugs = new Set(rawProducts.map(p => p.slug).filter(Boolean));
+          payload.slug = generateProductSlug(name, existingSlugs);
+        }
+
         if (hasVariants) {
           payload.variantType = "scent";
           payload.variants = variantsPayload;
@@ -695,8 +729,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         try {
           if(editId) {
             await db.ref(`products/${editId}`).update(payload);
+            logAdminAction('تم تعديل المنتج: ' + name);
           } else {
             await db.ref('products').push().set(payload);
+            logAdminAction('تمت إضافة منتج جديد: ' + name);
           }
           resetProductForm();
         } catch(err) {
@@ -764,8 +800,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     window.deleteProduct = async function(key) {
       if(!confirm('هل أنتِ موقنة بحذف هذا المستحضر التجميلي نهائياً من رفوف داندي؟')) return;
       if (!db) return;
+      const targetProd = rawProducts.find(p => p.id === key);
+      const productName = targetProd ? (targetProd.name || key) : key;
       try {
         await db.ref(`products/${key}`).remove();
+        logAdminAction('تم حذف المنتج: ' + productName);
       } catch(err) {
         alert('فشل الحذف.');
       }

@@ -225,8 +225,9 @@
               priceStr = `<strong style="color:var(--color-danger);">${p.price} EGP</strong>`;
           }
           
+          const pLink = p.slug ? `/product/${encodeURIComponent(p.slug)}` : `/product?id=${p.id}`;
           html += `
-              <div style="display:flex; align-items:center; gap:12px; padding:10px; border:1px solid #f0e6e2; border-radius:8px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='transparent'" onclick="window.location.href='/product?id=${p.id}'">
+              <div style="display:flex; align-items:center; gap:12px; padding:10px; border:1px solid #f0e6e2; border-radius:8px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='transparent'" onclick="window.location.href='${pLink}'">
                   <img src="${p.image || ''}" alt="" loading="lazy" style="width:60px; height:60px; object-fit:cover; border-radius:6px; background:#f9f9f9;">
                   <div style="flex:1;">
                       <h4 style="margin:0 0 4px 0; font-size:0.95rem; color:var(--color-text);">${p.name}</h4>
