@@ -1,0 +1,333 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="تسجيل دخول العميلة | Dandy"
+  description="سجّلي الدخول إلى حسابك في داندي لمتابعة طلباتك، تعديل عناوين الشحن، ومشاهدة قائمتك المفضلة."
+>
+  <slot name="head" slot="head">
+    <style is:global>
+      .account-auth-container {
+        min-height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 130px;
+        padding-bottom: 70px;
+      }
+
+      .account-auth-box {
+        background: var(--color-surface, #fff);
+        border: 1px solid var(--border-light, #eaeaea);
+        border-radius: var(--border-radius-lg, 16px);
+        padding: 40px 35px;
+        width: 100%;
+        max-width: 460px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        text-align: center;
+      }
+
+      .account-auth-box .auth-icon {
+        font-size: 2.8rem;
+        color: var(--color-blush, #DB2777);
+        margin-bottom: 14px;
+        display: inline-block;
+      }
+
+      .account-auth-box h1 {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: var(--color-primary, #222);
+        margin-bottom: 8px;
+        font-family: 'Cairo', sans-serif;
+      }
+
+      .account-auth-box p.auth-subtitle {
+        color: var(--color-muted, #666);
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.5;
+      }
+
+      .auth-form-group {
+        text-align: right;
+        margin-bottom: 18px;
+      }
+
+      .auth-form-group label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: var(--color-primary, #333);
+        font-size: 0.9rem;
+      }
+
+      .auth-form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border-light, #eaeaea);
+        border-radius: var(--border-radius-sm, 8px);
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: var(--color-surface-soft, #fafafa);
+        font-family: inherit;
+        box-sizing: border-box;
+      }
+
+      .auth-form-group input:focus {
+        border-color: var(--color-blush, #DB2777);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+      }
+
+      .auth-row-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        font-size: 0.85rem;
+      }
+
+      .btn-forgot-pass {
+        background: none;
+        border: none;
+        color: var(--color-blush, #DB2777);
+        cursor: pointer;
+        font-weight: 700;
+        padding: 0;
+        font-family: inherit;
+        font-size: 0.88rem;
+        transition: text-decoration 0.2s;
+      }
+
+      .btn-forgot-pass:hover {
+        text-decoration: underline;
+      }
+
+      .btn-auth-submit {
+        width: 100%;
+        padding: 14px;
+        background: var(--color-blush, #DB2777);
+        color: #fff;
+        font-weight: 800;
+        border: none;
+        border-radius: 99px;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.25);
+        transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: inherit;
+      }
+
+      .btn-auth-submit:hover:not(:disabled) {
+        background: var(--color-primary, #111);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-auth-submit:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .auth-alert-msg {
+        display: none;
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 18px;
+        text-align: right;
+        line-height: 1.5;
+      }
+
+      .auth-alert-msg.error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+
+      .auth-alert-msg.success {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+      }
+
+      .auth-switch-link {
+        margin-top: 22px;
+        font-size: 0.9rem;
+        color: var(--color-muted, #666);
+      }
+
+      .auth-switch-link a {
+        color: var(--color-blush, #DB2777);
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .auth-switch-link a:hover {
+        text-decoration: underline;
+        color: var(--color-primary, #111);
+      }
+    </style>
+  </slot>
+
+  <main class="account-auth-container container" id="loginMain">
+    <div class="account-auth-box" id="loginCard">
+      <span class="auth-icon"><i class="fas fa-user-circle"></i></span>
+      <h1>تسجيل الدخول</h1>
+      <p class="auth-subtitle">أهلاً بكِ مجدداً في داندي! سجّلي دخولكِ للوصول إلى حسابكِ</p>
+
+      <div id="loginAlert" class="auth-alert-msg" role="alert"></div>
+
+      <form id="customerLoginForm" novalidate>
+        <div class="auth-form-group">
+          <label for="cl-email">البريد الإلكتروني</label>
+          <input type="email" id="cl-email" name="email" placeholder="example@gmail.com" required dir="ltr" style="text-align: right;" autocomplete="email" />
+        </div>
+
+        <div class="auth-form-group">
+          <label for="cl-pass">كلمة المرور</label>
+          <input type="password" id="cl-pass" name="password" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+
+        <div class="auth-row-actions">
+          <button type="button" id="forgotPassBtn" class="btn-forgot-pass">نسيتِ كلمة السر؟</button>
+        </div>
+
+        <button type="submit" id="loginSubmitBtn" class="btn-auth-submit">
+          <span>تسجيل الدخول</span>
+          <i class="fas fa-sign-in-alt"></i>
+        </button>
+      </form>
+
+      <div class="auth-switch-link">
+        ليس لديكِ حساب بعد؟ <a href="/account-signup">إنشاء حساب جديد</a>
+      </div>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function() {
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+
+      const form = document.getElementById('customerLoginForm');
+      const submitBtn = document.getElementById('loginSubmitBtn');
+      const forgotBtn = document.getElementById('forgotPassBtn');
+      const alertBox = document.getElementById('loginAlert');
+      const emailInput = document.getElementById('cl-email');
+      const passInput = document.getElementById('cl-pass');
+
+      function showAlert(text, type = 'error') {
+        if (!alertBox) return;
+        alertBox.className = 'auth-alert-msg ' + type;
+        alertBox.innerHTML = (type === 'error' ? '<i class="fas fa-exclamation-circle"></i> ' : '<i class="fas fa-check-circle"></i> ') + text;
+      }
+
+      function clearAlert() {
+        if (!alertBox) return;
+        alertBox.className = 'auth-alert-msg';
+        alertBox.innerHTML = '';
+      }
+
+      // توجيه تلقائي إذا كانت العميلة مسجلة دخولها بالفعل
+      if (auth) {
+        auth.onAuthStateChanged(function(user) {
+          if (user && user.email !== 'admin@dandy.com') {
+            window.location.href = '/account';
+          }
+        });
+      }
+
+      // معالجة "نسيت كلمة السر"
+      if (forgotBtn) {
+        forgotBtn.addEventListener('click', async function() {
+          clearAlert();
+          const email = emailInput?.value.trim();
+          if (!email || !email.includes('@')) {
+            showAlert('يرجى كتابة بريدكِ الإلكتروني في الحقل أولاً، ثم اضغطي على "نسيتِ كلمة السر؟".', 'error');
+            emailInput?.focus();
+            return;
+          }
+
+          try {
+            forgotBtn.disabled = true;
+            forgotBtn.textContent = 'جاري الإرسال...';
+            await auth.sendPasswordResetEmail(email);
+            showAlert('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدكِ الإلكتروني (' + email + ') بنجاح. تفقدي صندوق الوارد أو البريد غير المرغوب فيه (Spam).', 'success');
+          } catch (err) {
+            console.error('Password reset error:', err);
+            let msg = 'تعذر إرسال رابط إعادة التعيين. يرجى التأكد من صحة البريد الإلكتروني.';
+            if (err.code === 'auth/user-not-found') {
+              msg = 'هذا البريد الإلكتروني غير مسجل لدينا.';
+            }
+            showAlert(msg, 'error');
+          } finally {
+            forgotBtn.disabled = false;
+            forgotBtn.textContent = 'نسيتِ كلمة السر؟';
+          }
+        });
+      }
+
+      // تسجيل الدخول
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          clearAlert();
+
+          const email = emailInput?.value.trim();
+          const password = passInput?.value.trim();
+
+          if (!email || !email.includes('@')) {
+            showAlert('يرجى إدخال بريد إلكتروني صالح.');
+            return;
+          }
+          if (!password) {
+            showAlert('يرجى إدخال كلمة المرور.');
+            return;
+          }
+
+          if (!auth) {
+            showAlert('تعذر الاتصال بخدمة التحقق. يرجى إعادة تحميل الصفحة.');
+            return;
+          }
+
+          submitBtn.disabled = true;
+          const originalBtnHTML = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الدخول...';
+
+          try {
+            await auth.signInWithEmailAndPassword(email, password);
+            showAlert('تم تسجيل الدخول بنجاح! جاري التوجيه...', 'success');
+            setTimeout(function() {
+              window.location.href = '/account';
+            }, 500);
+          } catch (err) {
+            console.error('Login error:', err);
+            let message = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+              message = 'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التحقق وإعادة المحاولة.';
+            } else if (err.code === 'auth/too-many-requests') {
+              message = 'تم حظر المحاولات مؤقتاً لكثرة المحاولات غير الناجحة. يرجى المحاولة بعد قليل أو إعادة تعيين كلمة المرور.';
+            }
+            showAlert(message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHTML;
+          }
+        });
+      }
+    })();
+  </script>
+</BaseLayout>

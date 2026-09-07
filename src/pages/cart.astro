@@ -537,6 +537,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="panel-main-card">
               <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> أين يجب أن نقوم بتوصيل طلبك؟</h2>
               
+              <!-- اختيار العنوان للعملاء المسجلين ذوي العناوين المحفوظة -->
+              <div id="savedAddressesSection" style="display:none; margin-bottom:20px; padding:16px; background:var(--color-surface-soft, #fafafa); border:1px solid var(--border-light, #eaeaea); border-radius:12px;">
+                <div style="font-weight:700; color:var(--color-primary); margin-bottom:10px; font-size:0.95rem; display:flex; align-items:center; gap:8px;">
+                  <i class="fas fa-address-book" style="color:var(--color-blush);"></i>
+                  <span>العناوين المحفوظة في حسابكِ</span>
+                </div>
+                <div style="display:flex; gap:18px; margin-bottom:12px; font-size:0.9rem;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:600;">
+                    <input type="radio" name="addressMode" id="addrModeSaved" value="saved" checked onchange="window.toggleAddressMode('saved')">
+                    <span>استخدام عنوان محفوظ</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:600;">
+                    <input type="radio" name="addressMode" id="addrModeNew" value="new" onchange="window.toggleAddressMode('new')">
+                    <span>إدخال عنوان جديد</span>
+                  </label>
+                </div>
+                <div id="savedSelectWrap">
+                  <label for="savedAddressSelect" style="display:block; font-size:0.85rem; color:var(--color-muted); margin-bottom:5px;">اختاري العنوان المحفوظ:</label>
+                  <select id="savedAddressSelect" class="form-control" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-light); font-family:inherit; background:#fff;" onchange="window.applySavedAddress(this.value)">
+                    <option value="">-- اختاري عنواناً محفوظاً --</option>
+                  </select>
+                </div>
+              </div>
+
               <form id="shippingFormElement" onsubmit="event.preventDefault();">
                 <div class="form-group-checkout">
                   <label for="f-name">الاسم بالكامل</label>
@@ -919,6 +943,120 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
     };
 
+    // --- تكامل حساب العميل والعناوين المحفوظة في الـ Checkout ---
+    let customerSavedAddresses = {};
+
+    function initCustomerCheckoutAddresses() {
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      if (!auth) return;
+
+      auth.onAuthStateChanged(async (user) => {
+        const sec = document.getElementById('savedAddressesSection');
+        if (!user) {
+          if (sec) sec.style.display = 'none';
+          return;
+        }
+
+        try {
+          const snap = await db.ref('customers/' + user.uid + '/addresses').once('value');
+          if (snap.exists()) {
+            customerSavedAddresses = snap.val() || {};
+            const keys = Object.keys(customerSavedAddresses);
+            if (keys.length > 0) {
+              const select = document.getElementById('savedAddressSelect');
+              if (sec) sec.style.display = 'block';
+
+              if (select) {
+                select.innerHTML = '<option value="">-- اختاري عنواناً محفوظاً --</option>';
+                let defaultKey = null;
+
+                const govSelect = document.getElementById('f-gov');
+                keys.forEach(k => {
+                  const addr = customerSavedAddresses[k];
+                  let govArabic = addr.governorate || '';
+                  if (govSelect) {
+                    const opt = Array.from(govSelect.options).find(o => o.value === addr.governorate);
+                    if (opt) govArabic = opt.text;
+                  }
+
+                  const opt = document.createElement('option');
+                  opt.value = k;
+                  opt.textContent = `${addr.label || 'عنوان'} (${govArabic} - ${addr.city || ''}) ${addr.isDefault ? '★ (افتراضي)' : ''}`;
+                  select.appendChild(opt);
+                  if (addr.isDefault) defaultKey = k;
+                });
+
+                // تطبيق العنوان الافتراضي تلقائياً إن وجد
+                const targetKey = defaultKey || keys[0];
+                select.value = targetKey;
+                window.applySavedAddress(targetKey);
+              }
+            } else {
+              if (sec) sec.style.display = 'none';
+            }
+          } else {
+            if (sec) sec.style.display = 'none';
+          }
+
+          // ملء الاسم ورقم الهاتف والبريد من بروفايل العميل إن كانا فارغين
+          const custSnap = await db.ref('customers/' + user.uid).once('value');
+          if (custSnap.exists()) {
+            const cData = custSnap.val();
+            const nameInput = document.getElementById('f-name');
+            const phoneInput = document.getElementById('f-phone');
+            const emailInput = document.getElementById('f-email');
+            if (nameInput && !nameInput.value && cData.name) nameInput.value = cData.name;
+            if (phoneInput && !phoneInput.value && cData.phone) phoneInput.value = cData.phone;
+            if (emailInput && !emailInput.value && (cData.email || user.email)) emailInput.value = cData.email || user.email;
+          }
+        } catch (e) {
+          console.warn('Error loading customer checkout addresses:', e);
+        }
+      });
+    }
+
+    window.toggleAddressMode = function(mode) {
+      const selectWrap = document.getElementById('savedSelectWrap');
+      const govInput = document.getElementById('f-gov');
+      const cityInput = document.getElementById('f-city');
+      const addrInput = document.getElementById('f-address');
+
+      if (mode === 'saved') {
+        if (selectWrap) selectWrap.style.display = 'block';
+        const select = document.getElementById('savedAddressSelect');
+        if (select && select.value) {
+          window.applySavedAddress(select.value);
+        }
+      } else {
+        if (selectWrap) selectWrap.style.display = 'none';
+        if (govInput) govInput.value = '';
+        if (cityInput) cityInput.value = '';
+        if (addrInput) addrInput.value = '';
+        if (typeof handleGovChange === 'function') handleGovChange();
+      }
+    };
+
+    window.applySavedAddress = function(key) {
+      if (!key || !customerSavedAddresses[key]) return;
+      const addr = customerSavedAddresses[key];
+      const govInput = document.getElementById('f-gov');
+      const cityInput = document.getElementById('f-city');
+      const addrInput = document.getElementById('f-address');
+
+      if (govInput && addr.governorate) {
+        govInput.value = addr.governorate;
+      }
+      if (cityInput && addr.city) {
+        cityInput.value = addr.city;
+      }
+      if (addrInput && addr.address) {
+        addrInput.value = addr.address;
+      }
+      if (typeof handleGovChange === 'function') handleGovChange();
+    };
+
+    initCustomerCheckoutAddresses();
+
     window.goToStep = function(step) {
       currentStep = step;
 
@@ -1110,10 +1248,57 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         timestamp: new Date().toISOString()
       };
 
+      // إذا كان هناك مستخدم مسجل دخول، أضف customerId؛ إذا كان ضيفاً، لا تضف الحقل إطلاقاً
+      const currentAuthUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+      if (currentAuthUser && currentAuthUser.uid) {
+        orderData.customerId = currentAuthUser.uid;
+      }
+
       try {
         const orderRef = db.ref('orders').push();
         await orderRef.set(orderData);
         const generatedKey = orderRef.key;
+
+        // --- تحديث المخزون باستخدام Firebase Transaction وتنبيه انخفاض الكمية ---
+        try {
+          for (const item of cart) {
+            const productId = item.productId || String(item.id).split('::')[0];
+            const orderedQuantity = parseInt(item.quantity) || 1;
+            const productName = item.name || '';
+
+            if (productId) {
+              const stockRef = db.ref(`products/${productId}/stockQuantity`);
+              await stockRef.transaction(current => {
+                if (current === null || current === undefined) return current; // منتج بدون تتبع مخزون، لا تفعل شيئاً
+                const num = Number(current);
+                if (isNaN(num)) return current;
+                return Math.max(0, num - orderedQuantity);
+              });
+
+              // بعد التحديث، تحقق من القيمة الجديدة
+              const newSnap = await stockRef.once('value');
+              const rawQty = newSnap.val();
+              const newQty = rawQty !== null && rawQty !== undefined ? Number(rawQty) : null;
+              if (typeof newQty === 'number' && !isNaN(newQty) && newQty <= 0) {
+                await db.ref(`products/${productId}/isSoldOut`).set(true);
+              }
+              if (typeof newQty === 'number' && !isNaN(newQty) && newQty <= 3 && newQty > 0) {
+                // تنبيه مخزون منخفض عبر Telegram
+                fetch('/api/send-telegram', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    lowStockAlert: true,
+                    productName: productName,
+                    remainingQty: newQty
+                  })
+                }).catch(() => {});
+              }
+            }
+          }
+        } catch (stockErr) {
+          console.error('Inventory transaction update error:', stockErr);
+        }
 
         try {
           await fetch('https://hook.eu1.make.com/vx6ie8k20cw0difkin21bx4dvkw7rful', {

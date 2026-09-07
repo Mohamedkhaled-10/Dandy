@@ -1,7 +1,7 @@
 export async function POST({ request }) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { order, orderId } = body || {};
+    const { order, orderId, lowStockAlert, productName, remainingQty } = body || {};
 
     const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
     const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_ID;
@@ -18,11 +18,22 @@ export async function POST({ request }) {
       });
     }
 
-    const dateText = order?.timestamp
-      ? new Date(order.timestamp).toLocaleString('ar-EG')
-      : new Date().toLocaleString('ar-EG');
+    let message = '';
+    if (lowStockAlert) {
+      message = `⚠️ *تنبيه مخزون منخفض في متجر داندي!*
+────────────────
+📦 *المنتج:* ${productName || '-'}
+📉 *الكمية المتبقية:* ${remainingQty ?? 0}
+⏱ *الوقت:* ${new Date().toLocaleString('ar-EG')}
 
-    const message = `🔔 *طلب جديد في متجر داندي!*
+🔗 *إدارة المنتجات:*
+https://dandy-ebon.vercel.app/dashboard-product`;
+    } else {
+      const dateText = order?.timestamp
+        ? new Date(order.timestamp).toLocaleString('ar-EG')
+        : new Date().toLocaleString('ar-EG');
+
+      message = `🔔 *طلب جديد في متجر داندي!*
 ────────────────
 👤 *العميل\\ة:* ${order?.name || '-'}
 📞 *رقم الهاتف:* ${order?.phone || '-'}
@@ -33,6 +44,7 @@ export async function POST({ request }) {
 
 🔗 *تفاصيل الطلب:*
 https://dandy-ebon.vercel.app/dashboard-order`;
+    }
 
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 

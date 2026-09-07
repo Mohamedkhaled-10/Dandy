@@ -80,6 +80,91 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         transform: scale(1.02);
       }
 
+      .btn-detail-wishlist {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        color: #888;
+        font-size: 1.3rem;
+        transition: transform 0.2s, color 0.2s, background 0.2s;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+      }
+      .btn-detail-wishlist:hover {
+        transform: scale(1.1);
+        color: #e11d48;
+      }
+      .btn-detail-wishlist.active {
+        color: #e11d48;
+        background: #fff;
+      }
+      .btn-detail-wishlist.active i {
+        font-weight: 900;
+      }
+
+      .btn-action-wishlist {
+        background: #fff;
+        color: #e11d48;
+        border: 1.5px solid #fecdd3;
+        padding: 11px 20px;
+        border-radius: 99px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+        font-family: inherit;
+        width: 100%;
+        margin-top: 10px;
+      }
+      .btn-action-wishlist:hover {
+        background: #ffe4e6;
+        border-color: #fda4af;
+      }
+      .btn-action-wishlist.active {
+        background: #e11d48;
+        color: #fff;
+        border-color: #e11d48;
+      }
+      .btn-action-wishlist.active i {
+        font-weight: 900;
+      }
+
+      .btn-card-wishlist {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 3;
+        color: #999;
+        font-size: 1.05rem;
+        transition: transform 0.2s, color 0.2s, background 0.2s;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+      .btn-card-wishlist:hover { transform: scale(1.15); color: #e11d48; }
+      .btn-card-wishlist.active { color: #e11d48; background: #fff; }
+      .btn-card-wishlist.active i { font-weight: 900; }
+
       .detail-info-box {
         display: flex;
         flex-direction: column;
@@ -764,6 +849,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
     <div class="detail-grid" id="detailFrame">
       <div class="detail-image-box">
+        <button type="button" class="btn-detail-wishlist" id="detailWishlistBtn" title="حفظ في المفضلة">
+          <i class="far fa-heart"></i>
+        </button>
         <img loading="lazy" id="product-img" src="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" alt="Loading Product Image...">
       </div>
 
@@ -805,6 +893,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <i class="fas fa-shopping-basket"></i> أضف إلى السلة
             </button>
           </div>
+
+          <button type="button" class="btn-action-wishlist" id="actionWishlistBtn">
+            <i class="far fa-heart"></i> <span id="actionWishlistText">إضافة إلى المفضلة</span>
+          </button>
           
           <a class="btn-action btn-wa" id="whatsapp-link" target="_blank">
             <i class="fab fa-whatsapp"></i> تواصل عبر واتساب
@@ -1270,6 +1362,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         // -- RENDER VARIANTS / SCENTS --
         renderProductVariants(product);
 
+        // -- SETUP WISHLIST (المرحلة 5) --
+        setupProductWishlist(id);
+
       } else {
         detailFrame.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:60px 0;"><i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--color-gold);margin-bottom:14px;"></i><p style="font-size:1.2rem;font-weight:700;">The product you are looking for is currently unavailable. Please check other collections.</p></div>';
       }
@@ -1500,10 +1595,17 @@ if (hasVars && (!Array.isArray(selectedVariants) || selectedVariants.length === 
                     <i class="fas fa-shopping-bag"></i> Add
                    </button>`;
 
+              const isFav = window.userWishlistSet && window.userWishlistSet.has(prod.id);
+              const heartIconClass = isFav ? 'fas fa-heart' : 'far fa-heart';
+              const heartActive = isFav ? 'active' : '';
+
               gridHtml += `
                 <div class="product-card" onclick="window.location.href='${relatedProductLink}'">
                   <div class="product-image-wrap">
                     ${badgeStr}
+                    <button type="button" class="btn-card-wishlist ${heartActive}" data-product-id="${prod.id}" onclick="event.stopPropagation(); window.toggleWishlist('${prod.id}', this);" title="إضافة للمفضلة">
+                      <i class="${heartIconClass}"></i>
+                    </button>
                     <img loading="lazy" src="${prod.image || ''}" alt="${prod.name || 'Product'}"></div>
                     <h3 class="product-title-card">${prod.name || ''}</h3>
                     ${priceStr}
@@ -1569,6 +1671,128 @@ if (hasVars && (!Array.isArray(selectedVariants) || selectedVariants.length === 
 
       if(typeof window.updateSharedCartCount === "function") window.updateSharedCartCount();
       if(typeof updateCartCount === "function") updateCartCount();
+    };
+
+    // --- إدارة وتتبع المفضلة (المرحلة 5) ---
+    window.userWishlistSet = new Set();
+    let isCurrentProductInWishlist = false;
+
+    function setupProductWishlist(currentProdId) {
+      if (!currentProdId) return;
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      if (!auth) return;
+
+      const detailBtn = document.getElementById('detailWishlistBtn');
+      const actionBtn = document.getElementById('actionWishlistBtn');
+
+      function updateUI(fav) {
+        isCurrentProductInWishlist = fav;
+        if (detailBtn) {
+          if (fav) {
+            detailBtn.classList.add('active');
+            detailBtn.innerHTML = '<i class="fas fa-heart"></i>';
+          } else {
+            detailBtn.classList.remove('active');
+            detailBtn.innerHTML = '<i class="far fa-heart"></i>';
+          }
+        }
+        if (actionBtn) {
+          if (fav) {
+            actionBtn.classList.add('active');
+            actionBtn.innerHTML = '<i class="fas fa-heart"></i> <span>في قائمة المفضلة</span>';
+          } else {
+            actionBtn.classList.remove('active');
+            actionBtn.innerHTML = '<i class="far fa-heart"></i> <span id="actionWishlistText">إضافة إلى المفضلة</span>';
+          }
+        }
+      }
+
+      async function handleToggle() {
+        const user = auth.currentUser;
+        if (!user) {
+          alert('سجّلي دخولك لحفظ المفضلة');
+          window.location.href = '/account-login';
+          return;
+        }
+
+        try {
+          if (isCurrentProductInWishlist) {
+            await db.ref('wishlists/' + user.uid + '/' + currentProdId).remove();
+            window.userWishlistSet.delete(currentProdId);
+            updateUI(false);
+          } else {
+            await db.ref('wishlists/' + user.uid + '/' + currentProdId).set(true);
+            window.userWishlistSet.add(currentProdId);
+            updateUI(true);
+          }
+        } catch (err) {
+          console.error('Error toggling main product wishlist:', err);
+        }
+      }
+
+      if (detailBtn) detailBtn.onclick = handleToggle;
+      if (actionBtn) actionBtn.onclick = handleToggle;
+
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          window.userWishlistSet.clear();
+          updateUI(false);
+          return;
+        }
+
+        try {
+          const snap = await db.ref('wishlists/' + user.uid).once('value');
+          if (snap.exists()) {
+            const val = snap.val() || {};
+            window.userWishlistSet = new Set(Object.keys(val).filter(k => !!val[k]));
+            updateUI(window.userWishlistSet.has(currentProdId));
+
+            // تحديث بطاقات المنتجات ذات الصلة
+            document.querySelectorAll('.btn-card-wishlist').forEach(btn => {
+              const pid = btn.getAttribute('data-product-id');
+              if (window.userWishlistSet.has(pid)) {
+                btn.classList.add('active');
+                const i = btn.querySelector('i');
+                if (i) i.className = 'fas fa-heart';
+              }
+            });
+          } else {
+            updateUI(false);
+          }
+        } catch (e) {
+          console.warn('Error fetching wishlist status:', e);
+        }
+      });
+    }
+
+    window.toggleWishlist = async function(productId, btnEl) {
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      const user = auth ? auth.currentUser : null;
+
+      if (!user) {
+        alert('سجّلي دخولك لحفظ المفضلة');
+        window.location.href = '/account-login';
+        return;
+      }
+
+      const isFav = btnEl.classList.contains('active');
+      const icon = btnEl.querySelector('i');
+
+      try {
+        if (isFav) {
+          await db.ref('wishlists/' + user.uid + '/' + productId).remove();
+          window.userWishlistSet.delete(productId);
+          btnEl.classList.remove('active');
+          if (icon) icon.className = 'far fa-heart';
+        } else {
+          await db.ref('wishlists/' + user.uid + '/' + productId).set(true);
+          window.userWishlistSet.add(productId);
+          btnEl.classList.add('active');
+          if (icon) icon.className = 'fas fa-heart';
+        }
+      } catch (err) {
+        console.error('Error toggling wishlist:', err);
+      }
     };
   </script>
 </BaseLayout>

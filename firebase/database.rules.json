@@ -11,10 +11,19 @@
     "products": {
       ".read": true,
       ".indexOn": ["slug"],
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'",
+      "$productId": {
+        "stockQuantity": {
+          ".write": true
+        },
+        "isSoldOut": {
+          ".write": true
+        }
+      }
     },
     "orders": {
       ".read": true,
+      ".indexOn": ["phone", "customerId"],
       ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || !data.exists()",
       "$orderId": {
         ".read": true,
@@ -50,6 +59,18 @@
     "testimonials": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+    },
+    "customers": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"
+      }
+    },
+    "wishlists": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"
+      }
     },
     "_archive": {
       ".read": "auth != null && auth.token.email == 'admin@dandy.com'",

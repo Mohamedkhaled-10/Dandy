@@ -153,6 +153,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <label for="p-discount">نسبة الخصم المئوية (%)</label>
               <input type="number" id="p-discount" placeholder="نسبة الخصم لعروض special offers" min="0" max="100" />
             </div>
+            <div class="form-group-admin">
+              <label for="p-stockQuantity">الكمية المتوفرة (اختياري)</label>
+              <input type="number" id="p-stockQuantity" placeholder="اتركه فارغاً لعدم تتبع المخزون" min="0" />
+            </div>
           </div>
 
           <div class="form-row">
@@ -513,7 +517,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const dateStr = exportDate.toISOString().replace(/T/, '_').replace(/:/g, '-').split('.')[0];
       const readableDate = exportDate.toLocaleString('ar-EG');
 
-      const headers = ['اسم المنتج', 'الفئة', 'السعر الحالي (EGP)', 'السعر القديم (EGP)', 'نسبة الخصم (%)', 'التقييم', 'الأكثر مبيعاً', 'عروض خاصة', 'نفذت الكمية', 'مخفي'];
+      const headers = ['اسم المنتج', 'الفئة', 'السعر الحالي (EGP)', 'السعر القديم (EGP)', 'نسبة الخصم (%)', 'الكمية المتوفرة', 'التقييم', 'الأكثر مبيعاً', 'عروض خاصة', 'نفذت الكمية', 'مخفي'];
       
       const rows = rawProducts.map(p => {
         return [
@@ -522,6 +526,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           p.price || 0,
           p.originalPrice || '',
           p.discount || 0,
+          (p.stockQuantity !== undefined && p.stockQuantity !== null) ? p.stockQuantity : 'غير محدد',
           p.rating || 5,
           p.bestSeller ? 'نعم' : 'لا',
           p.onSale ? 'نعم' : 'لا',
@@ -593,6 +598,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           priceHtml = `${d.price} EGP <span class="old-price">${originalPrice} EGP</span>`;
         }
 
+        let stockBadgeHtml = '';
+        if (typeof d.stockQuantity === 'number') {
+          const qty = d.stockQuantity;
+          let stockBg = '#ecfdf5';
+          let stockColor = '#065f46';
+          let stockBorder = '#a7f3d0';
+          let stockIcon = 'fa-cubes';
+
+          if (qty <= 0) {
+            stockBg = '#fef2f2';
+            stockColor = '#991b1b';
+            stockBorder = '#fecaca';
+            stockIcon = 'fa-times-circle';
+          } else if (qty <= 3) {
+            stockBg = '#fffbeb';
+            stockColor = '#92400e';
+            stockBorder = '#fde68a';
+            stockIcon = 'fa-exclamation-triangle';
+          }
+
+          stockBadgeHtml = `<span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:6px; background:${stockBg}; color:${stockColor}; border:1px solid ${stockBorder};" title="الكمية المتوفرة بالمخزون: ${qty}"><i class="fas ${stockIcon}"></i> المخزون: ${qty}</span>`;
+        }
+
         const card = document.createElement('div');
         card.className = 'admin-p-card';
         card.innerHTML = `
@@ -601,7 +629,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <img src="${d.image || ''}" alt="${d.name || ''}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
           </div>
           <div class="admin-p-content">
-            <span class="admin-p-cat"><i class="fas fa-tags"></i> ${normCat}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:6px;">
+              <span class="admin-p-cat" style="margin-bottom:0;"><i class="fas fa-tags"></i> ${normCat}</span>
+              ${stockBadgeHtml}
+            </div>
             <h4 class="admin-p-title" title="${d.name || ''}">${d.name || ''}</h4>
             
             <div class="quick-toggles-row">
@@ -659,8 +690,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         
         const bestSeller = document.getElementById('p-bestSeller').checked;
         const onSale = document.getElementById('p-onSale').checked;
-        const isSoldOut = document.getElementById('p-isSoldOut').checked;
+        let isSoldOut = document.getElementById('p-isSoldOut').checked;
         const isHidden = document.getElementById('p-isHidden').checked;
+
+        const stockInput = document.getElementById('p-stockQuantity');
+        const stockVal = stockInput ? stockInput.value.trim() : '';
+        let stockQuantity = null;
+
+        if (stockVal !== '') {
+          const parsedStock = parseInt(stockVal, 10);
+          if (!isNaN(parsedStock)) {
+            stockQuantity = Math.max(0, parsedStock);
+            if (stockQuantity <= 0) {
+              isSoldOut = true;
+            }
+          }
+        }
 
         const editId = editIdEl ? editIdEl.value : '';
 
@@ -713,6 +758,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           hasVariants: Boolean(hasVariants)
         };
 
+        if (stockQuantity !== null) {
+          payload.stockQuantity = stockQuantity;
+        } else if (editId) {
+          payload.stockQuantity = null;
+        }
+
         if (!editId) {
           const existingSlugs = new Set(rawProducts.map(p => p.slug).filter(Boolean));
           payload.slug = generateProductSlug(name, existingSlugs);
@@ -763,6 +814,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('p-isSoldOut').checked = !!p.isSoldOut;
       document.getElementById('p-isHidden').checked = !!p.isHidden;
 
+      const stockEl = document.getElementById('p-stockQuantity');
+      if (stockEl) {
+        stockEl.value = (p.stockQuantity !== undefined && p.stockQuantity !== null) ? p.stockQuantity : '';
+      }
+
       // تحميل الـ Variants الحالية للمنتج بدقة
       const hasVariants = Boolean(p.hasVariants);
       const rawVariants = Array.isArray(p.variants) ? p.variants : [];
@@ -784,6 +840,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     function resetProductForm(){
       if (productForm) productForm.reset();
+      const stockEl = document.getElementById('p-stockQuantity');
+      if (stockEl) stockEl.value = '';
       if (editIdEl) editIdEl.value = '';
       if (imgPreview) {
         imgPreview.style.display = 'none';

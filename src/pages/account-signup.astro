@@ -1,0 +1,319 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="إنشاء حساب جديد | Dandy"
+  description="انضمي إلى عائلة داندي وتابعي طلباتك السابقة، عناوينك المحفوظة، وقائمتك المفضلة بكل سهولة."
+>
+  <slot name="head" slot="head">
+    <style is:global>
+      .account-auth-container {
+        min-height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 130px;
+        padding-bottom: 70px;
+      }
+
+      .account-auth-box {
+        background: var(--color-surface, #fff);
+        border: 1px solid var(--border-light, #eaeaea);
+        border-radius: var(--border-radius-lg, 16px);
+        padding: 40px 35px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        text-align: center;
+      }
+
+      .account-auth-box .auth-icon {
+        font-size: 2.8rem;
+        color: var(--color-blush, #DB2777);
+        margin-bottom: 14px;
+        display: inline-block;
+      }
+
+      .account-auth-box h1 {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: var(--color-primary, #222);
+        margin-bottom: 8px;
+        font-family: 'Cairo', sans-serif;
+      }
+
+      .account-auth-box p.auth-subtitle {
+        color: var(--color-muted, #666);
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+        line-height: 1.5;
+      }
+
+      .auth-form-group {
+        text-align: right;
+        margin-bottom: 18px;
+      }
+
+      .auth-form-group label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: var(--color-primary, #333);
+        font-size: 0.9rem;
+      }
+
+      .auth-form-group input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border-light, #eaeaea);
+        border-radius: var(--border-radius-sm, 8px);
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: var(--color-surface-soft, #fafafa);
+        font-family: inherit;
+        box-sizing: border-box;
+      }
+
+      .auth-form-group input:focus {
+        border-color: var(--color-blush, #DB2777);
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+      }
+
+      .btn-auth-submit {
+        width: 100%;
+        padding: 14px;
+        background: var(--color-blush, #DB2777);
+        color: #fff;
+        font-weight: 800;
+        border: none;
+        border-radius: 99px;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.25);
+        transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+        font-family: inherit;
+      }
+
+      .btn-auth-submit:hover:not(:disabled) {
+        background: var(--color-primary, #111);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+      }
+
+      .btn-auth-submit:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .auth-alert-msg {
+        display: none;
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 18px;
+        text-align: right;
+        line-height: 1.5;
+      }
+
+      .auth-alert-msg.error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+
+      .auth-alert-msg.success {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+      }
+
+      .auth-switch-link {
+        margin-top: 22px;
+        font-size: 0.9rem;
+        color: var(--color-muted, #666);
+      }
+
+      .auth-switch-link a {
+        color: var(--color-blush, #DB2777);
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .auth-switch-link a:hover {
+        text-decoration: underline;
+        color: var(--color-primary, #111);
+      }
+    </style>
+  </slot>
+
+  <main class="account-auth-container container" id="signupMain">
+    <div class="account-auth-box" id="signupCard">
+      <span class="auth-icon"><i class="fas fa-user-plus"></i></span>
+      <h1>إنشاء حساب عميلة جديدة</h1>
+      <p class="auth-subtitle">انضمي إلينا لمتابعة طلباتكِ وحفظ عناوينكِ ومفضلاتكِ بسهولة</p>
+
+      <div id="signupAlert" class="auth-alert-msg" role="alert"></div>
+
+      <form id="signupForm" novalidate>
+        <div class="auth-form-group">
+          <label for="c-name">الاسم بالكامل <span style="color:#e11d48;">*</span></label>
+          <input type="text" id="c-name" name="name" placeholder="مثال: سارة أحمد" required autocomplete="name" />
+        </div>
+
+        <div class="auth-form-group">
+          <label for="c-phone">رقم الهاتف <span style="color:#e11d48;">*</span> <small style="font-size:0.78rem; color:var(--color-muted);">(سيُستخدم لربط طلباتك السابقة)</small></label>
+          <input type="tel" id="c-phone" name="phone" placeholder="01xxxxxxxxx" required dir="ltr" style="text-align: right;" autocomplete="tel" />
+        </div>
+
+        <div class="auth-form-group">
+          <label for="c-email">البريد الإلكتروني <span style="color:#e11d48;">*</span></label>
+          <input type="email" id="c-email" name="email" placeholder="example@gmail.com" required dir="ltr" style="text-align: right;" autocomplete="email" />
+        </div>
+
+        <div class="auth-form-group">
+          <label for="c-pass">كلمة المرور <span style="color:#e11d48;">*</span> <small style="font-size:0.78rem; color:var(--color-muted);">(6 أحرف على الأقل)</small></label>
+          <input type="password" id="c-pass" name="password" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+        </div>
+
+        <button type="submit" id="signupSubmitBtn" class="btn-auth-submit">
+          <span>إنشاء الحساب</span>
+          <i class="fas fa-arrow-left"></i>
+        </button>
+      </form>
+
+      <div class="auth-switch-link">
+        لديكِ حساب بالفعل؟ <a href="/account-login">تسجيل الدخول</a>
+      </div>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function() {
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+      const form = document.getElementById('signupForm');
+      const submitBtn = document.getElementById('signupSubmitBtn');
+      const alertBox = document.getElementById('signupAlert');
+
+      function showAlert(text, type = 'error') {
+        if (!alertBox) return;
+        alertBox.className = 'auth-alert-msg ' + type;
+        alertBox.innerHTML = (type === 'error' ? '<i class="fas fa-exclamation-circle"></i> ' : '<i class="fas fa-check-circle"></i> ') + text;
+      }
+
+      function clearAlert() {
+        if (!alertBox) return;
+        alertBox.className = 'auth-alert-msg';
+        alertBox.innerHTML = '';
+      }
+
+      // توجيه تلقائي إذا كان مسجلاً بالفعل
+      if (auth) {
+        auth.onAuthStateChanged(function(user) {
+          if (user && user.email !== 'admin@dandy.com') {
+            window.location.href = '/account';
+          }
+        });
+      }
+
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          clearAlert();
+
+          const name = document.getElementById('c-name')?.value.trim();
+          const phone = document.getElementById('c-phone')?.value.trim();
+          const email = document.getElementById('c-email')?.value.trim();
+          const password = document.getElementById('c-pass')?.value.trim();
+
+          if (!name) {
+            showAlert('يرجى إدخال الاسم بالكامل.');
+            return;
+          }
+          if (!phone || phone.length < 10) {
+            showAlert('يرجى إدخال رقم هاتف صحيح لا يقل عن 10 أرقام.');
+            return;
+          }
+          if (!email || !email.includes('@')) {
+            showAlert('يرجى إدخال بريد إلكتروني صالح.');
+            return;
+          }
+          if (!password || password.length < 6) {
+            showAlert('كلمة المرور يجب ألا تقل عن 6 أحرف.');
+            return;
+          }
+
+          if (!auth || !db) {
+            showAlert('تعذر الاتصال بقاعدة البيانات. يرجى إعادة تحميل الصفحة.');
+            return;
+          }
+
+          submitBtn.disabled = true;
+          const originalBtnHTML = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إنشاء الحساب...';
+
+          try {
+            // إنشاء المستخدم في Firebase Auth
+            const cred = await auth.createUserWithEmailAndPassword(email, password);
+            const uid = cred.user.uid;
+
+            // حفظ بيانات العميل في Realtime Database تحت customers/$uid
+            await db.ref('customers/' + uid).set({
+              name: name,
+              email: email,
+              phone: phone,
+              createdAt: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // استدعاء خدمة ربط الطلبات القديمة تلقائياً (المرحلة 3)
+            try {
+              const idToken = await cred.user.getIdToken();
+              await fetch('/api/link-customer-orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, phone })
+              });
+            } catch (linkErr) {
+              console.warn('Orders link notice:', linkErr);
+            }
+
+            showAlert('تم إنشاء الحساب بنجاح! جاري التوجيه...', 'success');
+            setTimeout(function() {
+              window.location.href = '/account';
+            }, 600);
+
+          } catch (err) {
+            console.error('Signup error:', err);
+            let message = 'حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.';
+            if (err.code === 'auth/email-already-in-use') {
+              message = 'هذا البريد الإلكتروني مسجل بالفعل! يمكنكِ تسجيل الدخول به.';
+            } else if (err.code === 'auth/invalid-email') {
+              message = 'صيغة البريد الإلكتروني غير صحيحة.';
+            } else if (err.code === 'auth/weak-password') {
+              message = 'كلمة المرور ضعيفة جدًا، يرجى اختيار كلمة مرور أقوى.';
+            }
+            showAlert(message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHTML;
+          }
+        });
+      }
+    })();
+  </script>
+</BaseLayout>

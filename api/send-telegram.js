@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { order, orderId } = req.body;
+    const { order, orderId, lowStockAlert, productName, remainingQty } = req.body || {};
 
     // جلب التوكن والـ Chat IDs من متغيرات البيئة السرية في Vercel
     const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
@@ -17,21 +17,33 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Server configuration missing tokens' });
     }
 
-    const dateText = order.timestamp
-      ? new Date(order.timestamp).toLocaleString('ar-EG')
-      : new Date().toLocaleString('ar-EG');
-
-    const message = `🔔 *طلب جديد في متجر داندي!*
+    let message = '';
+    if (lowStockAlert) {
+      message = `⚠️ *تنبيه مخزون منخفض في متجر داندي!*
 ────────────────
-👤 *العميل\\ة:* ${order.name || '-'}
-📞 *رقم الهاتف:* ${order.phone || '-'}
-📍 *المحافظة:* ${order.governorate || '-'}
-📦 *العنوان:* ${order.address || '-'}
-💰 *كود الفاتورة:* ${order.invoiceCode || orderId}
+📦 *المنتج:* ${productName || '-'}
+📉 *الكمية المتبقية:* ${remainingQty ?? 0}
+⏱ *الوقت:* ${new Date().toLocaleString('ar-EG')}
+
+🔗 *إدارة المنتجات:*
+https://dandy-ebon.vercel.app/dashboard-product`;
+    } else {
+      const dateText = order?.timestamp
+        ? new Date(order.timestamp).toLocaleString('ar-EG')
+        : new Date().toLocaleString('ar-EG');
+
+      message = `🔔 *طلب جديد في متجر داندي!*
+────────────────
+👤 *العميل\\ة:* ${order?.name || '-'}
+📞 *رقم الهاتف:* ${order?.phone || '-'}
+📍 *المحافظة:* ${order?.governorate || '-'}
+📦 *العنوان:* ${order?.address || '-'}
+💰 *كود الفاتورة:* ${order?.invoiceCode || orderId}
 ⏱ *الوقت:* ${dateText}
 
 🔗 *تفاصيل الطلب:*
-https://dandy-ebon.vercel.app/pages/dashboard/dashboard-order.html`;
+https://dandy-ebon.vercel.app/dashboard-order`;
+    }
 
     const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
 
