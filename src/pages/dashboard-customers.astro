@@ -1,0 +1,710 @@
+---
+// src/pages/dashboard-customers.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="إدارة وسجل العملاء | لوحة داندي"
+  description="عرض ومتابعة كافة العملاء المسجلين في المتجر، سجل حساباتهم، طلباتهم، ومحادثات الدعم الفني."
+  robots="noindex, nofollow"
+  showDashboardNav={true}
+>
+  <slot name="head" slot="head">
+    <style is:global>
+      :root {
+        --cust-border: #e5e7eb;
+        --cust-bg-soft: #f9fafb;
+        --cust-accent: #DB2777;
+        --cust-accent-hover: #be185d;
+        --cust-dark: #111827;
+      }
+
+      .customers-sec {
+        padding: 130px 0 60px;
+      }
+
+      /* Header Bar */
+      .customers-header-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        text-align: right;
+      }
+
+      .customers-title-group h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--color-primary, #111827);
+        margin: 0 0 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .customers-title-group p {
+        color: var(--color-muted, #6b7280);
+        margin: 0;
+        font-size: 0.92rem;
+      }
+
+      /* KPIs */
+      .customers-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .cust-kpi-card {
+        background: #ffffff;
+        border: 1px solid var(--cust-border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      }
+
+      .cust-kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #fdf2f8;
+        color: var(--cust-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+      }
+
+      .cust-kpi-content {
+        flex: 1;
+        text-align: right;
+      }
+
+      .cust-kpi-val {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .cust-kpi-lbl {
+        font-size: 0.82rem;
+        color: #6b7280;
+        margin: 2px 0 0;
+        font-weight: 600;
+      }
+
+      /* Controls & Search Bar */
+      .customers-controls-card {
+        background: #ffffff;
+        border: 1px solid var(--cust-border);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      }
+
+      .cust-search-box {
+        position: relative;
+        flex: 1;
+        min-width: 260px;
+        max-width: 440px;
+      }
+
+      .cust-search-input {
+        width: 100%;
+        padding: 10px 40px 10px 14px;
+        border: 1.5px solid var(--cust-border);
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-family: inherit;
+        background: #ffffff;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .cust-search-input:focus {
+        border-color: var(--cust-accent);
+        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+      }
+
+      .cust-search-icon {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        pointer-events: none;
+      }
+
+      .cust-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn-cust-export {
+        padding: 9px 16px;
+        border-radius: 9px;
+        border: 1px solid var(--cust-border);
+        background: #ffffff;
+        color: #374151;
+        font-size: 0.86rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+      }
+
+      .btn-cust-export:hover {
+        background: #f9fafb;
+        color: #111827;
+        border-color: #d1d5db;
+      }
+
+      /* Customers Table Card */
+      .customers-table-card {
+        background: #ffffff;
+        border: 1px solid var(--cust-border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+      }
+
+      .customers-table-responsive {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .customers-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: right;
+        font-size: 0.92rem;
+      }
+
+      .customers-table th {
+        background: var(--cust-bg-soft);
+        padding: 14px 18px;
+        color: #4b5563;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border-bottom: 1px solid var(--cust-border);
+        white-space: nowrap;
+      }
+
+      .customers-table td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        color: #1f2937;
+      }
+
+      .customers-table tr:hover td {
+        background-color: #fafbfc;
+      }
+
+      .cust-name-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .cust-avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #fdf2f8;
+        color: var(--cust-accent);
+        border: 1px solid #fbcfe8;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+      }
+
+      .cust-name-title {
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .cust-uid-sub {
+        font-size: 0.72rem;
+        color: #9ca3af;
+        margin: 2px 0 0;
+        font-family: monospace;
+      }
+
+      .cust-contact-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f3f4f6;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        color: #374151;
+        font-family: monospace;
+      }
+
+      .cust-date-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        color: #6b7280;
+      }
+
+      /* Row Action Buttons */
+      .cust-row-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .btn-action-chat {
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: #fdf2f8;
+        color: #be185d;
+        border: 1px solid #fbcfe8;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .btn-action-chat:hover {
+        background: #fce7f3;
+        border-color: #f472b6;
+        transform: translateY(-1px);
+      }
+
+      .btn-action-orders {
+        padding: 6px 12px;
+        border-radius: 8px;
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+
+      .btn-action-orders:hover {
+        background: #dcfce7;
+        border-color: #86efac;
+        transform: translateY(-1px);
+      }
+
+      .btn-action-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid var(--cust-border);
+        color: #4b5563;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+
+      .btn-action-icon:hover {
+        background: #f3f4f6;
+        color: #111827;
+      }
+
+      .btn-action-icon.whatsapp {
+        color: #16a34a;
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+      }
+
+      .btn-action-icon.whatsapp:hover {
+        background: #dcfce7;
+      }
+
+      /* Empty & Loading States */
+      .cust-empty-row {
+        text-align: center;
+        padding: 48px 20px;
+        color: #9ca3af;
+      }
+
+      .cust-empty-row i {
+        font-size: 2.4rem;
+        color: #d1d5db;
+        margin-bottom: 12px;
+      }
+
+      .cust-empty-row p {
+        font-size: 0.95rem;
+        margin: 0;
+      }
+    </style>
+  </slot>
+
+  <section class="customers-sec" dir="rtl">
+    <div class="container">
+      <!-- Header -->
+      <div class="customers-header-bar">
+        <div class="customers-title-group">
+          <h2><i class="fas fa-users" style="color: var(--cust-accent);"></i> إدارة وحسابات العملاء</h2>
+          <p>عرض قاعدة بيانات العملاء المسجلين في متجر داندي، سجل التواصل، واستعراض طلباتهم السابقة.</p>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="customers-kpi-grid">
+        <div class="cust-kpi-card">
+          <div class="cust-kpi-icon"><i class="fas fa-user-check"></i></div>
+          <div class="cust-kpi-content">
+            <h3 class="cust-kpi-val" id="kpiTotalCustomers">0</h3>
+            <p class="cust-kpi-lbl">إجمالي العملاء المسجلين</p>
+          </div>
+        </div>
+
+        <div class="cust-kpi-card">
+          <div class="cust-kpi-icon"><i class="fas fa-phone-alt"></i></div>
+          <div class="cust-kpi-content">
+            <h3 class="cust-kpi-val" id="kpiPhoneVerified">0</h3>
+            <p class="cust-kpi-lbl">عملاء بهواتف مسجلة</p>
+          </div>
+        </div>
+
+        <div class="cust-kpi-card">
+          <div class="cust-kpi-icon"><i class="fas fa-calendar-alt"></i></div>
+          <div class="cust-kpi-content">
+            <h3 class="cust-kpi-val" id="kpiNewThisMonth">0</h3>
+            <p class="cust-kpi-lbl">انضموا هذا الشهر</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Card (Search + Export) -->
+      <div class="customers-controls-card">
+        <div class="cust-search-box">
+          <i class="fas fa-search cust-search-icon"></i>
+          <input 
+            type="text" 
+            id="custSearchInput" 
+            class="cust-search-input" 
+            placeholder="البحث بالاسم، البريد، أو رقم الهاتف..." 
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="cust-actions-group">
+          <button type="button" id="btnExportCustomers" class="btn-cust-export">
+            <i class="fas fa-file-export"></i>
+            <span>تصدير قائمة العملاء (CSV)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Customers Table -->
+      <div class="customers-table-card">
+        <div class="customers-table-responsive">
+          <table class="customers-table">
+            <thead>
+              <tr>
+                <th>العميل</th>
+                <th>البريد الإلكتروني</th>
+                <th>رقم الهاتف</th>
+                <th>تاريخ إنشاء الحساب</th>
+                <th style="text-align: left;">إجراءات سريعة</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody">
+              <tr>
+                <td colspan="5" class="cust-empty-row">
+                  <i class="fas fa-spinner fa-spin" style="color: var(--cust-accent);"></i>
+                  <p>جاري جلب سجل العملاء من قاعدة البيانات...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    (function() {
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+      let customersList = [];
+      let searchQuery = '';
+
+      // Elements
+      const tableBody = document.getElementById('customersTableBody');
+      const searchInput = document.getElementById('custSearchInput');
+      const btnExport = document.getElementById('btnExportCustomers');
+      const kpiTotal = document.getElementById('kpiTotalCustomers');
+      const kpiPhone = document.getElementById('kpiPhoneVerified');
+      const kpiMonth = document.getElementById('kpiNewThisMonth');
+
+      // Auth Guard
+      if (auth) {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = '/login';
+          } else {
+            loadCustomers();
+          }
+        });
+      }
+
+      // Load Customers from db.ref('customers')
+      function loadCustomers() {
+        if (!db) return;
+
+        const custRef = db.ref('customers');
+        custRef.on('value', (snapshot) => {
+          const val = snapshot.val() || {};
+          customersList = Object.keys(val).map((uid) => ({
+            uid,
+            ...val[uid]
+          }));
+
+          // Sort descending by createdAt
+          customersList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+          updateKPIs();
+          renderTable();
+        }, (err) => {
+          console.error('Failed to load customers:', err);
+          if (tableBody) {
+            tableBody.innerHTML = `
+              <tr>
+                <td colspan="5" class="cust-empty-row" style="color: #dc2626;">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <p>تعذر جلب بيانات العملاء: ${err.message}</p>
+                </td>
+              </tr>
+            `;
+          }
+        });
+      }
+
+      // Update KPI Cards
+      function updateKPIs() {
+        const total = customersList.length;
+        const withPhone = customersList.filter(c => !!(c.phone && c.phone.trim())).length;
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const thisMonth = customersList.filter(c => {
+          if (!c.createdAt) return false;
+          const d = new Date(c.createdAt);
+          return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        }).length;
+
+        if (kpiTotal) kpiTotal.textContent = total;
+        if (kpiPhone) kpiPhone.textContent = withPhone;
+        if (kpiMonth) kpiMonth.textContent = thisMonth;
+      }
+
+      // Format Date
+      function formatDate(timestamp) {
+        if (!timestamp) return 'غير محدد';
+        try {
+          const d = new Date(timestamp);
+          return d.toLocaleDateString('ar-EG', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) + ' ' + d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+          return 'تاريخ غير صالح';
+        }
+      }
+
+      // Escape HTML
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // Render Table
+      function renderTable() {
+        if (!tableBody) return;
+
+        const filtered = customersList.filter(c => {
+          if (!searchQuery) return true;
+          const q = searchQuery.toLowerCase();
+          const name = (c.name || '').toLowerCase();
+          const email = (c.email || '').toLowerCase();
+          const phone = (c.phone || '').toLowerCase();
+          return name.includes(q) || email.includes(q) || phone.includes(q);
+        });
+
+        if (filtered.length === 0) {
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="5" class="cust-empty-row">
+                <i class="fas fa-user-slash"></i>
+                <p>لا يوجد عملاء مطابقين لمعايير البحث الحالية.</p>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tableBody.innerHTML = '';
+        filtered.forEach((cust) => {
+          const name = cust.name || 'عميل مسجل';
+          const email = cust.email || '-';
+          const phone = cust.phone || '';
+          const initial = name.charAt(0).toUpperCase();
+          const cleanPhone = phone.replace(/[^0-9]/g, '');
+          const waPhone = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone;
+          const dateStr = formatDate(cust.createdAt);
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <div class="cust-name-cell">
+                <div class="cust-avatar-circle">${initial}</div>
+                <div>
+                  <h4 class="cust-name-title">${escapeHtml(name)}</h4>
+                  <div class="cust-uid-sub" title="${cust.uid}">ID: ${cust.uid.substring(0, 8)}...</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="cust-contact-pill">
+                <i class="fas fa-envelope" style="color: #9ca3af;"></i>
+                <span>${escapeHtml(email)}</span>
+              </div>
+            </td>
+            <td>
+              ${phone ? `
+                <div class="cust-contact-pill">
+                  <i class="fas fa-phone-alt" style="color: #9ca3af;"></i>
+                  <span>${escapeHtml(phone)}</span>
+                </div>
+              ` : '<span style="color:#9ca3af; font-size:0.85rem;">غير مسجل</span>'}
+            </td>
+            <td>
+              <div class="cust-date-badge">
+                <i class="fas fa-calendar-alt"></i>
+                <span>${dateStr}</span>
+              </div>
+            </td>
+            <td>
+              <div class="cust-row-actions">
+                <!-- رابط عرض المحادثة -->
+                <a href="/dashboard-support?customerId=${encodeURIComponent(cust.uid)}" class="btn-action-chat" title="فتح محادثة الدعم مع هذا العميل">
+                  <i class="fas fa-comment-dots"></i>
+                  <span>عرض المحادثة</span>
+                </a>
+
+                <!-- رابط عرض الطلبات (باستخدام ميزة البحث برقم الهاتف في dashboard-order) -->
+                ${phone ? `
+                  <a href="/dashboard-order?phone=${encodeURIComponent(phone)}" class="btn-action-orders" title="استعراض فواتير وطلبات العميل بالهاتف">
+                    <i class="fas fa-receipt"></i>
+                    <span>عرض الطلبات</span>
+                  </a>
+                  <a href="https://wa.me/${waPhone}" target="_blank" class="btn-action-icon whatsapp" title="مراسلة واتساب">
+                    <i class="fab fa-whatsapp"></i>
+                  </a>
+                  <a href="tel:${phone}" class="btn-action-icon" title="اتصال هاتفي">
+                    <i class="fas fa-phone"></i>
+                  </a>
+                ` : `
+                  <button type="button" class="btn-action-orders" style="opacity:0.4; cursor:not-allowed;" title="لا يوجد هاتف مسجل للبحث عن الطلبات" disabled>
+                    <i class="fas fa-receipt"></i>
+                    <span>عرض الطلبات</span>
+                  </button>
+                `}
+              </div>
+            </td>
+          `;
+
+          tableBody.appendChild(tr);
+        });
+      }
+
+      // Search Event
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          searchQuery = e.target.value.trim();
+          renderTable();
+        });
+      }
+
+      // Export CSV
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          if (customersList.length === 0) {
+            alert('لا توجد بيانات عملاء لتصديرها.');
+            return;
+          }
+
+          let csvContent = '\uFEFF'; // BOM for Excel Arabic support
+          csvContent += 'ID,الاسم,البريد الإلكتروني,رقم الهاتف,تاريخ إنشاء الحساب\n';
+
+          customersList.forEach(c => {
+            const id = `"${(c.uid || '').replace(/"/g, '""')}"`;
+            const name = `"${(c.name || '').replace(/"/g, '""')}"`;
+            const email = `"${(c.email || '').replace(/"/g, '""')}"`;
+            const phone = `"${(c.phone || '').replace(/"/g, '""')}"`;
+            const created = `"${formatDate(c.createdAt).replace(/"/g, '""')}"`;
+            csvContent += `${id},${name},${email},${phone},${created}\n`;
+          });
+
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.setAttribute('href', url);
+          link.setAttribute('download', `dandy_customers_${new Date().toISOString().slice(0,10)}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      }
+    })();
+  </script>
+</BaseLayout>

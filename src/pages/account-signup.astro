@@ -4,108 +4,144 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="إنشاء حساب جديد | Dandy"
-  description="انضمي إلى عائلة داندي وتابعي طلباتك السابقة، عناوينك المحفوظة، وقائمتك المفضلة بكل سهولة."
+  description="انضم إلى عائلة داندي لمتابعة طلباتك السابقة، العناوين المحفوظة، والقائمة المفضلة بكل سهولة."
 >
   <slot name="head" slot="head">
     <style is:global>
       .account-auth-container {
-        min-height: 80vh;
+        min-height: calc(100vh - 120px);
         display: flex;
         justify-content: center;
         align-items: center;
-        padding-top: 130px;
-        padding-bottom: 70px;
+        padding: 40px 20px 80px;
       }
 
-      .account-auth-box {
-        background: var(--color-surface, #fff);
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
-        padding: 40px 35px;
+      .auth-split-card {
+        background: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 20px;
         width: 100%;
-        max-width: 480px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        text-align: center;
+        max-width: 1040px;
+        min-height: 650px;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
       }
 
-      .account-auth-box .auth-icon {
-        font-size: 2.8rem;
-        color: var(--color-blush, #DB2777);
-        margin-bottom: 14px;
-        display: inline-block;
+      /* Right Column: Form */
+      .auth-form-col {
+        padding: 56px 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: right;
+        background: #ffffff;
       }
 
-      .account-auth-box h1 {
-        font-size: 1.7rem;
+      .auth-header-block {
+        margin-bottom: 30px;
+      }
+
+      .auth-header-block h1 {
+        font-size: 2.1rem;
         font-weight: 800;
-        color: var(--color-primary, #222);
+        color: #111827;
         margin-bottom: 8px;
         font-family: 'Cairo', sans-serif;
+        letter-spacing: -0.01em;
       }
 
-      .account-auth-box p.auth-subtitle {
-        color: var(--color-muted, #666);
-        font-size: 0.95rem;
-        margin-bottom: 24px;
+      .auth-switch-text {
+        font-size: 0.92rem;
+        color: #6b7280;
         line-height: 1.5;
       }
 
+      .auth-switch-text a {
+        color: var(--color-blush, #DB2777);
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .auth-switch-text a:hover {
+        text-decoration: underline;
+        color: var(--color-primary, #111);
+      }
+
+      /* Minimalist Underline Input Style */
       .auth-form-group {
         text-align: right;
-        margin-bottom: 18px;
+        margin-bottom: 22px;
+        position: relative;
       }
 
       .auth-form-group label {
         display: block;
         font-weight: 700;
-        margin-bottom: 6px;
-        color: var(--color-primary, #333);
-        font-size: 0.9rem;
+        margin-bottom: 4px;
+        color: #6b7280;
+        font-size: 0.78rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
       }
 
       .auth-form-group input {
         width: 100%;
-        padding: 12px 16px;
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-sm, 8px);
-        font-size: 0.95rem;
+        padding: 8px 0 10px;
+        border: none;
+        border-bottom: 1.5px solid #d1d5db;
+        border-radius: 0;
+        font-size: 1rem;
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        background: var(--color-surface-soft, #fafafa);
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        background: transparent;
         font-family: inherit;
         box-sizing: border-box;
+        color: #111827;
+      }
+
+      .auth-form-group input::placeholder {
+        color: #9ca3af;
+        font-size: 0.95rem;
       }
 
       .auth-form-group input:focus {
-        border-color: var(--color-blush, #DB2777);
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+        border-bottom-color: var(--color-blush, #DB2777);
+        box-shadow: 0 1px 0 0 var(--color-blush, #DB2777);
+      }
+
+      .auth-btn-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 16px;
       }
 
       .btn-auth-submit {
-        width: 100%;
-        padding: 14px;
+        min-width: 180px;
+        padding: 13px 42px;
         background: var(--color-blush, #DB2777);
-        color: #fff;
+        color: #ffffff;
         font-weight: 800;
         border: none;
-        border-radius: 99px;
-        font-size: 1rem;
+        border-radius: 9999px;
+        font-size: 0.98rem;
+        letter-spacing: 0.03em;
         cursor: pointer;
-        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.25);
+        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3);
         transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        margin-top: 10px;
         font-family: inherit;
       }
 
       .btn-auth-submit:hover:not(:disabled) {
-        background: var(--color-primary, #111);
+        background: #be185d;
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 6px 20px rgba(219, 39, 119, 0.4);
       }
 
       .btn-auth-submit:disabled {
@@ -141,63 +177,126 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border: 1px solid #bbf7d0;
       }
 
-      .auth-switch-link {
-        margin-top: 22px;
-        font-size: 0.9rem;
-        color: var(--color-muted, #666);
+      /* Left Column: Visual Banner (Desktop Only) */
+      .auth-visual-col {
+        position: relative;
+        background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0.2) 45%, rgba(0, 0, 0, 0.72) 100%), url('/assets/images/hero/hero-1.jpg');
+        background-size: cover;
+        background-position: center;
+        padding: 60px 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #ffffff;
+        text-align: right;
       }
 
-      .auth-switch-link a {
-        color: var(--color-blush, #DB2777);
-        font-weight: 700;
-        text-decoration: none;
-        transition: color 0.2s;
+      .visual-hero-heading {
+        font-size: 3.8rem;
+        font-weight: 900;
+        color: #ffffff;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin-bottom: 16px;
+        font-family: 'Cairo', sans-serif;
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
       }
 
-      .auth-switch-link a:hover {
-        text-decoration: underline;
-        color: var(--color-primary, #111);
+      .visual-hero-desc {
+        font-size: 1.05rem;
+        color: rgba(255, 255, 255, 0.92);
+        line-height: 1.65;
+        max-width: 320px;
+        font-weight: 400;
+      }
+
+      .visual-footer-brand {
+        font-size: 0.85rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 600;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 900px) {
+        .auth-split-card {
+          grid-template-columns: 1fr;
+          max-width: 480px;
+          min-height: auto;
+          border-radius: 16px;
+        }
+
+        .auth-visual-col {
+          display: none !important;
+        }
+
+        .auth-form-col {
+          padding: 38px 24px;
+        }
+
+        .auth-btn-row {
+          justify-content: stretch;
+        }
+
+        .btn-auth-submit {
+          width: 100%;
+        }
       }
     </style>
   </slot>
 
   <main class="account-auth-container container" id="signupMain">
-    <div class="account-auth-box" id="signupCard">
-      <span class="auth-icon"><i class="fas fa-user-plus"></i></span>
-      <h1>إنشاء حساب عميلة جديدة</h1>
-      <p class="auth-subtitle">انضمي إلينا لمتابعة طلباتكِ وحفظ عناوينكِ ومفضلاتكِ بسهولة</p>
-
-      <div id="signupAlert" class="auth-alert-msg" role="alert"></div>
-
-      <form id="signupForm" novalidate>
-        <div class="auth-form-group">
-          <label for="c-name">الاسم بالكامل <span style="color:#e11d48;">*</span></label>
-          <input type="text" id="c-name" name="name" placeholder="مثال: سارة أحمد" required autocomplete="name" />
+    <div class="auth-split-card" id="signupCard">
+      <!-- Right Column: Form -->
+      <div class="auth-form-col">
+        <div class="auth-header-block">
+          <h1>إنشاء حساب جديد</h1>
+          <p class="auth-switch-text">
+            لديك حساب بالفعل؟ <a href="/account-login">تسجيل الدخول إلى حسابك</a>
+          </p>
         </div>
 
-        <div class="auth-form-group">
-          <label for="c-phone">رقم الهاتف <span style="color:#e11d48;">*</span> <small style="font-size:0.78rem; color:var(--color-muted);">(سيُستخدم لربط طلباتك السابقة)</small></label>
-          <input type="tel" id="c-phone" name="phone" placeholder="01xxxxxxxxx" required dir="ltr" style="text-align: right;" autocomplete="tel" />
+        <div id="signupAlert" class="auth-alert-msg" role="alert"></div>
+
+        <form id="signupForm" novalidate>
+          <div class="auth-form-group">
+            <label for="c-name">الاسم بالكامل <span style="color:#e11d48;">*</span></label>
+            <input type="text" id="c-name" name="name" placeholder="مثال: أحمد محمد" required autocomplete="name" />
+          </div>
+
+          <div class="auth-form-group">
+            <label for="c-phone">رقم الهاتف <span style="color:#e11d48;">*</span> <small style="font-size:0.75rem; color:#9ca3af; text-transform:none;">(لربط طلباتك السابقة)</small></label>
+            <input type="tel" id="c-phone" name="phone" placeholder="01xxxxxxxxx" required dir="ltr" style="text-align: right;" autocomplete="tel" />
+          </div>
+
+          <div class="auth-form-group">
+            <label for="c-email">البريد الإلكتروني <span style="color:#e11d48;">*</span></label>
+            <input type="email" id="c-email" name="email" placeholder="example@gmail.com" required dir="ltr" style="text-align: right;" autocomplete="email" />
+          </div>
+
+          <div class="auth-form-group">
+            <label for="c-pass">كلمة المرور <span style="color:#e11d48;">*</span> <small style="font-size:0.75rem; color:#9ca3af; text-transform:none;">(6 أحرف على الأقل)</small></label>
+            <input type="password" id="c-pass" name="password" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+          </div>
+
+          <div class="auth-btn-row">
+            <button type="submit" id="signupSubmitBtn" class="btn-auth-submit">
+              <span>إنشاء الحساب</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Left Column: Visual Banner (Large Screens Only) -->
+      <div class="auth-visual-col" aria-hidden="true">
+        <div class="visual-text-block">
+          <h2 class="visual-hero-heading">عالم<br />Dandy.</h2>
+          <p class="visual-hero-desc">انضم إلى عائلة داندي للاستمتاع بأفضل تجربة تسوق ومتابعة طلباتك بكل سهولة.</p>
         </div>
-
-        <div class="auth-form-group">
-          <label for="c-email">البريد الإلكتروني <span style="color:#e11d48;">*</span></label>
-          <input type="email" id="c-email" name="email" placeholder="example@gmail.com" required dir="ltr" style="text-align: right;" autocomplete="email" />
+        <div class="visual-footer-brand">
+          <span>Dandy Cosmetics</span>
         </div>
-
-        <div class="auth-form-group">
-          <label for="c-pass">كلمة المرور <span style="color:#e11d48;">*</span> <small style="font-size:0.78rem; color:var(--color-muted);">(6 أحرف على الأقل)</small></label>
-          <input type="password" id="c-pass" name="password" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
-        </div>
-
-        <button type="submit" id="signupSubmitBtn" class="btn-auth-submit">
-          <span>إنشاء الحساب</span>
-          <i class="fas fa-arrow-left"></i>
-        </button>
-      </form>
-
-      <div class="auth-switch-link">
-        لديكِ حساب بالفعل؟ <a href="/account-login">تسجيل الدخول</a>
       </div>
     </div>
   </main>
@@ -281,7 +380,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               createdAt: firebase.database.ServerValue.TIMESTAMP
             });
 
-            // استدعاء خدمة ربط الطلبات القديمة تلقائياً (المرحلة 3)
+            // استدعاء خدمة ربط الطلبات القديمة تلقائياً
             try {
               const idToken = await cred.user.getIdToken();
               await fetch('/api/link-customer-orders', {
@@ -302,7 +401,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             console.error('Signup error:', err);
             let message = 'حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.';
             if (err.code === 'auth/email-already-in-use') {
-              message = 'هذا البريد الإلكتروني مسجل بالفعل! يمكنكِ تسجيل الدخول به.';
+              message = 'هذا البريد الإلكتروني مسجل بالفعل! يمكنك تسجيل الدخول به.';
             } else if (err.code === 'auth/invalid-email') {
               message = 'صيغة البريد الإلكتروني غير صحيحة.';
             } else if (err.code === 'auth/weak-password') {
@@ -317,3 +416,4 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     })();
   </script>
 </BaseLayout>
+

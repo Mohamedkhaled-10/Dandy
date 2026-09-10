@@ -1,0 +1,997 @@
+---
+// src/pages/dashboard-support.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="خدمة العملاء والدعم المباشر | لوحة داندي"
+  description="إدارة ومتابعة محادثات واستفسارات عملاء متجر داندي والرد المباشر لحظياً"
+  robots="noindex, nofollow"
+  showDashboardNav={true}
+>
+  <slot name="head" slot="head">
+    <style is:global>
+      :root {
+        --support-border: #e5e7eb;
+        --support-bg-soft: #f9fafb;
+        --support-accent: #DB2777;
+        --support-accent-hover: #be185d;
+      }
+
+      .support-manager-sec {
+        padding: 130px 0 60px;
+      }
+
+      .support-header-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        text-align: right;
+      }
+
+      .support-header-title h2 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--color-primary, #111827);
+        margin: 0 0 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .support-header-title p {
+        color: var(--color-muted, #6b7280);
+        margin: 0;
+        font-size: 0.92rem;
+      }
+
+      .support-kpis {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .support-kpi-pill {
+        background: #ffffff;
+        border: 1px solid var(--support-border);
+        padding: 8px 16px;
+        border-radius: 99px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      }
+
+      .support-kpi-pill.unread-alert {
+        background: #fdf2f8;
+        border-color: #fbcfe8;
+        color: #be185d;
+      }
+
+      .support-main-layout {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 20px;
+        height: 720px;
+        max-height: calc(100vh - 200px);
+        min-height: 560px;
+        background: #ffffff;
+        border: 1px solid var(--support-border);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      }
+
+      /* Right Column: Conversations List */
+      .support-sidebar-col {
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid var(--support-border);
+        background: #ffffff;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .conv-search-box {
+        padding: 16px;
+        border-bottom: 1px solid var(--support-border);
+        background: var(--support-bg-soft);
+        position: relative;
+      }
+
+      .conv-search-input {
+        width: 100%;
+        padding: 10px 40px 10px 14px;
+        border: 1.5px solid var(--support-border);
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-family: inherit;
+        background: #ffffff;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .conv-search-input:focus {
+        border-color: var(--support-accent);
+        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+      }
+
+      .conv-search-icon {
+        position: absolute;
+        right: 28px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        pointer-events: none;
+      }
+
+      .conv-list-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+      }
+
+      .conv-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+        transition: background-color 0.18s, border-color 0.18s;
+        position: relative;
+        text-align: right;
+      }
+
+      .conv-item:hover {
+        background-color: #fdf8fa;
+      }
+
+      .conv-item.active {
+        background-color: #fdf2f8;
+        border-right: 3px solid var(--support-accent);
+      }
+
+      .conv-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f3f4f6;
+        color: #4b5563;
+        font-weight: 800;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      .conv-item.unread .conv-avatar {
+        background: #fce7f3;
+        color: #db2777;
+      }
+
+      .conv-details {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .conv-top-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+
+      .conv-customer-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #111827;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .conv-timestamp {
+        font-size: 0.72rem;
+        color: #9ca3af;
+        white-space: nowrap;
+      }
+
+      .conv-bottom-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .conv-preview-text {
+        font-size: 0.82rem;
+        color: #6b7280;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .conv-item.unread .conv-preview-text {
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .unread-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #ef4444;
+        flex-shrink: 0;
+        box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+      }
+
+      /* Left Column: Chat Area */
+      .support-chat-col {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: #f9fafb;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Chat Empty State */
+      .chat-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        padding: 40px 20px;
+        color: #9ca3af;
+      }
+
+      .chat-empty-state i {
+        font-size: 3.5rem;
+        margin-bottom: 16px;
+        color: #d1d5db;
+      }
+
+      .chat-empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #374151;
+        margin: 0 0 8px;
+      }
+
+      .chat-empty-state p {
+        font-size: 0.9rem;
+        color: #6b7280;
+        max-width: 320px;
+        margin: 0;
+        line-height: 1.5;
+      }
+
+      /* Active Chat Content */
+      .active-chat-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      /* Chat Header */
+      .chat-header {
+        padding: 14px 20px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--support-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .chat-customer-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chat-customer-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #fdf2f8;
+        color: #db2777;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        border: 1.5px solid #fbcfe8;
+      }
+
+      .chat-customer-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 2px;
+      }
+
+      .chat-customer-phone {
+        font-size: 0.82rem;
+        color: #6b7280;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .chat-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-quick-contact {
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--support-border);
+        background: #ffffff;
+        color: #374151;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+      }
+
+      .btn-quick-contact:hover {
+        background: #f3f4f6;
+        color: #111827;
+      }
+
+      .btn-quick-contact.whatsapp {
+        color: #15803d;
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+      }
+
+      .btn-quick-contact.whatsapp:hover {
+        background: #dcfce7;
+      }
+
+      /* Chat Messages Body */
+      .chat-messages-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        scroll-behavior: smooth;
+      }
+
+      .chat-msg-row {
+        display: flex;
+        flex-direction: column;
+        max-width: 75%;
+      }
+
+      .chat-msg-row.customer {
+        align-self: flex-start;
+        align-items: flex-start;
+      }
+
+      .chat-msg-row.admin {
+        align-self: flex-end;
+        align-items: flex-end;
+      }
+
+      .msg-author-tag {
+        font-size: 0.72rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+        padding: 0 4px;
+      }
+
+      .chat-msg-row.customer .msg-author-tag {
+        color: #be185d;
+      }
+
+      .chat-msg-row.admin .msg-author-tag {
+        color: #374151;
+      }
+
+      .chat-bubble {
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        word-break: break-word;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      }
+
+      .chat-msg-row.customer .chat-bubble {
+        background: #ffffff;
+        color: #111827;
+        border: 1px solid #e5e7eb;
+        border-bottom-right-radius: 4px;
+      }
+
+      .chat-msg-row.admin .chat-bubble {
+        background: #111827;
+        color: #ffffff;
+        border-bottom-left-radius: 4px;
+      }
+
+      .chat-msg-time {
+        font-size: 0.7rem;
+        color: #9ca3af;
+        margin-top: 4px;
+        padding: 0 4px;
+      }
+
+      /* Reply Input Box */
+      .chat-reply-bar {
+        padding: 16px 20px;
+        background: #ffffff;
+        border-top: 1px solid var(--support-border);
+      }
+
+      .reply-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+      }
+
+      .reply-textarea {
+        flex: 1;
+        min-height: 44px;
+        max-height: 120px;
+        padding: 10px 14px;
+        border: 1.5px solid var(--support-border);
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 0.92rem;
+        background: var(--support-bg-soft);
+        outline: none;
+        resize: none;
+        transition: border-color 0.2s, background-color 0.2s;
+        line-height: 1.4;
+      }
+
+      .reply-textarea:focus {
+        border-color: var(--support-accent);
+        background: #ffffff;
+      }
+
+      .btn-send-reply {
+        height: 44px;
+        padding: 0 20px;
+        border-radius: 12px;
+        background: var(--support-accent);
+        color: #ffffff;
+        border: none;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s, transform 0.2s;
+        flex-shrink: 0;
+      }
+
+      .btn-send-reply:hover:not(:disabled) {
+        background: var(--support-accent-hover);
+        transform: translateY(-1px);
+      }
+
+      .btn-send-reply:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 900px) {
+        .support-main-layout {
+          grid-template-columns: 1fr;
+          height: auto;
+        }
+
+        .support-sidebar-col {
+          height: 320px;
+          border-left: none;
+          border-bottom: 1px solid var(--support-border);
+        }
+
+        .support-chat-col {
+          height: 480px;
+        }
+      }
+    </style>
+  </slot>
+
+  <section class="support-manager-sec">
+    <div class="container">
+      <!-- Header Bar -->
+      <div class="support-header-bar">
+        <div class="support-header-title">
+          <h2><i class="fas fa-headset" style="color: var(--support-accent);"></i> خدمة العملاء والمراسلة المباشرة</h2>
+          <p>متابعة استفسارات العملاء المسجلين، إرسال الردود الفورية، وتتبع حالات الدعم لحظياً.</p>
+        </div>
+        <div class="support-kpis">
+          <div class="support-kpi-pill">
+            <i class="fas fa-comments" style="color: #6b7280;"></i>
+            <span>المحادثات: <strong id="kpiTotalConvs">0</strong></span>
+          </div>
+          <div class="support-kpi-pill unread-alert" id="unreadPill">
+            <i class="fas fa-bell"></i>
+            <span>غير مقروءة: <strong id="kpiUnreadConvs">0</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout Card -->
+      <div class="support-main-layout">
+        <!-- Right Column: Conversations List -->
+        <aside class="support-sidebar-col">
+          <div class="conv-search-box">
+            <i class="fas fa-search conv-search-icon"></i>
+            <input 
+              type="text" 
+              id="convSearchInput" 
+              class="conv-search-input" 
+              placeholder="البحث باسم العميل أو الهاتف..." 
+              autocomplete="off"
+            />
+          </div>
+          <div class="conv-list-container" id="convListContainer">
+            <!-- Loading Indicator -->
+            <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+              <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 10px; color: var(--support-accent);"></i>
+              <p style="margin: 0; font-size: 0.88rem;">جاري تحميل المحادثات...</p>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Left Column: Active Chat Window -->
+        <main class="support-chat-col" id="supportChatCol">
+          <!-- 1. Empty State (No conversation selected) -->
+          <div class="chat-empty-state" id="chatEmptyState">
+            <i class="fas fa-comment-dots"></i>
+            <h3>اختر محادثة لبدء المتابعة</h3>
+            <p>اختر أحد العملاء من القائمة الجانبية لعرض كامل تفاصيل وسجل استفساراته والرد عليه مباشرة.</p>
+          </div>
+
+          <!-- 2. Active Chat Panel -->
+          <div class="active-chat-content" id="activeChatContent" style="display: none;">
+            <!-- Header -->
+            <div class="chat-header">
+              <div class="chat-customer-info">
+                <div class="chat-customer-avatar" id="activeChatAvatar">?</div>
+                <div>
+                  <h3 class="chat-customer-title" id="activeChatName">اسم العميل</h3>
+                  <p class="chat-customer-phone" id="activeChatPhone">
+                    <i class="fas fa-phone-alt"></i> <span>-</span>
+                  </p>
+                </div>
+              </div>
+              <div class="chat-header-actions">
+                <a href="#" id="btnActiveChatCall" class="btn-quick-contact" title="اتصال هاتفي">
+                  <i class="fas fa-phone"></i> <span>اتصال</span>
+                </a>
+                <a href="#" id="btnActiveChatWhatsapp" target="_blank" class="btn-quick-contact whatsapp" title="فتح واتساب">
+                  <i class="fab fa-whatsapp"></i> <span>واتساب</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div class="chat-messages-scroll" id="chatMessagesScroll">
+              <!-- Dynamically populated messages -->
+            </div>
+
+            <!-- Reply Box -->
+            <div class="chat-reply-bar">
+              <form id="adminReplyForm" class="reply-form">
+                <textarea 
+                  id="adminReplyText" 
+                  class="reply-textarea" 
+                  placeholder="اكتب ردك للعميل هنا... (اضغط Enter للإرسال)" 
+                  rows="1"
+                  required
+                ></textarea>
+                <button type="submit" id="adminReplySubmitBtn" class="btn-send-reply">
+                  <span>إرسال</span>
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    // Firebase & Database init
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+    // Audit Logger
+    async function logAdminAction(actionText) {
+      try {
+        const user = firebase.auth().currentUser;
+        await firebase.firestore().collection('change_logs').add({
+          adminEmail: user ? user.email : 'غير معروف',
+          action: actionText,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (err) {
+        console.error('Failed to log admin action:', err);
+      }
+    }
+
+    // State Variables
+    let conversations = [];
+    let selectedCustomerId = null;
+    let selectedCustomerData = null;
+    let searchQuery = '';
+    let initialParamChecked = false;
+
+    // DOM Elements
+    const convListContainer = document.getElementById('convListContainer');
+    const convSearchInput = document.getElementById('convSearchInput');
+    const chatEmptyState = document.getElementById('chatEmptyState');
+    const activeChatContent = document.getElementById('activeChatContent');
+    const activeChatAvatar = document.getElementById('activeChatAvatar');
+    const activeChatName = document.getElementById('activeChatName');
+    const activeChatPhone = document.getElementById('activeChatPhone');
+    const btnActiveChatCall = document.getElementById('btnActiveChatCall');
+    const btnActiveChatWhatsapp = document.getElementById('btnActiveChatWhatsapp');
+    const chatMessagesScroll = document.getElementById('chatMessagesScroll');
+    const adminReplyForm = document.getElementById('adminReplyForm');
+    const adminReplyText = document.getElementById('adminReplyText');
+    const adminReplySubmitBtn = document.getElementById('adminReplySubmitBtn');
+    const kpiTotalConvs = document.getElementById('kpiTotalConvs');
+    const kpiUnreadConvs = document.getElementById('kpiUnreadConvs');
+
+    // Authentication Guard
+    if (auth) {
+      auth.onAuthStateChanged((user) => {
+        if (!user) {
+          window.location.href = '/login';
+        } else {
+          initRealtimeConversations();
+        }
+      });
+    }
+
+    // Initialize Realtime Listeners
+    function initRealtimeConversations() {
+      if (!db) return;
+
+      const supportRef = db.ref('support_conversations');
+      supportRef.on('value', (snapshot) => {
+        const val = snapshot.val() || {};
+        conversations = Object.keys(val).map((uid) => ({
+          uid,
+          ...val[uid]
+        }));
+
+        // Sort descending by lastMessageAt
+        conversations.sort((a, b) => (b.lastMessageAt || 0) - (a.lastMessageAt || 0));
+
+        // Update KPIs
+        updateKPIs();
+
+        // Re-render conversation list
+        renderConversationList();
+
+        // Auto select if customerId query param exists and not yet selected
+        if (!initialParamChecked) {
+          initialParamChecked = true;
+          try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetUid = urlParams.get('customerId') || urlParams.get('uid');
+            if (targetUid) {
+              const targetConv = conversations.find(c => c.uid === targetUid);
+              if (targetConv) {
+                selectConversation(targetUid);
+              } else if (db) {
+                // Customer has no conversation in support_conversations yet
+                db.ref('customers/' + targetUid).once('value').then(snap => {
+                  const cust = snap.val() || {};
+                  const freshConv = {
+                    uid: targetUid,
+                    customerName: cust.name || 'عميل مسجل',
+                    customerPhone: cust.phone || '',
+                    messages: {},
+                    lastMessageAt: Date.now(),
+                    lastMessagePreview: 'بدء محادثة جديدة مع العميل...',
+                    unreadByAdmin: false,
+                    unreadByCustomer: false
+                  };
+                  conversations.unshift(freshConv);
+                  renderConversationList();
+                  selectConversation(targetUid);
+                }).catch(() => {});
+              }
+            }
+          } catch (e) {
+            console.warn('URL customer query parse error:', e);
+          }
+        }
+
+        // If a customer is currently selected, refresh their messages
+        if (selectedCustomerId) {
+          const updatedSelected = conversations.find(c => c.uid === selectedCustomerId);
+          if (updatedSelected) {
+            selectedCustomerData = updatedSelected;
+            renderActiveChat(updatedSelected);
+          }
+        }
+      });
+    }
+
+    // Update KPI counters
+    function updateKPIs() {
+      const total = conversations.length;
+      const unread = conversations.filter(c => c.unreadByAdmin === true).length;
+
+      if (kpiTotalConvs) kpiTotalConvs.textContent = total;
+      if (kpiUnreadConvs) kpiUnreadConvs.textContent = unread;
+    }
+
+    // Format Timestamp for display
+    function formatTime(timestamp) {
+      if (!timestamp) return '';
+      try {
+        const d = new Date(timestamp);
+        const now = new Date();
+        const isToday = d.toDateString() === now.toDateString();
+        
+        if (isToday) {
+          return d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        } else {
+          return d.toLocaleDateString('ar-EG', { month: 'numeric', day: 'numeric' });
+        }
+      } catch (e) {
+        return '';
+      }
+    }
+
+    // Render Conversation List in Right Column
+    function renderConversationList() {
+      if (!convListContainer) return;
+
+      const filtered = conversations.filter(c => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        const name = (c.customerName || '').toLowerCase();
+        const phone = (c.customerPhone || '').toLowerCase();
+        return name.includes(q) || phone.includes(q);
+      });
+
+      if (filtered.length === 0) {
+        convListContainer.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 8px; color: #d1d5db;"></i>
+            <p style="margin: 0; font-size: 0.88rem;">لا توجد محادثات مطابقة.</p>
+          </div>
+        `;
+        return;
+      }
+
+      convListContainer.innerHTML = '';
+      filtered.forEach((conv) => {
+        const isSelected = conv.uid === selectedCustomerId;
+        const isUnread = conv.unreadByAdmin === true;
+        const initial = (conv.customerName || 'ع').charAt(0).toUpperCase();
+        const preview = conv.lastMessagePreview || 'رسالة جديدة...';
+        const timeStr = formatTime(conv.lastMessageAt);
+
+        const itemEl = document.createElement('div');
+        itemEl.className = `conv-item ${isSelected ? 'active' : ''} ${isUnread ? 'unread' : ''}`;
+        itemEl.innerHTML = `
+          <div class="conv-avatar">${initial}</div>
+          <div class="conv-details">
+            <div class="conv-top-line">
+              <h4 class="conv-customer-name">${conv.customerName || 'عميل'}</h4>
+              <span class="conv-timestamp">${timeStr}</span>
+            </div>
+            <div class="conv-bottom-line">
+              <p class="conv-preview-text">${preview}</p>
+              ${isUnread ? '<span class="unread-dot"></span>' : ''}
+            </div>
+          </div>
+        `;
+
+        itemEl.addEventListener('click', () => selectConversation(conv.uid));
+        convListContainer.appendChild(itemEl);
+      });
+    }
+
+    // Select and open conversation
+    async function selectConversation(uid) {
+      selectedCustomerId = uid;
+      selectedCustomerData = conversations.find(c => c.uid === uid);
+
+      if (!selectedCustomerData) return;
+
+      // Mark unreadByAdmin as false in Firebase
+      if (selectedCustomerData.unreadByAdmin && db) {
+        db.ref('support_conversations/' + uid + '/unreadByAdmin').set(false).catch(() => {});
+        selectedCustomerData.unreadByAdmin = false;
+        updateKPIs();
+      }
+
+      renderConversationList();
+      renderActiveChat(selectedCustomerData);
+
+      // Focus reply textarea
+      if (adminReplyText) {
+        setTimeout(() => adminReplyText.focus(), 100);
+      }
+    }
+
+    // Render Active Chat Window
+    function renderActiveChat(conv) {
+      if (!conv) {
+        chatEmptyState.style.display = 'flex';
+        activeChatContent.style.display = 'none';
+        return;
+      }
+
+      chatEmptyState.style.display = 'none';
+      activeChatContent.style.display = 'flex';
+
+      const name = conv.customerName || 'عميل مسجل';
+      const phone = conv.customerPhone || '';
+      const initial = name.charAt(0).toUpperCase();
+
+      if (activeChatAvatar) activeChatAvatar.textContent = initial;
+      if (activeChatName) activeChatName.textContent = name;
+      if (activeChatPhone) {
+        activeChatPhone.innerHTML = phone ? `<i class="fas fa-phone-alt"></i> <span>${phone}</span>` : '<span>لا يوجد هاتف مسجل</span>';
+      }
+
+      // Quick contact links
+      if (btnActiveChatCall) {
+        btnActiveChatCall.href = phone ? `tel:${phone}` : '#';
+        btnActiveChatCall.style.display = phone ? 'inline-flex' : 'none';
+      }
+
+      if (btnActiveChatWhatsapp) {
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        btnActiveChatWhatsapp.href = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone}` : '#';
+        btnActiveChatWhatsapp.style.display = cleanPhone ? 'inline-flex' : 'none';
+      }
+
+      // Render Messages
+      if (chatMessagesScroll) {
+        chatMessagesScroll.innerHTML = '';
+        const messagesObj = conv.messages || {};
+        const sortedMsgs = Object.keys(messagesObj).map(id => ({
+          id,
+          ...messagesObj[id]
+        })).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+        if (sortedMsgs.length === 0) {
+          chatMessagesScroll.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+              <p>لا توجد رسائل سابقة في هذه المحادثة.</p>
+            </div>
+          `;
+        } else {
+          sortedMsgs.forEach(msg => {
+            const isAdmin = msg.sender === 'admin';
+            const row = document.createElement('div');
+            row.className = `chat-msg-row ${isAdmin ? 'admin' : 'customer'}`;
+
+            const authorLabel = isAdmin ? 'فريق الدعم (أنت)' : name;
+            const timeStr = formatTime(msg.timestamp);
+
+            row.innerHTML = `
+              <span class="msg-author-tag">${authorLabel}</span>
+              <div class="chat-bubble">${escapeHtml(msg.text || '')}</div>
+              <span class="chat-msg-time">${timeStr}</span>
+            `;
+
+            chatMessagesScroll.appendChild(row);
+          });
+        }
+
+        // Scroll to bottom
+        setTimeout(() => {
+          chatMessagesScroll.scrollTop = chatMessagesScroll.scrollHeight;
+        }, 50);
+      }
+    }
+
+    // Escape HTML helper
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Search filter event
+    if (convSearchInput) {
+      convSearchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.trim();
+        renderConversationList();
+      });
+    }
+
+    // Keyboard shortcut for reply: Enter to send (Shift+Enter for new line)
+    if (adminReplyText) {
+      adminReplyText.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (adminReplyForm) adminReplyForm.dispatchEvent(new Event('submit'));
+        }
+      });
+    }
+
+    // Handle Admin Reply Submission
+    if (adminReplyForm) {
+      adminReplyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = (adminReplyText.value || '').trim();
+        if (!text || !selectedCustomerId || !db) return;
+
+        adminReplyText.value = '';
+        if (adminReplySubmitBtn) adminReplySubmitBtn.disabled = true;
+
+        const customerId = selectedCustomerId;
+        const customerName = selectedCustomerData?.customerName || 'عميل';
+        const now = Date.now();
+
+        try {
+          const convRef = db.ref('support_conversations/' + customerId);
+          const newMsgRef = convRef.child('messages').push();
+
+          // Push admin message
+          await newMsgRef.set({
+            sender: 'admin',
+            text: text,
+            timestamp: now
+          });
+
+          // Update conversation metadata
+          await convRef.update({
+            lastMessageAt: now,
+            lastMessagePreview: text.substring(0, 80),
+            unreadByCustomer: true,
+            unreadByAdmin: false
+          });
+
+          // Log Admin Action
+          await logAdminAction('تم الرد على استفسار دعم من: ' + customerName);
+
+        } catch (err) {
+          console.error('Error sending admin reply:', err);
+          alert('تعذر إرسال الرد، يرجى التحقق والمحاولة مجدداً.');
+        } finally {
+          if (adminReplySubmitBtn) adminReplySubmitBtn.disabled = false;
+          if (adminReplyText) adminReplyText.focus();
+        }
+      });
+    }
+  </script>
+</BaseLayout>

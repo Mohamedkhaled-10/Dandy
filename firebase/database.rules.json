@@ -61,12 +61,20 @@
       ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
     },
     "customers": {
+      ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
       "$uid": {
         ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
         ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"
       }
     },
     "wishlists": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"
+      }
+    },
+    "support_conversations": {
+      ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
       "$uid": {
         ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
         ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"

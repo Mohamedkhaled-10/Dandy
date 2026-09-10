@@ -3,6 +3,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import DashboardNav from '../components/DashboardNav.astro';
+import SupportChatWidget from '../components/SupportChatWidget.astro';
 
 export interface Props {
   title?: string;
@@ -107,5 +108,6 @@ const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmW
   <slot />
 
   {showFooter && <Footer />}
+  {!showDashboardNav && <SupportChatWidget />}
 </body>
 </html>

@@ -3,120 +3,159 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="تسجيل دخول العميلة | Dandy"
-  description="سجّلي الدخول إلى حسابك في داندي لمتابعة طلباتك، تعديل عناوين الشحن، ومشاهدة قائمتك المفضلة."
+  title="تسجيل الدخول | Dandy"
+  description="سجّل الدخول إلى حسابك في داندي لمتابعة طلباتك، تعديل عناوين الشحن، ومشاهدة قائمتك المفضلة."
 >
   <slot name="head" slot="head">
     <style is:global>
       .account-auth-container {
-        min-height: 80vh;
+        min-height: calc(100vh - 120px);
         display: flex;
         justify-content: center;
         align-items: center;
-        padding-top: 130px;
-        padding-bottom: 70px;
+        padding: 40px 20px 80px;
       }
 
-      .account-auth-box {
-        background: var(--color-surface, #fff);
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
-        padding: 40px 35px;
+      .auth-split-card {
+        background: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 20px;
         width: 100%;
-        max-width: 460px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        text-align: center;
+        max-width: 1040px;
+        min-height: 620px;
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
       }
 
-      .account-auth-box .auth-icon {
-        font-size: 2.8rem;
-        color: var(--color-blush, #DB2777);
-        margin-bottom: 14px;
-        display: inline-block;
+      /* Right Column: Form */
+      .auth-form-col {
+        padding: 56px 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: right;
+        background: #ffffff;
       }
 
-      .account-auth-box h1 {
-        font-size: 1.7rem;
+      .auth-header-block {
+        margin-bottom: 34px;
+      }
+
+      .auth-header-block h1 {
+        font-size: 2.1rem;
         font-weight: 800;
-        color: var(--color-primary, #222);
+        color: #111827;
         margin-bottom: 8px;
         font-family: 'Cairo', sans-serif;
+        letter-spacing: -0.01em;
       }
 
-      .account-auth-box p.auth-subtitle {
-        color: var(--color-muted, #666);
-        font-size: 0.95rem;
-        margin-bottom: 24px;
+      .auth-switch-text {
+        font-size: 0.92rem;
+        color: #6b7280;
         line-height: 1.5;
       }
 
+      .auth-switch-text a {
+        color: var(--color-blush, #DB2777);
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .auth-switch-text a:hover {
+        text-decoration: underline;
+        color: var(--color-primary, #111);
+      }
+
+      /* Minimalist Underline Input Style */
       .auth-form-group {
         text-align: right;
-        margin-bottom: 18px;
+        margin-bottom: 26px;
+        position: relative;
       }
 
       .auth-form-group label {
         display: block;
         font-weight: 700;
-        margin-bottom: 6px;
-        color: var(--color-primary, #333);
-        font-size: 0.9rem;
+        margin-bottom: 4px;
+        color: #6b7280;
+        font-size: 0.78rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
       }
 
       .auth-form-group input {
         width: 100%;
-        padding: 12px 16px;
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-sm, 8px);
-        font-size: 0.95rem;
+        padding: 8px 0 10px;
+        border: none;
+        border-bottom: 1.5px solid #d1d5db;
+        border-radius: 0;
+        font-size: 1rem;
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        background: var(--color-surface-soft, #fafafa);
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        background: transparent;
         font-family: inherit;
         box-sizing: border-box;
+        color: #111827;
+      }
+
+      .auth-form-group input::placeholder {
+        color: #9ca3af;
+        font-size: 0.95rem;
       }
 
       .auth-form-group input:focus {
-        border-color: var(--color-blush, #DB2777);
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+        border-bottom-color: var(--color-blush, #DB2777);
+        box-shadow: 0 1px 0 0 var(--color-blush, #DB2777);
       }
 
       .auth-row-actions {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
-        margin-bottom: 20px;
-        font-size: 0.85rem;
+        margin-top: -8px;
+        margin-bottom: 28px;
+        font-size: 0.88rem;
       }
 
       .btn-forgot-pass {
         background: none;
         border: none;
-        color: var(--color-blush, #DB2777);
+        color: #6b7280;
         cursor: pointer;
-        font-weight: 700;
+        font-weight: 600;
         padding: 0;
         font-family: inherit;
         font-size: 0.88rem;
-        transition: text-decoration 0.2s;
+        transition: color 0.2s;
       }
 
       .btn-forgot-pass:hover {
+        color: var(--color-blush, #DB2777);
         text-decoration: underline;
       }
 
+      .auth-btn-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+      }
+
       .btn-auth-submit {
-        width: 100%;
-        padding: 14px;
+        min-width: 180px;
+        padding: 13px 42px;
         background: var(--color-blush, #DB2777);
-        color: #fff;
+        color: #ffffff;
         font-weight: 800;
         border: none;
-        border-radius: 99px;
-        font-size: 1rem;
+        border-radius: 9999px;
+        font-size: 0.98rem;
+        letter-spacing: 0.03em;
         cursor: pointer;
-        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.25);
+        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3);
         transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
         display: inline-flex;
         align-items: center;
@@ -126,9 +165,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .btn-auth-submit:hover:not(:disabled) {
-        background: var(--color-primary, #111);
+        background: #be185d;
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 6px 20px rgba(219, 39, 119, 0.4);
       }
 
       .btn-auth-submit:disabled {
@@ -164,57 +203,120 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border: 1px solid #bbf7d0;
       }
 
-      .auth-switch-link {
-        margin-top: 22px;
-        font-size: 0.9rem;
-        color: var(--color-muted, #666);
+      /* Left Column: Visual Banner (Desktop Only) */
+      .auth-visual-col {
+        position: relative;
+        background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0.2) 45%, rgba(0, 0, 0, 0.72) 100%), url('/assets/images/hero/hero-4.jpg');
+        background-size: cover;
+        background-position: center;
+        padding: 60px 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: #ffffff;
+        text-align: right;
       }
 
-      .auth-switch-link a {
-        color: var(--color-blush, #DB2777);
-        font-weight: 700;
-        text-decoration: none;
-        transition: color 0.2s;
+      .visual-hero-heading {
+        font-size: 3.8rem;
+        font-weight: 900;
+        color: #ffffff;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin-bottom: 16px;
+        font-family: 'Cairo', sans-serif;
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3);
       }
 
-      .auth-switch-link a:hover {
-        text-decoration: underline;
-        color: var(--color-primary, #111);
+      .visual-hero-desc {
+        font-size: 1.05rem;
+        color: rgba(255, 255, 255, 0.92);
+        line-height: 1.65;
+        max-width: 320px;
+        font-weight: 400;
+      }
+
+      .visual-footer-brand {
+        font-size: 0.85rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 600;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 900px) {
+        .auth-split-card {
+          grid-template-columns: 1fr;
+          max-width: 480px;
+          min-height: auto;
+          border-radius: 16px;
+        }
+
+        .auth-visual-col {
+          display: none !important;
+        }
+
+        .auth-form-col {
+          padding: 38px 24px;
+        }
+
+        .auth-btn-row {
+          justify-content: stretch;
+        }
+
+        .btn-auth-submit {
+          width: 100%;
+        }
       }
     </style>
   </slot>
 
   <main class="account-auth-container container" id="loginMain">
-    <div class="account-auth-box" id="loginCard">
-      <span class="auth-icon"><i class="fas fa-user-circle"></i></span>
-      <h1>تسجيل الدخول</h1>
-      <p class="auth-subtitle">أهلاً بكِ مجدداً في داندي! سجّلي دخولكِ للوصول إلى حسابكِ</p>
-
-      <div id="loginAlert" class="auth-alert-msg" role="alert"></div>
-
-      <form id="customerLoginForm" novalidate>
-        <div class="auth-form-group">
-          <label for="cl-email">البريد الإلكتروني</label>
-          <input type="email" id="cl-email" name="email" placeholder="example@gmail.com" required dir="ltr" style="text-align: right;" autocomplete="email" />
+    <div class="auth-split-card" id="loginCard">
+      <!-- Right Column: Form -->
+      <div class="auth-form-col">
+        <div class="auth-header-block">
+          <h1>تسجيل الدخول</h1>
+          <p class="auth-switch-text">
+            ليس لديك حساب بعد؟ <a href="/account-signup">إنشاء حساب جديد، في أقل من دقيقة.</a>
+          </p>
         </div>
 
-        <div class="auth-form-group">
-          <label for="cl-pass">كلمة المرور</label>
-          <input type="password" id="cl-pass" name="password" placeholder="••••••••" required autocomplete="current-password" />
+        <div id="loginAlert" class="auth-alert-msg" role="alert"></div>
+
+        <form id="customerLoginForm" novalidate>
+          <div class="auth-form-group">
+            <label for="cl-email">البريد الإلكتروني</label>
+            <input type="email" id="cl-email" name="email" placeholder="example@gmail.com" required dir="ltr" style="text-align: right;" autocomplete="email" />
+          </div>
+
+          <div class="auth-form-group">
+            <label for="cl-pass">كلمة المرور</label>
+            <input type="password" id="cl-pass" name="password" placeholder="••••••••" required autocomplete="current-password" />
+          </div>
+
+          <div class="auth-row-actions">
+            <button type="button" id="forgotPassBtn" class="btn-forgot-pass">نسيت كلمة المرور؟</button>
+          </div>
+
+          <div class="auth-btn-row">
+            <button type="submit" id="loginSubmitBtn" class="btn-auth-submit">
+              <span>تسجيل الدخول</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Left Column: Visual Banner (Large Screens Only) -->
+      <div class="auth-visual-col" aria-hidden="true">
+        <div class="visual-text-block">
+          <h2 class="visual-hero-heading">أهلاً<br />بك.</h2>
+          <p class="visual-hero-desc">تسوّق منتجات العناية المفضلة، وتابع الطلبات بسهولة، في مكان واحد.</p>
         </div>
-
-        <div class="auth-row-actions">
-          <button type="button" id="forgotPassBtn" class="btn-forgot-pass">نسيتِ كلمة السر؟</button>
+        <div class="visual-footer-brand">
+          <span>Dandy Cosmetics</span>
         </div>
-
-        <button type="submit" id="loginSubmitBtn" class="btn-auth-submit">
-          <span>تسجيل الدخول</span>
-          <i class="fas fa-sign-in-alt"></i>
-        </button>
-      </form>
-
-      <div class="auth-switch-link">
-        ليس لديكِ حساب بعد؟ <a href="/account-signup">إنشاء حساب جديد</a>
       </div>
     </div>
   </main>
@@ -242,7 +344,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         alertBox.innerHTML = '';
       }
 
-      // توجيه تلقائي إذا كانت العميلة مسجلة دخولها بالفعل
+      // توجيه تلقائي إذا كان المستخدم مسجلاً بالفعل
       if (auth) {
         auth.onAuthStateChanged(function(user) {
           if (user && user.email !== 'admin@dandy.com') {
@@ -251,13 +353,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
       }
 
-      // معالجة "نسيت كلمة السر"
+      // معالجة "نسيت كلمة المرور"
       if (forgotBtn) {
         forgotBtn.addEventListener('click', async function() {
           clearAlert();
           const email = emailInput?.value.trim();
           if (!email || !email.includes('@')) {
-            showAlert('يرجى كتابة بريدكِ الإلكتروني في الحقل أولاً، ثم اضغطي على "نسيتِ كلمة السر؟".', 'error');
+            showAlert('يرجى كتابة البريد الإلكتروني في الحقل أولاً، ثم الضغط على "نسيت كلمة المرور؟".', 'error');
             emailInput?.focus();
             return;
           }
@@ -266,7 +368,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             forgotBtn.disabled = true;
             forgotBtn.textContent = 'جاري الإرسال...';
             await auth.sendPasswordResetEmail(email);
-            showAlert('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدكِ الإلكتروني (' + email + ') بنجاح. تفقدي صندوق الوارد أو البريد غير المرغوب فيه (Spam).', 'success');
+            showAlert('تم إرسال رابط إعادة تعيين كلمة المرور إلى البريد الإلكتروني (' + email + ') بنجاح. يرجى تفقّد صندوق الوارد أو مجلد الرسائل غير المرغوب فيها.', 'success');
           } catch (err) {
             console.error('Password reset error:', err);
             let msg = 'تعذر إرسال رابط إعادة التعيين. يرجى التأكد من صحة البريد الإلكتروني.';
@@ -276,7 +378,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             showAlert(msg, 'error');
           } finally {
             forgotBtn.disabled = false;
-            forgotBtn.textContent = 'نسيتِ كلمة السر؟';
+            forgotBtn.textContent = 'نسيت كلمة المرور؟';
           }
         });
       }
@@ -331,3 +433,4 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     })();
   </script>
 </BaseLayout>
+

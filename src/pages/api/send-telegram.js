@@ -3,7 +3,7 @@ export const prerender = false;
 export async function POST({ request }) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { order, orderId, lowStockAlert, productName, remainingQty } = body || {};
+    const { order, orderId, lowStockAlert, productName, remainingQty, supportMessage, customerName, messageText } = body || {};
 
     const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
     const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_ID;
@@ -21,7 +21,15 @@ export async function POST({ request }) {
     }
 
     let message = '';
-    if (lowStockAlert) {
+    if (supportMessage) {
+      message = `📩 *رسالة دعم جديدة من ${customerName || 'عميل'}!*
+────────────────
+💬 *نص الرسالة:* ${messageText || '-'}
+⏱ *الوقت:* ${new Date().toLocaleString('ar-EG')}
+
+🔗 *لوحة التحكم للرد:*
+https://dandy-ebon.vercel.app/dashboard`;
+    } else if (lowStockAlert) {
       message = `⚠️ *تنبيه مخزون منخفض في متجر داندي!*
 ────────────────
 📦 *المنتج:* ${productName || '-'}

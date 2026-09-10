@@ -958,5 +958,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (e.target === customerHistoryModal) window.closeCustomerHistoryModal();
       });
     }
+
+    // التفعيل التلقائي للبحث بسجل العميل عند التمرير من صفحة العملاء
+    try {
+      const orderUrlParams = new URLSearchParams(window.location.search);
+      const orderPhoneParam = orderUrlParams.get('phone');
+      if (orderPhoneParam) {
+        const phInput = document.getElementById('customerPhoneInput');
+        if (phInput) {
+          phInput.value = orderPhoneParam;
+          setTimeout(() => {
+            if (typeof window.searchCustomerHistory === 'function') {
+              window.searchCustomerHistory();
+            }
+          }, 600);
+        }
+      }
+    } catch (e) {
+      console.warn('URL param parse error:', e);
+    }
   </script>
 </BaseLayout>

@@ -1,0 +1,944 @@
+---
+// SupportChatWidget.astro
+---
+
+<!-- Floating Support Chat Widget -->
+<div id="support-chat-widget-root" class="support-chat-widget-root" dir="rtl">
+  <!-- Trigger Button: Bottom Left with distinct styling from WhatsApp (Bottom Right) -->
+  <button id="supportChatTriggerBtn" class="support-chat-trigger" type="button" aria-label="خدمة العملاء والدعم الفني" title="تواصل مع خدمة العملاء">
+    <div class="support-chat-trigger-icon">
+      <!-- Chat Icon SVG -->
+      <svg class="icon-open" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <svg class="icon-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </div>
+    <!-- Unread Badge Indicator -->
+    <span id="supportChatBadge" class="support-chat-badge" style="display: none;"></span>
+  </button>
+
+  <!-- Chat Panel Window -->
+  <div id="supportChatPanel" class="support-chat-panel" role="dialog" aria-modal="true" aria-hidden="true">
+    <!-- Header -->
+    <div class="support-chat-header">
+      <div class="support-header-info">
+        <div class="support-avatar">
+          <i class="fas fa-headset"></i>
+        </div>
+        <div>
+          <h3 class="support-header-title">فريق دعم Dandy</h3>
+          <p class="support-header-status">
+            <span class="status-dot"></span> متواجدون لمساعدتك
+          </p>
+        </div>
+      </div>
+      <button type="button" id="supportChatCloseBtn" class="support-close-btn" aria-label="إغلاق الدردشة">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Body Container -->
+    <div class="support-chat-body" id="supportChatBody">
+      <!-- 1. Guest View (Shown if not logged in) -->
+      <div id="supportGuestView" class="support-guest-view" style="display: none;">
+        <div class="guest-card">
+          <div class="guest-icon-wrap">
+            <i class="fas fa-user-lock"></i>
+          </div>
+          <h4>خدمة العملاء والمراسلة</h4>
+          <p class="guest-text">سجّل الدخول للتواصل مع فريق الدعم ومتابعة استفساراتك السابقة بكل سهولة.</p>
+          <a href="/account-login" class="btn-guest-login">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>تسجيل الدخول</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 2. Customer Logged In View -->
+      <div id="supportCustomerView" class="support-customer-view" style="display: none;">
+        <!-- Thread Area: Contains FAQ buttons or Conversation Messages -->
+        <div class="support-messages-stream" id="supportMessagesStream">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Free-text Input Bar (Shown if thread exists or user clicked "Need help") -->
+        <div id="supportInputBar" class="support-input-bar" style="display: none;">
+          <form id="supportMsgForm" class="support-msg-form">
+            <input 
+              type="text" 
+              id="supportMsgInput" 
+              class="support-msg-input" 
+              placeholder="اكتب استفسارك هنا..." 
+              autocomplete="off" 
+              maxlength="1000"
+            />
+            <button type="submit" id="supportSendBtn" class="support-send-btn" aria-label="إرسال">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  /* ========================================================
+     Support Chat Widget Styles (Floating, Elegant & Mobile Safe)
+     ======================================================== */
+  .support-chat-widget-root {
+    position: fixed;
+    bottom: 72px;
+    left: 20px; /* Positioned at bottom-left corner with clear separation from WhatsApp on right */
+    z-index: 9998; /* Below WhatsApp (9999) or balanced */
+    font-family: 'Cairo', 'Poppins', sans-serif;
+  }
+
+  /* Trigger Button */
+  .support-chat-trigger {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    border-radius: 50%;
+    background: #111827; /* Sophisticated dark neutral contrast */
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+    padding: 0;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .support-chat-trigger:hover {
+    transform: scale(1.06);
+    background: #1f2937;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+  }
+
+  .support-chat-trigger:active {
+    transform: scale(0.96);
+  }
+
+  .support-chat-trigger .icon-open {
+    display: block;
+  }
+
+  .support-chat-trigger .icon-close {
+    display: none;
+  }
+
+  .support-chat-widget-root.panel-open .support-chat-trigger {
+    background: #DB2777; /* Accent blush color on open */
+    border-color: #ffffff;
+  }
+
+  .support-chat-widget-root.panel-open .support-chat-trigger .icon-open {
+    display: none;
+  }
+
+  .support-chat-widget-root.panel-open .support-chat-trigger .icon-close {
+    display: block;
+  }
+
+  /* Badge indicator for unread */
+  .support-chat-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 13px;
+    height: 13px;
+    background-color: #ef4444;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+    animation: badgePulse 2s infinite;
+  }
+
+  @keyframes badgePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  /* Chat Panel Window */
+  .support-chat-panel {
+    position: absolute;
+    bottom: 68px;
+    left: 0;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    height: 520px;
+    max-height: calc(100vh - 120px);
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(16px) scale(0.96);
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .support-chat-widget-root.panel-open .support-chat-panel {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Panel Header */
+  .support-chat-header {
+    background: #111827;
+    color: #ffffff;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .support-header-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .support-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(219, 39, 119, 0.2);
+    border: 1.5px solid #DB2777;
+    color: #f472b6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
+  .support-header-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+    color: #ffffff;
+  }
+
+  .support-header-status {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    display: inline-block;
+  }
+
+  .support-close-btn {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .support-close-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Body Container */
+  .support-chat-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #f9fafb;
+  }
+
+  /* Guest View */
+  .support-guest-view {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .guest-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 28px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    max-width: 280px;
+  }
+
+  .guest-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #fdf2f8;
+    color: #db2777;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 16px;
+  }
+
+  .guest-card h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px;
+  }
+
+  .guest-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0 0 20px;
+  }
+
+  .btn-guest-login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 16px;
+    background: #DB2777;
+    color: #ffffff;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(219, 39, 119, 0.25);
+    transition: background-color 0.2s, transform 0.2s;
+  }
+
+  .btn-guest-login:hover {
+    background: #be185d;
+    transform: translateY(-1px);
+  }
+
+  /* Customer View */
+  .support-customer-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .support-messages-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+  }
+
+  /* Message Bubbles */
+  .msg-bubble-row {
+    display: flex;
+    flex-direction: column;
+    max-width: 86%;
+  }
+
+  .msg-bubble-row.customer {
+    align-self: flex-start; /* In RTL, self-start is Right side */
+    align-items: flex-start;
+  }
+
+  .msg-bubble-row.admin {
+    align-self: flex-end; /* In RTL, self-end is Left side */
+    align-items: flex-end;
+  }
+
+  .msg-bubble-row.bot {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    word-break: break-word;
+    position: relative;
+  }
+
+  .msg-bubble.customer {
+    background: #DB2777;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-bubble.admin {
+    background: #ffffff;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  .msg-bubble.bot {
+    background: #ffffff;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+
+  .msg-time {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    margin-top: 4px;
+    padding: 0 4px;
+  }
+
+  /* Quick Replies / FAQ Bot block */
+  .faq-bot-block {
+    background: #ffffff;
+    border: 1px solid #f3f4f6;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    margin-bottom: 8px;
+  }
+
+  .faq-greeting {
+    font-size: 0.86rem;
+    color: #374151;
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+
+  .faq-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .faq-btn-option {
+    background: #fdf2f8;
+    border: 1px solid #fbcfe8;
+    color: #be185d;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    outline: none;
+  }
+
+  .faq-btn-option:hover {
+    background: #fce7f3;
+    border-color: #f472b6;
+    transform: translateX(-2px);
+  }
+
+  .faq-btn-option i {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  /* FAQ Answer Action choices */
+  .faq-action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .btn-faq-action {
+    flex: 1;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-faq-action.resolved {
+    background: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .btn-faq-action.resolved:hover {
+    background: #e5e7eb;
+    color: #111827;
+  }
+
+  .btn-faq-action.need-help {
+    background: #DB2777;
+    color: #ffffff;
+  }
+
+  .btn-faq-action.need-help:hover {
+    background: #be185d;
+  }
+
+  /* Input Bar */
+  .support-input-bar {
+    padding: 12px 14px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .support-msg-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .support-msg-input {
+    flex: 1;
+    padding: 9px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    background: #f9fafb;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+    font-family: inherit;
+    color: #111827;
+  }
+
+  .support-msg-input:focus {
+    border-color: #DB2777;
+    background: #ffffff;
+  }
+
+  .support-send-btn {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    background: #DB2777;
+    color: #ffffff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    outline: none;
+  }
+
+  .support-send-btn:hover:not(:disabled) {
+    background: #be185d;
+    transform: scale(1.05);
+  }
+
+  .support-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Responsive styling for small screens */
+  @media (max-width: 640px) {
+    .support-chat-widget-root {
+      bottom: 68px;
+      left: 14px;
+    }
+
+    .support-chat-panel {
+      position: fixed;
+      bottom: 80px;
+      left: 12px;
+      right: 12px;
+      width: auto;
+      max-width: none;
+      height: 480px;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    const FAQ_ITEMS = [
+      { 
+        q: 'أين طلبي؟', 
+        a: 'يمكنك متابعة حالة طلبك من صفحة "حسابي" > سجل الطلبات، أو عبر صفحة تتبع الطلب باستخدام كود الفاتورة.' 
+      },
+      { 
+        q: 'طرق الدفع والشحن المتاحة؟', 
+        a: 'الدفع عند الاستلام هو الطريقة المتاحة حاليًا، والشحن يصل خلال 2-5 أيام عمل حسب المحافظة.' 
+      },
+      { 
+        q: 'سياسة الاستبدال والاسترجاع؟', 
+        a: 'يمكنك التواصل معنا خلال 3 أيام من الاستلام لطلب استبدال أو استرجاع أي منتج غير مستخدم.' 
+      }
+    ];
+
+    let currentCustomer = null;
+    let customerProfile = null;
+    let unreadCount = 0;
+    let activeConversationListener = null;
+    let hasExistingMessages = false;
+
+    // Elements
+    const root = document.getElementById('support-chat-widget-root');
+    const triggerBtn = document.getElementById('supportChatTriggerBtn');
+    const closeBtn = document.getElementById('supportChatCloseBtn');
+    const panel = document.getElementById('supportChatPanel');
+    const badge = document.getElementById('supportChatBadge');
+    const guestView = document.getElementById('supportGuestView');
+    const customerView = document.getElementById('supportCustomerView');
+    const stream = document.getElementById('supportMessagesStream');
+    const inputBar = document.getElementById('supportInputBar');
+    const msgForm = document.getElementById('supportMsgForm');
+    const msgInput = document.getElementById('supportMsgInput');
+    const sendBtn = document.getElementById('supportSendBtn');
+
+    if (!root || !triggerBtn || !panel) return;
+
+    // Toggle Panel Open/Close
+    function togglePanel(open) {
+      const isOpen = typeof open === 'boolean' ? open : !root.classList.contains('panel-open');
+      if (isOpen) {
+        root.classList.add('panel-open');
+        panel.setAttribute('aria-hidden', 'false');
+        markAsReadByCustomer();
+        scrollStreamToBottom();
+      } else {
+        root.classList.remove('panel-open');
+        panel.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    triggerBtn.addEventListener('click', () => togglePanel());
+    closeBtn.addEventListener('click', () => togglePanel(false));
+
+    // Scroll stream helper
+    function scrollStreamToBottom() {
+      setTimeout(() => {
+        if (stream) stream.scrollTop = stream.scrollHeight;
+      }, 50);
+    }
+
+    // Check Auth State
+    function initAuth() {
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+      if (!auth) {
+        setTimeout(initAuth, 300);
+        return;
+      }
+
+      auth.onAuthStateChanged(async (user) => {
+        currentCustomer = user;
+
+        if (!user) {
+          // Guest User
+          guestView.style.display = 'flex';
+          customerView.style.display = 'none';
+          badge.style.display = 'none';
+          if (activeConversationListener && db) {
+            db.ref('support_conversations/' + activeConversationListener).off();
+            activeConversationListener = null;
+          }
+          return;
+        }
+
+        // Logged In Customer
+        guestView.style.display = 'none';
+        customerView.style.display = 'flex';
+
+        // Load customer profile info for name and phone
+        if (db) {
+          try {
+            const snap = await db.ref('customers/' + user.uid).once('value');
+            customerProfile = snap.val() || {};
+          } catch (e) {
+            customerProfile = {};
+          }
+          listenToConversation(user.uid);
+        }
+      });
+    }
+
+    // Mark as read by customer
+    function markAsReadByCustomer() {
+      if (!currentCustomer || !window.db) return;
+      window.db.ref('support_conversations/' + currentCustomer.uid + '/unreadByCustomer').set(false).catch(() => {});
+      badge.style.display = 'none';
+    }
+
+    // Render Static FAQ Questions
+    function renderFAQBot() {
+      stream.innerHTML = '';
+      
+      const faqBlock = document.createElement('div');
+      faqBlock.className = 'faq-bot-block';
+      
+      const greeting = document.createElement('p');
+      greeting.className = 'faq-greeting';
+      greeting.textContent = 'مرحباً بك! 👋 اختر سؤالاً من الأسئلة الشائعة، أو اكتب استفسارك لفريق الدعم:';
+      faqBlock.appendChild(greeting);
+
+      const list = document.createElement('div');
+      list.className = 'faq-options-list';
+
+      FAQ_ITEMS.forEach((item, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'faq-btn-option';
+        btn.innerHTML = `<span>${item.q}</span> <i class="fas fa-chevron-left"></i>`;
+        btn.addEventListener('click', () => handleFAQClick(item));
+        list.appendChild(btn);
+      });
+
+      faqBlock.appendChild(list);
+      stream.appendChild(faqBlock);
+
+      // Offer direct option to write free message immediately too
+      const directHelpRow = document.createElement('div');
+      directHelpRow.style.textAlign = 'center';
+      directHelpRow.style.marginTop = '12px';
+      directHelpRow.innerHTML = `
+        <button type="button" id="btnDirectHelp" class="btn-faq-action need-help" style="width: auto; padding: 8px 16px; border-radius: 20px;">
+          <i class="fas fa-pen"></i> كتابة رسالة مباشرة للدعم
+        </button>
+      `;
+      stream.appendChild(directHelpRow);
+
+      const btnDirect = stream.querySelector('#btnDirectHelp');
+      if (btnDirect) {
+        btnDirect.addEventListener('click', () => {
+          inputBar.style.display = 'block';
+          if (msgInput) msgInput.focus();
+        });
+      }
+    }
+
+    // Handle Clicking a specific FAQ
+    function handleFAQClick(item) {
+      // 1. User choice message
+      appendMessageBubble('customer', item.q, Date.now(), false);
+
+      // 2. Bot answer message (local only)
+      setTimeout(() => {
+        const row = document.createElement('div');
+        row.className = 'msg-bubble-row bot';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble bot';
+        bubble.textContent = item.a;
+        row.appendChild(bubble);
+
+        // Action choices: "تم الحل، شكرًا" / "لسه محتاج مساعدة"
+        const actionRow = document.createElement('div');
+        actionRow.className = 'faq-action-row';
+
+        const btnResolved = document.createElement('button');
+        btnResolved.type = 'button';
+        btnResolved.className = 'btn-faq-action resolved';
+        btnResolved.innerHTML = '<i class="fas fa-check"></i> تم الحل، شكرًا';
+        btnResolved.addEventListener('click', () => {
+          togglePanel(false);
+        });
+
+        const btnNeedHelp = document.createElement('button');
+        btnNeedHelp.type = 'button';
+        btnNeedHelp.className = 'btn-faq-action need-help';
+        btnNeedHelp.innerHTML = '<i class="fas fa-comment-dots"></i> لسه محتاج مساعدة';
+        btnNeedHelp.addEventListener('click', () => {
+          inputBar.style.display = 'block';
+          if (msgInput) msgInput.focus();
+          scrollStreamToBottom();
+        });
+
+        actionRow.appendChild(btnResolved);
+        actionRow.appendChild(btnNeedHelp);
+        row.appendChild(actionRow);
+
+        stream.appendChild(row);
+        scrollStreamToBottom();
+      }, 200);
+    }
+
+    // Append a single bubble in stream
+    function appendMessageBubble(sender, text, timestamp, withTime = true) {
+      const row = document.createElement('div');
+      row.className = `msg-bubble-row ${sender}`;
+
+      const bubble = document.createElement('div');
+      bubble.className = `msg-bubble ${sender}`;
+      bubble.textContent = text;
+      row.appendChild(bubble);
+
+      if (withTime && timestamp) {
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'msg-time';
+        try {
+          const d = new Date(timestamp);
+          timeSpan.textContent = d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+          timeSpan.textContent = '';
+        }
+        row.appendChild(timeSpan);
+      }
+
+      stream.appendChild(row);
+      scrollStreamToBottom();
+    }
+
+    // Listen to Firebase support_conversations/{uid}
+    function listenToConversation(uid) {
+      if (!window.db) return;
+      activeConversationListener = uid;
+
+      const convRef = window.db.ref('support_conversations/' + uid);
+      convRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data || !data.messages) {
+          hasExistingMessages = false;
+          renderFAQBot();
+          return;
+        }
+
+        hasExistingMessages = true;
+        inputBar.style.display = 'block'; // Free text input always visible when conversation exists
+
+        // Check unread indicator
+        if (data.unreadByCustomer) {
+          badge.style.display = 'block';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        // Render All Thread Messages
+        stream.innerHTML = '';
+        const messagesObj = data.messages || {};
+        const sortedMsgs = Object.keys(messagesObj).map(id => ({
+          id,
+          ...messagesObj[id]
+        })).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+        sortedMsgs.forEach((msg) => {
+          appendMessageBubble(msg.sender || 'customer', msg.text || '', msg.timestamp);
+        });
+
+        if (root.classList.contains('panel-open')) {
+          markAsReadByCustomer();
+        }
+        scrollStreamToBottom();
+      });
+    }
+
+    // Handle sending message
+    if (msgForm) {
+      msgForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = (msgInput.value || '').trim();
+        if (!text || !currentCustomer || !window.db) return;
+
+        msgInput.value = '';
+        if (sendBtn) sendBtn.disabled = true;
+
+        const uid = currentCustomer.uid;
+        const custName = customerProfile?.name || currentCustomer.displayName || 'عميل مسجل';
+        const custPhone = customerProfile?.phone || currentCustomer.phoneNumber || '';
+        const now = Date.now();
+
+        try {
+          const convRef = window.db.ref('support_conversations/' + uid);
+          const newMsgRef = convRef.child('messages').push();
+
+          // Push message
+          await newMsgRef.set({
+            sender: 'customer',
+            text: text,
+            timestamp: now
+          });
+
+          // Update conversation metadata
+          await convRef.update({
+            customerName: custName,
+            customerPhone: custPhone,
+            lastMessageAt: now,
+            lastMessagePreview: text.substring(0, 80),
+            unreadByAdmin: true,
+            unreadByCustomer: false
+          });
+
+          // Send Telegram notification to Admin
+          fetch('/api/send-telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              supportMessage: true,
+              customerName: custName,
+              messageText: text
+            })
+          }).catch((err) => {
+            console.warn('Telegram notification failed:', err);
+          });
+
+        } catch (err) {
+          console.error('Error sending message:', err);
+          alert('تعذر إرسال الرسالة، يرجى المحاولة مرة أخرى.');
+        } finally {
+          if (sendBtn) sendBtn.disabled = false;
+          if (msgInput) msgInput.focus();
+        }
+      });
+    }
+
+    // Init Auth listener on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAuth);
+    } else {
+      initAuth();
+    }
+  })();
+</script>

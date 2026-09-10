@@ -5,6 +5,8 @@ const currentPath = (Astro.url.pathname || '').replace(/\/$/, '') || '/';
 const navItems = [
   { href: '/dashboard', label: 'الرئيسية', icon: 'fa-tachometer-alt' },
   { href: '/dashboard-order', label: 'الطلبات', icon: 'fa-shopping-bag' },
+  { href: '/dashboard-customers', label: 'العملاء', icon: 'fa-users' },
+  { href: '/dashboard-support', label: 'خدمة العملاء', icon: 'fa-headset' },
   { href: '/dashboard-product', label: 'المنتجات', icon: 'fa-boxes' },
   { href: '/dashboard-blog', label: 'المدونة', icon: 'fa-newspaper' },
   { href: '/dashboard-index', label: 'تخصيص الواجهة', icon: 'fa-sliders-h' },
