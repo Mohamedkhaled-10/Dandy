@@ -1,125 +1,407 @@
 ---
 // Header.astro
+// Phase 02: Modern Minimal E-commerce Header & Navigation
 ---
 
-<!-- Announcement Bar -->
-<div class="announce-bar">
+<!-- 1. Announcement Bar: Clean, subtle, non-intrusive -->
+<div class="announce-bar" id="site-announce-bar">
   <div class="announce-track">
     <span>Enjoy Free Shipping on orders above 2000 LE</span>
+    <span>•</span>
+    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
+    <span>•</span>
     <span>Enjoy Free Shipping on orders above 2000 LE</span>
-    <span>Enjoy Free Shipping on orders above 2000 LE</span>
-    <span>Enjoy Free Shipping on orders above 2000 LE</span>
+    <span>•</span>
+    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
   </div>
 </div>
 
-<!-- Main Header -->
-<header>
-  <button class="header-icon" aria-label="Menu" onclick="window.toggleNav()">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-  <div class="logo" onclick="window.location.href='/'">
-    <img src="/assets/images/logo.png" alt="Dandy Cosmetics" style="max-height: 45px; width: auto; object-fit: contain;">
-  </div>
-  <div class="header-actions">
-    <button class="header-icon" aria-label="Search" onclick="window.toggleSearchPanel()">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    </button>
-
-    <!-- Guest: رابط تسجيل الدخول -->
-    <a href="/account-login" id="header-auth-guest" class="header-auth-link" title="تسجيل الدخول" aria-label="تسجيل الدخول">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>تسجيل الدخول</span>
-    </a>
-
-    <!-- Customer: رابط حسابي وزر تسجيل خروج -->
-    <div id="header-auth-user" class="header-auth-user-wrap" style="display:none;">
-      <a href="/account" class="header-account-link" title="حسابي" aria-label="حسابي">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>حسابي</span>
-      </a>
-      <button type="button" class="header-logout-btn" onclick="window.headerSignOut()" title="تسجيل خروج" aria-label="تسجيل خروج">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+<!-- 2. Main Header: Modern Minimal Composition -->
+<header class="site-header" id="site-header">
+  <div class="header-container">
+    
+    <!-- LEFT ZONE (Desktop: Menu trigger + Nav Links | Mobile: Hamburger Menu) -->
+    <div class="header-left">
+      <!-- Mobile / Compact Hamburger Trigger -->
+      <button 
+        type="button" 
+        class="header-icon-btn mobile-menu-btn" 
+        id="mobile-menu-trigger" 
+        aria-label="القائمة الرئيسية" 
+        onclick="window.toggleNav()"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
       </button>
+
+      <!-- Desktop Primary Navigation Links (Restrained, doesn't overpower branding) -->
+      <nav class="desktop-nav" aria-label="التنقل الرئيسي" id="desktop-primary-nav">
+        <a href="/" class="nav-link">الرئيسية</a>
+        <a href="/all-products" class="nav-link">جميع المنتجات</a>
+        <a href="/special-offers" class="nav-link badge-link">
+          العروض
+          <span class="nav-badge">خاص</span>
+        </a>
+        <a href="/track-order" class="nav-link">تتبع طلبك</a>
+        <a href="/about-us" class="nav-link">عن داندي</a>
+      </nav>
     </div>
+
+    <!-- CENTER ZONE: Clean, balanced Brand Logo -->
+    <div class="header-center">
+      <a href="/" class="brand-logo" title="Dandy Cosmetics - الصفحة الرئيسية" id="header-brand-logo">
+        <img 
+          src="/assets/images/logo.png" 
+          alt="Dandy Cosmetics" 
+          width="130" 
+          height="40" 
+          loading="eager"
+          decoding="async"
+        />
+      </a>
+    </div>
+
+    <!-- RIGHT ZONE: Discoverable Search, Account & Cart -->
+    <div class="header-right">
+      
+      <!-- Desktop Quick Search Pill Button (Highly discoverable as in modern commerce) -->
+      <button 
+        type="button" 
+        class="desktop-search-trigger" 
+        id="desktop-search-btn"
+        onclick="window.toggleSearchPanel()" 
+        aria-label="البحث عن منتجات"
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span class="search-label">ابحثي عن منتج...</span>
+        <kbd class="search-kbd">/</kbd>
+      </button>
+
+      <!-- Mobile Search Icon Button -->
+      <button 
+        type="button" 
+        class="header-icon-btn mobile-search-btn" 
+        id="mobile-search-trigger" 
+        aria-label="بحث" 
+        onclick="window.toggleSearchPanel()"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+
+      <!-- Divider -->
+      <span class="header-divider" aria-hidden="true"></span>
+
+      <!-- Auth State: Guest Login -->
+      <a 
+        href="/account-login" 
+        id="header-auth-guest" 
+        class="header-account-btn" 
+        title="تسجيل الدخول" 
+        aria-label="تسجيل الدخول"
+      >
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="account-btn-text">دخول</span>
+      </a>
+
+      <!-- Auth State: Authenticated Customer -->
+      <div id="header-auth-user" class="header-auth-user-wrap" style="display:none;">
+        <a 
+          href="/account" 
+          class="header-account-btn active-user" 
+          title="حسابي" 
+          aria-label="حسابي الشخصي"
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span class="account-btn-text">حسابي</span>
+        </a>
+        <button 
+          type="button" 
+          class="header-icon-btn logout-btn" 
+          onclick="window.headerSignOut()" 
+          title="تسجيل خروج" 
+          aria-label="تسجيل خروج"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Cart Button with Shared Dynamic Counter -->
+      <a href="/cart" class="header-cart-btn" id="header-cart-link" aria-label="سلة التسوق" title="سلة التسوق">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <path d="M3 6h18"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <span class="cart-count-badge" id="cart-count">0</span>
+      </a>
+
+    </div>
+
   </div>
 </header>
 
-<!-- Side Navigation Menu -->
-<div class="menu-overlay" id="menu-overlay" onclick="window.toggleNav()"></div>
-<div class="menubar" id="menubar">
-  <button class="close-menu" onclick="window.toggleNav()" style="background:none; border:none; color:var(--maroon, #7a1f3d); font-size:1.5rem; cursor:pointer; margin-bottom:20px;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </button>
+<!-- 3. Side Navigation Drawer: Modern Minimal Polish -->
+<div class="menu-overlay" id="menu-overlay" onclick="window.toggleNav()" aria-hidden="true"></div>
+
+<aside class="menubar" id="menubar" aria-label="القائمة الجانبية" role="dialog" aria-modal="true">
+  <!-- Drawer Header -->
+  <div class="menubar-header">
+    <div class="drawer-logo">
+      <img src="/assets/images/logo.png" alt="Dandy Cosmetics" height="32" />
+    </div>
+    <button 
+      type="button" 
+      class="close-menu-btn" 
+      id="close-menu-trigger" 
+      onclick="window.toggleNav()" 
+      aria-label="إغلاق القائمة"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Drawer Body -->
   <div class="menubar-content">
-    <ul style="list-style:none; padding:0;">
-      <!-- عنصر حالة حساب العميل في القائمة الجانبية -->
-      <li id="menu-auth-guest" style="margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #f0e6e2;">
-        <a href="/account-login" style="font-size:1.05rem; font-weight:600; color:var(--maroon, #7a1f3d); text-decoration:none; display:flex; align-items:center; gap:8px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          تسجيل الدخول
+    
+    <!-- Quick Search In Mobile Drawer -->
+    <div class="drawer-search-box" onclick="window.toggleNav(); window.toggleSearchPanel();">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <span>ابحثي في المتجر...</span>
+    </div>
+
+    <!-- User Account Status Block -->
+    <div class="drawer-auth-block">
+      <div id="menu-auth-guest">
+        <a href="/account-login" class="drawer-auth-btn">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <div class="auth-text">
+            <strong>تسجيل الدخول / إنشاء حساب</strong>
+            <small>تابعي طلباتك وحصلي على عروض حصرية</small>
+          </div>
         </a>
-      </li>
-      <li id="menu-auth-user" style="display:none; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #f0e6e2;">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <a href="/account" style="font-size:1.05rem; font-weight:600; color:var(--maroon, #7a1f3d); text-decoration:none; display:flex; align-items:center; gap:8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            حسابي
+      </div>
+
+      <div id="menu-auth-user" style="display:none;">
+        <div class="drawer-user-info">
+          <a href="/account" class="drawer-auth-btn">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <div class="auth-text">
+              <strong>حسابي الشخصي</strong>
+              <small>إدارة الطلبات والعناوين</small>
+            </div>
           </a>
-          <button type="button" onclick="window.headerSignOut()" style="background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:5px; font-family:inherit; padding:5px 10px; border-radius:6px; transition:all 0.2s;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            تسجيل خروج
+          <button type="button" class="drawer-logout-btn" onclick="window.headerSignOut()" title="تسجيل خروج">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>خروج</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="drawer-section-title">التنقل</div>
+    <ul class="drawer-nav-list">
+      <li>
+        <a href="/" class="drawer-nav-item">
+          <span>الرئيسية</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
       </li>
-      <li style="margin-bottom:15px;"><a href="/" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">Home</a></li>
-      <li style="margin-bottom:15px;"><a href="/all-products" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">Products</a></li>
-      <li style="margin-bottom:15px;"><a href="/special-offers" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">Offers</a></li>
-      <li style="margin-bottom:15px;"><a href="/track-order" style="color:var(--maroon, #7a1f3d); font-weight:bold; font-size:1.1rem; text-decoration:none;">Track Your Order</a></li>
-      <li style="margin-bottom:15px;"><a href="/help" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">Help & Gifting Guide</a></li>
-      <li style="margin-bottom:15px;"><a href="/client-reviews" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">Client Reviews</a></li>
-      <li style="margin-bottom:15px;"><a href="/blog" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">Blog Posts</a></li>
-      <li style="margin-bottom:15px;"><a href="/about-us" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">About Us</a></li>
-      <li style="margin-bottom:15px;"><a href="/contact-us" style="font-size:1.1rem; font-weight:500; color:#2b2b2b; text-decoration:none;">Contact Us</a></li>
+      <li>
+        <a href="/all-products" class="drawer-nav-item">
+          <span>جميع المنتجات</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/special-offers" class="drawer-nav-item highlight-item">
+          <span class="with-badge">
+            العروض الخاصة
+            <span class="special-tag">خصومات</span>
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/track-order" class="drawer-nav-item">
+          <span>تتبع حالة طلبك</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/help" class="drawer-nav-item">
+          <span>المساعدة ودليل الهدايا</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/client-reviews" class="drawer-nav-item">
+          <span>آراء وتجارب العميلات</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/blog" class="drawer-nav-item">
+          <span>مقالات العناية والجمال</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/about-us" class="drawer-nav-item">
+          <span>عن داندي Dandy</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/contact-us" class="drawer-nav-item">
+          <span>تواصل معنا</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
     </ul>
-    <div class="side-bottom-links" style="margin-top:30px; padding-top:20px; border-top:1px solid #eee; font-size:0.9rem; display:flex; flex-wrap:wrap; gap:12px;">
-      <a href="/privacy-policy" style="color:#666; text-decoration:none;">Privacy Policy</a>
-      <span style="color:#ccc;">•</span>
-      <a href="/terms" style="color:#666; text-decoration:none;">Terms & Conditions</a>
-      <span style="color:#ccc;">•</span>
-      <a href="/contact-us" style="color:#666; text-decoration:none;">Contact Us</a>
+
+    <!-- Drawer Footer Links -->
+    <div class="drawer-footer-links">
+      <a href="/privacy-policy">سياسة الخصوصية</a>
+      <span class="dot">•</span>
+      <a href="/terms">الشروط والأحكام</a>
+      <span class="dot">•</span>
+      <a href="/contact-us">الدعم الفني</a>
+    </div>
+
+  </div>
+</aside>
+
+<!-- 4. Live Search Drawer Modal: Modern Minimal Polish -->
+<div class="search-overlay" id="search-overlay" onclick="window.toggleSearchPanel()" aria-hidden="true"></div>
+
+<div class="search-panel" id="search-panel" role="dialog" aria-modal="true" aria-label="البحث عن منتجات">
+  <!-- Search Drawer Header -->
+  <div class="search-drawer-header">
+    <div class="search-header-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <span>البحث في المنتجات</span>
+    </div>
+    <button 
+      type="button" 
+      class="close-search-panel" 
+      id="close-search-trigger"
+      onclick="window.toggleSearchPanel()" 
+      aria-label="إغلاق البحث"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Search Input Area -->
+  <div class="search-input-section">
+    <div class="search-input-wrap">
+      <input 
+        type="text" 
+        id="live-search-input" 
+        placeholder="اكتبي اسم المنتج، التصنيف، أو المكونات..." 
+        autocomplete="off"
+        oninput="window.handleLiveSearch(this.value)"
+      />
+      <svg class="search-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <button 
+        type="button" 
+        class="search-clear-btn" 
+        id="search-clear-btn" 
+        style="display:none;" 
+        onclick="document.getElementById('live-search-input').value=''; window.handleLiveSearch(''); this.style.display='none';" 
+        aria-label="مسح النص"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Results / Suggestions Scrollable Container -->
+  <div id="live-search-results" class="search-results-area">
+    <div class="search-suggestions-container">
+      <div class="suggestions-heading">الأكثر بحثاً:</div>
+      <div class="suggestions-chips">
+        <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='عناية'; window.handleLiveSearch('عناية')">
+          <span>✨ عناية</span>
+        </button>
+        <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='شعر'; window.handleLiveSearch('شعر')">
+          <span>🌿 شعر</span>
+        </button>
+        <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='بشرة'; window.handleLiveSearch('بشرة')">
+          <span>🌸 بشرة</span>
+        </button>
+        <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='سيروم'; window.handleLiveSearch('سيروم')">
+          <span>💧 سيروم</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Search Panel Modal -->
-<div class="search-overlay" id="search-overlay" onclick="window.toggleSearchPanel()"></div>
-<div class="search-panel" id="search-panel">
-  <button class="close-search-panel" onclick="window.toggleSearchPanel()" style="background:none; border:none; color:var(--color-primary); font-size:1.5rem; cursor:pointer; margin-bottom:20px; align-self:flex-start; position:static;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </button>
-  <div class="search-input-wrap" style="position:relative; margin-bottom:20px;">
-     <input type="text" id="live-search-input" placeholder="ابحث عن منتج..." style="width:100%; padding:12px 12px 12px 40px; border:1px solid var(--border-light, #fbcfe8); border-radius:8px; font-family:inherit; font-size:1rem; color:var(--color-text, #262626); outline:none; transition:border-color 0.3s;" onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--border-light, #fbcfe8)'" oninput="window.handleLiveSearch(this.value)">
-     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#7a7a7a;"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </div>
-  <div id="live-search-results" style="flex:1; overflow-y:auto; padding-right:5px; scrollbar-width:thin;">
-      <p style="color:#7a7a7a; text-align:center; font-size:0.95rem; margin-top:20px;">اقتراحات البحث:<br><br>
-          <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='عناية'; window.handleLiveSearch('عناية')">عناية</span>
-          <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='شعر'; window.handleLiveSearch('شعر')">شعر</span>
-          <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='بشرة'; window.handleLiveSearch('بشرة')">بشرة</span>
-      </p>
-  </div>
-</div>
-
+<!-- Scripts (Preserving ALL Search and Auth Logic) -->
 <script is:inline>
+  // Keyboard Shortcut: Press '/' to trigger search
+  window.addEventListener('keydown', function(e) {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      window.toggleSearchPanel();
+    }
+  });
+
   window.toggleNav = function() {
     const menubar = document.getElementById("menubar");
     const overlay = document.getElementById("menu-overlay");
     
     if (menubar && !menubar.classList.contains("active")) {
-        const searchPanel = document.getElementById("search-panel");
-        const searchOverlay = document.getElementById("search-overlay");
-        if(searchPanel) searchPanel.classList.remove("active");
-        if(searchOverlay) searchOverlay.classList.remove("active");
+      const searchPanel = document.getElementById("search-panel");
+      const searchOverlay = document.getElementById("search-overlay");
+      if (searchPanel) searchPanel.classList.remove("active");
+      if (searchOverlay) searchOverlay.classList.remove("active");
     }
     
     if (menubar) menubar.classList.toggle("active");
@@ -133,152 +415,200 @@
     const menuOverlay = document.getElementById("menu-overlay");
     
     if (panel) {
-        const isActive = panel.classList.contains("active");
-        if (!isActive) {
-            panel.classList.add("active");
-            if(overlay) overlay.classList.add("active");
-            if(menubar) menubar.classList.remove("active");
-            if(menuOverlay) menuOverlay.classList.remove("active");
-            
-            setTimeout(() => {
-                const inp = document.getElementById("live-search-input");
-                if(inp) inp.focus();
-            }, 300);
-        } else {
-            panel.classList.remove("active");
-            if(overlay) overlay.classList.remove("active");
-        }
+      const isActive = panel.classList.contains("active");
+      if (!isActive) {
+        panel.classList.add("active");
+        if (overlay) overlay.classList.add("active");
+        if (menubar) menubar.classList.remove("active");
+        if (menuOverlay) menuOverlay.classList.remove("active");
+        
+        setTimeout(() => {
+          const inp = document.getElementById("live-search-input");
+          if (inp) {
+            inp.focus();
+            if (inp.value) {
+              const clearBtn = document.getElementById('search-clear-btn');
+              if (clearBtn) clearBtn.style.display = 'flex';
+            }
+          }
+        }, 250);
+      } else {
+        panel.classList.remove("active");
+        if (overlay) overlay.classList.remove("active");
+      }
     }
   };
 
   window.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-          const panel = document.getElementById("search-panel");
-          const overlay = document.getElementById("search-overlay");
-          if (panel && panel.classList.contains("active")) {
-              panel.classList.remove("active");
-              if(overlay) overlay.classList.remove("active");
-          }
+    if (e.key === 'Escape') {
+      const panel = document.getElementById("search-panel");
+      const overlay = document.getElementById("search-overlay");
+      if (panel && panel.classList.contains("active")) {
+        panel.classList.remove("active");
+        if (overlay) overlay.classList.remove("active");
       }
+      const menubar = document.getElementById("menubar");
+      const menuOverlay = document.getElementById("menu-overlay");
+      if (menubar && menubar.classList.contains("active")) {
+        menubar.classList.remove("active");
+        if (menuOverlay) menuOverlay.classList.remove("active");
+      }
+    }
   });
 
   let liveSearchTimeout = null;
   window.handleLiveSearch = function(query) {
-      clearTimeout(liveSearchTimeout);
-      liveSearchTimeout = setTimeout(() => {
-          performSearch(query);
-      }, 300);
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (clearBtn) {
+      clearBtn.style.display = (query && query.trim()) ? 'flex' : 'none';
+    }
+
+    clearTimeout(liveSearchTimeout);
+    liveSearchTimeout = setTimeout(() => {
+      performSearch(query);
+    }, 280);
   };
 
   function performSearch(query) {
-      const resultsContainer = document.getElementById("live-search-results");
-      if(!resultsContainer) return;
-      
-      query = (query || "").trim().toLowerCase();
-      if(!query) {
-          resultsContainer.innerHTML = `
-              <p style="color:#7a7a7a; text-align:center; font-size:0.95rem; margin-top:20px;">اقتراحات البحث:<br><br>
-                  <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='عناية'; window.handleLiveSearch('عناية')">عناية</span>
-                  <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='شعر'; window.handleLiveSearch('شعر')">شعر</span>
-                  <span style="display:inline-block; padding:6px 12px; background:var(--color-surface-soft, #fdf2f8); color:var(--color-primary); border-radius:30px; margin:4px; font-size:0.85rem; cursor:pointer;" onclick="document.getElementById('live-search-input').value='بشرة'; window.handleLiveSearch('بشرة')">بشرة</span>
-              </p>
-          `;
-          return;
-      }
+    const resultsContainer = document.getElementById("live-search-results");
+    if (!resultsContainer) return;
+    
+    query = (query || "").trim().toLowerCase();
+    if (!query) {
+      resultsContainer.innerHTML = `
+        <div class="search-suggestions-container">
+          <div class="suggestions-heading">الأكثر بحثاً:</div>
+          <div class="suggestions-chips">
+            <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='عناية'; window.handleLiveSearch('عناية')"><span>✨ عناية</span></button>
+            <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='شعر'; window.handleLiveSearch('شعر')"><span>🌿 شعر</span></button>
+            <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='بشرة'; window.handleLiveSearch('بشرة')"><span>🌸 بشرة</span></button>
+            <button type="button" class="search-chip" onclick="document.getElementById('live-search-input').value='سيروم'; window.handleLiveSearch('سيروم')"><span>💧 سيروم</span></button>
+          </div>
+        </div>
+      `;
+      return;
+    }
 
-      resultsContainer.innerHTML = '<div style="text-align:center; padding:20px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><br><small style="color:#7a7a7a; margin-top:10px; display:inline-block;"></small></div>';
+    resultsContainer.innerHTML = `
+      <div class="search-loading-state">
+        <div class="search-spinner"></div>
+        <span>جاري البحث في المتجر...</span>
+      </div>
+    `;
 
-      if(typeof window.db === 'undefined' && typeof firebase !== 'undefined') {
-          window.db = firebase.database();
-      }
+    if (typeof window.db === 'undefined' && typeof firebase !== 'undefined') {
+      window.db = firebase.database();
+    }
 
-      if(typeof window.db === 'undefined') {
-          fetch("https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app/products.json")
-          .then(res => res.json())
-          .then(data => {
-              renderSearchResults(data, query, resultsContainer);
-          })
-          .catch(err => {
-              console.error(err);
-              resultsContainer.innerHTML = '<p style="color:var(--color-danger); text-align:center;">حدث خطأ أثناء البحث.</p>';
-          });
-      } else {
-          window.db.ref('products').once('value').then(snap => {
-              renderSearchResults(snap.val(), query, resultsContainer);
-          }).catch(err => {
-              console.error(err);
-              resultsContainer.innerHTML = '<p style="color:var(--color-danger); text-align:center;">حدث خطأ أثناء البحث.</p>';
-          });
-      }
+    if (typeof window.db === 'undefined') {
+      fetch("https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app/products.json")
+      .then(res => res.json())
+      .then(data => {
+        renderSearchResults(data, query, resultsContainer);
+      })
+      .catch(err => {
+        console.error(err);
+        resultsContainer.innerHTML = '<p class="search-error-msg">حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.</p>';
+      });
+    } else {
+      window.db.ref('products').once('value').then(snap => {
+        renderSearchResults(snap.val(), query, resultsContainer);
+      }).catch(err => {
+        console.error(err);
+        resultsContainer.innerHTML = '<p class="search-error-msg">حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.</p>';
+      });
+    }
   }
 
   function renderSearchResults(data, query, container) {
-      if(!data) {
-          container.innerHTML = '<p style="color:#7a7a7a; text-align:center; padding:20px;">عذراً، لم نتمكن من العثور على منتجات.</p>';
-          return;
+    if (!data) {
+      container.innerHTML = '<div class="search-empty-state"><p>عذراً، لم نتمكن من جلب المنتجات حالياً.</p></div>';
+      return;
+    }
+    
+    let products = [];
+    Object.keys(data).forEach(k => {
+      let p = data[k];
+      p.id = k;
+      if (p.name) products.push(p);
+    });
+    
+    products.forEach(p => {
+      let score = 0;
+      let n = (p.name || "").toLowerCase();
+      let c = (p.category || "").toLowerCase();
+      
+      if (n === query) score = 100;
+      else if (n.startsWith(query)) score = 80;
+      else if (n.includes(query)) score = 50;
+      
+      if (c === query) score += 30;
+      else if (c.includes(query)) score += 10;
+      
+      p._score = score;
+    });
+    
+    products = products.filter(p => p._score > 0).sort((a,b) => b._score - a._score);
+    
+    if (products.length === 0) {
+      container.innerHTML = `
+        <div class="search-empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.5">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <p>لا توجد نتائج مطابقة لـ "<strong>${escapeHtml(query)}</strong>"</p>
+          <small>جربي البحث بكلمات عامة مثل (بشرة، شعر، سيروم، صابون)</small>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '<div class="search-results-list">';
+    products.forEach(p => {
+      let priceHtml = '';
+      if (p.onSale && p.discount) {
+        let priceRaw = parseFloat(p.price);
+        let discountPercent = parseFloat(p.discount) || 0;
+        let oldPrice = priceRaw / (1 - (discountPercent/100));
+        priceHtml = `<span class="old-price">${oldPrice.toFixed(0)} ج.م</span> <span class="current-price">${priceRaw} ج.م</span>`;
+      } else if (p.originalPrice) {
+        priceHtml = `<span class="old-price">${p.originalPrice} ج.م</span> <span class="current-price">${p.price} ج.م</span>`;
+      } else {
+        priceHtml = `<span class="current-price">${p.price} ج.م</span>`;
       }
       
-      let products = [];
-      Object.keys(data).forEach(k => {
-          let p = data[k];
-          p.id = k;
-          if(p.name) products.push(p);
-      });
-      
-      products.forEach(p => {
-          let score = 0;
-          let n = (p.name || "").toLowerCase();
-          let c = (p.category || "").toLowerCase();
-          
-          if(n === query) score = 100;
-          else if(n.startsWith(query)) score = 80;
-          else if(n.includes(query)) score = 50;
-          
-          if(c === query) score += 30;
-          else if(c.includes(query)) score += 10;
-          
-          p._score = score;
-      });
-      
-      products = products.filter(p => p._score > 0).sort((a,b) => b._score - a._score);
-      
-      if(products.length === 0) {
-          container.innerHTML = '<p style="color:#7a7a7a; text-align:center; padding:20px;">لا توجد نتائج مطابقة لـ "' + query + '"<br><br>جرب البحث بكلمات أخرى.</p>';
-          return;
-      }
-      
-      let html = '<div style="display:flex; flex-direction:column; gap:12px; padding:10px 0;">';
-      products.forEach(p => {
-          let priceStr = p.price + ' EGP';
-          if(p.onSale && p.discount) {
-              let priceRaw = parseFloat(p.price);
-              let discountPercent = parseFloat(p.discount) || 0;
-              let oldPrice = priceRaw / (1 - (discountPercent/100));
-              priceStr = `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem; margin-left:6px;">${oldPrice.toFixed(0)}</span> <strong style="color:var(--color-danger);">${priceRaw} EGP</strong>`;
-          } else if (p.originalPrice) {
-              priceStr = `<span style="text-decoration:line-through; color:#aaa; font-size:0.8rem; margin-left:6px;">${p.originalPrice}</span> <strong style="color:var(--color-danger);">${p.price} EGP</strong>`;
-          } else {
-              priceStr = `<strong style="color:var(--color-danger);">${p.price} EGP</strong>`;
-          }
-          
-          const pLink = p.slug ? `/product/${encodeURIComponent(p.slug)}` : `/product?id=${p.id}`;
-          html += `
-              <div style="display:flex; align-items:center; gap:12px; padding:10px; border:1px solid #f0e6e2; border-radius:8px; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background='transparent'" onclick="window.location.href='${pLink}'">
-                  <img src="${p.image || ''}" alt="" loading="lazy" style="width:60px; height:60px; object-fit:cover; border-radius:6px; background:#f9f9f9;">
-                  <div style="flex:1;">
-                      <h4 style="margin:0 0 4px 0; font-size:0.95rem; color:var(--color-text);">${p.name}</h4>
-                      <div style="font-size:0.85rem; color:#7a7a7a;">${priceStr}</div>
-                      ${p.category ? `<span style="display:inline-block; padding:2px 6px; background:#f0f0f0; border-radius:4px; font-size:0.7rem; margin-top:4px;">${p.category}</span>` : ''}
-                  </div>
-              </div>
-          `;
-      });
-      html += '</div>';
-      
-      container.innerHTML = html;
+      const pLink = p.slug ? `/product/${encodeURIComponent(p.slug)}` : `/product?id=${p.id}`;
+      html += `
+        <a href="${pLink}" class="search-result-card" onclick="window.toggleSearchPanel()">
+          <img src="${p.image || '/assets/images/logo.png'}" alt="${escapeHtml(p.name)}" loading="lazy" />
+          <div class="result-details">
+            <h4 class="result-name">${escapeHtml(p.name)}</h4>
+            <div class="result-price">${priceHtml}</div>
+            ${p.category ? `<span class="result-category">${escapeHtml(p.category)}</span>` : ''}
+          </div>
+          <svg class="result-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </a>
+      `;
+    });
+    html += '</div>';
+    
+    container.innerHTML = html;
   }
 
-  // --- التحقق من حالة تسجيل دخول العميل وإدارة روابط الهيدر (المرحلة 6) ---
+  function escapeHtml(string) {
+    if (!string) return '';
+    return String(string)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // --- Auth state check (Customer vs Guest) ---
   window.headerSignOut = async function() {
     const auth = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
     if (auth) {
@@ -294,7 +624,6 @@
 
   function initHeaderAuth() {
     function handleUserState(user) {
-      // استثناء بريد الأدمن admin@dandy.com حتى لا يظهر له رابط "حسابي" كعميل عادي
       const isClient = user && (!user.email || user.email.toLowerCase() !== 'admin@dandy.com');
 
       const guestHeader = document.getElementById('header-auth-guest');
@@ -341,71 +670,770 @@
 </script>
 
 <style>
-  .header-auth-link {
-    display: inline-flex;
+  /* ==========================================================================
+     MODERN MINIMAL HEADER STYLES (Phase 02)
+     ========================================================================== */
+
+  .site-header {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-subtle, #f2ede9);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .header-container {
+    width: 100%;
+    max-width: var(--container-max-width, 1240px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--container-px, 20px);
+    padding-right: var(--container-px, 20px);
+    height: 64px;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    color: var(--color-blush, #7a1f3d);
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 20px;
-    border: 1px solid rgba(122, 31, 61, 0.22);
-    background: #fff;
-    transition: all 0.2s ease;
-    white-space: nowrap;
+    justify-content: space-between;
+    gap: 16px;
   }
-  .header-auth-link:hover {
-    background: rgba(122, 31, 61, 0.06);
-    border-color: var(--color-blush, #7a1f3d);
-  }
-  .header-auth-user-wrap {
-    display: inline-flex;
+
+  /* Left Zone: Nav & Menu */
+  .header-left {
+    display: flex;
     align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+    gap: 16px;
+    flex: 1;
+    justify-content: flex-start;
   }
-  .header-account-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--color-blush, #7a1f3d);
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 20px;
-    background: rgba(122, 31, 61, 0.08);
-    transition: all 0.2s ease;
-  }
-  .header-account-link:hover {
-    background: rgba(122, 31, 61, 0.16);
-  }
-  .header-logout-btn {
-    background: none;
-    border: none;
-    color: #888;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
+
+  .header-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s, background 0.2s;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-text, #1c1917);
+    cursor: pointer;
+    padding: 0;
+    transition: var(--transition-fast, all 0.15s ease);
   }
-  .header-logout-btn:hover {
-    color: #e11d48;
-    background: #fee2e2;
+  .header-icon-btn:hover {
+    background: var(--color-surface-soft, #fbf7f6);
+    color: var(--color-blush, #db2777);
+  }
+
+  .mobile-menu-btn {
+    display: none;
+  }
+
+  /* Desktop Primary Navigation */
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm, 6px);
+    font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: 500;
+    color: var(--color-text-secondary, #44403c);
+    text-decoration: none;
+    transition: var(--transition-fast, all 0.15s ease);
+    white-space: nowrap;
+    position: relative;
+  }
+  .nav-link:hover {
+    color: var(--color-blush, #db2777);
+    background: var(--color-surface-soft, #fbf7f6);
+  }
+
+  .nav-link.badge-link {
+    gap: 6px;
+  }
+
+  .nav-badge {
+    background: #fdf2f8;
+    color: var(--color-blush, #db2777);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm, 4px);
+    border: 1px solid #fbcfe8;
+    line-height: 1.3;
+  }
+
+  /* Center Zone: Logo */
+  .header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    line-height: 1;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .brand-logo:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+  .brand-logo img {
+    height: 38px;
+    width: auto;
+    max-height: 40px;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Right Zone: Actions */
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  /* Desktop Search Input Pill */
+  .desktop-search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+    background: var(--color-canvas-subtle, #faf8f6);
+    border: 1px solid var(--border-subtle, #f2ede9);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-muted, #78716c);
+    cursor: pointer;
+    font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
+    font-size: var(--text-xs, 0.75rem);
+    font-weight: 500;
+    transition: var(--transition-fast, all 0.15s ease);
+    width: 190px;
+    max-width: 220px;
+  }
+  .desktop-search-trigger:hover {
+    background: #ffffff;
+    border-color: var(--border-medium, #e2d9d2);
+    color: var(--color-text, #1c1917);
+    box-shadow: var(--shadow-xs, 0 1px 2px 0 rgba(28, 25, 23, 0.04));
+  }
+  .desktop-search-trigger svg {
+    color: var(--color-muted, #78716c);
+    flex-shrink: 0;
+  }
+  .desktop-search-trigger:hover svg {
+    color: var(--color-blush, #db2777);
+  }
+  .search-label {
+    flex: 1;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .search-kbd {
+    background: #ffffff;
+    border: 1px solid var(--border-subtle, #f2ede9);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.68rem;
+    font-family: monospace;
+    color: var(--color-muted, #78716c);
+    line-height: 1.2;
+  }
+
+  .mobile-search-btn {
+    display: none;
+  }
+
+  .header-divider {
+    width: 1px;
+    height: 22px;
+    background: var(--border-subtle, #f2ede9);
+    margin: 0 4px;
+  }
+
+  /* Account Trigger */
+  .header-account-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-text, #1c1917);
+    text-decoration: none;
+    font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
+    font-size: var(--text-xs, 0.8125rem);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast, all 0.15s ease);
+    white-space: nowrap;
+  }
+  .header-account-btn:hover {
+    background: var(--color-surface-soft, #fbf7f6);
+    color: var(--color-blush, #db2777);
+  }
+  .header-account-btn.active-user {
+    background: var(--color-surface-soft, #fbf7f6);
+    border-color: var(--border-subtle, #f2ede9);
+    color: var(--color-blush, #db2777);
+  }
+
+  .header-auth-user-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .logout-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-muted, #78716c);
+  }
+  .logout-btn:hover {
+    color: var(--color-danger, #be123c);
+    background: #fff1f2;
+  }
+
+  /* Cart Trigger */
+  .header-cart-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--border-subtle, #f2ede9);
+    background: #ffffff;
+    color: var(--color-text, #1c1917);
+    text-decoration: none;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .header-cart-btn:hover {
+    background: var(--color-surface-soft, #fbf7f6);
+    border-color: var(--color-blush, #db2777);
+    color: var(--color-blush, #db2777);
+  }
+
+  .cart-count-badge {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: var(--color-blush, #db2777);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ==========================================================================
+     DRAWER & MODAL ENHANCEMENTS
+     ========================================================================== */
+
+  .drawer-logo img {
+    height: 30px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .close-menu-btn,
+  .close-search-panel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-muted, #78716c);
+    cursor: pointer;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .close-menu-btn:hover,
+  .close-search-panel:hover {
+    background: var(--color-surface-soft, #fbf7f6);
+    color: var(--color-danger, #be123c);
+  }
+
+  /* Drawer Quick Search Box */
+  .drawer-search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--color-canvas-subtle, #faf8f6);
+    border: 1px solid var(--border-subtle, #f2ede9);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-muted, #78716c);
+    font-size: var(--text-sm, 0.875rem);
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .drawer-search-box:hover {
+    border-color: var(--color-blush, #db2777);
+    color: var(--color-blush, #db2777);
+    background: #ffffff;
+  }
+
+  /* Drawer Auth Box */
+  .drawer-auth-block {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle, #f2ede9);
+  }
+  .drawer-auth-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--color-surface-soft, #fbf7f6);
+    border: 1px solid var(--border-subtle, #f2ede9);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-text, #1c1917);
+    text-decoration: none;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .drawer-auth-btn:hover {
+    border-color: var(--color-blush, #db2777);
+  }
+  .drawer-auth-btn svg {
+    color: var(--color-blush, #db2777);
+    flex-shrink: 0;
+  }
+  .drawer-auth-btn .auth-text {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+  }
+  .drawer-auth-btn .auth-text strong {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+  .drawer-auth-btn .auth-text small {
+    font-size: 0.72rem;
+    color: var(--color-muted, #78716c);
+    margin-top: 1px;
+  }
+
+  .drawer-user-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .drawer-user-info .drawer-auth-btn {
+    flex: 1;
+  }
+  .drawer-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid #fee2e2;
+    background: #fff1f2;
+    color: var(--color-danger, #be123c);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .drawer-logout-btn:hover {
+    background: #fecdd3;
+  }
+
+  .drawer-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--color-muted, #78716c);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .drawer-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .drawer-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 12px;
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-text, #1c1917);
+    text-decoration: none;
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: 500;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .drawer-nav-item:hover {
+    background: var(--color-surface-soft, #fbf7f6);
+    color: var(--color-blush, #db2777);
+  }
+  .drawer-nav-item svg {
+    color: var(--color-muted, #78716c);
+    transition: transform 0.15s ease;
+  }
+  html[dir="rtl"] .drawer-nav-item svg {
+    transform: rotate(180deg);
+  }
+  .drawer-nav-item:hover svg {
+    color: var(--color-blush, #db2777);
+  }
+  .with-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .special-tag {
+    background: #fdf2f8;
+    color: var(--color-blush, #db2777);
+    border: 1px solid #fbcfe8;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 1px 6px;
+  }
+
+  .drawer-footer-links {
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle, #f2ede9);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.75rem;
+  }
+  .drawer-footer-links a {
+    color: var(--color-muted, #78716c);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .drawer-footer-links a:hover {
+    color: var(--color-blush, #db2777);
+  }
+  .drawer-footer-links .dot {
+    color: var(--border-medium, #e2d9d2);
+  }
+
+  /* ==========================================================================
+     SEARCH DRAWER UI STYLES
+     ========================================================================== */
+
+  .search-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-subtle, #f2ede9);
+  }
+  .search-header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: 700;
+    color: var(--color-text, #1c1917);
+  }
+  .search-header-title svg {
+    color: var(--color-blush, #db2777);
+  }
+
+  .search-input-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-subtle, #f2ede9);
+    background: var(--color-canvas-subtle, #faf8f6);
+  }
+  .search-input-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .search-input-wrap input {
+    width: 100%;
+    padding: 11px 40px 11px 36px;
+    border: 1px solid var(--border-medium, #e2d9d2);
+    border-radius: var(--radius-md, 8px);
+    background: #ffffff;
+    font-family: inherit;
+    font-size: var(--text-sm, 0.875rem);
+    color: var(--color-text, #1c1917);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .search-input-wrap input:focus {
+    border-color: var(--color-blush, #db2777);
+    box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.08);
+  }
+  .search-input-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-muted, #78716c);
+    pointer-events: none;
+  }
+  .search-clear-btn {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-surface-soft, #fbf7f6);
+    border: 1px solid var(--border-subtle, #f2ede9);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted, #78716c);
+    cursor: pointer;
+    padding: 0;
+  }
+  .search-clear-btn:hover {
+    color: var(--color-danger, #be123c);
+    border-color: #fecdd3;
+  }
+
+  .search-results-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    scrollbar-width: thin;
+  }
+
+  .search-suggestions-container {
+    padding: 8px 0;
+  }
+  .suggestions-heading {
+    font-size: var(--text-xs, 0.75rem);
+    font-weight: 600;
+    color: var(--color-muted, #78716c);
+    margin-bottom: 10px;
+  }
+  .suggestions-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .search-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid var(--border-subtle, #f2ede9);
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-text, #1c1917);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .search-chip:hover {
+    border-color: var(--color-blush, #db2777);
+    color: var(--color-blush, #db2777);
+    background: #fdf2f8;
+  }
+
+  .search-loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--color-muted, #78716c);
+    gap: 12px;
+    font-size: var(--text-sm, 0.875rem);
+  }
+  .search-spinner {
+    width: 26px;
+    height: 26px;
+    border: 2px solid #f2ede9;
+    border-top-color: var(--color-blush, #db2777);
+    border-radius: 50%;
+    animation: spinSearch 0.7s linear infinite;
+  }
+  @keyframes spinSearch {
+    to { transform: rotate(360deg); }
+  }
+
+  .search-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--color-text-secondary, #44403c);
+  }
+  .search-empty-state svg {
+    margin-bottom: 12px;
+  }
+  .search-empty-state p {
+    font-size: var(--text-sm, 0.875rem);
+    margin-bottom: 6px;
+  }
+  .search-empty-state small {
+    font-size: 0.75rem;
+    color: var(--color-muted, #78716c);
+  }
+
+  .search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .search-result-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid var(--border-subtle, #f2ede9);
+    border-radius: var(--radius-md, 8px);
+    text-decoration: none;
+    background: #ffffff;
+    transition: var(--transition-fast, all 0.15s ease);
+  }
+  .search-result-card:hover {
+    border-color: #fbcfe8;
+    background: #fdf2f8;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs, 0 1px 2px 0 rgba(28, 25, 23, 0.04));
+  }
+  .search-result-card img {
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: var(--radius-sm, 6px);
+    background: #fbf7f6;
+    flex-shrink: 0;
+  }
+  .result-details {
+    flex: 1;
+    min-width: 0;
+  }
+  .result-name {
+    margin: 0 0 3px 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text, #1c1917);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .result-price {
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .result-price .current-price {
+    color: var(--color-blush, #db2777);
+  }
+  .result-price .old-price {
+    color: var(--color-muted, #78716c);
+    text-decoration: line-through;
+    font-size: 0.72rem;
+  }
+  .result-category {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #f2ede9;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    color: var(--color-text-secondary, #44403c);
+    margin-top: 4px;
+  }
+  .result-arrow {
+    color: var(--color-muted, #78716c);
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+  html[dir="rtl"] .result-arrow {
+    transform: rotate(0);
+  }
+  .search-result-card:hover .result-arrow {
+    color: var(--color-blush, #db2777);
+    transform: translateX(-3px);
+  }
+
+  /* ==========================================================================
+     RESPONSIVE BREAKPOINTS (Mobile Composition)
+     ========================================================================== */
+
+  @media (max-width: 920px) {
+    .desktop-nav {
+      display: none;
+    }
+    .mobile-menu-btn {
+      display: inline-flex;
+    }
+    .desktop-search-trigger {
+      display: none;
+    }
+    .mobile-search-btn {
+      display: inline-flex;
+    }
   }
 
   @media (max-width: 520px) {
-    .header-auth-link span, .header-account-link span {
+    .header-container {
+      padding-left: 14px;
+      padding-right: 14px;
+      height: 58px;
+      gap: 8px;
+    }
+    .brand-logo img {
+      height: 32px;
+    }
+    .account-btn-text {
       display: none;
     }
-    .header-auth-link, .header-account-link {
+    .header-account-btn {
       padding: 7px;
-      border-radius: 50%;
+      border-radius: var(--radius-md, 8px);
+    }
+    .header-divider {
+      display: none;
     }
   }
 </style>

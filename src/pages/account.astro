@@ -10,19 +10,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <slot name="head" slot="head">
     <style is:global>
       .account-page-wrapper {
-        padding-top: 130px;
-        padding-bottom: 80px;
+        padding-top: 110px;
+        padding-bottom: 70px;
         min-height: 85vh;
       }
 
       /* Hero Header */
       .account-hero-card {
-        background: var(--color-surface, #fff);
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
-        padding: 30px;
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 24px 28px;
         margin-bottom: 28px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -37,29 +36,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .account-avatar {
-        width: 64px;
-        height: 64px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--color-blush, #DB2777), #f472b6);
-        color: #fff;
+        background: var(--color-surface-soft);
+        border: 1px solid var(--border-light);
+        color: var(--color-blush);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem;
-        font-weight: 700;
-        box-shadow: 0 4px 12px rgba(219, 39, 119, 0.25);
+        font-size: 1.4rem;
+        font-weight: 800;
       }
 
       .account-greeting h1 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 800;
-        color: var(--color-primary, #111);
+        color: var(--color-primary);
         margin: 0 0 4px;
       }
 
       .account-greeting p {
-        color: var(--color-muted, #666);
-        font-size: 0.95rem;
+        color: var(--color-muted);
+        font-size: 0.88rem;
         margin: 0;
         direction: ltr;
         text-align: right;
@@ -68,19 +67,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .account-header-actions {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
       }
 
       .btn-account-logout {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: #fef2f2;
+        gap: 6px;
+        background: transparent;
         color: #dc2626;
         border: 1px solid #fee2e2;
-        padding: 10px 18px;
+        padding: 8px 16px;
         border-radius: 99px;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s;
@@ -88,18 +87,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .btn-account-logout:hover {
-        background: #dc2626;
-        color: #fff;
+        background: #fef2f2;
+        border-color: #fca5a5;
       }
 
       /* Tabs Navigation */
       .account-nav-tabs {
         display: flex;
-        gap: 10px;
-        border-bottom: 2px solid var(--border-light, #eaeaea);
+        gap: 8px;
+        border-bottom: 1px solid var(--border-light);
         margin-bottom: 28px;
         overflow-x: auto;
-        padding-bottom: 4px;
+        padding-bottom: 0;
       }
 
       .account-tab-btn {
@@ -108,53 +107,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         gap: 8px;
         background: none;
         border: none;
-        padding: 12px 20px;
-        font-size: 1rem;
+        padding: 12px 18px;
+        font-size: 0.95rem;
         font-weight: 700;
-        color: var(--color-muted, #666);
+        color: var(--color-muted);
         cursor: pointer;
         position: relative;
         transition: all 0.2s;
         white-space: nowrap;
         font-family: inherit;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
       }
 
       .account-tab-btn i {
-        font-size: 1.1rem;
+        font-size: 1rem;
       }
 
       .account-tab-btn .badge-counter {
-        background: #f3f4f6;
-        color: #4b5563;
+        background: var(--color-surface-soft);
+        color: var(--color-muted);
         font-size: 0.75rem;
-        font-weight: 800;
-        padding: 2px 8px;
+        font-weight: 700;
+        padding: 1px 7px;
         border-radius: 99px;
         transition: all 0.2s;
+        border: 1px solid var(--border-light);
       }
 
       .account-tab-btn:hover {
-        color: var(--color-blush, #DB2777);
+        color: var(--color-primary);
       }
 
       .account-tab-btn.active {
-        color: var(--color-blush, #DB2777);
-      }
-
-      .account-tab-btn.active::after {
-        content: '';
-        position: absolute;
-        bottom: -6px;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--color-blush, #DB2777);
-        border-radius: 99px;
+        color: var(--color-blush);
+        border-bottom-color: var(--color-blush);
       }
 
       .account-tab-btn.active .badge-counter {
-        background: var(--color-blush, #DB2777);
+        background: var(--color-blush);
         color: #fff;
+        border-color: var(--color-blush);
       }
 
       /* Tab Panels */
@@ -170,21 +163,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .orders-grid {
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
       }
 
       .order-history-card {
-        background: var(--color-surface, #fff);
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
-        padding: 22px 26px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-        transition: transform 0.2s, box-shadow 0.2s;
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 20px 24px;
+        transition: border-color 0.2s, box-shadow 0.2s;
       }
 
       .order-history-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        border-color: var(--color-blush);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
       }
 
       .order-card-header {
@@ -193,15 +185,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid var(--border-light, #eaeaea);
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-light);
         margin-bottom: 16px;
       }
 
       .order-code-badge {
         font-weight: 800;
-        font-size: 1.05rem;
-        color: var(--color-blush, #DB2777);
+        font-size: 0.98rem;
+        color: var(--color-primary);
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -209,54 +201,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .order-date-text {
-        font-size: 0.88rem;
-        color: var(--color-muted, #777);
+        font-size: 0.82rem;
+        color: var(--color-muted);
       }
 
       .order-card-body {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
         align-items: center;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
       }
 
       .order-info-item {
-        font-size: 0.92rem;
+        font-size: 0.88rem;
       }
 
       .order-info-item .label {
-        color: var(--color-muted, #777);
-        margin-bottom: 3px;
-        font-size: 0.82rem;
+        color: var(--color-muted);
+        margin-bottom: 2px;
+        font-size: 0.78rem;
       }
 
       .order-info-item .val {
         font-weight: 700;
-        color: var(--color-primary, #111);
+        color: var(--color-primary);
       }
 
       .order-status-pill {
         display: inline-block;
-        padding: 6px 14px;
+        padding: 4px 12px;
         border-radius: 99px;
-        font-size: 0.85rem;
-        font-weight: 800;
+        font-size: 0.8rem;
+        font-weight: 700;
       }
 
-      .status-new { background: #dbeafe; color: #1e40af; }
-      .status-processing { background: #ffedd5; color: #9a3412; }
-      .status-shipped { background: #f3e8ff; color: #6b21a8; }
-      .status-delivered { background: #dcfce7; color: #166534; }
-      .status-cancelled { background: #fee2e2; color: #991b1b; }
+      .status-new { background: #eff6ff; color: #1e40af; }
+      .status-processing { background: #fff7ed; color: #9a3412; }
+      .status-shipped { background: #faf5ff; color: #6b21a8; }
+      .status-delivered { background: #f0fdf4; color: #166534; }
+      .status-cancelled { background: #fef2f2; color: #991b1b; }
 
       .order-card-footer {
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
-        border-top: 1px dashed var(--border-light, #eaeaea);
+        border-top: 1px dashed var(--border-light);
         padding-top: 14px;
       }
 
@@ -264,31 +256,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 9px 18px;
+        padding: 8px 16px;
         border-radius: 99px;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         font-weight: 700;
         text-decoration: none;
         transition: all 0.2s;
+        font-family: inherit;
       }
 
       .btn-order-action.primary {
-        background: var(--color-blush, #DB2777);
+        background: var(--color-blush);
         color: #fff;
       }
 
       .btn-order-action.primary:hover {
-        background: var(--color-primary, #111);
+        background: var(--color-primary);
       }
 
       .btn-order-action.secondary {
-        background: #f3f4f6;
-        color: #374151;
-        border: 1px solid #e5e7eb;
+        background: var(--color-surface-soft);
+        color: var(--color-primary);
+        border: 1px solid var(--border-light);
       }
 
       .btn-order-action.secondary:hover {
-        background: #e5e7eb;
+        background: #f3f4f6;
       }
 
       /* Addresses Section */
@@ -296,7 +289,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 22px;
+        margin-bottom: 20px;
         flex-wrap: wrap;
         gap: 12px;
       }
@@ -304,37 +297,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .btn-add-address {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: var(--color-blush, #DB2777);
+        gap: 6px;
+        background: var(--color-blush);
         color: #fff;
         font-weight: 700;
-        padding: 10px 22px;
+        padding: 9px 18px;
         border-radius: 99px;
         border: none;
         cursor: pointer;
-        font-size: 0.92rem;
+        font-size: 0.88rem;
         transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(219, 39, 119, 0.2);
+        box-shadow: 0 4px 12px rgba(219, 39, 119, 0.15);
         font-family: inherit;
       }
 
       .btn-add-address:hover {
-        background: var(--color-primary, #111);
+        background: var(--color-primary);
       }
 
       .addresses-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
       }
 
       .address-card {
-        background: var(--color-surface, #fff);
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
-        padding: 22px;
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 20px;
         position: relative;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -342,7 +334,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .address-card.is-default {
-        border-color: var(--color-blush, #DB2777);
+        border-color: var(--color-blush);
         background: #fffafa;
       }
 
@@ -354,40 +346,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .address-label {
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 800;
-        color: var(--color-primary, #111);
+        color: var(--color-primary);
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
       }
 
       .badge-default-address {
-        background: var(--color-blush, #DB2777);
+        background: var(--color-blush);
         color: #fff;
-        font-size: 0.78rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        padding: 4px 10px;
+        padding: 3px 8px;
         border-radius: 99px;
       }
 
       .address-details {
-        color: #4b5563;
-        font-size: 0.95rem;
+        color: var(--color-muted);
+        font-size: 0.88rem;
         line-height: 1.6;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
       }
 
       .address-details strong {
-        color: var(--color-primary, #111);
+        color: var(--color-primary);
+        font-weight: 700;
       }
 
       .address-card-actions {
         display: flex;
         align-items: center;
         gap: 8px;
-        border-top: 1px solid var(--border-light, #eaeaea);
-        padding-top: 14px;
+        border-top: 1px solid var(--border-light);
+        padding-top: 12px;
         flex-wrap: wrap;
       }
 
@@ -395,13 +388,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         font-weight: 700;
-        padding: 6px 12px;
+        padding: 5px 10px;
         border-radius: 6px;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         transition: background 0.2s, color 0.2s;
         font-family: inherit;
       }
@@ -419,7 +412,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .btn-addr-action.delete:hover { background: #fee2e2; }
 
       .btn-addr-action.set-default {
-        color: var(--color-blush, #DB2777);
+        color: var(--color-blush);
         background: #fdf2f8;
         margin-right: auto;
       }
@@ -428,30 +421,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       /* Wishlist Grid & Product Card */
       .wishlist-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
       }
 
       .wishlist-product-card {
-        background: var(--color-surface, #fff);
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s;
         position: relative;
       }
 
       .wishlist-product-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+        border-color: var(--color-blush);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
       }
 
       .wishlist-img-wrap {
         position: relative;
         aspect-ratio: 1/1;
-        background: #fdf2f8;
+        background: var(--color-surface-soft);
         overflow: hidden;
         cursor: pointer;
       }
@@ -464,54 +457,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .wishlist-product-card:hover .wishlist-img-wrap img {
-        transform: scale(1.05);
+        transform: scale(1.04);
       }
 
       .wishlist-sale-badge {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #e11d48;
+        top: 8px;
+        right: 8px;
+        background: var(--color-blush);
         color: #fff;
-        font-size: 0.75rem;
-        font-weight: 800;
-        padding: 4px 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 6px;
         border-radius: 4px;
         z-index: 2;
       }
 
       .wishlist-card-content {
-        padding: 16px;
+        padding: 14px;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
       }
 
       .wishlist-product-title {
-        font-size: 1rem;
+        font-size: 0.92rem;
         font-weight: 700;
-        color: var(--color-primary, #111);
-        margin: 0 0 8px;
+        color: var(--color-primary);
+        margin: 0 0 6px;
         cursor: pointer;
         line-height: 1.4;
       }
 
       .wishlist-product-title:hover {
-        color: var(--color-blush, #DB2777);
+        color: var(--color-blush);
       }
 
       .wishlist-price-row {
-        margin-bottom: 14px;
-        font-size: 1rem;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
         font-weight: 800;
-        color: var(--color-primary, #111);
+        color: var(--color-primary);
       }
 
       .wishlist-price-row .old-price {
-        font-size: 0.85rem;
-        color: var(--color-muted, #999);
+        font-size: 0.8rem;
+        color: var(--color-muted);
         text-decoration: line-through;
-        margin-left: 8px;
+        margin-left: 6px;
         font-weight: 500;
       }
 
@@ -519,17 +512,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         margin-top: auto;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
       }
 
       .btn-wishlist-add-cart {
-        background: var(--color-primary, #111);
+        background: var(--color-primary);
         color: #fff;
         border: none;
-        padding: 10px 14px;
+        padding: 9px 12px;
         border-radius: 99px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.82rem;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -540,78 +533,81 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       .btn-wishlist-add-cart:hover {
-        background: var(--color-blush, #DB2777);
+        background: var(--color-blush);
       }
 
       .btn-wishlist-remove {
-        background: #fef2f2;
-        color: #dc2626;
-        border: 1px solid #fee2e2;
-        padding: 8px 12px;
+        background: transparent;
+        color: var(--color-muted);
+        border: 1px solid var(--border-light);
+        padding: 6px 10px;
         border-radius: 99px;
         font-weight: 700;
-        font-size: 0.82rem;
+        font-size: 0.78rem;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 4px;
         transition: all 0.2s;
         font-family: inherit;
       }
 
       .btn-wishlist-remove:hover {
-        background: #dc2626;
-        color: #fff;
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fee2e2;
       }
 
       /* Empty State */
       .account-empty-state {
         text-align: center;
-        padding: 60px 20px;
-        background: var(--color-surface, #fff);
-        border: 1px dashed var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
+        padding: 48px 20px;
+        background: var(--color-surface);
+        border: 1px dashed var(--border-light);
+        border-radius: var(--border-radius-md);
       }
 
       .account-empty-state i {
-        font-size: 3.5rem;
-        color: #d1d5db;
-        margin-bottom: 16px;
+        font-size: 2.8rem;
+        color: var(--color-muted);
+        opacity: 0.6;
+        margin-bottom: 12px;
         display: inline-block;
       }
 
       .account-empty-state h3 {
-        font-size: 1.3rem;
+        font-size: 1.15rem;
         font-weight: 800;
-        color: var(--color-primary, #111);
-        margin-bottom: 8px;
+        color: var(--color-primary);
+        margin-bottom: 6px;
       }
 
       .account-empty-state p {
-        color: var(--color-muted, #666);
-        font-size: 0.95rem;
-        max-width: 440px;
-        margin: 0 auto 24px;
-        line-height: 1.6;
+        color: var(--color-muted);
+        font-size: 0.88rem;
+        max-width: 400px;
+        margin: 0 auto 20px;
+        line-height: 1.5;
       }
 
       .btn-empty-action {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: var(--color-blush, #DB2777);
+        gap: 6px;
+        background: var(--color-blush);
         color: #fff;
         font-weight: 700;
-        padding: 12px 26px;
+        padding: 10px 22px;
         border-radius: 99px;
         text-decoration: none;
-        box-shadow: 0 4px 14px rgba(219, 39, 119, 0.25);
+        box-shadow: 0 4px 12px rgba(219, 39, 119, 0.2);
         transition: background 0.2s;
+        font-size: 0.88rem;
       }
 
       .btn-empty-action:hover {
-        background: var(--color-primary, #111);
+        background: var(--color-primary);
       }
 
       /* Address Modal */
@@ -619,7 +615,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.4);
         z-index: 9999;
         justify-content: center;
         align-items: center;
@@ -633,11 +629,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       .modal-card {
         background: #fff;
-        border-radius: 16px;
+        border-radius: var(--border-radius-md);
         width: 100%;
-        max-width: 500px;
-        padding: 28px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        max-width: 460px;
+        padding: 24px;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
         max-height: 90vh;
         overflow-y: auto;
       }
@@ -646,59 +642,61 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #eee;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-light);
       }
 
       .modal-header h3 {
         margin: 0;
-        font-size: 1.3rem;
+        font-size: 1.15rem;
         font-weight: 800;
-        color: var(--color-primary, #111);
+        color: var(--color-primary);
       }
 
       .btn-modal-close {
         background: none;
         border: none;
-        font-size: 1.3rem;
-        color: #888;
+        font-size: 1.2rem;
+        color: var(--color-muted);
         cursor: pointer;
       }
 
       .modal-form-group {
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         text-align: right;
       }
 
       .modal-form-group label {
         display: block;
         font-weight: 700;
-        font-size: 0.9rem;
-        color: #333;
-        margin-bottom: 6px;
+        font-size: 0.85rem;
+        color: var(--color-primary);
+        margin-bottom: 5px;
       }
 
       .modal-form-group input,
       .modal-form-group select,
       .modal-form-group textarea {
         width: 100%;
-        padding: 10px 14px;
-        border: 1px solid #ddd;
+        padding: 9px 12px;
+        border: 1px solid var(--border-light);
         border-radius: 8px;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         font-family: inherit;
+        background: var(--color-surface-soft);
         box-sizing: border-box;
       }
 
       .modal-form-group select {
-        background: #fff;
+        background: var(--color-surface-soft);
       }
 
       .modal-form-group input:focus,
       .modal-form-group select:focus,
       .modal-form-group textarea:focus {
-        border-color: var(--color-blush, #DB2777);
+        border-color: var(--color-blush);
+        background: #fff;
         outline: none;
       }
 
@@ -707,49 +705,49 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         align-items: center;
         gap: 8px;
         cursor: pointer;
-        margin-top: 10px;
-        font-size: 0.9rem;
+        margin-top: 8px;
+        font-size: 0.85rem;
         font-weight: 700;
-        color: #333;
+        color: var(--color-primary);
       }
 
       .modal-checkbox-row input {
-        width: 18px;
-        height: 18px;
-        accent-color: var(--color-blush, #DB2777);
+        width: 16px;
+        height: 16px;
+        accent-color: var(--color-blush);
       }
 
       .modal-actions {
         display: flex;
-        gap: 12px;
-        margin-top: 24px;
+        gap: 10px;
+        margin-top: 20px;
       }
 
       .btn-modal-save {
         flex: 1;
-        background: var(--color-blush, #DB2777);
+        background: var(--color-blush);
         color: #fff;
         border: none;
-        padding: 12px;
+        padding: 10px 16px;
         border-radius: 99px;
-        font-weight: 800;
-        font-size: 0.95rem;
+        font-weight: 700;
+        font-size: 0.9rem;
         cursor: pointer;
         font-family: inherit;
       }
 
       .btn-modal-save:hover {
-        background: var(--color-primary, #111);
+        background: var(--color-primary);
       }
 
       .btn-modal-cancel {
-        background: #f3f4f6;
-        color: #4b5563;
-        border: none;
-        padding: 12px 20px;
+        background: var(--color-surface-soft);
+        color: var(--color-muted);
+        border: 1px solid var(--border-light);
+        padding: 10px 18px;
         border-radius: 99px;
         font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         cursor: pointer;
         font-family: inherit;
       }
@@ -757,12 +755,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       /* Account Loading Spinner */
       .account-loading-overlay {
         text-align: center;
-        padding: 80px 20px;
+        padding: 70px 20px;
       }
       .account-loading-overlay i {
-        font-size: 2.5rem;
-        color: var(--color-blush, #DB2777);
-        margin-bottom: 14px;
+        font-size: 2.2rem;
+        color: var(--color-blush);
+        margin-bottom: 12px;
       }
     </style>
   </slot>

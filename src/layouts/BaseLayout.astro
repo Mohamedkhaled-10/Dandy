@@ -60,10 +60,11 @@ const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmW
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" />
+  <link rel="stylesheet" href="/assets/css/foundation.css" />
   <link rel="stylesheet" href="/assets/css/style.css" />
   <link rel="stylesheet" href="/assets/css/layout.css" />
 
@@ -94,7 +95,19 @@ const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmW
       }
       window.db = firebase.database();
       window.auth = firebase.auth();
-      window.firestore = firebase.firestore();
+      try {
+        if (firebase.firestore) {
+          firebase.firestore.setLogLevel('error');
+          const fs = firebase.firestore();
+          fs.settings({
+            experimentalForceLongPolling: true,
+            ignoreUndefinedProperties: true
+          });
+          window.firestore = fs;
+        }
+      } catch (err) {
+        console.warn('Firestore initialization notice:', err);
+      }
     }
   </script>
 

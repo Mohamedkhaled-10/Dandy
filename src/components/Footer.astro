@@ -35,16 +35,69 @@
 </div>
 
 <!-- Mobile Bottom Navigation -->
-<nav class="bottom-nav">
-  <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</a>
-  <a href="/all-products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search</a>
-  <a href="/cart">
-    <span class="cart-count" id="shared-cart-count" style="position:absolute; top:-5px; right:15px; background:var(--sale-red, #e8412c); color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; display:flex; align-items:center; justify-content:center;">0</span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>Cart
+<nav class="bottom-nav" aria-label="التنقل عبر الموبايل" id="global-mobile-bottom-nav">
+  <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>الرئيسية</a>
+  <a href="/all-products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>المنتجات</a>
+  <a href="/cart" style="position:relative;">
+    <span class="cart-count" id="shared-cart-count" style="position:absolute; top:-4px; right:12px; background:var(--color-blush, #db2777); color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">0</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>السلة
   </a>
-  <a href="/all-products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Products</a>
-  <a href="/about-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>About</a>
+  <a href="/special-offers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>العروض</a>
+  <a href="/account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>حسابي</a>
 </nav>
+
+<style is:global>
+  /* ===== Global Bottom Nav Anchor Rules ===== */
+  nav.bottom-nav {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    nav.bottom-nav {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      position: absolute !important;
+      top: -9999px !important;
+      left: -9999px !important;
+      height: 0 !important;
+      width: 0 !important;
+      opacity: 0 !important;
+      z-index: -1 !important;
+    }
+  }
+
+  @media (max-width: 767px) {
+    body {
+      padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    nav.bottom-nav {
+      display: flex !important;
+      position: fixed !important;
+      top: auto !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      height: 60px !important;
+      background: rgba(255, 255, 255, 0.98) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border-top: 1px solid var(--border-subtle, #f2ede9) !important;
+      border-bottom: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      justify-content: space-around !important;
+      align-items: center !important;
+      padding: 0 0 env(safe-area-inset-bottom, 0px) !important;
+      margin: 0 !important;
+      z-index: 9999 !important;
+      box-shadow: 0 -2px 10px rgba(28, 25, 23, 0.08) !important;
+      transform: none !important;
+    }
+  }
+</style>
 
 <script is:inline>
   // Shared Cart Counter
@@ -69,13 +122,12 @@
     if (typeof window.updateSharedCartCount === "function") window.updateSharedCartCount();
   };
 
-  const originalSetItem = localStorage.setItem;
-  localStorage.setItem = function(key, value) {
-    originalSetItem.apply(this, arguments);
-    if (key === 'cart') {
-      if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
-    }
-  };
+  window.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
+  });
+  window.addEventListener('cart-updated', () => {
+    if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
+  });
 
   // WhatsApp Widget Drag and Toggle interaction
   setTimeout(() => {

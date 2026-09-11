@@ -3,29 +3,96 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="الصفحة غير متوفرة | Dandy"
-  description="عذراً، الصفحة التي تبحثين عنها غير موجودة حالياً في متجر داندي."
+  title="الصفحة غير موجودة (404) | Dandy"
+  description="عذراً، الصفحة التي تبحثين عنها غير متوفرة حالياً في متجر داندي."
   robots="noindex, follow"
 >
   <slot name="head" slot="head">
     <style is:global>
-      .error-wrap {
-        min-height: 80vh;
+      .error-page-wrap {
+        min-height: 70vh;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding-top: 130px;
-        padding-bottom: 60px;
+        padding: 140px 20px 80px;
+        max-width: 540px;
+        margin: 0 auto;
+      }
+
+      .error-code {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 4.5rem;
+        font-weight: 800;
+        color: var(--border-medium);
+        line-height: 1;
+        margin-bottom: 12px;
+      }
+
+      .error-page-wrap h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin: 0 0 10px;
+      }
+
+      .error-page-wrap p {
+        font-size: 0.95rem;
+        color: var(--color-muted);
+        line-height: 1.6;
+        margin: 0 0 28px;
+      }
+
+      .error-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .error-btn-primary {
+        background: var(--color-primary);
+        color: #fff;
+        padding: 11px 22px;
+        border-radius: var(--border-radius-sm);
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 700;
+        transition: opacity 0.2s;
+      }
+
+      .error-btn-primary:hover {
+        opacity: 0.9;
+      }
+
+      .error-btn-secondary {
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        color: var(--color-primary);
+        padding: 11px 22px;
+        border-radius: var(--border-radius-sm);
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 700;
+        transition: border-color 0.2s;
+      }
+
+      .error-btn-secondary:hover {
+        border-color: var(--color-primary);
       }
     </style>
   </slot>
 
-  <main class="error-wrap container">
-    <i class="fas fa-leaf" style="font-size:4rem; color:var(--color-blush, #DB2777); margin-bottom:20px;"></i>
-    <h2 style="font-family:'Cairo', sans-serif; font-size:2rem; margin-bottom:12px; color:var(--color-primary, #333);">عذراً، المسلك غير متوفر أو قيد التعديل!</h2>
-    <p style="color:var(--color-muted, #777); max-width:480px; margin-bottom:30px;">يبدو أن الصفحة التي تحاولين الكشف عنها غير موجودة حالياً. يمكنكِ التوجه مجدداً لمنتجات دلالكِ ونضارتك الفعالة.</p>
-    <a href="/all-products" class="cta-btn" style="border-radius:99px; padding:14px 28px;">تصفحي مجموعات داندي الفاخرة</a>
+  <main class="error-page-wrap container" dir="rtl">
+    <div class="error-code">404</div>
+    <h1>الصفحة غير موجودة</h1>
+    <p>عذراً، الرابط الذي تحاولين الوصول إليه قد يكون تم نقله أو حذفه. يمكنكِ العودة للرئيسية أو تصفح مجموعات المنتجات.</p>
+    
+    <div class="error-actions">
+      <a href="/all-products" class="error-btn-primary">تصفح المنتجات</a>
+      <a href="/" class="error-btn-secondary">الرئيسية</a>
+    </div>
   </main>
 </BaseLayout>
+
