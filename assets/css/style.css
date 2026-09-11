@@ -6,41 +6,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Premium Skincare & Beauty Luxury Palette - Refined for feminine, soft luxury feel */
-  --color-canvas: #ffffff;        /* Soft alabaster pearl off-white with warm rose-tint */
-  --color-surface: #ffffff;       /* Pure radiant clean white */
-  --color-surface-soft: #fdf2f8;  /* Silk linen luxury background cashmere cream */
+  /* Harmonized with Foundation CSS (Phase 01) */
+  --color-canvas: #ffffff;
+  --color-canvas-subtle: #faf8f6;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fbf7f6;
+  --color-surface-hover: #f5eeea;
   
-  --color-primary: #db2777;       /* Royal deep velvet espresso for supreme luxury headings */
-  --color-text: #262626;          /* Cashmere espresso dark cocoa for perfect legibility & high contrast */
-  --color-muted: #7a7a7a;         /* Dusty rose-gray for subtitles and helper texts */
+  --color-primary: #38121d;       /* Deep luxury burgundy/plum */
+  --color-primary-hover: #4e1828;
+  --color-text: #1c1917;          /* Crisp high contrast neutral dark */
+  --color-text-secondary: #44403c;
+  --color-muted: #78716c;         /* Quiet neutral gray-brown for subtitles & helper texts */
+  --color-subtle: #a8a29e;
   
-  --color-blush: #db2777;
-  --color-primary-hover: #be185d;         /* Glamorous French dusty pink-red rose - refined for beautiful high-contrast */
+  --color-blush: #db2777;         /* Dandy signature blush/rose accent */
+  --color-blush-hover: #be185d;
   --color-blush-soft: #fdf2f8;    /* Powder-puff warm rose-cream */
-  --color-gold: #f472b6;          /* Rich royal bronze gold - highly legible on light screens */
-  --color-gold-cream: #fdf2f8;    /* Gilded sunset mist gold-cream */
+  --color-gold: #b38728;          /* Restrained metallic bronze gold */
+  --color-gold-cream: #fef8ee;
   
-  --color-success: #2e6648;       /* Sophisticated organic herbal forest green */
-  --color-danger: #a82e3a;        /* Crimson silk/velvet rose */
-  --color-warning: #b37524;       /* Golden royal honey ochre */
+  --color-success: #15803d;
+  --color-danger: #be123c;
+  --color-warning: #b45309;
   
-  /* Borders, shadows and roundness */
-  --border-light: #fbcfe8; /* Warm bronze gold light border */
-  --border-blush: #fbcfe8;  /* French rose highlight border */
-  --border-radius-sm: 8px;
-  --border-radius-md: 14px;
-  --border-radius-lg: 24px;
+  /* Borders, shadows and restrained roundness (NO pills everywhere) */
+  --border-subtle: #f2ede9;
+  --border-light: #e8e1dd;
+  --border-medium: #d6cbc3;
+  --border-blush: #fbcfe8;
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
   
-  /* Soft organic shadow profiles */
-  --shadow-sm: 0 4px 12px rgba(76, 50, 46, 0.03);
-  --shadow-md: 0 12px 36px rgba(76, 50, 46, 0.06);
-  --shadow-lg: 0 24px 54px rgba(76, 50, 46, 0.08);
-  --shadow-gold: 0 8px 24px rgba(166, 116, 72, 0.1);
-  --shadow-blush: 0 8px 24px rgba(219, 39, 119, 0.15);
+  /* Subtle diffused shadow profiles */
+  --shadow-sm: 0 1px 3px 0 rgba(28, 25, 23, 0.05), 0 1px 2px -1px rgba(28, 25, 23, 0.03);
+  --shadow-md: 0 4px 12px -2px rgba(28, 25, 23, 0.06), 0 2px 4px -2px rgba(28, 25, 23, 0.03);
+  --shadow-lg: 0 10px 24px -4px rgba(28, 25, 23, 0.07), 0 4px 8px -4px rgba(28, 25, 23, 0.04);
+  --shadow-gold: 0 4px 14px rgba(179, 135, 40, 0.08);
+  --shadow-blush: 0 4px 14px rgba(219, 39, 119, 0.12);
   
-  --transition-smooth: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-  --transition-fast: all 0.2s ease;
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Base resets & typography */
@@ -59,24 +66,27 @@ html, body {
 body {
   background-color: var(--color-canvas);
   color: var(--color-text);
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans, 'Alexandria', 'Cairo', 'Plus Jakarta Sans', sans-serif);
   overflow-x: hidden;
-  line-height: 1.7;
-  direction: ltr;
+  line-height: 1.6;
+  direction: inherit;
 }
 
 h1, h2, h3, h4, .font-heading {
-  font-family: 'Playfair Display', serif;
-  color: var(--color-primary);
+  font-family: var(--font-sans, 'Alexandria', 'Cairo', 'Plus Jakarta Sans', sans-serif);
+  color: var(--color-text);
   font-weight: 700;
   line-height: 1.3;
 }
 
 /* Global utility classes */
 .container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: var(--container-max-width, 1240px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-px, 20px);
+  padding-right: var(--container-px, 20px);
 }
 
 /* Custom Scrollbar */
