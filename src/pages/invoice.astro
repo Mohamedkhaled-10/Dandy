@@ -45,8 +45,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .invoice-code-tag {
         font-size: 1.15rem;
         font-weight: 800;
-        color: var(--color-blush);
-        background: var(--color-gold-cream);
+        color: var(--color-rose-kiss-500, #fe5d9f);
+        background: var(--color-lavender-veil-600, #f3e8f5);
+        border: 1px solid var(--color-soft-blossom-500, #f4bbd3);
         padding: 4px 14px;
         border-radius: 99px;
         margin-top: 4px;
@@ -564,7 +565,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           let detailsHtml = '';
           if (varInfo && varInfo.text && String(varInfo.text).trim() !== '' && varInfo.text !== 'undefined') {
             detailsHtml = `
-              <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--color-blush); font-weight:600;">
+              <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--color-rose-kiss-500, #fe5d9f); font-weight:600;">
                 <i class="fas fa-spray-can" style="font-size:0.75rem;"></i>
                 <span>${varInfo.label}: <strong>${varInfo.text}</strong> × ${quantity}</span>
               </div>
@@ -586,7 +587,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <td>
               ${detailsHtml}
             </td>
-            <td style="text-align: left; font-weight:800; color:var(--color-blush); white-space:nowrap;">${displayPriceText}</td>
+            <td style="text-align: left; font-weight:800; color:var(--color-rose-kiss-500, #fe5d9f); white-space:nowrap;">${displayPriceText}</td>
           `;
           itemsBody.appendChild(tr);
         });

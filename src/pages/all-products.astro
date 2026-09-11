@@ -103,8 +103,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border-radius: 50%;
       }
       .filter-label input:checked {
-        background-color: var(--color-blush);
-        border-color: var(--color-blush);
+        background-color: var(--color-rose-kiss-500, #fe5d9f);
+        border-color: var(--color-rose-kiss-500, #fe5d9f);
       }
       .filter-label input[type="checkbox"]:checked::after {
         content: '\f00c';
@@ -129,7 +129,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border-radius: 50%;
       }
       .filter-label:hover {
-        color: var(--color-blush);
+        color: var(--color-rose-kiss-500, #fe5d9f);
       }
 
       /* Professional Search Box */
@@ -145,16 +145,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         align-items: center;
         gap: 12px;
         padding: 6px 14px;
-        border: 1px solid var(--border-light);
+        border: 1px solid var(--border-light, #dedbdb);
         box-shadow: var(--shadow-sm);
         transition: 0.3s;
       }
       .catalog-search-box:focus-within {
-        border-color: var(--color-blush);
-        box-shadow: 0 8px 25px rgba(219, 39, 119, 0.15);
+        border-color: var(--color-rose-kiss-500, #fe5d9f);
+        box-shadow: 0 8px 25px rgba(254, 93, 159, 0.15);
       }
       .catalog-search-box i.search-icon {
-        color: var(--color-gold);
+        color: var(--color-rose-kiss-500, #fe5d9f);
         font-size: 1.1rem;
       }
       .catalog-search-box input {
@@ -167,7 +167,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         font-family: inherit;
       }
       .catalog-search-box input::placeholder {
-        color: #a0908d;
+        color: var(--color-dust-grey-400, #aea5a5);
       }
       .clear-search {
         width: 32px;
@@ -214,7 +214,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       .search-suggestion-item:hover {
         background: var(--color-surface-soft);
-        color: var(--color-blush);
+        color: var(--color-rose-kiss-500, #fe5d9f);
       }
 
       /* New Accordion & Filter Styles */
@@ -251,7 +251,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         margin-bottom: 20px;
       }
       .active-filters-badge {
-        background: var(--color-blush);
+        background: var(--color-rose-kiss-500, #fe5d9f);
         color: #fff;
         font-size: 0.75rem;
         padding: 2px 8px;
@@ -368,20 +368,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         width: 100%;
         padding: 14px;
         background: var(--color-surface, #fff);
-        border: 1px solid var(--border-light, #ddd);
+        border: 1px solid var(--border-light, #dedbdb);
         border-radius: var(--border-radius-sm, 8px);
-        color: var(--color-primary, #DB2777);
+        color: var(--color-dust-grey-100, #2c2828);
         font-weight: bold;
         text-align: center;
         cursor: pointer;
         margin-bottom: 20px;
-        box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.05));
+        box-shadow: var(--shadow-sm, 0 2px 8px rgba(44,40,40,0.05));
         transition: 0.3s;
       }
       
       .mobile-filter-toggle:hover {
-        border-color: var(--color-blush, #F472B6);
-        color: var(--color-blush, #F472B6);
+        border-color: var(--color-pink-carnation-500, #f686bd);
+        color: var(--color-rose-kiss-500, #fe5d9f);
       }
 
       /* Product Filter & Hidden State */
@@ -413,7 +413,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <h3>Search Catalog</h3>
         <div class="catalog-search-wrapper">
           <div class="catalog-search-box">
-            <button type="button" id="trigger-search" style="background:none; border:none; padding:0; cursor:pointer; color: var(--color-gold); font-size: 1.1rem; display:flex; align-items:center; justify-content:center; outline:none;">
+            <button type="button" id="trigger-search" style="background:none; border:none; padding:0; cursor:pointer; color: var(--color-rose-kiss-500, #fe5d9f); font-size: 1.1rem; display:flex; align-items:center; justify-content:center; outline:none;">
               <i class="fas fa-search search-icon" style="padding: 0;"></i>
             </button>
             <input

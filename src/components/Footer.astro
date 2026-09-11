@@ -39,7 +39,7 @@
   <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>الرئيسية</a>
   <a href="/all-products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>المنتجات</a>
   <a href="/cart" style="position:relative;">
-    <span class="cart-count" id="shared-cart-count" style="position:absolute; top:-4px; right:12px; background:var(--color-blush, #db2777); color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">0</span>
+    <span class="cart-count" id="shared-cart-count" style="position:absolute; top:-4px; right:12px; background:var(--color-rose-kiss-500, #fe5d9f); color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">0</span>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>السلة
   </a>
   <a href="/special-offers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>العروض</a>
@@ -84,7 +84,7 @@
       background: rgba(255, 255, 255, 0.98) !important;
       backdrop-filter: blur(12px) !important;
       -webkit-backdrop-filter: blur(12px) !important;
-      border-top: 1px solid var(--border-subtle, #f2ede9) !important;
+      border-top: 1px solid var(--border-subtle, #e6e4e4) !important;
       border-bottom: none !important;
       border-left: none !important;
       border-right: none !important;
@@ -92,10 +92,24 @@
       align-items: center !important;
       padding: 0 0 env(safe-area-inset-bottom, 0px) !important;
       margin: 0 !important;
-      z-index: 9999 !important;
-      box-shadow: 0 -2px 10px rgba(28, 25, 23, 0.08) !important;
+      z-index: 1000 !important;
+      box-shadow: 0 -2px 10px rgba(44, 40, 40, 0.06) !important;
       transform: none !important;
+      transition: transform 0.25s ease, opacity 0.25s ease;
     }
+  }
+
+  /* When mobile drawer is open, bottom-nav and whatsapp-float are suppressed so drawer has full priority */
+  body.menu-open nav.bottom-nav,
+  html.menu-open nav.bottom-nav {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  body.menu-open .whatsapp-widget,
+  html.menu-open .whatsapp-widget {
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 </style>
 
@@ -128,88 +142,4 @@
   window.addEventListener('cart-updated', () => {
     if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
   });
-
-  // WhatsApp Widget Drag and Toggle interaction
-  setTimeout(() => {
-    const widget = document.getElementById("whatsapp-widget");
-    const handle = document.getElementById("whatsapp-handle");
-    if (!widget || !handle) return;
-    
-    let startX = 0;
-    let currentX = 0;
-    let isDragging = false;
-    let isOpen = false;
-    let movedDuringDrag = false;
-    const maxDrag = -70;
-
-    const dragStart = (e) => {
-      isDragging = true;
-      movedDuringDrag = false;
-      startX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
-      widget.style.transition = "none";
-    };
-
-    const dragMove = (e) => {
-      if (!isDragging) return;
-      const clientX = e.type.includes("mouse") ? e.clientX : e.touches[0].clientX;
-      const dx = clientX - startX;
-      if (Math.abs(dx) > 5) movedDuringDrag = true;
-      
-      let newX = isOpen ? maxDrag + dx : dx;
-      if (newX > 0) newX = 0;
-      if (newX < maxDrag) newX = maxDrag;
-      
-      widget.style.transform = `translateX(${newX}px)`;
-      currentX = newX;
-    };
-
-    const dragEnd = (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      widget.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
-      
-      if (currentX < maxDrag / 2) {
-        isOpen = true;
-        currentX = maxDrag;
-        widget.classList.add("open");
-        widget.style.transform = "";
-        handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M9 18l6-6-6-6"/></svg>`;
-      } else {
-        isOpen = false;
-        currentX = 0;
-        widget.classList.remove("open");
-        widget.style.transform = "";
-        handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M15 18l-6-6 6-6"/></svg>`;
-      }
-    };
-
-    widget.addEventListener("touchstart", dragStart, { passive: true });
-    document.addEventListener("touchmove", dragMove, { passive: true });
-    document.addEventListener("touchend", dragEnd);
-
-    widget.addEventListener("mousedown", dragStart);
-    document.addEventListener("mousemove", dragMove);
-    document.addEventListener("mouseup", dragEnd);
-    
-    handle.addEventListener("click", () => {
-      if(!movedDuringDrag) {
-        isOpen = !isOpen;
-        currentX = isOpen ? maxDrag : 0;
-        if (isOpen) {
-          widget.classList.add("open");
-          handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M9 18l6-6-6-6"/></svg>`;
-        } else {
-          widget.classList.remove("open");
-          handle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-left: 2px;"><path d="M15 18l-6-6 6-6"/></svg>`;
-        }
-      }
-    });
-
-    const link = document.querySelector(".whatsapp-float");
-    if(link) {
-      link.addEventListener("click", (e) => {
-        if(movedDuringDrag) e.preventDefault();
-      });
-    }
-  }, 300);
 </script>

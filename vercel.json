@@ -1,4 +1,10 @@
 {
+  "git": {
+  "deploymentEnabled": {
+    "*": true,
+    "UI/UX": false
+  }
+},
   "redirects": [
     { "source": "/pages/shop/all-products(.html)?", "destination": "/all-products", "permanent": true },
     { "source": "/pages/shop/special-offers(.html)?", "destination": "/special-offers", "permanent": true },

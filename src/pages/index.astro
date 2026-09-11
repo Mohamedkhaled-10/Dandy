@@ -57,7 +57,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         flex-direction: column;
         width: 100%;
         background-color: var(--color-canvas, #ffffff);
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
       }
 
       /* Base Section Utility */
@@ -66,7 +66,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         padding: 56px 0;
       }
       .home-section-tinted {
-        background-color: var(--color-canvas-subtle, #faf8f6);
+        background-color: var(--color-canvas-subtle, #f7f6f6);
       }
       .home-container {
         width: 100%;
@@ -95,13 +95,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         font-weight: 600;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        color: var(--color-blush, #db2777);
+        color: var(--color-rose-kiss-500, #fe5d9f);
       }
       .section-main-title {
         font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
         margin: 0;
         line-height: 1.3;
       }
@@ -111,13 +111,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         gap: 6px;
         font-size: var(--text-sm, 0.875rem);
         font-weight: 600;
-        color: var(--color-text-secondary, #44403c);
+        color: var(--color-text-secondary, #595050);
         text-decoration: none;
         white-space: nowrap;
         transition: var(--transition-fast, all 0.15s ease);
       }
       .section-link-more:hover {
-        color: var(--color-blush, #db2777);
+        color: var(--color-rose-kiss-500, #fe5d9f);
       }
       .section-link-more svg {
         transition: transform 0.15s ease;
@@ -150,7 +150,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         max-height: 520px;
         border-radius: var(--radius-lg, 12px);
         overflow: hidden;
-        background-color: #ede5e0;
+        background-color: var(--color-lavender-veil-500, #f1e4f3);
       }
 
       .hero-slide-item {
@@ -176,18 +176,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         inset: 0;
         background: linear-gradient(
           to right,
-          rgba(28, 25, 23, 0.55) 0%,
-          rgba(28, 25, 23, 0.25) 50%,
-          rgba(28, 25, 23, 0.05) 100%
+          rgba(44, 40, 40, 0.55) 0%,
+          rgba(44, 40, 40, 0.25) 50%,
+          rgba(44, 40, 40, 0.05) 100%
         );
         z-index: 1;
       }
       html[dir="rtl"] .hero-slide-item::before {
         background: linear-gradient(
           to left,
-          rgba(28, 25, 23, 0.55) 0%,
-          rgba(28, 25, 23, 0.25) 50%,
-          rgba(28, 25, 23, 0.05) 100%
+          rgba(44, 40, 40, 0.55) 0%,
+          rgba(44, 40, 40, 0.25) 50%,
+          rgba(44, 40, 40, 0.05) 100%
         );
       }
 
@@ -205,7 +205,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         font-weight: 600;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #fce7f3;
+        color: var(--color-soft-blossom-800, #fcf1f6);
         margin-bottom: 12px;
       }
       .hero-heading {
@@ -227,7 +227,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         align-items: center;
         gap: 8px;
         padding: 12px 28px;
-        background-color: var(--color-blush, #db2777);
+        background-color: var(--color-rose-kiss-500, #fe5d9f);
         color: #ffffff;
         font-size: var(--text-sm, 0.875rem);
         font-weight: 600;
@@ -237,30 +237,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border: 1px solid transparent;
       }
       .hero-primary-cta:hover {
-        background-color: var(--color-blush-hover, #be185d);
+        background-color: var(--color-rose-kiss-400, #cb4a7f);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(219, 39, 119, 0.25);
+        box-shadow: 0 4px 12px rgba(254, 93, 159, 0.25);
       }
 
-      /* Subtle Slider Controls */
+      /* Contained Hero Controls within stage */
       .hero-controls {
         position: absolute;
-        bottom: 20px;
-        left: 32px;
+        inset: 0;
+        pointer-events: none;
         z-index: 10;
+      }
+      .hero-arrow-btn {
+        display: none !important;
+      }
+      .hero-dots-container {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         display: flex;
         align-items: center;
         gap: 8px;
-      }
-      html[dir="rtl"] .hero-controls {
-        left: auto;
-        right: 32px;
+        pointer-events: auto;
+        z-index: 12;
       }
       .hero-dot-indicator {
         width: 8px;
         height: 8px;
         border-radius: 4px;
-        background-color: rgba(255, 255, 255, 0.4);
+        background-color: rgba(255, 255, 255, 0.45);
         cursor: pointer;
         transition: all 0.25s ease;
         border: none;
@@ -278,8 +285,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .trust-strip {
         width: 100%;
         background-color: #ffffff;
-        border-top: 1px solid var(--border-subtle, #f2ede9);
-        border-bottom: 1px solid var(--border-subtle, #f2ede9);
+        border-top: 1px solid var(--border-subtle, #e6e4e4);
+        border-bottom: 1px solid var(--border-subtle, #e6e4e4);
         margin-top: 36px;
       }
       .trust-strip-inner {
@@ -295,10 +302,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         text-align: right;
       }
       .trust-strip-item:not(:last-child) {
-        border-left: 1px solid var(--border-subtle, #f2ede9);
+        border-left: 1px solid var(--border-subtle, #e6e4e4);
       }
       html[dir="rtl"] .trust-strip-item:not(:last-child) {
-        border-left: 1px solid var(--border-subtle, #f2ede9);
+        border-left: 1px solid var(--border-subtle, #e6e4e4);
         border-right: none;
       }
       .trust-icon-box {
@@ -306,8 +313,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         height: 40px;
         min-width: 40px;
         border-radius: var(--radius-md, 8px);
-        background-color: var(--color-surface-soft, #fbf7f6);
-        color: var(--color-blush, #db2777);
+        background-color: var(--color-surface-soft, #f7f6f6);
+        color: var(--color-rose-kiss-500, #fe5d9f);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -325,11 +332,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .trust-meta strong {
         font-size: 0.88rem;
         font-weight: 600;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
       }
       .trust-meta p {
         font-size: 0.78rem;
-        color: var(--color-muted, #78716c);
+        color: var(--color-muted, #857979);
         margin: 0;
         line-height: 1.4;
       }
@@ -348,7 +355,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         flex-direction: column;
         background-color: #ffffff;
-        border: 1px solid var(--border-subtle, #f2ede9);
+        border: 1px solid var(--border-subtle, #e6e4e4);
         border-radius: var(--radius-md, 8px);
         overflow: hidden;
         text-decoration: none;
@@ -358,8 +365,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         cursor: pointer;
       }
       .modern-product-card:hover {
-        border-color: var(--border-medium, #e2d9d2);
-        box-shadow: 0 4px 16px rgba(28, 25, 23, 0.05);
+        border-color: var(--border-medium, #dedbdb);
+        box-shadow: 0 4px 16px rgba(44, 40, 40, 0.05);
         transform: translateY(-2px);
       }
 
@@ -367,7 +374,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         position: relative;
         width: 100%;
         aspect-ratio: 1 / 1;
-        background-color: var(--color-surface-soft, #fbf7f6);
+        background-color: var(--color-surface-soft, #f7f6f6);
         overflow: hidden;
       }
       .card-image-box img {
@@ -385,8 +392,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         top: 10px;
         right: 10px;
         background-color: #ffffff;
-        color: var(--color-blush, #db2777);
-        border: 1px solid #fbcfe8;
+        color: var(--color-rose-kiss-500, #fe5d9f);
+        border: 1px solid var(--color-soft-blossom-500, #f4bbd3);
         font-size: 0.72rem;
         font-weight: 700;
         padding: 3px 8px;
@@ -403,13 +410,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       .card-category {
         font-size: 0.72rem;
-        color: var(--color-muted, #78716c);
+        color: var(--color-muted, #857979);
         margin-bottom: 4px;
       }
       .card-title {
         font-size: 0.88rem;
         font-weight: 600;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
         margin: 0 0 10px 0;
         line-height: 1.4;
         display: -webkit-box;
@@ -428,20 +435,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .price-current {
         font-size: 0.95rem;
         font-weight: 700;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
       }
       .price-old {
         font-size: 0.78rem;
-        color: var(--color-muted, #78716c);
+        color: var(--color-muted, #857979);
         text-decoration: line-through;
       }
 
       .card-add-btn {
         width: 100%;
         padding: 8px 12px;
-        background-color: var(--color-surface-soft, #fbf7f6);
-        border: 1px solid var(--border-subtle, #f2ede9);
-        color: var(--color-text, #1c1917);
+        background-color: var(--color-surface-soft, #f7f6f6);
+        border: 1px solid var(--border-subtle, #e6e4e4);
+        color: var(--color-text, #2c2828);
         font-size: 0.82rem;
         font-weight: 600;
         border-radius: var(--radius-md, 8px);
@@ -453,8 +460,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         transition: var(--transition-fast, all 0.15s ease);
       }
       .card-add-btn:hover {
-        background-color: var(--color-blush, #db2777);
-        border-color: var(--color-blush, #db2777);
+        background-color: var(--color-rose-kiss-500, #fe5d9f);
+        border-color: var(--color-rose-kiss-500, #fe5d9f);
         color: #ffffff;
       }
       .card-add-btn svg {
@@ -477,21 +484,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         flex-direction: column;
         border-radius: var(--radius-md, 8px);
         overflow: hidden;
-        background-color: var(--color-surface-soft, #fbf7f6);
-        border: 1px solid var(--border-subtle, #f2ede9);
+        background-color: var(--color-surface-soft, #f7f6f6);
+        border: 1px solid var(--border-subtle, #e6e4e4);
         text-decoration: none;
         color: inherit;
         transition: var(--transition-fast, all 0.15s ease);
       }
       .category-tile:hover {
-        border-color: var(--color-blush, #db2777);
+        border-color: var(--color-pink-carnation-500, #f686bd);
         transform: translateY(-2px);
       }
       .category-tile-thumb {
         width: 100%;
         aspect-ratio: 4 / 3;
         overflow: hidden;
-        background-color: #f2ede9;
+        background-color: var(--color-dust-grey-700, #e6e4e4);
       }
       .category-tile-thumb img {
         width: 100%;
@@ -511,11 +518,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .category-tile-name {
         font-size: 0.9rem;
         font-weight: 600;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
       }
       .category-tile-count {
         font-size: 0.75rem;
-        color: var(--color-muted, #78716c);
+        color: var(--color-muted, #857979);
       }
 
       /* ==========================================================================
@@ -526,8 +533,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         padding: 20px 0 56px;
       }
       .promo-banner-card {
-        background-color: var(--color-surface-soft, #fbf7f6);
-        border: 1px solid var(--border-subtle, #f2ede9);
+        background-color: var(--color-surface-soft, #f7f6f6);
+        border: 1px solid var(--border-subtle, #e6e4e4);
         border-radius: var(--radius-lg, 12px);
         overflow: hidden;
         display: grid;
@@ -543,7 +550,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         font-weight: 600;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        color: var(--color-blush, #db2777);
+        color: var(--color-rose-kiss-500, #fe5d9f);
         margin-bottom: 8px;
         display: block;
       }
@@ -552,12 +559,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         font-weight: 700;
         line-height: 1.3;
         margin: 0 0 12px 0;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
       }
       .promo-desc {
         font-size: var(--text-sm, 0.875rem);
         line-height: 1.6;
-        color: var(--color-text-secondary, #44403c);
+        color: var(--color-text-secondary, #595050);
         margin: 0 0 24px 0;
       }
       .promo-cta-btn {
@@ -565,7 +572,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         align-items: center;
         gap: 8px;
         padding: 10px 22px;
-        background-color: var(--color-text, #1c1917);
+        background-color: var(--color-text, #2c2828);
         color: #ffffff;
         font-size: var(--text-sm, 0.875rem);
         font-weight: 600;
@@ -574,7 +581,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         transition: var(--transition-fast, all 0.15s ease);
       }
       .promo-cta-btn:hover {
-        background-color: var(--color-blush, #db2777);
+        background-color: var(--color-rose-kiss-500, #fe5d9f);
       }
       .promo-img-side {
         height: 100%;
@@ -599,7 +606,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       .blog-journal-card {
         background-color: #ffffff;
-        border: 1px solid var(--border-subtle, #f2ede9);
+        border: 1px solid var(--border-subtle, #e6e4e4);
         border-radius: var(--radius-md, 8px);
         overflow: hidden;
         text-decoration: none;
@@ -609,14 +616,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         transition: var(--transition-fast, all 0.15s ease);
       }
       .blog-journal-card:hover {
-        border-color: var(--border-medium, #e2d9d2);
+        border-color: var(--border-medium, #dedbdb);
         transform: translateY(-2px);
       }
       .blog-card-thumb {
         width: 100%;
         aspect-ratio: 16 / 10;
         overflow: hidden;
-        background-color: var(--color-surface-soft, #fbf7f6);
+        background-color: var(--color-surface-soft, #f7f6f6);
       }
       .blog-card-thumb img {
         width: 100%;
@@ -636,13 +643,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .blog-meta-tag {
         font-size: 0.72rem;
         font-weight: 600;
-        color: var(--color-blush, #db2777);
+        color: var(--color-rose-kiss-500, #fe5d9f);
         margin-bottom: 6px;
       }
       .blog-card-title {
         font-size: 0.95rem;
         font-weight: 700;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
         margin: 0 0 8px 0;
         line-height: 1.4;
         display: -webkit-box;
@@ -652,7 +659,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       .blog-card-excerpt {
         font-size: 0.8rem;
-        color: var(--color-muted, #78716c);
+        color: var(--color-muted, #857979);
         line-height: 1.5;
         margin: 0 0 14px 0;
         display: -webkit-box;
@@ -664,13 +671,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         margin-top: auto;
         font-size: 0.8rem;
         font-weight: 600;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
         display: inline-flex;
         align-items: center;
         gap: 6px;
       }
       .blog-journal-card:hover .blog-card-link {
-        color: var(--color-blush, #db2777);
+        color: var(--color-rose-kiss-500, #fe5d9f);
       }
 
       /* ==========================================================================
@@ -685,7 +692,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .review-screenshot-card {
         border-radius: var(--radius-md, 8px);
         overflow: hidden;
-        border: 1px solid var(--border-subtle, #f2ede9);
+        border: 1px solid var(--border-subtle, #e6e4e4);
         background-color: #ffffff;
         cursor: pointer;
         position: relative;
@@ -693,7 +700,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         aspect-ratio: 4 / 3;
       }
       .review-screenshot-card:hover {
-        border-color: var(--color-blush, #db2777);
+        border-color: var(--color-pink-carnation-500, #f686bd);
         transform: translateY(-2px);
       }
       .review-screenshot-card img {
@@ -704,7 +711,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .review-zoom-overlay {
         position: absolute;
         inset: 0;
-        background-color: rgba(28, 25, 23, 0.3);
+        background-color: rgba(44, 40, 40, 0.3);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -720,7 +727,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         height: 44px;
         border-radius: 50%;
         background-color: #ffffff;
-        color: var(--color-text, #1c1917);
+        color: var(--color-text, #2c2828);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -731,7 +738,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .lightbox-modal {
         position: fixed;
         inset: 0;
-        background-color: rgba(28, 25, 23, 0.85);
+        background-color: rgba(44, 40, 40, 0.85);
         z-index: 1000;
         display: flex;
         align-items: center;
@@ -804,7 +811,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
         .trust-strip-item {
           border-left: none !important;
-          border-bottom: 1px solid var(--border-subtle, #f2ede9);
+          border-bottom: 1px solid var(--border-subtle, #e6e4e4);
         }
         .trust-strip-item:last-child {
           border-bottom: none;
@@ -867,22 +874,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <!-- 1. HERO COMPONENT -->
     <section class="hero-editorial-wrap" aria-label="العروض والمنتجات المميزة">
       <div class="hero-stage" id="heroStage">
-        <!-- Default Clean Fallback Slide -->
-        <div class="hero-slide-item active" id="heroFallbackSlide" style="background-image: url('https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg');">
-          <div class="hero-text-card">
-            <span class="hero-tagline">مستحضرات داندي الطبيعية • Dandy Cosmetics</span>
-            <h1 class="hero-heading">جمال طبيعي مستخلص بعناية فائقة</h1>
-            <p class="hero-desc">تركيبات مصرية طبيعية 100% غنية بخلاصات الزيوت العضوية لعناية متكاملة ببشرتكِ وشعركِ.</p>
-            <a href="/all-products" class="hero-primary-cta">
-              <span>تسوقي الآن</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-              </svg>
-            </a>
+        <div class="hero-slides-track" id="heroSlidesTrack">
+          <!-- Default Clean Fallback Slide -->
+          <div class="hero-slide-item active" id="heroFallbackSlide" style="background-image: url('https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg');">
+            <div class="hero-text-card">
+              <span class="hero-tagline">مستحضرات داندي الطبيعية • Dandy Cosmetics</span>
+              <h1 class="hero-heading">جمال طبيعي مستخلص بعناية فائقة</h1>
+              <p class="hero-desc">تركيبات مصرية طبيعية 100% غنية بخلاصات الزيوت العضوية لعناية متكاملة ببشرتكِ وشعركِ.</p>
+              <a href="/all-products" class="hero-primary-cta">
+                <span>تسوقي الآن</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
+        <div class="hero-controls" id="heroControls" style="display:none;"></div>
       </div>
-      <div class="hero-controls" id="heroControls" style="display:none;"></div>
     </section>
 
     <!-- 2. SERVICE / TRUST STRIP -->
@@ -1144,6 +1153,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        -------------------------------------------------------------------------- */
     function renderHero(slides) {
       const stage = document.getElementById('heroStage');
+      const track = document.getElementById('heroSlidesTrack') || stage;
       const controls = document.getElementById('heroControls');
       if (!stage || !slides || !slides.length) return;
 
@@ -1177,24 +1187,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         dotsHtml += `<button type="button" class="hero-dot-indicator ${isActive}" data-index="${idx}" aria-label="شريحة ${idx + 1}"></button>`;
       });
 
-      stage.innerHTML = slidesHtml;
+      track.innerHTML = slidesHtml;
 
       if (slides.length > 1 && controls) {
-        controls.innerHTML = dotsHtml;
-        controls.style.display = 'flex';
+        controls.innerHTML = `
+          <div class="hero-dots-container">
+            ${dotsHtml}
+          </div>
+        `;
+        controls.style.display = 'block';
 
         let currentIndex = 0;
         let slideTimer;
-        const slideItems = stage.querySelectorAll('.hero-slide-item');
+        const slideItems = track.querySelectorAll('.hero-slide-item');
         const dotItems = controls.querySelectorAll('.hero-dot-indicator');
 
         function showSlide(index) {
           if (!slideItems[currentIndex] || !slideItems[index]) return;
           slideItems[currentIndex].classList.remove('active');
-          dotItems[currentIndex].classList.remove('active');
+          if (dotItems[currentIndex]) dotItems[currentIndex].classList.remove('active');
           currentIndex = index;
           slideItems[currentIndex].classList.add('active');
-          dotItems[currentIndex].classList.add('active');
+          if (dotItems[currentIndex]) dotItems[currentIndex].classList.add('active');
         }
 
         function nextSlide() {
@@ -1217,6 +1231,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
 
         resetTimer();
+      } else if (controls) {
+        controls.style.display = 'none';
+        controls.innerHTML = '';
       }
     }
 
@@ -1773,7 +1790,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         bottom: 28px;
         left: 50%;
         transform: translateX(-50%);
-        background-color: #1c1917;
+        background-color: var(--color-dust-grey-100, #2c2828);
         color: #ffffff;
         padding: 12px 24px;
         border-radius: 8px;
@@ -1784,11 +1801,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         align-items: center;
         gap: 10px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        box-shadow: 0 8px 24px rgba(44,40,40,0.18);
         transition: opacity 0.25s ease, transform 0.25s ease;
       `);
       toast.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-rose-kiss-500, #fe5d9f)" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
         <span>${escapeHtml(message)}</span>
       `;
       document.body.appendChild(toast);
