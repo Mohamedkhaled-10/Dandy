@@ -8,219 +8,521 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 >
   <slot name="head" slot="head">
     <style is:global>
-      .account-auth-container {
-        min-height: calc(85vh - 120px);
+      .login-editorial-page {
+        min-height: calc(100vh - 80px);
         display: flex;
-        justify-content: center;
         align-items: center;
-        padding: 120px 20px 60px;
+        justify-content: center;
+        padding: 100px 24px 60px;
+        background-color: var(--color-background, #faf8f7);
       }
 
-      .account-auth-box {
-        background: var(--color-surface);
-        border: 1px solid var(--border-light);
-        border-radius: var(--border-radius-md);
-        padding: 36px 32px;
+      .login-editorial-card {
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
         width: 100%;
-        max-width: 420px;
+        max-width: 1060px;
+        min-height: 640px;
+        background: #ffffff;
+        border-radius: 28px;
+        border: 1px solid rgba(44, 40, 40, 0.08);
+        box-shadow: 0 20px 50px rgba(44, 40, 40, 0.06), 0 4px 12px rgba(44, 40, 40, 0.03);
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Right Side (Form in RTL / Left in LTR) */
+      .login-form-side {
+        padding: 56px 54px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #ffffff;
+      }
+
+      .login-form-header {
         text-align: center;
+        margin-bottom: 32px;
       }
 
-      .account-auth-box .auth-icon {
-        font-size: 2rem;
-        color: var(--color-blush);
-        margin-bottom: 12px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        background: var(--color-surface-soft);
-        border: 1px solid var(--border-light);
-      }
-
-      .account-auth-box h1 {
-        font-size: 1.35rem;
+      .login-form-header h1 {
+        font-size: 2.1rem;
         font-weight: 800;
-        color: var(--color-primary);
-        margin-bottom: 6px;
+        color: var(--color-primary, #2c2828);
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
       }
 
-      .account-auth-box p.auth-subtitle {
-        color: var(--color-muted);
-        font-size: 0.88rem;
-        margin-bottom: 24px;
-        line-height: 1.5;
+      .login-form-header p {
+        font-size: 0.95rem;
+        color: var(--color-text-secondary, #6c6363);
+        margin: 0;
       }
 
-      .auth-form-group {
+      .login-input-group {
+        margin-bottom: 20px;
         text-align: right;
-        margin-bottom: 16px;
       }
 
-      .auth-form-group label {
+      .login-input-group label {
         display: block;
+        font-size: 0.9rem;
         font-weight: 700;
-        margin-bottom: 6px;
-        color: var(--color-primary);
-        font-size: 0.85rem;
+        color: var(--color-primary, #2c2828);
+        margin-bottom: 8px;
       }
 
-      .auth-form-group input {
+      .login-input-field {
         width: 100%;
-        padding: 11px 14px;
-        border: 1px solid var(--border-light);
-        border-radius: 8px;
-        font-size: 0.92rem;
+        padding: 14px 18px;
+        background-color: #ededed;
+        border: 1.5px solid transparent;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        color: #2c2828;
         outline: none;
-        transition: border-color 0.2s, background-color 0.2s;
-        background: var(--color-surface-soft);
+        transition: all 0.25s ease;
         font-family: inherit;
         box-sizing: border-box;
       }
 
-      .auth-form-group input:focus {
-        border-color: var(--color-blush);
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1);
+      .login-input-field::placeholder {
+        color: #8c8585;
       }
 
-      .auth-row-actions {
+      .login-input-field:focus {
+        background-color: #ffffff;
+        border-color: #2c2828;
+        box-shadow: 0 0 0 4px rgba(44, 40, 40, 0.06);
+      }
+
+      .login-options-row {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 18px;
-        font-size: 0.85rem;
+        justify-content: space-between;
+        margin: 6px 0 24px 0;
+        font-size: 0.88rem;
       }
 
-      .btn-forgot-pass {
+      .login-remember-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        color: var(--color-text-secondary, #554e4e);
+        user-select: none;
+        font-weight: 500;
+      }
+
+      .login-remember-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #a39c9c;
+        border-radius: 5px;
+        outline: none;
+        cursor: pointer;
+        display: grid;
+        place-content: center;
+        transition: all 0.2s ease;
+        background: #ffffff;
+        margin: 0;
+      }
+
+      .login-remember-checkbox:checked {
+        background-color: #1a1718;
+        border-color: #1a1718;
+      }
+
+      .login-remember-checkbox:checked::before {
+        content: "";
+        width: 9px;
+        height: 5px;
+        border-left: 2px solid #ffffff;
+        border-bottom: 2px solid #ffffff;
+        transform: rotate(-45deg) translate(1px, -1px);
+      }
+
+      .login-forgot-btn {
         background: none;
         border: none;
-        color: var(--color-blush);
+        color: var(--color-rose-kiss-500, #fe5d9f);
         cursor: pointer;
+        font-size: 0.85rem;
         font-weight: 700;
         padding: 0;
         font-family: inherit;
-        font-size: 0.82rem;
-        transition: color 0.2s;
+        transition: opacity 0.2s ease;
       }
 
-      .btn-forgot-pass:hover {
-        color: var(--color-primary);
+      .login-forgot-btn:hover {
+        opacity: 0.8;
         text-decoration: underline;
       }
 
-      .btn-auth-submit {
+      .login-submit-btn {
         width: 100%;
-        padding: 12px 24px;
-        background: var(--color-blush);
-        color: #fff;
+        padding: 15px 24px;
+        background: #181516;
+        color: #ffffff;
+        font-size: 1rem;
         font-weight: 700;
         border: none;
-        border-radius: 99px;
-        font-size: 0.95rem;
+        border-radius: 12px;
         cursor: pointer;
-        box-shadow: 0 4px 14px rgba(219, 39, 119, 0.2);
-        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(24, 21, 22, 0.2);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
         font-family: inherit;
       }
 
-      .btn-auth-submit:hover:not(:disabled) {
-        background: var(--color-primary);
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      .login-submit-btn:hover:not(:disabled) {
+        background: #2c2828;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(24, 21, 22, 0.25);
       }
 
-      .btn-auth-submit:disabled {
+      .login-submit-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .login-submit-btn:disabled {
         opacity: 0.65;
         cursor: not-allowed;
       }
 
-      .auth-alert-msg {
+      .login-footer-switch {
+        margin-top: 28px;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #6c6363;
+      }
+
+      .login-footer-switch a {
+        color: #181516;
+        font-weight: 800;
+        text-decoration: none;
+        margin-right: 4px;
+        transition: color 0.2s;
+      }
+
+      .login-footer-switch a:hover {
+        color: var(--color-rose-kiss-500, #fe5d9f);
+        text-decoration: underline;
+      }
+
+      /* Left Side (Aesthetic Visual Hero Side) */
+      .login-visual-side {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        margin: 12px;
+        background-color: #1a1622;
+        min-height: 480px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 32px;
+        box-sizing: border-box;
+      }
+
+      .login-visual-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 0;
+        transform: scale(1.02);
+        transition: transform 0.8s ease;
+      }
+
+      .login-visual-side:hover .login-visual-bg {
+        transform: scale(1.06);
+      }
+
+      .login-visual-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(18, 14, 24, 0.25) 0%,
+          rgba(18, 14, 24, 0.05) 40%,
+          rgba(18, 14, 24, 0.65) 75%,
+          rgba(18, 14, 24, 0.92) 100%
+        );
+        z-index: 1;
+      }
+
+      .login-brand-badge {
+        position: relative;
+        z-index: 2;
+        align-self: flex-start;
+        width: 44px;
+        height: 44px;
+        background: rgba(18, 15, 20, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      }
+
+      .login-visual-quote {
+        position: relative;
+        z-index: 2;
+        text-align: right;
+        color: #ffffff;
+      }
+
+      .login-visual-quote h2 {
+        font-size: 2.2rem;
+        font-weight: 400;
+        line-height: 1.25;
+        margin: 0;
+        color: #ffffff;
+        text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+        letter-spacing: -0.01em;
+      }
+
+      .login-visual-quote h2 strong {
+        font-weight: 800;
+        color: #ffffff;
+      }
+
+      .login-visual-tag {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-rose-kiss-400, #ff82b7);
+        margin-bottom: 8px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      /* Alert message banner */
+      .login-alert-box {
         display: none;
-        padding: 10px 14px;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        margin-bottom: 16px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        margin-bottom: 20px;
         text-align: right;
         line-height: 1.5;
       }
 
-      .auth-alert-msg.error {
+      .login-alert-box.error {
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: #fee2e2;
+        gap: 10px;
+        background: #fef2f2;
         color: #991b1b;
         border: 1px solid #fecaca;
       }
 
-      .auth-alert-msg.success {
+      .login-alert-box.success {
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: #dcfce7;
+        gap: 10px;
+        background: #f0fdf4;
         color: #166534;
         border: 1px solid #bbf7d0;
       }
 
-      .auth-switch-link {
-        margin-top: 20px;
-        font-size: 0.85rem;
-        color: var(--color-muted);
+      /* Responsive Adjustments (Desktop, Tablet & Mobile) */
+      @media (max-width: 900px) {
+        .login-editorial-page {
+          padding: 80px 16px 40px;
+        }
+
+        .login-editorial-card {
+          grid-template-columns: 1fr;
+          max-width: 480px;
+          border-radius: 24px;
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* Show the visual art side on mobile/tablet at top as a stylish hero banner */
+        .login-visual-side {
+          display: flex;
+          order: -1;
+          margin: 10px 10px 0 10px;
+          min-height: 220px;
+          border-radius: 18px;
+          padding: 20px;
+        }
+
+        .login-brand-badge {
+          width: 36px;
+          height: 36px;
+          font-size: 0.95rem;
+        }
+
+        .login-visual-quote h2 {
+          font-size: 1.45rem;
+        }
+
+        .login-visual-tag {
+          font-size: 0.72rem;
+          margin-bottom: 4px;
+        }
+
+        .login-form-side {
+          padding: 32px 24px 36px;
+        }
+
+        .login-form-header {
+          margin-bottom: 24px;
+        }
+
+        .login-form-header h1 {
+          font-size: 1.75rem;
+        }
       }
 
-      .auth-switch-link a {
-        color: var(--color-blush);
-        font-weight: 700;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
+      @media (max-width: 480px) {
+        .login-editorial-page {
+          padding: 72px 12px 32px;
+        }
 
-      .auth-switch-link a:hover {
-        color: var(--color-primary);
-        text-decoration: underline;
+        .login-editorial-card {
+          border-radius: 20px;
+        }
+
+        .login-visual-side {
+          min-height: 190px;
+          padding: 16px;
+          margin: 8px 8px 0 8px;
+          border-radius: 14px;
+        }
+
+        .login-visual-quote h2 {
+          font-size: 1.3rem;
+        }
+
+        .login-form-side {
+          padding: 24px 16px 28px;
+        }
+
+        .login-form-header h1 {
+          font-size: 1.55rem;
+        }
+
+        .login-form-header p {
+          font-size: 0.88rem;
+        }
+
+        .login-input-field {
+          padding: 12px 14px;
+          font-size: 0.92rem;
+        }
+
+        .login-submit-btn {
+          padding: 13px 20px;
+          font-size: 0.95rem;
+        }
       }
     </style>
   </slot>
 
-  <main class="account-auth-container container" id="loginMain" dir="rtl">
-    <div class="account-auth-box" id="loginCard">
-      <span class="auth-icon"><i class="fas fa-user-circle"></i></span>
-      <h1>تسجيل الدخول</h1>
-      <p class="auth-subtitle">أهلاً بكِ مجدداً في داندي! سجّلي الدخول للوصول إلى حسابكِ</p>
-
-      <div id="loginAlert" class="auth-alert-msg" role="alert"></div>
-
-      <form id="customerLoginForm" novalidate>
-        <div class="auth-form-group">
-          <label for="cl-email">البريد الإلكتروني</label>
-          <input type="email" id="cl-email" name="email" placeholder="example@gmail.com" required dir="ltr" style="text-align: right;" autocomplete="email" />
+  <main class="login-editorial-page" id="loginMain" dir="rtl">
+    <div class="login-editorial-card" id="loginCard">
+      
+      <!-- Form Side -->
+      <section class="login-form-side" aria-label="نموذج تسجيل الدخول">
+        <div class="login-form-header">
+          <h1>تسجيل الدخول</h1>
+          <p>أدخلي بياناتكِ للوصول إلى حسابكِ ومتابعة طلباتكِ</p>
         </div>
 
-        <div class="auth-form-group">
-          <label for="cl-pass">كلمة المرور</label>
-          <input type="password" id="cl-pass" name="password" placeholder="••••••••" required autocomplete="current-password" />
+        <div id="loginAlert" class="login-alert-box" role="alert"></div>
+
+        <form id="customerLoginForm" novalidate>
+          <div class="login-input-group">
+            <label for="cl-email">البريد الإلكتروني</label>
+            <input 
+              type="email" 
+              id="cl-email" 
+              name="email" 
+              class="login-input-field" 
+              placeholder="aimerpaix@gmail.com" 
+              required 
+              dir="ltr" 
+              style="text-align: right;" 
+              autocomplete="email" 
+            />
+          </div>
+
+          <div class="login-input-group">
+            <label for="cl-pass">كلمة المرور</label>
+            <input 
+              type="password" 
+              id="cl-pass" 
+              name="password" 
+              class="login-input-field" 
+              placeholder="••••••••" 
+              required 
+              autocomplete="current-password" 
+            />
+          </div>
+
+          <div class="login-options-row">
+            <label class="login-remember-label">
+              <input type="checkbox" id="rememberMeCheckbox" class="login-remember-checkbox" />
+              <span>تذكرني</span>
+            </label>
+
+            <button type="button" id="forgotPassBtn" class="login-forgot-btn">
+              نسيتِ كلمة السر؟
+            </button>
+          </div>
+
+          <button type="submit" id="loginSubmitBtn" class="login-submit-btn">
+            <span>تسجيل الدخول</span>
+            <i class="fas fa-arrow-left"></i>
+          </button>
+        </form>
+
+        <div class="login-footer-switch">
+          ليس لديكِ حساب؟ <a href="/account-signup">إنشاء حساب جديد</a>
+        </div>
+      </section>
+
+      <!-- Visual Side (Matching Reference Inspiration) -->
+      <aside class="login-visual-side" aria-hidden="true">
+        <img 
+          src="/assets/images/dandy_login_art.jpg" 
+          alt="Dandy Visual Art" 
+          class="login-visual-bg"
+          loading="eager"
+        />
+        <div class="login-visual-overlay"></div>
+
+        <div class="login-brand-badge" title="Dandy Beauty">
+          <span>d.</span>
         </div>
 
-        <div class="auth-row-actions">
-          <button type="button" id="forgotPassBtn" class="btn-forgot-pass">نسيتِ كلمة السر؟</button>
+        <div class="login-visual-quote">
+          <span class="login-visual-tag">عالم داندي للجمال الطبيعي</span>
+          <h2>
+            كوني جزءاً من<br />
+            <strong>عالم ينبض بالجمال</strong>
+          </h2>
         </div>
+      </aside>
 
-        <button type="submit" id="loginSubmitBtn" class="btn-auth-submit">
-          <span>تسجيل الدخول</span>
-          <i class="fas fa-sign-in-alt"></i>
-        </button>
-      </form>
-
-      <div class="auth-switch-link">
-        ليس لديكِ حساب بعد؟ <a href="/account-signup">إنشاء حساب جديد</a>
-      </div>
     </div>
   </main>
 
@@ -234,16 +536,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const alertBox = document.getElementById('loginAlert');
       const emailInput = document.getElementById('cl-email');
       const passInput = document.getElementById('cl-pass');
+      const rememberCheckbox = document.getElementById('rememberMeCheckbox');
+
+      // استرجاع البريد المحفوظ إذا وجد
+      try {
+        const savedEmail = localStorage.getItem('dandy_saved_email');
+        if (savedEmail && emailInput) {
+          emailInput.value = savedEmail;
+          if (rememberCheckbox) rememberCheckbox.checked = true;
+        }
+      } catch (e) {}
 
       function showAlert(text, type = 'error') {
         if (!alertBox) return;
-        alertBox.className = 'auth-alert-msg ' + type;
+        alertBox.className = 'login-alert-box ' + type;
         alertBox.innerHTML = (type === 'error' ? '<i class="fas fa-exclamation-circle"></i> ' : '<i class="fas fa-check-circle"></i> ') + text;
       }
 
       function clearAlert() {
         if (!alertBox) return;
-        alertBox.className = 'auth-alert-msg';
+        alertBox.className = 'login-alert-box';
         alertBox.innerHTML = '';
       }
 
@@ -309,9 +621,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             return;
           }
 
+          if (rememberCheckbox && rememberCheckbox.checked) {
+            try { localStorage.setItem('dandy_saved_email', email); } catch(e) {}
+          } else {
+            try { localStorage.removeItem('dandy_saved_email'); } catch(e) {}
+          }
+
           submitBtn.disabled = true;
           const originalBtnHTML = submitBtn.innerHTML;
-          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الدخول...';
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>جاري تسجيل الدخول...</span>';
 
           try {
             await auth.signInWithEmailAndPassword(email, password);

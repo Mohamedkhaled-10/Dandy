@@ -25,6 +25,19 @@ function getAdminApp() {
 
 export async function POST({ request }) {
   try {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+      console.warn('FIREBASE_SERVICE_ACCOUNT not configured in environment. Operation simulated.');
+      return new Response(JSON.stringify({
+        success: true,
+        simulated: true,
+        linkedCount: 0,
+        message: 'FIREBASE_SERVICE_ACCOUNT is not configured in environment'
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     const body = await request.json().catch(() => ({}));
     const { idToken, phone } = body;
 

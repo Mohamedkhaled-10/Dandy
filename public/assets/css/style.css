@@ -571,12 +571,6 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   line-height: 1.6;
 }
 
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
-}
-
 /* Luxury Card */
 .product {
   background: var(--color-surface);
@@ -1124,9 +1118,9 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
 }
 
 /* ==========================================
-   LUXURY ALIGNED FOOTER
+   LEGACY FOOTER STYLES (SCOPED)
    ========================================== */
-footer {
+footer.legacy-footer {
   background: var(--color-surface);
   border-top: 1px solid var(--border-light);
   padding: 80px 0 40px;
@@ -1307,7 +1301,7 @@ footer {
 .product-grid,
 .modern-product-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
   padding-bottom: 10px;
 }
@@ -1315,7 +1309,6 @@ footer {
 @media (max-width: 1024px) {
   .product-grid,
   .modern-product-grid {
-    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
 }
@@ -1323,8 +1316,8 @@ footer {
 @media (max-width: 720px) {
   .product-grid,
   .modern-product-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
   }
 }
 
@@ -1481,6 +1474,34 @@ footer {
   overflow: hidden;
   min-height: 2.5em;
   transition: color 0.15s ease;
+}
+
+/* 5.1 MINI RATING (Real Verified Reviews only) */
+.card-rating-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  color: var(--color-muted, #857979);
+  margin-top: -3px;
+  margin-bottom: 7px;
+  line-height: 1;
+}
+
+.card-rating-mini .card-rating-star {
+  color: #f59e0b;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.card-rating-mini .card-rating-val {
+  font-weight: 700;
+  color: var(--color-text, #2c2828);
+}
+
+.card-rating-mini .card-rating-count {
+  color: var(--color-muted, #857979);
+  font-size: 0.72rem;
 }
 
 .modern-product-card:hover .card-title,

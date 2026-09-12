@@ -750,6 +750,213 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         font-size: 0.9rem;
         cursor: pointer;
         font-family: inherit;
+        transition: all 0.2s ease;
+      }
+
+      .btn-modal-cancel:hover {
+        background: #e5e7eb;
+        color: var(--color-primary);
+      }
+
+      /* Order Products Breakdown inside Card */
+      .order-products-section {
+        border-top: 1px dashed var(--border-light);
+        padding-top: 14px;
+        margin-top: 14px;
+        margin-bottom: 14px;
+      }
+
+      .order-products-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--color-muted);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .order-products-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .order-product-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: var(--color-surface-soft, #faf8f7);
+        border: 1px solid var(--border-light, #ede7e4);
+        border-radius: 8px;
+        padding: 10px 14px;
+        flex-wrap: wrap;
+      }
+
+      .order-product-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .order-product-thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        object-fit: cover;
+        background: #fff;
+        border: 1px solid var(--border-light);
+        flex-shrink: 0;
+      }
+
+      .order-product-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .order-product-name {
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: var(--color-primary);
+        line-height: 1.4;
+      }
+
+      .order-product-meta {
+        font-size: 0.78rem;
+        color: var(--color-muted);
+      }
+
+      .btn-review-product {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff;
+        border: 1px solid rgba(254, 93, 159, 0.4);
+        color: var(--color-rose-kiss-600, #df3f85);
+        padding: 6px 14px;
+        border-radius: 99px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+
+      .btn-review-product:hover {
+        background: var(--color-rose-kiss-500, #fe5d9f);
+        color: #fff;
+        border-color: var(--color-rose-kiss-500, #fe5d9f);
+      }
+
+      .btn-review-product.has-review {
+        border-color: #f59e0b;
+        color: #b45309;
+        background: #fffbeb;
+      }
+
+      .btn-review-product.has-review:hover {
+        background: #f59e0b;
+        color: #fff;
+      }
+
+      /* Review Modal Specifics */
+      .review-modal-card {
+        max-width: 480px;
+      }
+
+      .review-product-preview {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--color-surface-soft);
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+      }
+
+      .review-preview-thumb {
+        width: 52px;
+        height: 52px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #fff;
+        border: 1px solid var(--border-light);
+        flex-shrink: 0;
+      }
+
+      .review-preview-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 99px;
+        width: fit-content;
+        margin-bottom: 2px;
+      }
+
+      .review-preview-title {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin: 0;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .review-preview-order {
+        font-size: 0.76rem;
+        color: var(--color-muted);
+      }
+
+      .star-rating-selector {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 8px 0;
+        direction: ltr;
+      }
+
+      .star-rating-selector .star-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.9rem;
+        padding: 4px;
+        line-height: 1;
+        transition: transform 0.15s ease;
+      }
+
+      .star-rating-selector .star-btn:hover {
+        transform: scale(1.2);
+      }
+
+      .rating-desc-text {
+        text-align: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        min-height: 22px;
+        margin-bottom: 14px;
       }
 
       /* Account Loading Spinner */
@@ -952,12 +1159,72 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </div>
 
+  <!-- Review Modal (Verified Purchase Review) -->
+  <div id="reviewModalOverlay" class="modal-overlay">
+    <div class="modal-card review-modal-card">
+      <div class="modal-header">
+        <h3 id="reviewModalTitle">تقييم المنتج</h3>
+        <button type="button" class="btn-modal-close" id="closeReviewModalBtn" aria-label="إغلاق">&times;</button>
+      </div>
+
+      <div class="review-product-preview">
+        <img id="reviewProductThumb" src="/assets/images/logo.png" alt="المنتج" class="review-preview-thumb" onerror="this.onerror=null;this.src='/assets/images/logo.png';" />
+        <div class="review-preview-meta">
+          <span class="verified-badge"><i class="fas fa-check-circle"></i> تجربة شراء مؤكدة</span>
+          <h4 id="reviewProductName" class="review-preview-title">اسم المنتج</h4>
+          <span id="reviewOrderRef" class="review-preview-order">طلب رقم: #...</span>
+        </div>
+      </div>
+
+      <form id="productReviewForm">
+        <div class="modal-form-group" style="text-align: center;">
+          <label style="font-size: 0.92rem; margin-bottom: 6px;">تقييمكِ العام للمنتج <span style="color:#e11d48;">*</span></label>
+          <div class="star-rating-selector" id="reviewStarsContainer">
+            <button type="button" class="star-btn" data-val="1" title="1 من 5" aria-label="1 من 5"><i class="fas fa-star" style="color:#f59e0b;"></i></button>
+            <button type="button" class="star-btn" data-val="2" title="2 من 5" aria-label="2 من 5"><i class="fas fa-star" style="color:#f59e0b;"></i></button>
+            <button type="button" class="star-btn" data-val="3" title="3 من 5" aria-label="3 من 5"><i class="fas fa-star" style="color:#f59e0b;"></i></button>
+            <button type="button" class="star-btn" data-val="4" title="4 من 5" aria-label="4 من 5"><i class="fas fa-star" style="color:#f59e0b;"></i></button>
+            <button type="button" class="star-btn" data-val="5" title="5 من 5" aria-label="5 من 5"><i class="fas fa-star" style="color:#f59e0b;"></i></button>
+          </div>
+          <div class="rating-desc-text" id="reviewRatingDesc">⭐⭐⭐⭐⭐ ممتاز يفوق التوقعات (5/5)</div>
+        </div>
+
+        <div class="modal-form-group">
+          <label for="reviewComment">تعليقكِ وتجربتكِ (اختياري)</label>
+          <textarea id="reviewComment" rows="3" placeholder="شاركينا رأيكِ في المنتج وتأثيره معكِ..." maxlength="500"></textarea>
+          <div style="font-size: 0.75rem; color: var(--color-muted); text-align: left; margin-top: 4px;">بحد أقصى 500 حرف</div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" id="saveReviewBtn" class="btn-modal-save">
+            <i class="fas fa-paper-plane" style="margin-left: 6px;"></i> <span>إرسال التقييم</span>
+          </button>
+          <button type="button" id="cancelReviewBtn" class="btn-modal-cancel">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script is:inline>
     (function() {
       let currentUser = null;
       let cachedCustomerData = null;
       let cachedAddresses = {};
       let cachedWishlist = {};
+      let userProductReviews = {};
+      let activeReviewProductId = null;
+      let activeReviewOrderId = null;
+      let currentSelectedRating = 5;
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
 
       const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
       const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
@@ -1073,6 +1340,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           if (countBadge) countBadge.textContent = String(ordersList.length);
 
+          // جمع جميع المنتجات في الطلبات المستلمة لفحص التقييمات السابقة للعميل
+          const deliveredProductIds = new Set();
+          ordersList.forEach(order => {
+            const s = (order.status || '').toLowerCase();
+            const isDelivered = s.includes('deliver') || s.includes('توصيل') || s.includes('مكتمل');
+            if (isDelivered && order.products) {
+              let prods = Array.isArray(order.products) ? order.products : Object.values(order.products);
+              prods.forEach(p => {
+                const pid = p.id || p.productId;
+                if (pid) deliveredProductIds.add(String(pid));
+              });
+            }
+          });
+
+          if (deliveredProductIds.size > 0) {
+            const reviewFetches = Array.from(deliveredProductIds).map(async (pid) => {
+              try {
+                const revSnap = await db.ref(`reviews/${pid}/${currentUser.uid}`).once('value');
+                if (revSnap.exists()) {
+                  userProductReviews[pid] = revSnap.val();
+                }
+              } catch (e) {
+                console.warn('Error fetching review for:', pid, e);
+              }
+            });
+            await Promise.all(reviewFetches);
+          }
+
           container.innerHTML = '';
           ordersList.forEach(order => {
             const card = document.createElement('div');
@@ -1094,7 +1389,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             let statusText = 'قيد المراجعة';
             let statusClass = 'status-new';
             const s = (order.status || '').toLowerCase();
-            if (s.includes('deliver') || s.includes('توصيل') || s.includes('مكتمل')) {
+            const isDelivered = s.includes('deliver') || s.includes('توصيل') || s.includes('مكتمل');
+
+            if (isDelivered) {
               statusText = 'تم التوصيل بنجاح';
               statusClass = 'status-delivered';
             } else if (s.includes('ship') || s.includes('شحن')) {
@@ -1106,6 +1403,68 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             } else if (s.includes('cancel') || s.includes('ملغي')) {
               statusText = 'تم الإلغاء';
               statusClass = 'status-cancelled';
+            }
+
+            // تفاصيل المنتجات داخل الطلب وإمكانية التقييم للطلبات المستلمة
+            let productsList = [];
+            if (Array.isArray(order.products)) {
+              productsList = order.products;
+            } else if (order.products && typeof order.products === 'object') {
+              productsList = Object.values(order.products);
+            }
+
+            let productsHtml = '';
+            if (productsList.length > 0) {
+              productsHtml = `
+                <div class="order-products-section">
+                  <div class="order-products-title">
+                    <i class="fas fa-box-open"></i> <span>المنتجات في هذا الطلب (${productsList.length}):</span>
+                  </div>
+                  <div class="order-products-list">
+                    ${productsList.map(p => {
+                      const pId = String(p.id || p.productId || '');
+                      const pName = p.name || 'منتج داندي';
+                      const pImg = p.image || '/assets/images/logo.png';
+                      const pQty = p.quantity || 1;
+                      const pPrice = p.effectiveUnitPrice || p.price || 0;
+                      const pVariants = p.variantName || (Array.isArray(p.selectedVariants) ? p.selectedVariants.map(v => v.name).join('، ') : '');
+
+                      let reviewBtnHtml = '';
+                      if (isDelivered && pId) {
+                        const existingReview = userProductReviews[pId];
+                        if (existingReview) {
+                          reviewBtnHtml = `
+                            <button type="button" class="btn-review-product has-review" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${escapeHtml(invoiceCode)}', '${escapeHtml(pImg).replace(/'/g, "\\'")}')" title="تعديل تقييمكِ">
+                              <i class="fas fa-star" style="color: #f59e0b;"></i>
+                              <span>عدّلي تقييمكِ (${existingReview.rating}★)</span>
+                            </button>
+                          `;
+                        } else {
+                          reviewBtnHtml = `
+                            <button type="button" class="btn-review-product" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${escapeHtml(invoiceCode)}', '${escapeHtml(pImg).replace(/'/g, "\\'")}')" title="تقييم هذا المنتج">
+                              <i class="far fa-star"></i>
+                              <span>قيّمي هذا المنتج</span>
+                            </button>
+                          `;
+                        }
+                      }
+
+                      return `
+                        <div class="order-product-row">
+                          <div class="order-product-info">
+                            <img src="${escapeHtml(pImg)}" alt="${escapeHtml(pName)}" class="order-product-thumb" onerror="this.onerror=null;this.src='/assets/images/logo.png';" />
+                            <div class="order-product-details">
+                              <div class="order-product-name">${escapeHtml(pName)}</div>
+                              <div class="order-product-meta">الكمية: ${pQty} · السعر: ${pPrice} ج.م ${pVariants ? `· الرائحة: ${escapeHtml(pVariants)}` : ''}</div>
+                            </div>
+                          </div>
+                          ${reviewBtnHtml}
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `;
             }
 
             card.innerHTML = `
@@ -1133,6 +1492,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                   <div class="val" style="font-size:0.88rem;">${order.governorate || ''} - ${order.city || ''}</div>
                 </div>
               </div>
+
+              ${productsHtml}
 
               <div class="order-card-footer">
                 <a href="/invoice?invoice=${encodeURIComponent(invoiceCode)}" class="btn-order-action primary" target="_blank">
@@ -1549,6 +1910,179 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         alert('تمت إضافة المنتج إلى سلة مشترياتك بنجاح! 🛍️');
       };
+
+      // -------------------------------------------------------------
+      // د) إدارة تقييمات المنتجات (Verified Reviews & Ratings)
+      // -------------------------------------------------------------
+      function updateStarsUI(rating) {
+        const stars = document.querySelectorAll('#reviewStarsContainer .star-btn');
+        stars.forEach(btn => {
+          const val = parseInt(btn.getAttribute('data-val') || '0', 10);
+          if (val <= rating) {
+            btn.innerHTML = '<i class="fas fa-star" style="color: #f59e0b;"></i>';
+          } else {
+            btn.innerHTML = '<i class="far fa-star" style="color: #d1d5db;"></i>';
+          }
+        });
+
+        const descEl = document.getElementById('reviewRatingDesc');
+        const labels = {
+          1: '⭐ سيء (1/5)',
+          2: '⭐⭐ مقبول (2/5)',
+          3: '⭐⭐⭐ جيد (3/5)',
+          4: '⭐⭐⭐⭐ رائع جداً (4/5)',
+          5: '⭐⭐⭐⭐⭐ ممتاز يفوق التوقعات (5/5)'
+        };
+        if (descEl) descEl.textContent = labels[rating] || 'اضغطي على النجوم لاختيار التقييم';
+      }
+
+      window.openReviewModal = function(productId, productName, orderId, productImg) {
+        activeReviewProductId = productId;
+        activeReviewOrderId = orderId;
+
+        const modal = document.getElementById('reviewModalOverlay');
+        const titleEl = document.getElementById('reviewModalTitle');
+        const nameEl = document.getElementById('reviewProductName');
+        const thumbEl = document.getElementById('reviewProductThumb');
+        const orderRefEl = document.getElementById('reviewOrderRef');
+        const commentEl = document.getElementById('reviewComment');
+        const submitBtn = document.getElementById('saveReviewBtn');
+
+        if (nameEl) nameEl.textContent = productName || 'منتج داندي';
+        if (thumbEl) thumbEl.src = productImg || '/assets/images/logo.png';
+        if (orderRefEl) orderRefEl.textContent = 'طلب رقم: #' + orderId;
+
+        const existing = userProductReviews[productId];
+        if (existing) {
+          if (titleEl) titleEl.textContent = 'تعديل تقييمكِ للمنتج';
+          if (submitBtn) {
+            const span = submitBtn.querySelector('span');
+            if (span) span.textContent = 'تحديث التقييم';
+          }
+          currentSelectedRating = Number(existing.rating) || 5;
+          if (commentEl) commentEl.value = existing.comment || '';
+        } else {
+          if (titleEl) titleEl.textContent = 'تقييم المنتج';
+          if (submitBtn) {
+            const span = submitBtn.querySelector('span');
+            if (span) span.textContent = 'إرسال التقييم';
+          }
+          currentSelectedRating = 5;
+          if (commentEl) commentEl.value = '';
+        }
+
+        updateStarsUI(currentSelectedRating);
+        if (modal) modal.classList.add('active');
+      };
+
+      window.closeReviewModal = function() {
+        const modal = document.getElementById('reviewModalOverlay');
+        if (modal) modal.classList.remove('active');
+        activeReviewProductId = null;
+        activeReviewOrderId = null;
+      };
+
+      // تفاعل النجوم (Hover & Click)
+      const starBtns = document.querySelectorAll('#reviewStarsContainer .star-btn');
+      starBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentSelectedRating = parseInt(btn.getAttribute('data-val') || '5', 10);
+          updateStarsUI(currentSelectedRating);
+        });
+        btn.addEventListener('mouseenter', () => {
+          const hoverVal = parseInt(btn.getAttribute('data-val') || '5', 10);
+          updateStarsUI(hoverVal);
+        });
+      });
+
+      document.getElementById('reviewStarsContainer')?.addEventListener('mouseleave', () => {
+        updateStarsUI(currentSelectedRating);
+      });
+
+      // أزرار إغلاق المودال
+      document.getElementById('closeReviewModalBtn')?.addEventListener('click', window.closeReviewModal);
+      document.getElementById('cancelReviewBtn')?.addEventListener('click', window.closeReviewModal);
+      document.getElementById('reviewModalOverlay')?.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'reviewModalOverlay') {
+          window.closeReviewModal();
+        }
+      });
+
+      // المرحلة 3 — إعادة حساب متوسط التقييم بعد كل تقييم جديد أو مُعدَّل
+      async function recalculateProductRating(productId) {
+        const snap = await db.ref(`reviews/${productId}`).once('value');
+        const reviews = snap.val() || {};
+        const values = Object.values(reviews);
+        const count = values.length;
+        const avg = count > 0 ? values.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count : 0;
+        await db.ref(`products/${productId}`).update({
+          avgRating: Math.round(avg * 10) / 10,
+          reviewCount: count
+        });
+      }
+
+      // إرسال نموذج التقييم
+      document.getElementById('productReviewForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        if (!activeReviewProductId) return;
+
+        if (currentSelectedRating < 1 || currentSelectedRating > 5) {
+          alert('يرجى اختيار عدد النجوم من 1 إلى 5.');
+          return;
+        }
+
+        const commentText = (document.getElementById('reviewComment')?.value || '').trim();
+        const currentUserName = cachedCustomerData?.name || currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'عميلة داندي');
+        const orderId = activeReviewOrderId || 'N/A';
+        const productId = activeReviewProductId;
+
+        const saveBtn = document.getElementById('saveReviewBtn');
+        const span = saveBtn?.querySelector('span');
+        const origText = span ? span.textContent : 'إرسال التقييم';
+
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.style.opacity = '0.7';
+          if (span) span.textContent = 'جاري الحفظ...';
+        }
+
+        try {
+          await db.ref(`reviews/${productId}/${currentUser.uid}`).set({
+            rating: currentSelectedRating,
+            comment: commentText || '',
+            customerName: currentUserName,
+            orderId: orderId,
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+          });
+
+          // إعادة حساب متوسط التقييم كما هو موضح في المرحلة 3
+          await recalculateProductRating(productId);
+
+          // تحديث الكاش المحلي
+          userProductReviews[productId] = {
+            rating: currentSelectedRating,
+            comment: commentText || '',
+            customerName: currentUserName,
+            orderId: orderId,
+            createdAt: Date.now()
+          };
+
+          window.closeReviewModal();
+          await loadOrders();
+
+          alert('تم حفظ تقييمكِ بنجاح! شكرًا لكِ على مشاركة تجربتكِ مع داندي ✨');
+        } catch (err) {
+          console.error('Error saving review:', err);
+          alert('حدث خطأ أثناء حفظ التقييم: ' + (err.message || 'يرجى المحاولة مرة أخرى'));
+        } finally {
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+            if (span) span.textContent = origText;
+          }
+        }
+      });
 
     })();
   </script>

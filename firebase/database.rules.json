@@ -18,6 +18,12 @@
         },
         "isSoldOut": {
           ".write": true
+        },
+        "avgRating": {
+          ".write": "auth != null"
+        },
+        "reviewCount": {
+          ".write": "auth != null"
         }
       }
     },
@@ -70,6 +76,15 @@
       "$uid": {
         ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
         ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"
+      }
+    },
+    "reviews": {
+      "$productId": {
+        ".read": true,
+        "$customerId": {
+          ".write": "auth != null && auth.uid == $customerId",
+          ".validate": "newData.hasChildren(['rating','comment','customerName','orderId','createdAt']) && newData.child('rating').isNumber() && newData.child('rating').val() >= 1 && newData.child('rating').val() <= 5"
+        }
       }
     },
     "_archive": {

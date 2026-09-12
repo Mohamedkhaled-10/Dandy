@@ -214,7 +214,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       /* Hero Scroll Hint */
       .hero-scroll-hint {
         position: absolute;
-        bottom: 24px;
+        bottom: 45px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 25;
@@ -794,10 +794,57 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         transform: translate3d(0, 0, 0) scale(1.05);
       }
       .category-tile-overlay {
-        display: none;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(
+          to top,
+          rgba(18, 16, 17, 0.82) 0%,
+          rgba(18, 16, 17, 0.45) 35%,
+          rgba(18, 16, 17, 0.12) 65%,
+          rgba(18, 16, 17, 0) 100%
+        );
+        pointer-events: none;
+        transition: background 0.35s ease;
+      }
+      .category-editorial-tile:hover .category-tile-overlay {
+        background: linear-gradient(
+          to top,
+          rgba(18, 16, 17, 0.9) 0%,
+          rgba(18, 16, 17, 0.55) 40%,
+          rgba(18, 16, 17, 0.18) 70%,
+          rgba(18, 16, 17, 0.02) 100%
+        );
       }
       .category-tile-content {
-        display: none;
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        text-align: right;
+        width: 100%;
+      }
+      .category-tile-tag {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-rose-kiss-400, #ff82b7);
+        letter-spacing: 0.02em;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.65);
+      }
+      .category-tile-title {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        line-height: 1.3;
+        color: #ffffff;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.8);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .category-editorial-tile:hover .category-tile-title {
+        transform: translateY(-2px);
       }
 
       /* ==========================================================================
@@ -2203,6 +2250,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const heartActive = isFavorited ? 'active' : '';
       const heartFill = isFavorited ? 'currentColor' : 'none';
 
+      const reviewCountNum = Number(prod.reviewCount) || 0;
+      const avgRatingNum = Number(prod.avgRating) || 0;
+      const ratingHtml = reviewCountNum > 0 ? `
+        <div class="card-rating-mini">
+          <i class="fas fa-star card-rating-star"></i>
+          <span class="card-rating-val">${avgRatingNum.toFixed(1)}</span>
+          <span class="card-rating-count">(${reviewCountNum})</span>
+        </div>
+      ` : '';
+
       return `
         <article class="modern-product-card" onclick="window.location.href='${productLink}'">
           <div class="card-image-box">
@@ -2217,6 +2274,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="card-content-box">
             ${prod.category ? `<span class="card-category">${escapeHtml(prod.category)}</span>` : ''}
             <h3 class="card-title">${escapeHtml(prod.name || '')}</h3>
+            ${ratingHtml}
             <div class="card-price-row">
               ${priceHtml}
             </div>
@@ -2246,6 +2304,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <source media="(max-width: 767px)" srcset="${escapeHtml(mobileSrc)}" />
               <img class="category-tile-img" src="${escapeHtml(desktopSrc)}" alt="${escapeHtml(name)} - داندي" loading="lazy" decoding="async" />
             </picture>
+          </div>
+          <div class="category-tile-overlay" aria-hidden="true"></div>
+          <div class="category-tile-content">
+            <span class="category-tile-tag">${escapeHtml(tag)}</span>
+            <h3 class="category-tile-title">${escapeHtml(name)}</h3>
           </div>
         </a>
       `;

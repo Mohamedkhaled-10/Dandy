@@ -283,6 +283,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           const heartActive = isFavorited ? 'active' : '';
           const heartFill = isFavorited ? 'currentColor' : 'none';
 
+          const reviewCountNum = Number(data.reviewCount) || 0;
+          const avgRatingNum = Number(data.avgRating) || 0;
+          const ratingHtml = reviewCountNum > 0 ? `
+            <div class="card-rating-mini">
+              <i class="fas fa-star card-rating-star"></i>
+              <span class="card-rating-val">${avgRatingNum.toFixed(1)}</span>
+              <span class="card-rating-count">(${reviewCountNum})</span>
+            </div>
+          ` : '';
+
           productEl.innerHTML = `
             <div class="card-image-box product-image-wrap">
               ${badgeStr}
@@ -296,6 +306,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="card-content-box product-info-box">
               ${data.category ? `<span class="card-category">${escapeHtml(data.category)}</span>` : ''}
               <h3 class="card-title product-title">${escapeHtml(data.name || '')}</h3>
+              ${ratingHtml}
               <div class="card-price-row product-price">
                 ${priceStr}
               </div>
