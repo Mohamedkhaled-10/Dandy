@@ -20,6 +20,12 @@
     "gsap": "^3.15.0",
     "sortablejs": "^1.15.7"
   },
+  "optionalDependencies": {
+    "@rolldown/binding-darwin-arm64": "^1.2.8",
+    "@rolldown/binding-darwin-x64": "^1.2.8",
+    "@rolldown/binding-linux-x64-gnu": "^1.2.8",
+    "@rolldown/binding-win32-x64-msvc": "^1.2.8"
+  },
   "devDependencies": {
     "@types/sortablejs": "^1.15.9"
   }
