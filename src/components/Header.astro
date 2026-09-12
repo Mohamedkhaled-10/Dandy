@@ -4,6 +4,11 @@
 ---
 
 <!-- 1. Announcement Bar: Branded Dandy Rose Kiss Treatment -->
+<script is:inline>
+  if (window.location.pathname === '/' || window.location.pathname === '') {
+    document.documentElement.classList.add('is-homepage');
+  }
+</script>
 <div class="announce-bar" id="site-announce-bar">
   <div class="announce-track">
     <span>Enjoy Free Shipping on orders above 2000 LE</span>
@@ -16,16 +21,16 @@
   </div>
 </div>
 
-<!-- 2. Main Header: Modern Minimal Composition (Logo on Right before Nav Links) -->
+<!-- 2. Main Header: Minimal Luxury Composition (Logo Right + Adjacent Nav | Left Utility Group) -->
 <header class="site-header" id="site-header">
   <div class="header-container">
     
-    <!-- RIGHT ZONE (RTL Start: Logo + Nav Links on Desktop | Mobile: Hamburger + Logo) -->
-    <div class="header-start header-left">
-      <!-- Mobile / Compact Hamburger Trigger -->
+    <!-- RIGHT ZONE (RTL Start: Logo + Nav on Desktop | Mobile: Hamburger Trigger) -->
+    <div class="header-start">
+      <!-- Mobile / Compact Hamburger Trigger (Visible on mobile <=920px) -->
       <button 
         type="button" 
-        class="header-icon-btn mobile-menu-btn" 
+        class="header-utility-btn mobile-menu-btn" 
         id="mobile-menu-trigger" 
         aria-label="القائمة الرئيسية" 
         onclick="window.toggleNav()"
@@ -49,7 +54,7 @@
         />
       </a>
 
-      <!-- Desktop Primary Navigation Links (Restrained, doesn't overpower branding) -->
+      <!-- Desktop Primary Navigation Links (Simple, refined text links with subtle indicator) -->
       <nav class="desktop-nav" aria-label="التنقل الرئيسي" id="desktop-primary-nav">
         <a href="/" class="nav-link">الرئيسية</a>
         <a href="/all-products" class="nav-link">جميع المنتجات</a>
@@ -62,47 +67,29 @@
       </nav>
     </div>
 
-    <!-- LEFT ZONE (RTL End: Search, Account & Cart Actions) -->
-    <div class="header-end header-right">
+    <!-- LEFT ZONE (RTL End: Search, Account & Cart - One cohesive minimal utility group) -->
+    <div class="header-end">
       
-      <!-- Desktop Quick Search Pill Button (Highly discoverable as in modern commerce) -->
+      <!-- Minimal Search Icon Button -->
       <button 
         type="button" 
-        class="desktop-search-trigger" 
+        class="header-utility-btn header-search-btn" 
         id="desktop-search-btn"
         onclick="window.toggleSearchPanel()" 
         aria-label="البحث عن منتجات"
+        title="بحث"
       >
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="7"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <span class="search-label">ابحثي عن منتج...</span>
-        <kbd class="search-kbd">/</kbd>
-      </button>
-
-      <!-- Mobile Search Icon Button -->
-      <button 
-        type="button" 
-        class="header-icon-btn mobile-search-btn" 
-        id="mobile-search-trigger" 
-        aria-label="بحث" 
-        onclick="window.toggleSearchPanel()"
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="7"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
       </button>
-
-      <!-- Divider -->
-      <span class="header-divider" aria-hidden="true"></span>
 
       <!-- Auth State: Guest Login -->
       <a 
         href="/account-login" 
         id="header-auth-guest" 
-        class="header-account-btn" 
+        class="header-utility-btn header-account-btn" 
         title="تسجيل الدخول" 
         aria-label="تسجيل الدخول"
       >
@@ -110,14 +97,13 @@
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
           <circle cx="12" cy="7" r="4"/>
         </svg>
-        <span class="account-btn-text">دخول</span>
       </a>
 
       <!-- Auth State: Authenticated Customer -->
       <div id="header-auth-user" class="header-auth-user-wrap" style="display:none;">
         <a 
           href="/account" 
-          class="header-account-btn active-user" 
+          class="header-utility-btn header-account-btn active-user" 
           title="حسابي" 
           aria-label="حسابي الشخصي"
         >
@@ -125,16 +111,15 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
-          <span class="account-btn-text">حسابي</span>
         </a>
         <button 
           type="button" 
-          class="header-icon-btn logout-btn" 
+          class="header-utility-btn logout-btn" 
           onclick="window.headerSignOut()" 
           title="تسجيل خروج" 
           aria-label="تسجيل خروج"
         >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
@@ -142,9 +127,9 @@
         </button>
       </div>
 
-      <!-- Cart Button with Shared Dynamic Counter -->
-      <a href="/cart" class="header-cart-btn" id="header-cart-link" aria-label="سلة التسوق" title="سلة التسوق">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Cart Button with Dynamic Badge -->
+      <a href="/cart" class="header-utility-btn header-cart-btn" id="header-cart-link" aria-label="سلة التسوق" title="سلة التسوق">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
           <path d="M3 6h18"/>
           <path d="M16 10a4 4 0 01-8 0"/>
@@ -233,7 +218,7 @@
 
     <!-- Navigation Links -->
     <div class="drawer-section-title">التنقل</div>
-    <ul class="drawer-nav-list">
+    <ul class="drawer-nav-list" id="mobile-drawer-nav-list">
       <li>
         <a href="/" class="drawer-nav-item">
           <span>الرئيسية</span>
@@ -449,6 +434,11 @@
   };
 
   window.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      window.toggleSearchPanel();
+      return;
+    }
     if (e.key === 'Escape') {
       const panel = document.getElementById("search-panel");
       const overlay = document.getElementById("search-overlay");
@@ -673,10 +663,88 @@
     }
   }
 
+  function initActiveNavLinks() {
+    const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+    const navLinks = document.querySelectorAll('.desktop-nav .nav-link, .drawer-nav-list .drawer-link');
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (!href) return;
+      const cleanHref = href.replace(/\/$/, '') || '/';
+      if (cleanHref === currentPath || (cleanHref !== '/' && currentPath.startsWith(cleanHref))) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  // --- Homepage Hero Transparent Navbar Coordination ---
+  function initHeroNavScroll() {
+    const header = document.getElementById('site-header');
+    if (!header) return;
+
+    const isHomepage = window.location.pathname === '/' || window.location.pathname === '' || document.body.classList.contains('has-homepage-hero');
+    if (!isHomepage) {
+      header.classList.remove('is-hero-nav-active');
+      document.body.classList.remove('has-hero-nav');
+      return;
+    }
+
+    let ticking = false;
+    let isHeroActive = true;
+
+    function updateHeroNavState() {
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      
+      // Exit Hero Mode when scrolled past 65px; Re-enter Hero Mode only when scrolled back near top (<= 5px)
+      if (isHeroActive && scrollY > 65) {
+        isHeroActive = false;
+        if (header.classList.contains('is-hero-nav-active')) {
+          header.classList.remove('is-hero-nav-active');
+          document.body.classList.remove('has-hero-nav');
+        }
+      } else if (!isHeroActive && scrollY <= 5) {
+        isHeroActive = true;
+        if (!header.classList.contains('is-hero-nav-active')) {
+          header.classList.add('is-hero-nav-active');
+          document.body.classList.add('has-hero-nav');
+        }
+      }
+      ticking = false;
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(updateHeroNavState);
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    
+    // Initial run
+    const initialScrollY = window.scrollY || window.pageYOffset || 0;
+    if (initialScrollY > 65) {
+      isHeroActive = false;
+      header.classList.remove('is-hero-nav-active');
+      document.body.classList.remove('has-hero-nav');
+    } else {
+      isHeroActive = true;
+      header.classList.add('is-hero-nav-active');
+      document.body.classList.add('has-hero-nav');
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHeaderAuth);
+    document.addEventListener('DOMContentLoaded', () => {
+      initHeaderAuth();
+      initActiveNavLinks();
+      initHeroNavScroll();
+    });
   } else {
     initHeaderAuth();
+    initActiveNavLinks();
+    initHeroNavScroll();
   }
 </script>
 
@@ -732,16 +800,104 @@
   }
 
   /* ==========================================================================
-     MODERN MINIMAL HEADER STYLES (Phase 01 UI/UX: Logo Right + Nav)
+     MINIMAL LUXURY HEADER STYLES (Clean Beauty E-commerce Composition)
      ========================================================================== */
 
   .site-header {
-    background: var(--color-surface, #ffffff);
-    border-bottom: 1px solid var(--border-subtle, #e6e4e4);
+    background: #ffffff;
+    border-bottom: 1px solid rgba(44, 40, 40, 0.07);
     position: sticky;
     top: 0;
     z-index: 100;
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    height: 64px;
+    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: background-color, border-color;
+  }
+
+  /* ==========================================================================
+     HERO NAVBAR STATE: Transparent, Minimal 3-Element Luxury Overlay
+     ========================================================================== */
+
+  html.is-homepage .announce-bar {
+    display: none !important;
+  }
+
+  html.is-homepage .site-header {
+    margin-bottom: -64px;
+  }
+
+  .announce-bar {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 34px;
+    will-change: transform, opacity;
+  }
+
+  body.has-hero-nav .announce-bar {
+    transform: translate3d(0, -100%, 0);
+    opacity: 0;
+    pointer-events: none;
+    border-bottom: none;
+  }
+
+  .site-header.is-hero-nav-active {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: none !important;
+  }
+
+  /* Logo styling during hero state */
+  .site-header.is-hero-nav-active .brand-logo img {
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+  }
+
+  /* Right Zone Nav links: Hide all EXCEPT "عن داندي" in hero mode */
+  .site-header.is-hero-nav-active .desktop-nav .nav-link:not([href="/about-us"]) {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate3d(14px, 0, 0);
+  }
+
+  .site-header.is-hero-nav-active .desktop-nav .nav-link[href="/about-us"] {
+    color: #ffffff;
+    font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    opacity: 1;
+    visibility: visible;
+  }
+  .site-header.is-hero-nav-active .desktop-nav .nav-link[href="/about-us"]::after {
+    background: #ffffff;
+  }
+
+  /* Left Zone Utility Group: Hide Search & Cart, Show ONLY Account */
+  .site-header.is-hero-nav-active #desktop-search-btn {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale3d(0.85, 0.85, 1);
+  }
+
+  .site-header.is-hero-nav-active #header-cart-link {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale3d(0.85, 0.85, 1);
+  }
+
+  .site-header.is-hero-nav-active #header-auth-guest,
+  .site-header.is-hero-nav-active #header-auth-user .header-account-btn,
+  .site-header.is-hero-nav-active #header-auth-user .logout-btn,
+  .site-header.is-hero-nav-active .mobile-menu-btn {
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  .site-header.is-hero-nav-active .header-utility-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
   }
 
   .header-container {
@@ -749,8 +905,8 @@
     max-width: var(--container-max-width, 1240px);
     margin-left: auto;
     margin-right: auto;
-    padding-left: var(--container-px, 20px);
-    padding-right: var(--container-px, 20px);
+    padding-left: var(--container-px, 24px);
+    padding-right: var(--container-px, 24px);
     height: 64px;
     display: flex;
     align-items: center;
@@ -758,44 +914,51 @@
     gap: 24px;
   }
 
-  /* Right Zone (RTL Start: Logo + Nav on Desktop | Mobile Hamburger + Logo) */
-  .header-start,
-  .header-left {
+  /* Right Zone (RTL Start: Logo + Primary Nav on Desktop | Mobile: Hamburger Trigger) */
+  .header-start {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 32px;
     flex: 1;
     justify-content: flex-start;
     min-width: 0;
+    transition: gap 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .header-icon-btn {
+  /* Unified Minimal Utility Button (Search, Account, Cart, Mobile Menu) */
+  .header-utility-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
     border-radius: var(--radius-md, 8px);
     border: 1px solid transparent;
     background: transparent;
     color: var(--color-text, #2c2828);
     cursor: pointer;
     padding: 0;
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    transform: translate3d(0, 0, 0);
+    transition: color 0.25s ease,
+                background-color 0.25s ease,
+                transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.35s ease;
+    will-change: transform, opacity;
+    position: relative;
+    outline: none;
   }
-  .header-icon-btn svg {
-    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  .header-utility-btn svg {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .header-icon-btn:hover {
-    background: rgba(254, 93, 159, 0.07);
-    border-color: var(--color-soft-blossom-500, #f4bbd3);
+  .header-utility-btn:hover {
+    background: rgba(254, 93, 159, 0.08);
     color: var(--color-rose-kiss-500, #fe5d9f);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(254, 93, 159, 0.08);
   }
-  .header-icon-btn:hover svg {
-    transform: scale(1.1);
+  .header-utility-btn:hover svg {
+    transform: scale(1.08);
   }
 
   .mobile-menu-btn {
@@ -810,73 +973,73 @@
     text-decoration: none;
     line-height: 1;
     flex-shrink: 0;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease, opacity 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.35s ease;
   }
   .brand-logo:hover {
-    opacity: 0.96;
-    transform: translateY(-1px) scale(1.02);
-    filter: drop-shadow(0 2px 8px rgba(254, 93, 159, 0.14));
+    opacity: 0.92;
   }
   .brand-logo img {
     height: 38px;
     width: auto;
-    max-height: 40px;
+    max-height: 38px;
     object-fit: contain;
     display: block;
+    transition: filter 0.35s ease;
   }
 
-  /* Desktop Primary Navigation */
+  /* Desktop Primary Navigation Links */
   .desktop-nav {
-    position: static;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 22px;
     margin: 0;
     padding: 0;
-    width: auto;
-    height: auto;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    z-index: auto;
     flex-wrap: nowrap;
+    transition: gap 0.35s ease;
   }
 
   .nav-link {
     display: inline-flex;
     align-items: center;
-    padding: 7px 12px;
-    border-radius: var(--radius-md, 8px);
+    padding: 6px 0;
     font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
     font-size: var(--text-sm, 0.875rem);
     font-weight: 500;
-    color: var(--color-text-secondary, #595050);
+    color: var(--color-text-secondary, #44403c);
     text-decoration: none;
-    transition: color 0.22s ease, background-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
-    white-space: nowrap;
     position: relative;
+    white-space: nowrap;
+    max-width: 200px;
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    visibility: visible;
+    transition: color 0.25s ease,
+                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.35s ease;
+    will-change: transform, opacity;
   }
   .nav-link::after {
     content: '';
     position: absolute;
-    bottom: 2px;
-    right: 50%;
-    transform: translateX(50%) scaleX(0);
-    width: 20px;
+    bottom: -2px;
+    right: 0;
+    width: 0;
     height: 2px;
     background: var(--color-rose-kiss-500, #fe5d9f);
     border-radius: 99px;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .nav-link:hover {
     color: var(--color-rose-kiss-500, #fe5d9f);
-    background: rgba(254, 93, 159, 0.07);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(254, 93, 159, 0.06);
   }
-  .nav-link:hover::after {
-    transform: translateX(50%) scaleX(1);
-    width: calc(100% - 20px);
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    width: 100%;
+  }
+  .nav-link.active {
+    color: var(--color-rose-kiss-500, #fe5d9f);
+    font-weight: 600;
   }
 
   .nav-link.badge-link {
@@ -886,134 +1049,31 @@
   .nav-badge {
     background: var(--color-soft-blossom-900, #fdf2f6);
     color: var(--color-rose-kiss-500, #fe5d9f);
-    font-size: 0.68rem;
-    font-weight: 700;
+    font-size: 0.65rem;
+    font-weight: 600;
     padding: 1px 6px;
     border-radius: var(--radius-sm, 4px);
     border: 1px solid var(--color-soft-blossom-700, #f9d8e5);
     line-height: 1.3;
-    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition: all 0.2s ease;
   }
   .nav-link:hover .nav-badge {
-    transform: scale(1.08);
     background: var(--color-rose-kiss-500, #fe5d9f);
     color: #ffffff;
     border-color: var(--color-rose-kiss-500, #fe5d9f);
   }
 
-  /* Left Zone (RTL End: Actions) */
-  .header-end,
-  .header-right {
+  /* Left Zone (RTL End: Search, Account & Cart - One cohesive minimal utility group) */
+  .header-end {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 0;
     justify-content: flex-end;
   }
 
-  /* Desktop Search Input Pill */
-  .desktop-search-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 14px;
-    background: var(--color-canvas-subtle, #f7f6f6);
-    border: 1px solid var(--border-subtle, #e6e4e4);
-    border-radius: var(--radius-md, 8px);
-    color: var(--color-muted, #857979);
-    cursor: pointer;
-    font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
-    font-size: var(--text-xs, 0.75rem);
-    font-weight: 500;
-    transition: border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s ease, color 0.22s ease;
-    width: 190px;
-    max-width: 220px;
-  }
-  .desktop-search-trigger:hover {
-    background: #ffffff;
-    border-color: var(--color-pink-carnation-400, #f89ec9);
-    color: var(--color-text, #2c2828);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(254, 93, 159, 0.09), 0 1px 3px rgba(44, 40, 40, 0.04);
-  }
-  .desktop-search-trigger svg {
-    color: var(--color-muted, #857979);
-    flex-shrink: 0;
-    transition: color 0.2s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .desktop-search-trigger:hover svg {
-    color: var(--color-rose-kiss-500, #fe5d9f);
-    transform: scale(1.1);
-  }
-  .search-label {
-    flex: 1;
-    text-align: right;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .search-kbd {
-    background: #ffffff;
-    border: 1px solid var(--border-subtle, #e6e4e4);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 0.68rem;
-    font-family: monospace;
-    color: var(--color-muted, #857979);
-    line-height: 1.2;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  }
-  .desktop-search-trigger:hover .search-kbd {
-    background: var(--color-soft-blossom-900, #fdf2f6);
-    border-color: var(--color-soft-blossom-600, #f7cbdd);
-    color: var(--color-rose-kiss-500, #fe5d9f);
-  }
-
-  .mobile-search-btn {
-    display: none;
-  }
-
-  .header-divider {
-    width: 1px;
-    height: 22px;
-    background: var(--border-subtle, #e6e4e4);
-    margin: 0 4px;
-  }
-
-  /* Account Trigger */
-  .header-account-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    border-radius: var(--radius-md, 8px);
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--color-text, #2c2828);
-    text-decoration: none;
-    font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
-    font-size: var(--text-xs, 0.8125rem);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-    white-space: nowrap;
-  }
-  .header-account-btn svg {
-    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s ease;
-  }
-  .header-account-btn:hover {
-    background: rgba(254, 93, 159, 0.07);
-    border-color: var(--color-soft-blossom-500, #f4bbd3);
-    color: var(--color-rose-kiss-500, #fe5d9f);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(254, 93, 159, 0.08);
-  }
-  .header-account-btn:hover svg {
-    transform: scale(1.12);
-  }
+  /* Account User Trigger */
   .header-account-btn.active-user {
-    background: var(--color-surface-soft, #f7f6f6);
-    border-color: var(--border-subtle, #e6e4e4);
     color: var(--color-rose-kiss-500, #fe5d9f);
   }
 
@@ -1023,74 +1083,38 @@
     gap: 4px;
   }
 
-  .logout-btn {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
-    border-radius: var(--radius-md, 8px);
-    border: 1px solid transparent;
-    color: var(--color-muted, #857979);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
   .logout-btn:hover {
     color: var(--color-danger, #be123c);
     background: #fff1f2;
-    border-color: #fecdd3;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(190, 18, 60, 0.08);
   }
 
-  /* Cart Trigger */
+  /* Cart Trigger & Dynamic Counter Badge */
   .header-cart-btn {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: var(--radius-md, 8px);
-    border: 1px solid var(--border-subtle, #e6e4e4);
-    background: #ffffff;
-    color: var(--color-text, #2c2828);
-    text-decoration: none;
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .header-cart-btn svg {
-    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .header-cart-btn:hover {
-    background: rgba(254, 93, 159, 0.07);
-    border-color: var(--color-rose-kiss-500, #fe5d9f);
-    color: var(--color-rose-kiss-500, #fe5d9f);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(254, 93, 159, 0.12);
-  }
-  .header-cart-btn:hover svg {
-    transform: scale(1.12) rotate(-3deg);
   }
 
   .cart-count-badge {
     position: absolute;
-    top: -5px;
-    left: -5px;
+    top: -3px;
+    left: -3px;
     background: var(--color-rose-kiss-500, #fe5d9f);
     color: #ffffff;
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 99px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid #ffffff;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     font-variant-numeric: tabular-nums;
-    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .header-cart-btn:hover .cart-count-badge {
-    transform: scale(1.15);
+    transform: scale(1.12);
   }
 
   /* ==========================================================================
@@ -1535,72 +1559,89 @@
   }
 
   /* ==========================================================================
-     RESPONSIVE BREAKPOINTS (Mobile Composition & Fluid Scaling)
+     RESPONSIVE BREAKPOINTS (Mobile Composition & Centered Branding)
      ========================================================================== */
 
-  @media (max-width: 1160px) {
+  @media (max-width: 1120px) {
     .header-container {
-      gap: 12px;
-    }
-    .header-start,
-    .header-left {
+      padding-left: 16px;
+      padding-right: 16px;
       gap: 16px;
     }
+    .header-start {
+      gap: 20px;
+    }
     .desktop-nav {
-      gap: 4px;
+      gap: 14px;
     }
     .nav-link {
-      padding: 6px 10px;
       font-size: 0.8125rem;
-    }
-    .desktop-search-trigger {
-      width: 160px;
-      padding: 6px 10px;
     }
   }
 
   @media (max-width: 920px) {
+    .header-container {
+      position: relative;
+      height: 58px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
     .desktop-nav {
       display: none !important;
-    }
-    .header-start,
-    .header-left {
-      gap: 10px;
     }
     .mobile-menu-btn {
       display: inline-flex !important;
     }
-    .desktop-search-trigger {
-      display: none !important;
-    }
-    .mobile-search-btn {
-      display: inline-flex !important;
-    }
-  }
-
-  @media (max-width: 520px) {
-    .header-container {
-      padding-left: 14px;
-      padding-right: 14px;
-      height: 58px;
-      gap: 8px;
-    }
-    .header-start,
-    .header-left {
-      gap: 8px;
+    .brand-logo {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
     .brand-logo img {
       height: 32px;
     }
-    .account-btn-text {
-      display: none;
+    .header-start {
+      flex: 0 0 auto;
+      gap: 0;
     }
-    .header-account-btn {
-      padding: 7px;
-      border-radius: var(--radius-md, 8px);
+    .header-end {
+      flex: 0 0 auto;
+      gap: 4px;
     }
-    .header-divider {
-      display: none;
+    
+    /* Standard Scrolled Mobile Navbar: Hide desktop account buttons (handled in drawer) */
+    .site-header:not(.is-hero-nav-active) #header-auth-guest,
+    .site-header:not(.is-hero-nav-active) #header-auth-user {
+      display: none !important;
+    }
+
+    /* Hero Mobile Navbar: Keep Account hidden on mobile in both states to avoid duplicate */
+    .site-header.is-hero-nav-active #header-auth-guest {
+      display: none !important;
+    }
+    .site-header.is-hero-nav-active #header-auth-user {
+      display: none !important;
+    }
+    .site-header.is-hero-nav-active #desktop-search-btn,
+    .site-header.is-hero-nav-active #header-cart-link {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-container {
+      padding-left: 10px;
+      padding-right: 10px;
+      height: 56px;
+    }
+    .brand-logo img {
+      height: 28px;
+    }
+    .header-utility-btn {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
     }
   }
 

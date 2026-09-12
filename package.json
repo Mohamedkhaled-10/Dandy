@@ -15,6 +15,11 @@
     "astro": "^7.3.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "firebase-admin": "^14.3.0"
+    "firebase-admin": "^14.3.0",
+    "gsap": "^3.15.0",
+    "sortablejs": "^1.15.7"
+  },
+  "devDependencies": {
+    "@types/sortablejs": "^1.15.9"
   }
 }

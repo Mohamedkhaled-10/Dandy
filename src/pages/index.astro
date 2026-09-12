@@ -49,8 +49,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <style is:global>
       /* ==========================================================================
-         PHASE 03: MODERN MINIMAL HOMEPAGE STYLES
+         CINEMATIC HOMEPAGE EXPERIENCE & BEAUTY EDITORIAL STYLES
          ========================================================================== */
+
+      .cinematic-entry-curtain {
+        position: fixed;
+        inset: 0;
+        background-color: #090809;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 1;
+        transition: opacity 1.05s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.05s ease;
+        animation: safetyCurtainDismiss 1.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .cinematic-entry-curtain.faded {
+        opacity: 0;
+        visibility: hidden;
+      }
+      @keyframes safetyCurtainDismiss {
+        0% { opacity: 1; visibility: visible; }
+        75% { opacity: 0; }
+        100% { opacity: 0; visibility: hidden; }
+      }
 
       .homepage-wrapper {
         display: flex;
@@ -58,12 +78,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         width: 100%;
         background-color: var(--color-canvas, #ffffff);
         color: var(--color-text, #2c2828);
+        overflow-x: hidden;
       }
 
       /* Base Section Utility */
       .home-section {
         width: 100%;
-        padding: 56px 0;
+        padding: 64px 0;
+        min-height: 380px;
+        position: relative;
       }
       .home-section-tinted {
         background-color: var(--color-canvas-subtle, #f7f6f6);
@@ -77,13 +100,160 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         padding-right: var(--container-px, 20px);
       }
 
+      /* ==========================================================================
+         DANDY ELEGANT LOADING WHEEL & SKELETON PLACEHOLDERS
+         ========================================================================== */
+      .dandy-section-loader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 42px 16px;
+        width: 100%;
+        grid-column: 1 / -1;
+        text-align: center;
+        min-height: 220px;
+      }
+      .dandy-spinner-ring {
+        width: 44px;
+        height: 44px;
+        border: 3.5px solid rgba(254, 93, 159, 0.2);
+        border-top-color: var(--color-rose-kiss-500, #fe5d9f);
+        border-radius: 50%;
+        animation: dandySpinWheel 0.85s linear infinite;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .dandy-spinner-ring i {
+        color: var(--color-rose-kiss-500, #fe5d9f);
+        font-size: 1.15rem;
+      }
+      @keyframes dandySpinWheel {
+        to { transform: rotate(360deg); }
+      }
+      .dandy-loader-text {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--color-text, #2c2828);
+        margin: 0 0 4px 0;
+      }
+      .dandy-loader-subtext {
+        font-size: 0.8rem;
+        color: var(--color-muted, #857979);
+        margin: 0;
+      }
+
+      /* Skeleton Placeholders */
+      .product-skeleton-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        width: 100%;
+        margin-top: 20px;
+      }
+      @media (max-width: 1024px) {
+        .product-skeleton-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      }
+      @media (max-width: 640px) {
+        .product-skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      }
+      .product-skeleton-card {
+        background: #ffffff;
+        border: 1px solid var(--border-subtle, #e6e4e4);
+        border-radius: var(--radius-lg, 12px);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .skeleton-box {
+        background: linear-gradient(90deg, #f2f0f0 25%, #faf9f9 50%, #f2f0f0 75%);
+        background-size: 200% 100%;
+        animation: dandyShimmer 1.5s infinite;
+        border-radius: 8px;
+      }
+      .skeleton-box.img {
+        width: 100%;
+        aspect-ratio: 1;
+      }
+      .skeleton-box.title {
+        height: 16px;
+        width: 80%;
+      }
+      .skeleton-box.price {
+        height: 14px;
+        width: 45%;
+      }
+      .skeleton-box.btn {
+        height: 34px;
+        width: 100%;
+        margin-top: auto;
+      }
+      @keyframes dandyShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* Category Skeleton */
+      .category-skeleton-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 20px;
+        width: 100%;
+      }
+      @media (max-width: 640px) {
+        .category-skeleton-grid { grid-template-columns: 1fr; gap: 12px; }
+      }
+      .category-skeleton-tile {
+        height: 260px;
+        border-radius: var(--radius-lg, 14px);
+      }
+
+      /* Hero Scroll Hint */
+      .hero-scroll-hint {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 25;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        color: var(--color-rose-kiss-500, #fe5d9f);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        animation: heroScrollBob 2.2s infinite ease-in-out;
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .hero-scroll-hint:hover {
+        background: #ffffff;
+        transform: translateX(-50%) scale(1.12);
+      }
+      .hero-scroll-hint svg {
+        width: 20px;
+        height: 20px;
+      }
+      @keyframes heroScrollBob {
+        0%, 100% { transform: translate(-50%, 0); }
+        50% { transform: translate(-50%, 7px); }
+      }
+
       /* Section Header Rhythm */
       .section-header-row {
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
         gap: 16px;
-        margin-bottom: 28px;
+        margin-bottom: 32px;
       }
       .section-header-titles {
         display: flex;
@@ -99,7 +269,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       .section-main-title {
         font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
-        font-size: 1.5rem;
+        font-size: 1.55rem;
         font-weight: 700;
         color: var(--color-text, #2c2828);
         margin: 0;
@@ -133,113 +303,148 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       /* ==========================================================================
-         1. HERO COMPONENT: Large Editorial Image & Clean Composition
+         1. HERO COMPONENT: Full-Screen Editorial Beauty Hero (100svh)
          ========================================================================== */
 
       .hero-editorial-wrap {
         width: 100%;
-        max-width: var(--container-max-width, 1240px);
-        margin: 20px auto 0;
-        padding: 0 var(--container-px, 20px);
+        margin: 0;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        height: 100vh;
+        height: 100svh;
+        min-height: 100svh;
+        max-height: 100svh;
       }
 
       .hero-stage {
         position: relative;
         width: 100%;
-        height: 480px;
-        max-height: 520px;
-        border-radius: var(--radius-lg, 12px);
+        height: 100%;
+        border-radius: 0;
+        border: none;
         overflow: hidden;
-        background-color: var(--color-lavender-veil-500, #f1e4f3);
+        background-color: #0c0a0b;
+        box-shadow: none;
+      }
+
+      .hero-slides-track {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
       }
 
       .hero-slide-item {
         position: absolute;
         inset: 0;
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
+        justify-content: flex-start;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.8s ease, visibility 0.8s ease;
+        transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.85s ease;
         background-size: cover;
-        background-position: center;
+        background-position: center center;
+        transform: scale3d(1.02, 1.02, 1);
+        will-change: transform, opacity;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
       }
       .hero-slide-item.active {
         opacity: 1;
         visibility: visible;
+        transform: scale3d(1, 1, 1);
       }
 
-      /* Subtle gradient backdrop to ensure pristine contrast without harsh dark masks */
+      /* Subtle gradient backdrop removed for clean image */
       .hero-slide-item::before {
-        content: '';
+        display: none;
+      }
+      html[dir="ltr"] .hero-slide-item::before {
+        display: none;
+      }
+
+      /* Native Responsive Picture & Image Styles */
+      .hero-slide-picture {
         position: absolute;
         inset: 0;
-        background: linear-gradient(
-          to right,
-          rgba(44, 40, 40, 0.55) 0%,
-          rgba(44, 40, 40, 0.25) 50%,
-          rgba(44, 40, 40, 0.05) 100%
-        );
-        z-index: 1;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+        pointer-events: none;
       }
-      html[dir="rtl"] .hero-slide-item::before {
-        background: linear-gradient(
-          to left,
-          rgba(44, 40, 40, 0.55) 0%,
-          rgba(44, 40, 40, 0.25) 50%,
-          rgba(44, 40, 40, 0.05) 100%
-        );
+      .hero-slide-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center center;
+        display: block;
       }
 
       .hero-text-card {
-        position: relative;
-        z-index: 2;
-        max-width: 520px;
-        padding: 0 48px;
-        color: #ffffff;
-        text-align: right;
+        display: none;
       }
       .hero-tagline {
-        display: inline-block;
-        font-size: var(--text-xs, 0.75rem);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: var(--text-xs, 0.78rem);
         font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--color-soft-blossom-800, #fcf1f6);
-        margin-bottom: 12px;
+        letter-spacing: 0.05em;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        padding: 5px 16px;
+        border-radius: 99px;
+        margin-bottom: 16px;
       }
       .hero-heading {
         font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
-        font-size: 2.15rem;
+        font-size: clamp(2rem, 4.5vw, 3.25rem);
         font-weight: 700;
-        line-height: 1.25;
-        margin: 0 0 14px 0;
+        line-height: 1.22;
+        margin: 0 0 16px 0;
         color: #ffffff;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
       }
       .hero-desc {
-        font-size: var(--text-base, 0.95rem);
-        line-height: 1.6;
-        color: rgba(255, 255, 255, 0.9);
-        margin: 0 0 24px 0;
+        font-size: clamp(0.95rem, 1.8vw, 1.125rem);
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.92);
+        margin: 0 0 32px 0;
+        max-width: 520px;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
       }
       .hero-primary-cta {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 12px 28px;
+        gap: 10px;
+        padding: 14px 34px;
         background-color: var(--color-rose-kiss-500, #fe5d9f);
         color: #ffffff;
-        font-size: var(--text-sm, 0.875rem);
+        font-size: var(--text-sm, 0.95rem);
         font-weight: 600;
         border-radius: var(--radius-md, 8px);
         text-decoration: none;
-        transition: var(--transition-fast, all 0.15s ease);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         border: 1px solid transparent;
+        box-shadow: 0 6px 20px rgba(254, 93, 159, 0.4);
       }
       .hero-primary-cta:hover {
-        background-color: var(--color-rose-kiss-400, #cb4a7f);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(254, 93, 159, 0.25);
+        background-color: #f6468e;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 26px rgba(254, 93, 159, 0.5);
+      }
+      .hero-primary-cta:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(254, 93, 159, 0.25);
       }
 
       /* Contained Hero Controls within stage */
@@ -254,32 +459,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       .hero-dots-container {
         position: absolute;
-        bottom: 20px;
+        bottom: 32px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 9px;
         pointer-events: auto;
         z-index: 12;
       }
       .hero-dot-indicator {
         width: 8px;
         height: 8px;
-        border-radius: 4px;
-        background-color: rgba(255, 255, 255, 0.45);
+        border-radius: 99px;
+        background-color: rgba(255, 255, 255, 0.42);
+        backdrop-filter: blur(4px);
         cursor: pointer;
-        transition: all 0.25s ease;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         border: none;
         padding: 0;
       }
+      .hero-dot-indicator:hover:not(.active) {
+        background-color: rgba(255, 255, 255, 0.8);
+        transform: scale(1.2);
+      }
       .hero-dot-indicator.active {
-        width: 24px;
+        width: 32px;
         background-color: #ffffff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
       }
 
       /* ==========================================================================
-         2. SERVICE / TRUST STRIP: Clean Horizontal Strip with Subtle Dividers
+         2. SERVICE / TRUST STRIP
          ========================================================================== */
 
       .trust-strip {
@@ -287,7 +498,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         background-color: #ffffff;
         border-top: 1px solid var(--border-subtle, #e6e4e4);
         border-bottom: 1px solid var(--border-subtle, #e6e4e4);
-        margin-top: 36px;
       }
       .trust-strip-inner {
         display: grid;
@@ -298,7 +508,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 20px 24px;
+        padding: 24px 24px;
         text-align: right;
       }
       .trust-strip-item:not(:last-child) {
@@ -309,20 +519,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border-right: none;
       }
       .trust-icon-box {
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
         border-radius: var(--radius-md, 8px);
         background-color: var(--color-surface-soft, #f7f6f6);
         color: var(--color-rose-kiss-500, #fe5d9f);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
       }
       .trust-icon-box svg {
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
       }
       .trust-meta {
         display: flex;
@@ -330,20 +540,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         gap: 2px;
       }
       .trust-meta strong {
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         font-weight: 600;
         color: var(--color-text, #2c2828);
       }
       .trust-meta p {
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         color: var(--color-muted, #857979);
         margin: 0;
         line-height: 1.4;
       }
 
       /* ==========================================================================
-         3. PRODUCT CARD DESIGN LANGUAGE (Modern Minimal)
+         3. PRODUCT CARD DESIGN LANGUAGE & SPECIAL OFFERS SCROLL REVEAL
          ========================================================================== */
+
+      #primary-products-section .section-header-row {
+        transform: translate3d(0, 30px, 0);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      #primary-products-section .modern-product-grid {
+        transform: translate3d(0, 45px, 0);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      #primary-products-section.is-revealed .section-header-row,
+      #primary-products-section.is-revealed .modern-product-grid {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+      }
 
       .modern-product-grid {
         display: grid;
@@ -361,13 +587,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         text-decoration: none;
         color: inherit;
         position: relative;
-        transition: var(--transition-fast, all 0.15s ease);
+        transform: translate3d(0, 0, 0);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                    border-color 0.2s ease,
+                    box-shadow 0.25s ease;
+        will-change: transform;
         cursor: pointer;
       }
       .modern-product-card:hover {
         border-color: var(--border-medium, #dedbdb);
         box-shadow: 0 4px 16px rgba(44, 40, 40, 0.05);
-        transform: translateY(-2px);
+        transform: translate3d(0, -2px, 0);
       }
 
       .card-image-box {
@@ -381,10 +611,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.35s ease;
+        transform: translate3d(0, 0, 0) scale(1);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
       }
       .modern-product-card:hover .card-image-box img {
-        transform: scale(1.03);
+        transform: translate3d(0, 0, 0) scale(1.03);
       }
 
       .card-badge {
@@ -457,7 +691,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         align-items: center;
         justify-content: center;
         gap: 6px;
-        transition: var(--transition-fast, all 0.15s ease);
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       }
       .card-add-btn:hover {
         background-color: var(--color-rose-kiss-500, #fe5d9f);
@@ -471,62 +705,103 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       /* ==========================================================================
-         4. CATEGORY TILES (Modern Minimal & Horizontal Scroll on Mobile)
+         4. CATEGORY TILES (Asymmetric Editorial Masonry & Paired Entrance)
          ========================================================================== */
 
-      .category-tiles-grid {
+      .category-editorial-container {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 20px;
+        width: 100%;
       }
-      .category-tile {
+      .category-masonry-col {
         display: flex;
         flex-direction: column;
-        border-radius: var(--radius-md, 8px);
+        gap: 20px;
+      }
+      .cat-col-right {
+        transform: translate3d(50px, 0, 0);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .cat-col-left {
+        transform: translate3d(-50px, 0, 0);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      #sec-categories.is-revealed .cat-col-right,
+      #sec-categories.is-revealed .cat-col-left {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+      }
+
+      .category-editorial-tile {
+        position: relative;
+        border-radius: var(--radius-lg, 14px);
         overflow: hidden;
-        background-color: var(--color-surface-soft, #f7f6f6);
-        border: 1px solid var(--border-subtle, #e6e4e4);
         text-decoration: none;
-        color: inherit;
-        transition: var(--transition-fast, all 0.15s ease);
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 24px 28px;
+        border: 1px solid rgba(44, 40, 40, 0.08);
+        box-shadow: 0 4px 18px rgba(44, 40, 40, 0.04);
+        background-color: #121011;
+        transform: translate3d(0, 0, 0);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 0.35s ease,
+                    border-color 0.35s ease;
+        will-change: transform;
+        cursor: pointer;
       }
-      .category-tile:hover {
-        border-color: var(--color-pink-carnation-500, #f686bd);
-        transform: translateY(-2px);
+      .category-editorial-tile.cat-tile-h250 { height: 250px; }
+      .category-editorial-tile.cat-tile-h350 { height: 350px; }
+      .category-editorial-tile.cat-tile-h360 { height: 360px; }
+      .category-editorial-tile.cat-tile-h240 { height: 240px; }
+
+      .category-editorial-tile:hover {
+        transform: translate3d(0, -4px, 0);
+        box-shadow: 0 16px 36px rgba(44, 40, 40, 0.14);
+        border-color: rgba(254, 93, 159, 0.45);
       }
-      .category-tile-thumb {
-        width: 100%;
-        aspect-ratio: 4 / 3;
+      .category-tile-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
         overflow: hidden;
-        background-color: var(--color-dust-grey-700, #e6e4e4);
       }
-      .category-tile-thumb img {
+      .category-tile-bg picture,
+      .category-tile-picture {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .category-tile-bg img,
+      .category-tile-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.35s ease;
+        transform: translate3d(0, 0, 0) scale(1);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+        display: block;
       }
-      .category-tile:hover .category-tile-thumb img {
-        transform: scale(1.04);
+      .category-editorial-tile:hover .category-tile-bg img,
+      .category-editorial-tile:hover .category-tile-img {
+        transform: translate3d(0, 0, 0) scale(1.05);
       }
-      .category-tile-label {
-        padding: 12px 14px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+      .category-tile-overlay {
+        display: none;
       }
-      .category-tile-name {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--color-text, #2c2828);
-      }
-      .category-tile-count {
-        font-size: 0.75rem;
-        color: var(--color-muted, #857979);
+      .category-tile-content {
+        display: none;
       }
 
       /* ==========================================================================
-         5. PROMOTIONAL EDITORIAL BANNER (Image-Led & Contained)
+         5. PROMOTIONAL EDITORIAL BANNER
          ========================================================================== */
 
       .promo-banner-section {
@@ -681,7 +956,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       /* ==========================================================================
-         7. AUTHENTIC REVIEWS STRIP (Real Screenshot Gallery)
+         7. AUTHENTIC REVIEWS STRIP
          ========================================================================== */
 
       .reviews-preview-grid {
@@ -734,6 +1009,156 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       }
 
+      /* ==========================================================================
+         8. DYNAMIC CUSTOM SECTION STYLES (Story, FAQ, Video, Gallery, Custom Banner)
+         ========================================================================== */
+      .custom-story-card {
+        background: var(--color-surface-soft, #faf9f9);
+        border: 1px solid var(--border-subtle, #e6e4e4);
+        border-radius: var(--radius-lg, 14px);
+        padding: 44px 36px;
+        text-align: center;
+        max-width: 860px;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+      }
+      .custom-story-quote-icon {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 16px auto;
+        color: var(--color-rose-kiss-500, #fe5d9f);
+        opacity: 0.85;
+      }
+      .custom-story-heading {
+        font-family: var(--font-editorial, 'Playfair Display', serif);
+        font-size: clamp(1.4rem, 3.5vw, 2rem);
+        color: var(--color-text, #2c2828);
+        margin-bottom: 16px;
+        line-height: 1.35;
+      }
+      .custom-story-text {
+        font-size: 0.95rem;
+        line-height: 1.8;
+        color: #574e4e;
+        max-width: 720px;
+        margin: 0 auto 20px auto;
+      }
+      .custom-story-author {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--color-rose-kiss-500, #fe5d9f);
+      }
+
+      /* Custom FAQ Section */
+      .custom-faq-wrap {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .faq-item-box {
+        background: #ffffff;
+        border: 1px solid var(--border-subtle, #e6e4e4);
+        border-radius: var(--radius-md, 10px);
+        overflow: hidden;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .faq-item-box.active {
+        border-color: rgba(254, 93, 159, 0.4);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      }
+      .faq-question-btn {
+        width: 100%;
+        padding: 16px 20px;
+        background: transparent;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        text-align: right;
+        font-family: var(--font-sans, 'Alexandria', sans-serif);
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--color-text, #2c2828);
+        cursor: pointer;
+      }
+      .faq-question-btn svg {
+        transition: transform 0.25s ease;
+        flex-shrink: 0;
+        color: var(--color-rose-kiss-500, #fe5d9f);
+      }
+      .faq-item-box.active .faq-question-btn svg {
+        transform: rotate(180deg);
+      }
+      .faq-answer-pane {
+        padding: 0 20px 16px 20px;
+        font-size: 0.86rem;
+        line-height: 1.7;
+        color: #574e4e;
+        display: none;
+      }
+      .faq-item-box.active .faq-answer-pane {
+        display: block;
+      }
+
+      /* Custom Video Section */
+      .custom-video-card {
+        border-radius: var(--radius-lg, 14px);
+        overflow: hidden;
+        background: #000000;
+        border: 1px solid var(--border-subtle, #e6e4e4);
+        box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+        position: relative;
+        aspect-ratio: 16 / 9;
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .custom-video-card iframe,
+      .custom-video-card video {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: block;
+      }
+
+      /* Custom Gallery Section */
+      .custom-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .custom-gallery-item {
+        border-radius: var(--radius-md, 10px);
+        overflow: hidden;
+        border: 1px solid var(--border-subtle, #e6e4e4);
+        position: relative;
+        display: block;
+        aspect-ratio: 4 / 3;
+        background: #f3f4f6;
+      }
+      .custom-gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s ease;
+      }
+      .custom-gallery-item:hover img {
+        transform: scale(1.05);
+      }
+      .custom-gallery-caption {
+        position: absolute;
+        bottom: 0;
+        inset-inline: 0;
+        padding: 12px;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        color: #ffffff;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
       /* Lightbox Modal */
       .lightbox-modal {
         position: fixed;
@@ -777,6 +1202,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       /* ==========================================================================
+         UNIVERSAL SCROLL REVEAL STYLES
+         ========================================================================== */
+
+      .scroll-reveal-up {
+        transform: translate3d(0, 36px, 0);
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .scroll-reveal-up.is-revealed {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+      }
+
+      /* ==========================================================================
          RESPONSIVE BREAKPOINTS
          ========================================================================== */
 
@@ -785,26 +1224,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           grid-template-columns: repeat(3, 1fr);
         }
         .trust-strip-item {
-          padding: 16px 14px;
+          padding: 18px 16px;
         }
+        .category-editorial-tile.cat-tile-h250 { height: 210px; }
+        .category-editorial-tile.cat-tile-h350 { height: 290px; }
+        .category-editorial-tile.cat-tile-h360 { height: 300px; }
+        .category-editorial-tile.cat-tile-h240 { height: 200px; }
       }
 
       @media (max-width: 768px) {
-        .hero-editorial-wrap {
-          margin-top: 12px;
-        }
-        .hero-stage {
-          height: 380px;
-        }
         .hero-text-card {
           padding: 0 24px;
+          max-width: 100%;
         }
         .hero-heading {
-          font-size: 1.55rem;
+          font-size: clamp(1.75rem, 5.5vw, 2.3rem);
+          margin-bottom: 12px;
         }
         .hero-desc {
-          font-size: 0.85rem;
-          margin-bottom: 18px;
+          font-size: 0.92rem;
+          line-height: 1.55;
+          margin-bottom: 24px;
+        }
+        .hero-primary-cta {
+          padding: 12px 28px;
+          font-size: 0.88rem;
         }
         .trust-strip-inner {
           grid-template-columns: 1fr;
@@ -812,6 +1256,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .trust-strip-item {
           border-left: none !important;
           border-bottom: 1px solid var(--border-subtle, #e6e4e4);
+          padding: 16px 20px;
         }
         .trust-strip-item:last-child {
           border-bottom: none;
@@ -820,9 +1265,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           grid-template-columns: repeat(2, 1fr);
           gap: 12px;
         }
-        .category-tiles-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
+        .category-editorial-container {
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .category-masonry-col {
+          gap: 12px;
+        }
+        .category-editorial-tile {
+          padding: 18px 16px;
+        }
+        .category-editorial-tile.cat-tile-h250 { height: 180px; }
+        .category-editorial-tile.cat-tile-h350 { height: 250px; }
+        .category-editorial-tile.cat-tile-h360 { height: 250px; }
+        .category-editorial-tile.cat-tile-h240 { height: 180px; }
+        .category-tile-title {
+          font-size: 1.1rem;
         }
         .promo-banner-card {
           grid-template-columns: 1fr;
@@ -840,19 +1298,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           grid-template-columns: 1fr;
         }
         .section-main-title {
-          font-size: 1.25rem;
+          font-size: 1.3rem;
         }
         .home-section {
-          padding: 40px 0;
+          padding: 48px 0;
         }
       }
 
       @media (max-width: 480px) {
-        .hero-stage {
-          height: 340px;
+        .hero-text-card {
+          padding: 0 18px;
+        }
+        .hero-tagline {
+          font-size: 0.72rem;
+          padding: 4px 12px;
+          margin-bottom: 12px;
         }
         .hero-heading {
-          font-size: 1.35rem;
+          font-size: 1.6rem;
+          line-height: 1.25;
+          margin-bottom: 10px;
+        }
+        .hero-desc {
+          font-size: 0.85rem;
+          line-height: 1.45;
+          margin-bottom: 20px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .hero-primary-cta {
+          padding: 11px 24px;
+          font-size: 0.84rem;
+        }
+        .hero-dots-container {
+          bottom: 20px;
+        }
+        .category-editorial-container {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .category-editorial-tile.cat-tile-h250,
+        .category-editorial-tile.cat-tile-h350,
+        .category-editorial-tile.cat-tile-h360,
+        .category-editorial-tile.cat-tile-h240 {
+          height: 180px;
         }
         .card-content-box {
           padding: 10px;
@@ -866,17 +1357,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           padding: 6px 8px;
         }
       }
+
+      /* Reduced Motion Accessibility */
+      @media (prefers-reduced-motion: reduce) {
+        .cinematic-entry-curtain {
+          display: none !important;
+        }
+        .cat-col-right,
+        .cat-col-left,
+        .scroll-reveal-up,
+        #primary-products-section .section-header-row,
+        #primary-products-section .modern-product-grid,
+        .hero-slide-item {
+          opacity: 1 !important;
+          transform: none !important;
+          transition: none !important;
+        }
+      }
     </style>
   </slot>
 
   <div class="homepage-wrapper">
 
-    <!-- 1. HERO COMPONENT -->
-    <section class="hero-editorial-wrap" aria-label="العروض والمنتجات المميزة">
+    <!-- 0. CINEMATIC ENTRY CURTAIN (Seamless Black-to-Hero Fade) -->
+    <div class="cinematic-entry-curtain" id="cinematicCurtain" aria-hidden="true"></div>
+
+    <!-- 1. HERO COMPONENT: Full-Screen Editorial Hero (100svh) -->
+    <section class="hero-editorial-wrap" id="hero-editorial-section" data-studio-section="hero" data-studio-title="بانر الهيرو الرئيسي" aria-label="العروض والمنتجات المميزة">
       <div class="hero-stage" id="heroStage">
         <div class="hero-slides-track" id="heroSlidesTrack">
           <!-- Default Clean Fallback Slide -->
-          <div class="hero-slide-item active" id="heroFallbackSlide" style="background-image: url('https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg');">
+          <div class="hero-slide-item active" id="heroFallbackSlide">
+            <picture class="hero-slide-picture">
+              <source media="(max-width: 767px)" srcset="https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg">
+              <img class="hero-slide-img" src="https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg" alt="مستحضرات داندي الطبيعية • Dandy Cosmetics" fetchpriority="high" decoding="sync" />
+            </picture>
             <div class="hero-text-card">
               <span class="hero-tagline">مستحضرات داندي الطبيعية • Dandy Cosmetics</span>
               <h1 class="hero-heading">جمال طبيعي مستخلص بعناية فائقة</h1>
@@ -891,11 +1406,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
         </div>
         <div class="hero-controls" id="heroControls" style="display:none;"></div>
+
+        <!-- Scroll down guidance indicator -->
+        <button type="button" class="hero-scroll-hint" id="heroScrollHint" aria-label="التمرير لأسفل" onclick="document.getElementById('sec-trust-strip').scrollIntoView({behavior:'smooth'})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
       </div>
     </section>
 
     <!-- 2. SERVICE / TRUST STRIP -->
-    <section class="trust-strip" aria-label="مميزات متجر داندي">
+    <section class="trust-strip scroll-reveal-up" id="sec-trust-strip" data-studio-section="trust" data-studio-title="شريط المزايا والثقة" data-reveal="up" aria-label="مميزات متجر داندي">
       <div class="home-container">
         <div class="trust-strip-inner" id="trustStripContainer">
           <!-- Item 1 -->
@@ -911,7 +1431,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <!-- Item 2 -->
           <div class="trust-strip-item">
             <div class="trust-icon-box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
             </div>
             <div class="trust-meta">
               <strong>توصيل سريع ومضمون</strong>
@@ -932,8 +1452,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </section>
 
-    <!-- 3. PRIMARY PRODUCT SECTION (Make products appear earlier and more prominently!) -->
-    <section class="home-section" id="primary-products-section" aria-label="المنتجات المميزة">
+    <!-- 3. PRIMARY PRODUCT SECTION (Special Offers Entrance) -->
+    <section class="home-section" id="primary-products-section" data-studio-section="offers" data-studio-title="العروض الخاصة (القسم الأول)" data-reveal="offers" aria-label="المنتجات المميزة">
       <div class="home-container">
         <div class="section-header-row">
           <div class="section-header-titles">
@@ -947,16 +1467,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
 
         <div class="modern-product-grid" id="primaryProductsGrid">
-          <!-- Loaded dynamically from Firebase -->
-          <div style="grid-column:1/-1; text-align:center; padding:40px 0; color:var(--color-muted);">
-            جاري تحضير أفضل منتجات داندي...
+          <!-- Rich Initial Loading Skeleton with Dandy Spinner Wheel -->
+          <div class="dandy-section-loader">
+            <div class="dandy-spinner-ring">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+            <p class="dandy-loader-text">جاري تحضير أفضل عروض داندي...</p>
+            <p class="dandy-loader-subtext">لحظات وتظهر تشكيلتكِ المفضلة</p>
           </div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
         </div>
       </div>
     </section>
 
-    <!-- 4. CATEGORY CONTENT & EDITORIAL PROMO BANNER -->
-    <section class="home-section home-section-tinted" id="sec-categories" aria-label="أقسام المنتجات">
+    <!-- 4. CATEGORY CONTENT (Asymmetric Editorial Masonry & Paired Entrance) -->
+    <section class="home-section home-section-tinted" id="sec-categories" data-studio-section="categories" data-studio-title="التصنيفات والمجموعات" data-reveal="categories" aria-label="أقسام المنتجات">
       <div class="home-container">
         <div class="section-header-row">
           <div class="section-header-titles">
@@ -969,29 +1497,40 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </a>
         </div>
 
-        <div class="category-tiles-grid" id="dynamic-categories">
-          <!-- Populated from Firebase categories -->
+        <div id="dynamic-categories">
+          <!-- Asymmetric Editorial Columns loaded from Firebase categories -->
+          <div class="dandy-section-loader">
+            <div class="dandy-spinner-ring">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+            <p class="dandy-loader-text">جاري تحميل أقسام ومجموعات داندي...</p>
+          </div>
+          <div class="category-skeleton-grid">
+            <div class="skeleton-box category-skeleton-tile"></div>
+            <div class="skeleton-box category-skeleton-tile"></div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- 4b. PROMOTIONAL EDITORIAL BANNER -->
-    <section class="promo-banner-section">
+    <section class="promo-banner-section scroll-reveal-up" id="sec-promo-banner" data-studio-section="promo" data-studio-title="البانر الترويجي التحريري" data-reveal="up">
       <div class="home-container">
         <div class="promo-banner-card">
           <div class="promo-text-side">
-            <span class="promo-eyebrow">تركيبات متخصصة</span>
-            <h3 class="promo-title">روتين العناية المتكامل بجمال ونقاء بشرتكِ</h3>
-            <p class="promo-desc">
+            <span class="promo-eyebrow" id="promo-eyebrow-text">تركيبات متخصصة</span>
+            <h3 class="promo-title" id="promo-title-text">روتين العناية المتكامل بجمال ونقاء بشرتكِ</h3>
+            <p class="promo-desc" id="promo-desc-text">
               اكتشفي تشكيلة داندي الطبيعية للعناية الفائقة، مستخلصة من أجود الزيوت والزهور الطبيعية لتمنحكِ لمسة حريرية وانتعاشاً يدوم.
             </p>
-            <a href="/all-products" class="promo-cta-btn">
-              <span>اكتشفي المجموعة</span>
+            <a href="/all-products" class="promo-cta-btn" id="promo-cta-link">
+              <span id="promo-cta-text">اكتشفي المجموعة</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
             </a>
           </div>
-          <div class="promo-img-side">
+          <div class="promo-img-side" id="promo-img-container">
             <img 
+              id="promo-main-img"
               src="https://res.cloudinary.com/dogk78w9z/image/upload/v1789147704/WhatsApp_Image_2026-07-10_at_8.28.01_PM.jpg" 
               alt="منتجات داندي الطبيعية" 
               loading="lazy" 
@@ -1002,7 +1541,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </section>
 
     <!-- 5. SECOND PRODUCT SECTION -->
-    <section class="home-section" id="secondary-products-section" aria-label="تشكيلة داندي المختارة">
+    <section class="home-section scroll-reveal-up" id="secondary-products-section" data-studio-section="newArrivals" data-studio-title="أحدث المنتجات (القسم الثاني)" data-reveal="up" aria-label="تشكيلة داندي المختارة">
       <div class="home-container">
         <div class="section-header-row">
           <div class="section-header-titles">
@@ -1017,12 +1556,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <div class="modern-product-grid" id="secondaryProductsGrid">
           <!-- Populated from Firebase -->
+          <div class="dandy-section-loader">
+            <div class="dandy-spinner-ring">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+            <p class="dandy-loader-text">جاري تحميل أحدث المنتجات...</p>
+          </div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
+          <div class="product-skeleton-card"><div class="skeleton-box img"></div><div class="skeleton-box title"></div><div class="skeleton-box price"></div><div class="skeleton-box btn"></div></div>
         </div>
       </div>
     </section>
 
     <!-- 6. EDITORIAL BLOG CONTENT -->
-    <section class="home-section home-section-tinted" id="editorial-blog-section" aria-label="مدونة الجمال والعناية">
+    <section class="home-section home-section-tinted scroll-reveal-up" id="editorial-blog-section" data-studio-section="blog" data-studio-title="مقالات المدونة" data-reveal="up" aria-label="مدونة الجمال والعناية">
       <div class="home-container">
         <div class="section-header-row">
           <div class="section-header-titles">
@@ -1037,15 +1586,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <div class="blog-journal-grid" id="homeBlogContainer">
           <!-- Populated dynamically from Firestore articles -->
-          <div style="grid-column:1/-1; text-align:center; padding:30px 0; color:var(--color-muted);">
-            جاري تحضير أحدث مقالات المدونة...
+          <div class="dandy-section-loader">
+            <div class="dandy-spinner-ring">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+            <p class="dandy-loader-text">جاري تحضير أحدث مقالات المدونة...</p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- 7. REVIEWS (Authentic customer feedback screenshots) -->
-    <section class="home-section" id="reviews-section" aria-label="تجارب العميلات">
+    <section class="home-section scroll-reveal-up" id="reviews-section" data-studio-section="reviews" data-studio-title="آراء وتجارب العميلات" data-reveal="up" aria-label="تجارب العميلات">
       <div class="home-container">
         <div class="section-header-row">
           <div class="section-header-titles">
@@ -1060,6 +1612,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         <div class="reviews-preview-grid" id="reviewsContainer">
           <!-- Loaded dynamically from Firebase dynamicReviews -->
+          <div class="dandy-section-loader">
+            <div class="dandy-spinner-ring">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+            <p class="dandy-loader-text">جاري تحميل تجارب وآراء العميلات...</p>
+          </div>
         </div>
       </div>
     </section>
@@ -1077,28 +1635,126 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </div>
 
   <!-- ==========================================================================
+       GSAP + SCROLLTRIGGER ARCHITECTURE INITIALIZATION
+       ========================================================================== -->
+  <script>
+    import { DandyAnimationController } from '../utils/animations';
+
+    const animController = DandyAnimationController.getInstance();
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        animController.init();
+      });
+    } else {
+      animController.init();
+    }
+  </script>
+
+  <!-- ==========================================================================
        SCRIPTS: Preserving all Business Logic, Cart, Firebase & Pixel Tracking
        ========================================================================== -->
   <script is:inline>
     const db = window.db || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
     let globalProductsCache = {};
 
+    function applyHomepageData(data) {
+      if (!data) return;
+
+      // 1. Hero
+      if (data.dynamicHero && data.dynamicHero.length) {
+        renderHero(data.dynamicHero);
+      }
+
+      // 2. Trust Strip
+      if (data.trust) {
+        renderTrust(data.trust);
+      }
+
+      // 3. Dynamic Product Sections (Primary & Secondary)
+      if (data.dynamicSections) {
+        renderDynamicSections(data.dynamicSections);
+      } else {
+        fallbackRenderSections();
+      }
+
+      // 4. Promo Banner
+      if (data.promoBanner) {
+        renderPromoBanner(data.promoBanner);
+      }
+
+      // 5. Reviews
+      if (data.dynamicReviews) {
+        renderReviews(data.dynamicReviews);
+      }
+
+      // 6. Section Order, Visibility & Custom Sections
+      if (data.sectionOrder || data.sectionsVisibility || data.customSections) {
+        applySectionOrderAndVisibility(data.sectionOrder, data.sectionsVisibility, data.customSections);
+      }
+
+      if (window.DandyAnimationController) {
+        window.DandyAnimationController.getInstance().refresh();
+      }
+    }
+
     function initHomepage() {
+      // Coordinated animation refresh
+      if (window.DandyAnimationController) {
+        window.DandyAnimationController.getInstance().init();
+      }
+
+      // Instant local cache hydration for sub-millisecond perceived performance
+      try {
+        const cachedProducts = localStorage.getItem('dandy_products_cache');
+        const cachedHp = localStorage.getItem('dandy_homepage_cache');
+        if (cachedProducts) {
+          globalProductsCache = JSON.parse(cachedProducts);
+        }
+        if (cachedHp) {
+          applyHomepageData(JSON.parse(cachedHp));
+        }
+      } catch (e) {
+        console.warn("Cache hydration note:", e);
+      }
+
+      // Safety reveal for scroll elements to guarantee immediate visibility
+      setTimeout(() => {
+        document.querySelectorAll('.scroll-reveal-up').forEach(el => {
+          el.classList.add('is-revealed');
+        });
+      }, 400);
+
       if (!db) {
         console.warn("Database not initialized yet");
+        fallbackRenderSections();
         return;
       }
 
-      // 1. Fetch products cache
-      db.ref('products').once('value').then(snap => {
-        if (snap.exists()) {
-          globalProductsCache = snap.val();
+      // Fetch products and homepage simultaneously in parallel
+      Promise.allSettled([
+        db.ref('products').once('value'),
+        db.ref('homepage').once('value')
+      ]).then(([prodRes, hpRes]) => {
+        if (prodRes.status === 'fulfilled' && prodRes.value && prodRes.value.exists()) {
+          globalProductsCache = prodRes.value.val();
+          try {
+            localStorage.setItem('dandy_products_cache', JSON.stringify(globalProductsCache));
+          } catch(e) {}
         }
-        // Load homepage dynamic layout
-        loadHomepageDynamic();
+
+        if (hpRes.status === 'fulfilled' && hpRes.value && hpRes.value.exists()) {
+          const hpData = hpRes.value.val();
+          try {
+            localStorage.setItem('dandy_homepage_cache', JSON.stringify(hpData));
+          } catch(e) {}
+          applyHomepageData(hpData);
+        } else {
+          fallbackRenderSections();
+        }
       }).catch(err => {
-        console.error("Products cache error:", err);
-        loadHomepageDynamic();
+        console.error("Parallel fetch error:", err);
+        fallbackRenderSections();
       });
 
       // 2. Load Categories
@@ -1118,30 +1774,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!db) return;
 
       db.ref('homepage').once('value').then(snap => {
-        if (!snap.exists()) return;
-        const data = snap.val();
-
-        // 1. Hero
-        if (data.dynamicHero && data.dynamicHero.length) {
-          renderHero(data.dynamicHero);
-        }
-
-        // 2. Trust Strip
-        if (data.trust) {
-          renderTrust(data.trust);
-        }
-
-        // 3. Dynamic Product Sections (Primary & Secondary)
-        if (data.dynamicSections) {
-          renderDynamicSections(data.dynamicSections);
-        } else {
+        if (!snap.exists()) {
           fallbackRenderSections();
+          return;
         }
-
-        // 4. Reviews
-        if (data.dynamicReviews) {
-          renderReviews(data.dynamicReviews);
-        }
+        applyHomepageData(snap.val());
       }).catch(err => {
         console.error("Homepage dynamic load error:", err);
         fallbackRenderSections();
@@ -1166,10 +1803,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const subtitle = slide.subtitle || 'تركيبات مصرية طبيعية 100% غنية بخلاصات الزيوت العضوية لعناية متكاملة ببشرتكِ وشعركِ.';
         const btnText = slide.buttonText || 'تسوقي الآن';
         const btnLink = slide.link || '/all-products';
-        const imgUrl = slide.image || 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg';
+        
+        // Responsive Image Resolution with Backward Compatibility
+        const fallbackDefault = 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg';
+        const desktopSrc = slide.desktopImage || slide.image || slide.mobileImage || fallbackDefault;
+        const mobileSrc = slide.mobileImage || slide.desktopImage || slide.image || fallbackDefault;
+        const priorityAttr = idx === 0 ? 'fetchpriority="high" decoding="sync"' : 'loading="lazy" decoding="async"';
 
         slidesHtml += `
-          <div class="hero-slide-item ${isActive}" data-slide-index="${idx}" style="background-image: url('${imgUrl}');">
+          <div class="hero-slide-item ${isActive}" data-slide-index="${idx}">
+            <picture class="hero-slide-picture">
+              <source media="(max-width: 767px)" srcset="${mobileSrc}">
+              <img class="hero-slide-img" src="${desktopSrc}" alt="${escapeHtml(title || 'مستحضرات داندي الطبيعية • Dandy Cosmetics')}" ${priorityAttr} />
+            </picture>
             <div class="hero-text-card">
               <span class="hero-tagline">مستحضرات داندي الطبيعية • Dandy Cosmetics</span>
               <h1 class="hero-heading">${escapeHtml(title)}</h1>
@@ -1581,39 +2227,518 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     /* --------------------------------------------------------------------------
-       4. CATEGORIES RENDERER
+       4. CATEGORIES RENDERER (Asymmetric Editorial Layout)
        -------------------------------------------------------------------------- */
-    function loadCategories() {
-      if (!db) return;
+    function buildEditorialCategoryTile(c, heightClass, defaultTag) {
+      const name = c.name || 'قسم داندي';
+      const tag = c.tag || defaultTag || 'تشكيلة مميزة';
+      const fallbackImg = 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147704/WhatsApp_Image_2026-07-10_at_8.28.01_PM.jpg';
+      
+      // Backward-compatible responsive image resolution
+      const desktopSrc = c.desktopImage || c.image || c.mobileImage || fallbackImg;
+      const mobileSrc = c.mobileImage || c.desktopImage || c.image || fallbackImg;
+      const link = `/all-products?category=${encodeURIComponent(name)}`;
+
+      return `
+        <a href="${link}" class="category-editorial-tile ${heightClass}" aria-label="${escapeHtml(name)}">
+          <div class="category-tile-bg">
+            <picture class="category-tile-picture">
+              <source media="(max-width: 767px)" srcset="${escapeHtml(mobileSrc)}" />
+              <img class="category-tile-img" src="${escapeHtml(desktopSrc)}" alt="${escapeHtml(name)} - داندي" loading="lazy" decoding="async" />
+            </picture>
+          </div>
+        </a>
+      `;
+    }
+
+    function renderCategoriesList(categoriesInput) {
       const catContainer = document.getElementById('dynamic-categories');
       if (!catContainer) return;
 
+      let categories = [];
+      if (Array.isArray(categoriesInput)) {
+        categories = categoriesInput;
+      } else if (categoriesInput && typeof categoriesInput === 'object') {
+        categories = Object.values(categoriesInput);
+      }
+
+      if (!categories || !categories.length) {
+        categories = [
+          {
+            name: 'العناية بالبشرة',
+            tag: 'ترطيب ونضارة',
+            image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=80',
+            desktopImage: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1400&q=80',
+            mobileImage: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=80',
+            layoutVariant: 'wide'
+          },
+          {
+            name: 'العناية بالشعر',
+            tag: 'تغذية ولمعان',
+            image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=700&q=80',
+            desktopImage: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80',
+            mobileImage: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=700&q=80',
+            layoutVariant: 'tall'
+          },
+          {
+            name: 'الزيوت الطبيعية',
+            tag: 'مستخلصات عضوية',
+            image: 'https://images.unsplash.com/photo-1608248597359-251f153eeeb0?auto=format&fit=crop&w=700&q=80',
+            desktopImage: 'https://images.unsplash.com/photo-1608248597359-251f153eeeb0?auto=format&fit=crop&w=1400&q=80',
+            mobileImage: 'https://images.unsplash.com/photo-1608248597359-251f153eeeb0?auto=format&fit=crop&w=700&q=80',
+            layoutVariant: 'large'
+          },
+          {
+            name: 'مجموعات التوفير',
+            tag: 'روتين متكامل',
+            image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=80',
+            desktopImage: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1100&q=80',
+            mobileImage: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=80',
+            layoutVariant: 'small'
+          }
+        ];
+      }
+
+      let rightColHtml = '';
+      let leftColHtml = '';
+
+      categories.forEach((cat, index) => {
+        let hClass;
+        const variant = cat.layoutVariant || 'auto';
+
+        if (variant === 'wide' || variant === 'cat-tile-h250') {
+          hClass = 'cat-tile-h250';
+        } else if (variant === 'large' || variant === 'feature' || variant === 'cat-tile-h350') {
+          hClass = 'cat-tile-h350';
+        } else if (variant === 'tall' || variant === 'cat-tile-h360') {
+          hClass = 'cat-tile-h360';
+        } else if (variant === 'small' || variant === 'compact' || variant === 'cat-tile-h240') {
+          hClass = 'cat-tile-h240';
+        } else {
+          // Auto / alternating masonry fallback
+          if (index % 2 === 0) {
+            hClass = (Math.floor(index / 2) % 2 === 0) ? 'cat-tile-h250' : 'cat-tile-h350';
+          } else {
+            hClass = (Math.floor(index / 2) % 2 === 0) ? 'cat-tile-h360' : 'cat-tile-h240';
+          }
+        }
+
+        if (index % 2 === 0) {
+          rightColHtml += buildEditorialCategoryTile(cat, hClass, 'قسم متميز');
+        } else {
+          leftColHtml += buildEditorialCategoryTile(cat, hClass, 'روتين العناية');
+        }
+      });
+
+      catContainer.innerHTML = `
+        <div class="category-editorial-container">
+          <div class="category-masonry-col cat-col-right">
+            ${rightColHtml}
+          </div>
+          <div class="category-masonry-col cat-col-left">
+            ${leftColHtml}
+          </div>
+        </div>
+      `;
+
+      if (window.DandyAnimationController) {
+        window.DandyAnimationController.getInstance().animateCategories();
+        window.DandyAnimationController.getInstance().refresh();
+      }
+    }
+
+    function loadCategories() {
+      if (!db) {
+        renderCategoriesList([]);
+        return;
+      }
+
       db.ref('categories').once('value').then(snap => {
         if (!snap.exists()) {
-          catContainer.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--color-muted);">لا توجد أقسام مسجلة.</div>';
+          renderCategoriesList([]);
           return;
         }
 
-        let html = '';
+        const categories = [];
         snap.forEach(child => {
-          const c = child.val();
-          html += `
-            <a href="/all-products?category=${encodeURIComponent(c.name)}" class="category-tile">
-              <div class="category-tile-thumb">
-                <img src="${c.image || '/assets/images/logo.png'}" alt="${escapeHtml(c.name)} - داندي" loading="lazy" />
-              </div>
-              <div class="category-tile-label">
-                <span class="category-tile-name">${escapeHtml(c.name)}</span>
-                ${c.count ? `<span class="category-tile-count">${c.count} منتجات</span>` : ''}
-              </div>
-            </a>
-          `;
+          categories.push(child.val());
         });
 
-        catContainer.innerHTML = html;
+        renderCategoriesList(categories);
       }).catch(err => {
         console.error("Categories error:", err);
+        renderCategoriesList([]);
       });
+    }
+
+    /* --------------------------------------------------------------------------
+       4b. PROMOTIONAL EDITORIAL BANNER RENDERER
+       -------------------------------------------------------------------------- */
+    function renderPromoBanner(banner) {
+      if (!banner) return;
+      const eyebrowEl = document.getElementById('promo-eyebrow-text');
+      const titleEl = document.getElementById('promo-title-text');
+      const descEl = document.getElementById('promo-desc-text');
+      const ctaLinkEl = document.getElementById('promo-cta-link');
+      const ctaTextEl = document.getElementById('promo-cta-text');
+      const imgEl = document.getElementById('promo-main-img');
+
+      if (eyebrowEl && banner.eyebrow !== undefined) eyebrowEl.textContent = banner.eyebrow;
+      if (titleEl && banner.title !== undefined) titleEl.textContent = banner.title;
+      if (descEl && banner.desc !== undefined) descEl.textContent = banner.desc;
+      if (ctaTextEl && banner.ctaText !== undefined) ctaTextEl.textContent = banner.ctaText;
+      if (ctaLinkEl && banner.ctaLink !== undefined) ctaLinkEl.setAttribute('href', banner.ctaLink);
+      if (imgEl && banner.image) imgEl.setAttribute('src', banner.image);
+    }
+
+    /* --------------------------------------------------------------------------
+       4c. SECTION ORDER & VISIBILITY & CUSTOM SECTIONS SYNCHRONIZATION
+       -------------------------------------------------------------------------- */
+    window.toggleFaqItem = function(btn) {
+      const item = btn.closest('.faq-item-box');
+      if (item) {
+        item.classList.toggle('active');
+      }
+    };
+
+    function renderCustomStorySection(sec) {
+      return `
+        <div class="home-container">
+          <div class="custom-story-card">
+            <div class="custom-story-quote-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+            </div>
+            ${sec.title ? `<h2 class="custom-story-heading">${escapeHtml(sec.title)}</h2>` : ''}
+            ${sec.content ? `<p class="custom-story-text">${escapeHtml(sec.content)}</p>` : ''}
+            ${sec.author ? `<div class="custom-story-author">${escapeHtml(sec.author)}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomFaqSection(sec) {
+      const items = Array.isArray(sec.items) ? sec.items : [];
+      let itemsHtml = '';
+      items.forEach((item, idx) => {
+        itemsHtml += `
+          <div class="faq-item-box ${idx === 0 ? 'active' : ''}">
+            <button type="button" class="faq-question-btn" onclick="window.toggleFaqItem(this)">
+              <span>${escapeHtml(item.q || 'سؤال شائع')}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="faq-answer-pane">
+              <p>${escapeHtml(item.a || '')}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      return `
+        <div class="home-container">
+          <div class="section-header-row">
+            <div class="section-header-titles">
+              ${sec.subtitle ? `<span class="section-eyebrow">${escapeHtml(sec.subtitle)}</span>` : ''}
+              <h2 class="section-main-title">${escapeHtml(sec.title || 'الأسئلة الشائعة')}</h2>
+            </div>
+          </div>
+          <div class="custom-faq-wrap">
+            ${itemsHtml || '<p style="text-align:center; color:var(--color-muted);">لا توجد أسئلة مضافة بعد.</p>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomVideoSection(sec) {
+      let videoEmbed = '';
+      const url = sec.videoUrl || '';
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        let embedUrl = url;
+        if (url.includes('watch?v=')) {
+          embedUrl = url.replace('watch?v=', 'embed/');
+        } else if (url.includes('youtu.be/')) {
+          embedUrl = url.replace('youtu.be/', 'www.youtube.com/embed/');
+        }
+        videoEmbed = `<iframe src="${embedUrl}" title="${escapeHtml(sec.title || 'فيديو')}" allowfullscreen loading="lazy"></iframe>`;
+      } else if (url.endsWith('.mp4') || url.includes('cloudinary') || url.includes('storage')) {
+        videoEmbed = `<video controls playsinline poster="${sec.poster || ''}"><source src="${url}" type="video/mp4"></video>`;
+      } else if (url) {
+        videoEmbed = `<iframe src="${url}" title="${escapeHtml(sec.title || 'فيديو')}" allowfullscreen loading="lazy"></iframe>`;
+      } else {
+        videoEmbed = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#9ca3af; font-size:0.9rem;">أدخلي رابط الفيديو لعرضه هنا</div>`;
+      }
+
+      return `
+        <div class="home-container">
+          ${sec.title ? `
+            <div class="section-header-row">
+              <div class="section-header-titles">
+                ${sec.subtitle ? `<span class="section-eyebrow">${escapeHtml(sec.subtitle)}</span>` : ''}
+                <h2 class="section-main-title">${escapeHtml(sec.title)}</h2>
+              </div>
+            </div>
+          ` : ''}
+          <div class="custom-video-card">
+            ${videoEmbed}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomGallerySection(sec) {
+      const items = Array.isArray(sec.items) ? sec.items : [];
+      let itemsHtml = '';
+      items.forEach(item => {
+        if (!item.image) return;
+        itemsHtml += `
+          <a href="${item.link || '#'}" class="custom-gallery-item">
+            <img src="${item.image}" alt="${escapeHtml(item.title || 'معرض داندي')}" loading="lazy" />
+            ${item.title ? `<div class="custom-gallery-caption"><span>${escapeHtml(item.title)}</span></div>` : ''}
+          </a>
+        `;
+      });
+
+      return `
+        <div class="home-container">
+          <div class="section-header-row">
+            <div class="section-header-titles">
+              ${sec.subtitle ? `<span class="section-eyebrow">${escapeHtml(sec.subtitle)}</span>` : ''}
+              <h2 class="section-main-title">${escapeHtml(sec.title || 'معرض الصور المميزة')}</h2>
+            </div>
+          </div>
+          <div class="custom-gallery-grid">
+            ${itemsHtml || '<p style="grid-column:1/-1; text-align:center; color:var(--color-muted);">أضيفي صوراً لعرضها هنا.</p>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomBannerSection(sec) {
+      return `
+        <div class="home-container">
+          <div class="promo-banner-card">
+            <div class="promo-text-side">
+              ${sec.eyebrow ? `<span class="promo-eyebrow">${escapeHtml(sec.eyebrow)}</span>` : ''}
+              <h3 class="promo-title">${escapeHtml(sec.title || 'بانر ترويجي')}</h3>
+              ${sec.desc ? `<p class="promo-desc">${escapeHtml(sec.desc)}</p>` : ''}
+              ${sec.ctaLink ? `
+                <a href="${sec.ctaLink}" class="promo-cta-btn">
+                  <span>${escapeHtml(sec.ctaText || 'تسوقي الآن')}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </a>
+              ` : ''}
+            </div>
+            <div class="promo-img-side">
+              <img src="${sec.image || 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147704/WhatsApp_Image_2026-07-10_at_8.28.01_PM.jpg'}" alt="${escapeHtml(sec.title || 'بانر داندي')}" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomProductsGridSection(sec) {
+      let prods = [];
+      if (sec.productSource === 'offers') {
+        for (let key in globalProductsCache) {
+          const p = globalProductsCache[key];
+          if ((p.onSale || p.discount) && !p.isHidden) prods.push({ ...p, id: key });
+        }
+      } else if (sec.productSource === 'bestsellers') {
+        for (let key in globalProductsCache) {
+          const p = globalProductsCache[key];
+          if (p.bestSeller && !p.isHidden) prods.push({ ...p, id: key });
+        }
+      } else if (sec.productSource === 'manual' && sec.manualProducts) {
+        for (let key in sec.manualProducts) {
+          if (sec.manualProducts[key] && globalProductsCache[key] && !globalProductsCache[key].isHidden) {
+            prods.push({ ...globalProductsCache[key], id: key });
+          }
+        }
+      } else {
+        for (let key in globalProductsCache) {
+          const p = globalProductsCache[key];
+          if (!p.isHidden) prods.push({ ...p, id: key });
+        }
+      }
+
+      const displayProds = prods.slice(0, sec.limit || 8);
+      let cardsHtml = '';
+      if (displayProds.length) {
+        displayProds.forEach(p => {
+          cardsHtml += buildProductCardHtml(p);
+        });
+      } else {
+        cardsHtml = '<div style="grid-column:1/-1; text-align:center; padding:30px 0; color:var(--color-muted);">لا توجد منتجات متاحة بهذا القسم.</div>';
+      }
+
+      return `
+        <div class="home-container">
+          <div class="section-header-row">
+            <div class="section-header-titles">
+              ${sec.subtitle ? `<span class="section-eyebrow">${escapeHtml(sec.subtitle)}</span>` : ''}
+              <h2 class="section-main-title">${escapeHtml(sec.title || 'منتجات مختارة')}</h2>
+            </div>
+            ${sec.linkUrl ? `
+              <a href="${sec.linkUrl}" class="section-link-more">
+                <span>${escapeHtml(sec.linkText || 'عرض الكل')}</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+              </a>
+            ` : ''}
+          </div>
+          <div class="modern-product-grid">
+            ${cardsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomTrustBadgesSection(sec) {
+      const items = Array.isArray(sec.items) ? sec.items : [];
+      let itemsHtml = '';
+      items.forEach(item => {
+        let iconHtml = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>';
+        if (item.icon && item.icon.includes('<svg')) {
+          iconHtml = item.icon;
+        } else if (item.icon && item.icon.includes('fa-')) {
+          iconHtml = `<i class="${item.icon}"></i>`;
+        }
+
+        itemsHtml += `
+          <div class="trust-strip-item">
+            <div class="trust-icon-box">${iconHtml}</div>
+            <div class="trust-meta">
+              <strong>${escapeHtml(item.title || '')}</strong>
+              <p>${escapeHtml(item.desc || '')}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      return `
+        <div class="home-container">
+          <div class="trust-strip-inner">
+            ${itemsHtml || '<p style="grid-column:1/-1; text-align:center; color:var(--color-muted);">أضيفي بطاقات الثقة</p>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function createCustomSectionElement(sec) {
+      const secEl = document.createElement('section');
+      secEl.id = sec.id;
+      secEl.setAttribute('data-studio-section', sec.id);
+      secEl.setAttribute('data-studio-title', sec.title || 'قسم مخصص');
+      secEl.className = 'home-section scroll-reveal-up dynamic-custom-section is-revealed';
+
+      let inner = '';
+      if (sec.type === 'story') {
+        inner = renderCustomStorySection(sec);
+      } else if (sec.type === 'faq') {
+        inner = renderCustomFaqSection(sec);
+      } else if (sec.type === 'video') {
+        inner = renderCustomVideoSection(sec);
+      } else if (sec.type === 'gallery' || sec.type === 'imageGallery') {
+        inner = renderCustomGallerySection(sec);
+      } else if (sec.type === 'banner' || sec.type === 'promo') {
+        inner = renderCustomBannerSection(sec);
+      } else if (sec.type === 'products' || sec.type === 'grid') {
+        inner = renderCustomProductsGridSection(sec);
+      } else if (sec.type === 'trust') {
+        inner = renderCustomTrustBadgesSection(sec);
+      } else {
+        inner = `<div class="home-container"><h2 class="section-main-title">${escapeHtml(sec.title || 'قسم مخصص')}</h2></div>`;
+      }
+
+      secEl.innerHTML = inner;
+
+      // Attach studio inspection badge if in studio mode
+      if (document.body.classList.contains('studio-preview-active')) {
+        const title = sec.title || 'قسم مخصص';
+        const badge = document.createElement('div');
+        badge.className = 'studio-inspect-badge';
+        badge.innerHTML = `<span class="dot"></span><span>تعديل: ${escapeHtml(title)}</span>`;
+        secEl.appendChild(badge);
+
+        secEl.addEventListener('click', (e) => {
+          if (!document.body.classList.contains('studio-edit-mode')) return;
+          if (e.target.closest('#homeLightbox') || e.target.closest('.lightbox-content')) return;
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          const sectionId = secEl.getAttribute('data-studio-section');
+          document.querySelectorAll('[data-studio-section]').forEach(s => s.classList.remove('studio-active-section'));
+          secEl.classList.add('studio-active-section');
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+              type: 'STUDIO_SECTION_CLICKED',
+              sectionId: sectionId
+            }, '*');
+          }
+        }, true);
+      }
+
+      return secEl;
+    }
+
+    function applySectionOrderAndVisibility(orderArray, visibilityMap, customSections) {
+      const wrapper = document.querySelector('.homepage-wrapper');
+      if (!wrapper) return;
+
+      const customSectionsMap = {};
+      if (Array.isArray(customSections)) {
+        customSections.forEach(s => { if (s && s.id) customSectionsMap[s.id] = s; });
+      } else if (customSections && typeof customSections === 'object') {
+        for (let k in customSections) {
+          const s = customSections[k];
+          if (s) customSectionsMap[s.id || k] = s;
+        }
+      }
+
+      // Reorder and inject sections
+      if (Array.isArray(orderArray) && orderArray.length) {
+        orderArray.forEach(key => {
+          let secEl = wrapper.querySelector(`[data-studio-section="${key}"]`);
+          
+          // If it's a custom section that does not exist in DOM yet, create and insert it
+          if (!secEl && customSectionsMap[key]) {
+            secEl = createCustomSectionElement(customSectionsMap[key]);
+            wrapper.appendChild(secEl);
+          } else if (secEl && customSectionsMap[key]) {
+            // Update existing custom section content
+            const updatedEl = createCustomSectionElement(customSectionsMap[key]);
+            secEl.replaceWith(updatedEl);
+            secEl = updatedEl;
+          }
+
+          if (secEl) {
+            wrapper.appendChild(secEl);
+          }
+        });
+      }
+
+      // Remove any custom section elements that are no longer in customSectionsMap or order
+      const existingCustomEls = wrapper.querySelectorAll('.dynamic-custom-section');
+      existingCustomEls.forEach(el => {
+        const id = el.getAttribute('data-studio-section');
+        if (id && (!customSectionsMap[id] || (orderArray && !orderArray.includes(id)))) {
+          el.remove();
+        }
+      });
+
+      // Adjust visibility
+      if (visibilityMap && typeof visibilityMap === 'object') {
+        for (const key in visibilityMap) {
+          const secEl = wrapper.querySelector(`[data-studio-section="${key}"]`);
+          if (secEl) {
+            secEl.style.display = visibilityMap[key] === false ? 'none' : '';
+          }
+        }
+      }
+
+      if (window.DandyAnimationController) {
+        window.DandyAnimationController.getInstance().refresh();
+      }
     }
 
     /* --------------------------------------------------------------------------
@@ -1673,6 +2798,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (validCount > 0) {
           container.innerHTML = html;
+          if (window.DandyAnimationController) {
+            window.DandyAnimationController.getInstance().refresh();
+          }
         } else {
           document.getElementById('editorial-blog-section')?.style.setProperty('display', 'none');
         }
@@ -1706,6 +2834,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       if (html) {
         container.innerHTML = html;
+        if (window.DandyAnimationController) {
+          window.DandyAnimationController.getInstance().refresh();
+        }
       }
     }
 
@@ -1826,5 +2957,179 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
+
+    /* ==========================================================================
+       HOMEPAGE STUDIO PREVIEW BRIDGE
+       Enables live interactive editing, click-to-select, and viewport synchronization
+       ========================================================================== */
+    (function initStudioPreviewBridge() {
+      const isStudio = new URLSearchParams(window.location.search).has('studio_preview') || window.self !== window.top;
+      if (!isStudio) return;
+
+      document.body.classList.add('studio-preview-active', 'studio-edit-mode');
+
+      // Inject Studio Preview Styling
+      const style = document.createElement('style');
+      style.id = 'studio-preview-bridge-styles';
+      style.textContent = `
+        body.studio-preview-active {
+          user-select: auto;
+        }
+        body.studio-edit-mode [data-studio-section] {
+          position: relative;
+          cursor: pointer;
+          transition: outline 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+        body.studio-edit-mode [data-studio-section]:hover {
+          outline: 2px dashed #fe5d9f !important;
+          outline-offset: -2px;
+        }
+        body.studio-edit-mode [data-studio-section].studio-active-section {
+          outline: 3px solid #fe5d9f !important;
+          outline-offset: -3px;
+          box-shadow: 0 0 0 4px rgba(254, 93, 159, 0.25) !important;
+        }
+        .studio-inspect-badge {
+          position: absolute;
+          top: 10px;
+          right: 14px;
+          background: #111827;
+          color: #ffffff;
+          font-family: 'Cairo', sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 4px 10px;
+          border-radius: 6px;
+          z-index: 9999;
+          display: none;
+          align-items: center;
+          gap: 6px;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+          pointer-events: none;
+          direction: rtl;
+        }
+        .studio-inspect-badge span.dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #fe5d9f;
+        }
+        body.studio-edit-mode [data-studio-section]:hover > .studio-inspect-badge,
+        body.studio-edit-mode [data-studio-section].studio-active-section > .studio-inspect-badge {
+          display: flex;
+        }
+        /* Clean preview mode hides outlines */
+        body.studio-preview-mode [data-studio-section] {
+          outline: none !important;
+          box-shadow: none !important;
+          cursor: default;
+        }
+        body.studio-preview-mode .studio-inspect-badge {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Attach hover/click badges and click handlers to sections
+      const sections = document.querySelectorAll('[data-studio-section]');
+      sections.forEach(sec => {
+        const title = sec.getAttribute('data-studio-title') || 'قسم بالصفحة الرئيسية';
+        const badge = document.createElement('div');
+        badge.className = 'studio-inspect-badge';
+        badge.innerHTML = `<span class="dot"></span><span>تعديل: ${title}</span>`;
+        sec.appendChild(badge);
+
+        sec.addEventListener('click', (e) => {
+          if (!document.body.classList.contains('studio-edit-mode')) return;
+          // Don't intercept if lightbox or internal modal was clicked
+          if (e.target.closest('#homeLightbox') || e.target.closest('.lightbox-content')) return;
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          const sectionId = sec.getAttribute('data-studio-section');
+          highlightSection(sectionId);
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+              type: 'STUDIO_SECTION_CLICKED',
+              sectionId: sectionId
+            }, '*');
+          }
+        }, true);
+      });
+
+      function highlightSection(sectionId) {
+        document.querySelectorAll('[data-studio-section]').forEach(s => s.classList.remove('studio-active-section'));
+        if (!sectionId) return;
+        const target = document.querySelector(`[data-studio-section="${sectionId}"]`);
+        if (target) {
+          target.classList.add('studio-active-section');
+        }
+      }
+
+      function scrollToSection(sectionId) {
+        const target = document.querySelector(`[data-studio-section="${sectionId}"]`);
+        if (target) {
+          highlightSection(sectionId);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
+      // Handle messages from Studio Editor Parent
+      window.addEventListener('message', (event) => {
+        const data = event.data;
+        if (!data || typeof data !== 'object') return;
+
+        if (data.type === 'STUDIO_SELECT_SECTION') {
+          scrollToSection(data.sectionId);
+        } else if (data.type === 'STUDIO_SET_MODE') {
+          if (data.mode === 'preview') {
+            document.body.classList.remove('studio-edit-mode');
+            document.body.classList.add('studio-preview-mode');
+          } else {
+            document.body.classList.remove('studio-preview-mode');
+            document.body.classList.add('studio-edit-mode');
+          }
+        } else if (data.type === 'STUDIO_RELOAD') {
+          loadHomepageDynamic();
+          loadCategories();
+        } else if (data.type === 'STUDIO_UPDATE_STATE') {
+          // In-memory live update of components without requiring Firebase writes
+          const state = data.state;
+          if (!state) return;
+
+          if (state.hero && state.hero.length) {
+            renderHero(state.hero);
+          }
+          if (state.trust) {
+            renderTrust(state.trust);
+          }
+          if (state.sections) {
+            renderDynamicSections(state.sections);
+          }
+          if (state.promoBanner) {
+            renderPromoBanner(state.promoBanner);
+          }
+          if (state.categories) {
+            renderCategoriesList(state.categories);
+          }
+          if (state.reviews) {
+            renderReviews(state.reviews);
+          }
+          if (state.sectionOrder || state.sectionsVisibility || state.customSections) {
+            applySectionOrderAndVisibility(state.sectionOrder, state.sectionsVisibility, state.customSections);
+          }
+          if (window.DandyAnimationController) {
+            window.DandyAnimationController.getInstance().refresh();
+          }
+        }
+      });
+
+      // Signal to Studio parent that preview is mounted
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'STUDIO_PREVIEW_READY' }, '*');
+      }
+    })();
   </script>
 </BaseLayout>
