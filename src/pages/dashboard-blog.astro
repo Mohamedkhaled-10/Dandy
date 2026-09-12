@@ -3,9 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="مدير المقالات والمدونة | لوحة داندي"
+  title="إدارة مقالات المدونة | Dandy Operations"
   description="إدارة مقالات مدونة داندي التجميلية وإضافة وتعديل مقالات روتين العناية والجمال"
   robots="noindex, nofollow"
+  showHeader={false}
+  showFooter={false}
   showDashboardNav={true}
 >
   <slot name="head" slot="head">
@@ -13,16 +15,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js"></script>
     <style is:global>
       .manager-section {
-        padding: 130px 0 80px;
+        padding: 32px 20px 80px;
+        max-width: 1400px;
+        margin: 0 auto;
       }
 
       .manager-layout {
         display: grid;
-        grid-template-columns: 1fr 1.5fr;
-        gap: 30px;
+        grid-template-columns: 480px 1fr;
+        gap: 24px;
+        align-items: start;
       }
 
-      @media (max-width: 900px) {
+      @media (max-width: 1024px) {
         .manager-layout {
           grid-template-columns: 1fr;
         }
@@ -30,103 +35,109 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       .manager-card {
         background: var(--color-surface, #ffffff);
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-lg, 16px);
-        padding: 30px;
-        box-shadow: var(--shadow-sm, 0 4px 10px rgba(0,0,0,0.03));
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: var(--border-radius-md, 8px);
+        padding: 20px;
       }
 
       .manager-card h3 {
-        font-size: 1.3rem;
+        font-size: 1.15rem;
         font-weight: 800;
-        color: var(--color-primary, #333);
-        margin-bottom: 20px;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        color: var(--color-primary, #111827);
+        margin-bottom: 16px;
+        border-bottom: 1px solid var(--border-light, #f3f4f6);
         padding-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .form-row {
         display: flex;
-        gap: 16px;
-        margin-bottom: 16px;
+        gap: 12px;
+        margin-bottom: 14px;
       }
 
       .form-group-admin {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
       }
 
       .form-group-admin label {
-        font-weight: 700;
-        font-size: 0.85rem;
-        color: var(--color-muted, #777);
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--color-muted, #4b5563);
       }
 
       .form-group-admin input, .form-group-admin select, .form-group-admin textarea {
-        padding: 10px 14px;
-        border: 1px solid var(--border-light, #eaeaea);
-        border-radius: var(--border-radius-sm, 8px);
-        font-size: 0.9rem;
+        padding: 8px 12px;
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: 6px;
+        font-size: 0.85rem;
         outline: none;
-        transition: var(--transition-fast, 0.2s);
+        transition: var(--transition-fast, 0.15s ease);
         background: #fff;
         font-family: inherit;
       }
 
       .form-group-admin input:focus, .form-group-admin select:focus, .form-group-admin textarea:focus {
-        border-color: var(--color-blush, #DB2777);
+        border-color: var(--color-primary, #111827);
       }
 
       .admin-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
       }
 
       .admin-table th {
-        background: var(--color-surface-soft, #fcfcfc);
-        padding: 12px 10px;
-        font-weight: 800;
+        background: var(--color-surface-soft, #f9fafb);
+        padding: 10px 12px;
+        font-weight: 700;
         text-align: right;
-        color: var(--color-muted, #777);
-        border-bottom: 1px solid var(--border-light, #eaeaea);
+        color: var(--color-muted, #4b5563);
+        border-bottom: 1px solid var(--border-light, #e5e7eb);
       }
 
       .admin-table td {
         padding: 12px 10px;
-        border-bottom: 1px solid var(--border-light, #eaeaea);
+        border-bottom: 1px solid var(--border-light, #f3f4f6);
+        vertical-align: middle;
       }
 
       .action-badge-btn {
-        padding: 6px 12px;
-        font-weight: 700;
-        font-size: 0.8rem;
-        border-radius: 99px;
-        border: none;
+        padding: 5px 10px;
+        font-weight: 600;
+        font-size: 0.78rem;
+        border-radius: 4px;
+        border: 1px solid var(--border-light, #e5e7eb);
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        transition: var(--transition-fast, 0.2s);
+        gap: 5px;
+        font-family: inherit;
+        background: #fff;
+        color: var(--color-primary, #374151);
+        transition: var(--transition-fast, 0.15s ease);
       }
 
-      .badge-btn-edit { background: var(--color-gold-cream, #fdf5e6); color: var(--color-gold, #c28834); }
-      .badge-btn-del { background: rgba(220,100,100,0.1); color: var(--color-danger, #c62828); }
-      .badge-btn-del:hover { background: var(--color-danger, #c62828); color: #fff; }
+      .badge-btn-edit:hover { border-color: var(--color-primary, #111827); color: var(--color-primary, #111827); }
+      .badge-btn-del { background: #fef2f2; color: #b91c1c; border-color: #fee2e2; }
+      .badge-btn-del:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
 
       /* Quill WYSIWYG Editor Styling */
       .quill-editor-wrapper {
         background: #fff;
-        border-radius: var(--border-radius-sm, 8px);
+        border-radius: 6px;
         overflow: hidden;
-        border: 1px solid var(--border-light, #eaeaea);
+        border: 1px solid var(--border-light, #e5e7eb);
       }
       .quill-editor-wrapper .ql-toolbar.ql-snow {
         border: none;
-        border-bottom: 1px solid var(--border-light, #eaeaea);
-        background: #fdfbf9;
+        border-bottom: 1px solid var(--border-light, #e5e7eb);
+        background: #f9fafb;
         font-family: inherit;
         padding: 8px 12px;
         text-align: right;
@@ -134,44 +145,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       .quill-editor-wrapper .ql-container.ql-snow {
         border: none;
-        min-height: 240px;
+        min-height: 220px;
         font-family: inherit;
-        font-size: 1rem;
+        font-size: 0.9rem;
         direction: rtl;
         text-align: right;
       }
       .quill-editor-wrapper .ql-editor {
-        min-height: 240px;
-        line-height: 1.8;
-        padding: 16px;
-        color: var(--color-text, #2d2d2d);
+        min-height: 220px;
+        line-height: 1.7;
+        padding: 14px;
+        color: var(--color-primary, #111827);
       }
       .quill-editor-wrapper .ql-editor.ql-blank::before {
-        right: 16px;
+        right: 14px;
         left: auto;
         font-style: normal;
-        color: #94a3b8;
+        color: #9ca3af;
         text-align: right;
       }
       .quill-editor-wrapper .ql-editor h2 {
-        font-size: 1.45rem;
+        font-size: 1.3rem;
         font-weight: 800;
-        color: var(--color-blush, #DB2777);
-        margin: 18px 0 10px 0;
+        color: var(--color-primary, #111827);
+        margin: 16px 0 8px 0;
       }
       .quill-editor-wrapper .ql-editor h3 {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         font-weight: 700;
-        color: var(--color-primary, #333);
-        margin: 14px 0 8px 0;
+        color: var(--color-primary, #111827);
+        margin: 12px 0 6px 0;
       }
       .quill-editor-wrapper .ql-editor img {
         max-width: 100%;
-        border-radius: 8px;
+        border-radius: 6px;
         margin: 12px 0;
       }
       .quill-editor-wrapper .ql-editor a {
-        color: var(--color-blush, #DB2777);
+        color: var(--color-primary, #111827);
         text-decoration: underline;
       }
     </style>

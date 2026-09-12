@@ -3,174 +3,214 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="Our Story, Vision & Purity | Dandy Egypt"
-  description="Learn about Dandy's devotion to natural, cruelty-free, and dermatologically safe botanical skincare cosmetics in Egypt. Handcrafted organic purity."
-  keywords="Dandy brand, Organic formulation Egypt, Clean Cosmetics Cairo, Cruelty free skincare Cairo"
+  title="عن داندي | قصتنا ورؤيتنا | Dandy"
+  description="تعرفي على فلسفة داندي: تركيبات صيدلانية متطورة تجمع بين نقاء الطبيعة والفاعلية العلمية لتقديم عناية راقية للبشرة والشعر."
+  keywords="Dandy, داندي, قصة داندي, منتجات العناية بالبشرة مصر, تركيبات طبيعية"
   canonical="https://dandy-ebon.vercel.app/about-us"
-  lang="en"
-  dir="ltr"
 >
   <slot name="head" slot="head">
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://dandy-ebon.vercel.app/about-us" />
-    <meta property="og:title" content="Our Story, Vision & Purity | Dandy Egypt" />
-    <meta property="og:description" content="Learn about Dandy's devotion to natural, cruelty-free, and dermatologically safe botanical skincare cosmetics in Egypt." />
-    <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
-
+    <meta property="og:title" content="عن داندي | قصتنا ورؤيتنا | Dandy" />
+    <meta property="og:description" content="تعرفي على فلسفة داندي: تركيبات صيدلانية متطورة تجمع بين نقاء الطبيعة والفاعلية العلمية." />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Our Story, Vision & Purity | Dandy Egypt" />
-    <meta name="twitter:description" content="Dandy is devoted to clean, cruelty-free, organic formulation skincare in Egypt." />
-    <meta name="twitter:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
 
     <style is:global>
-      .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.2fr;
-        gap: 60px;
-        margin-top: 50px;
-        align-items: center;
-      }
-
-      .detail-image-box {
-        background: var(--color-gold-cream);
-        border: 1px solid var(--border-light);
-        border-radius: var(--border-radius-lg);
-        padding: 16px;
-        box-shadow: var(--shadow-md);
-        overflow: hidden;
-        width: 100%;
-        max-width: 450px;
-        height: auto;
-        aspect-ratio: 1 / 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: var(--transition-smooth);
+      .about-page-wrap {
+        padding: 120px 20px 80px;
+        max-width: 1040px;
         margin: 0 auto;
       }
 
-      .detail-image-box:hover {
-        box-shadow: var(--shadow-lg);
-        border-color: var(--color-blush);
+      .about-hero {
+        margin-bottom: 48px;
+        text-align: right;
       }
 
-      .detail-image-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: var(--border-radius-md);
-        transition: var(--transition-smooth);
-      }
-
-      .detail-image-box img:hover {
-        transform: scale(1.03);
-      }
-
-      .detail-info-box {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 10px;
-      }
-
-      .p-desc {
-        font-size: 1.15rem;
-        line-height: 1.85;
-        color: var(--color-muted);
-        margin-bottom: 24px;
-        text-align: left;
-      }
-
-      .p-desc strong {
-        color: var(--color-primary);
+      .about-hero h1 {
+        font-size: 2.2rem;
         font-weight: 800;
+        color: var(--color-primary);
+        margin: 0 0 12px 0;
+        letter-spacing: -0.02em;
       }
 
-      .p-category {
-        font-size: 1rem;
-        color: var(--color-gold);
+      .about-hero p {
+        font-size: 1.05rem;
+        color: var(--color-muted);
+        line-height: 1.6;
+        margin: 0;
+        max-width: 680px;
+      }
+
+      .about-grid {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 48px;
+        align-items: flex-start;
+      }
+
+      .about-media-card {
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 32px 24px;
+        text-align: center;
+        position: sticky;
+        top: 100px;
+      }
+
+      .about-logo-img {
+        width: 120px;
+        height: auto;
+        margin: 0 auto 20px;
+        display: block;
+      }
+
+      .about-tagline {
+        font-size: 0.92rem;
         font-weight: 700;
-        margin-top: 10px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        color: var(--color-primary);
+        margin-bottom: 16px;
+        line-height: 1.5;
       }
 
-      .about-social-list {
+      .about-meta-list {
         list-style: none;
         padding: 0;
-        display: grid;
+        margin: 20px 0 0;
+        border-top: 1px solid var(--border-light);
+        padding-top: 16px;
+        text-align: right;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
-        margin-top: 15px;
       }
 
-      .about-social-list li {
+      .about-meta-list li {
+        font-size: 0.85rem;
+        color: var(--color-muted);
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-size: 1rem;
-        color: var(--color-muted);
+        gap: 10px;
       }
 
-      .about-social-list a {
+      .about-meta-list a {
         color: var(--color-primary);
         text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .about-meta-list a:hover {
+        color: var(--color-rose-kiss-500, #fe5d9f);
+      }
+
+      /* Story Content */
+      .about-story-content {
+        font-size: 1.05rem;
+        line-height: 1.85;
+        color: var(--color-primary);
+      }
+
+      .about-story-content p {
+        margin-bottom: 24px;
+        color: var(--color-primary);
+      }
+
+      .about-story-content h2 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin: 36px 0 16px;
+      }
+
+      .about-highlight-quote {
+        margin: 32px 0;
+        padding: 20px 24px;
+        background: var(--color-lavender-veil-600, #f3e8f5);
+        border-right: 3px solid var(--color-rose-kiss-500, #fe5d9f);
+        border-radius: 0 8px 8px 0;
+        font-size: 1.05rem;
         font-weight: 700;
-        transition: var(--transition-fast);
+        color: var(--color-primary);
+        line-height: 1.6;
       }
 
-      .about-social-list a:hover {
-        color: var(--color-blush);
-        text-decoration: underline;
-      }
-
-      @media (max-width: 900px) {
-        .detail-grid {
+      @media (max-width: 800px) {
+        .about-page-wrap {
+          padding-top: 100px;
+        }
+        .about-grid {
           grid-template-columns: 1fr;
-          gap: 40px;
+          gap: 32px;
         }
-        .detail-image-box {
-          max-width: 320px;
-        }
-        .p-desc {
-          font-size: 1.05rem;
+        .about-media-card {
+          position: static;
         }
       }
     </style>
   </slot>
 
-  <!-- Brand story container -->
-  <main class="container" style="padding-top: 140px; padding-bottom: 80px;">
-    <div class="section-header" style="text-align: center; margin-bottom: 40px;">
-      <span class="sub">The World of Dandy</span>
-      <h2>Who We Are & What We Represent</h2>
-    </div>
+  <div class="about-page-wrap container" dir="rtl">
+    <header class="about-hero">
+      <h1>عن داندي (Dandy)</h1>
+      <p>حيث يلتقي الشغف الصيدلاني بنقاء الطبيعة لتقديم مستحضرات عناية متطورة وموثوقة.</p>
+    </header>
 
-    <div class="detail-grid">
-      <div class="detail-image-box">
-        <img loading="lazy" src="/assets/images/logo.png" alt="Dandy skincare and organic essence world" />
-      </div>
-
-      <div class="detail-info-box">
-        <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.25rem; margin-bottom: 15px; color:var(--color-primary);">About DANDY</h3>
-        <p class="p-desc">At DANDY, we believe that effective skincare and haircare begin with thoughtfully selected ingredients and scientifically developed formulations.</p>
-        <p class="p-desc">Founded by a pharmacist with a passion for cosmetic formulation, DANDY was created to offer high-quality products that combine the power of nature with proven active ingredients. Every formula is carefully crafted to deliver visible results while remaining gentle, safe, and suitable for everyday use.</p>
-        <p class="p-desc">Our collection includes skincare, haircare, and body care products made with premium botanical oils, nourishing butters, vitamins, and carefully selected cosmetic actives. We focus on creating balanced formulations that are free from unnecessary harsh ingredients, ensuring an enjoyable, effective, and reliable self-care experience.</p>
-        <p class="p-desc">Our mission is to make premium-quality beauty products accessible to everyone by delivering formulations that rival the performance and quality of leading international brands—while remaining affordable for the local market. We believe that safe, effective, and luxurious personal care should never come at an unattainable price.</p>
-        <p class="p-desc">More than just a beauty brand, DANDY is committed to transparency, quality, and continuous innovation. Every product reflects our dedication to research, careful ingredient selection, and uncompromising standards, so you can enjoy self-care with complete confidence.</p>
-        <p class="p-desc"><strong>DANDY — Where Science Meets Nature, and Premium Quality Meets Local Value.</strong></p>
+    <main class="about-grid">
+      <!-- Media & Summary Box -->
+      <aside class="about-media-card">
+        <img src="/assets/images/logo.png" alt="Dandy Logo" class="about-logo-img" />
+        <div class="about-tagline">
+          DANDY — Where Science Meets Nature, and Premium Quality Meets Local Value.
+        </div>
         
-        <p class="p-category"><i class="fas fa-map-marker-alt" style="color: var(--color-blush); margin-right:8px;"></i> Nasr City, Cairo, Arab Republic of Egypt.</p>
-
-        <hr style="margin: 25px 0; border: none; border-top: 1px dashed var(--border-light);" />
-
-        <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.25rem; margin-bottom: 15px; color:var(--color-primary);"><i class="fas fa-heart" style="color:var(--color-blush); margin-right:8px;"></i> Connect With Us Instantly:</h3>
-        <ul class="about-social-list">
-          <li><i class="fab fa-instagram" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> Instagram: <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a></li>
-          <li><i class="fab fa-facebook" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> Facebook: <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">Dandy Cosmetics Page</a></li>
-          <li><i class="fab fa-whatsapp" style="color:var(--color-blush); font-size:1.15rem; width:20px; text-align:center;"></i> WhatsApp Hotline: <a href="https://wa.me/201038941005" target="_blank">01038941005</a></li>
+        <ul class="about-meta-list">
+          <li>
+            <i class="fas fa-map-marker-alt" style="color:var(--color-rose-kiss-500, #fe5d9f); width:16px;"></i>
+            <span>مدينة نصر، القاهرة، جمهورية مصر العربية</span>
+          </li>
+          <li>
+            <i class="fab fa-instagram" style="color:#E1306C; width:16px;"></i>
+            <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank">dandy_skincare_cosmotics</a>
+          </li>
+          <li>
+            <i class="fab fa-facebook" style="color:#1877F2; width:16px;"></i>
+            <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank">Dandy Cosmetics Page</a>
+          </li>
+          <li>
+            <i class="fab fa-whatsapp" style="color:#25D366; width:16px;"></i>
+            <a href="https://wa.me/201038941005" target="_blank">01038941005</a>
+          </li>
         </ul>
-      </div>
-    </div>
-  </main>
+      </aside>
+
+      <!-- Story Narrative -->
+      <article class="about-story-content">
+        <h2>رؤيتنا وبداية الرحلة</h2>
+        <p>
+          نؤمن في <strong>DANDY</strong> بأن العناية الحقيقية والفعالة بالبشرة والشعر تبدأ من الاختيار الدقيق للمكونات والتركيبات المطورة علمياً.
+        </p>
+        <p>
+          تأسست <strong>DANDY</strong> برؤية صيدلانية متخصصة في علم تصنيع مستحضرات التجميل، لتقديم منتجات تجمع بين قوة المكونات الطبيعية والمستخلصات الفعالة المثبتة مخبرياً. كل تركيبة مصممة بعناية فائقة لتمنح نتائج ملموسة مع الحفاظ على لطفها وأمانها التام للاستخدام اليومي.
+        </p>
+
+        <div class="about-highlight-quote">
+          "مهمتنا هي جعل منتجات الجمال عالية الجودة في متناول الجميع، بتركيبات تنافس المعايير العالمية وبقيمة محلية عادلة."
+        </div>
+
+        <h2>مكوناتنا ومعايير التصنيع</h2>
+        <p>
+          تضم تشكيلتنا منتجات العناية بالبشرة والشعر والجسم، المصنوعة من أجود الزيوت النباتية، الزبدات المغذية، الفيتامينات، والمكونات الفعالة المختارة بدقة. نحرص على تقديم تركيبات متوازنة وخالية من الإضافات الكيميائية القاسية لضمان تجربة عناية موثوقة وممتعة.
+        </p>
+
+        <h2>الالتزام بالشفافية والتطوير</h2>
+        <p>
+          أكثر من مجرد علامة تجارية؛ تلتزم <strong>DANDY</strong> بالشفافية الكاملة، والبحث المستمر، وأعلى معايير الجودة لتمكينكِ من الاستمتاع بروتين العناية بثقة وأمان دائم.
+        </p>
+      </article>
+    </main>
+  </div>
 </BaseLayout>
+

@@ -3,43 +3,136 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="سياسة الخصوصية والأمان | Dandy"
-  description="تعرفي على سياسة الخصوصية وأمان البيانات في متجر داندي (Dandy Cosmetics). نلتزم بحماية سرية معلوماتكِ وبيانات الشحن وعدم مشاركتها مع أي طرف ثالث."
+  title="سياسة الخصوصية | Dandy"
+  description="تعرفي على سياسة الخصوصية وأمان البيانات في متجر داندي (Dandy). نلتزم بحماية سرية معلوماتكِ وبيانات الشحن."
   canonical="https://dandy-ebon.vercel.app/privacy-policy"
 >
-  <!-- Main Policy Card -->
-  <main class="container" style="padding-top: 140px; padding-bottom: 80px;">
-    <div class="section-header" style="text-align: center; margin-bottom: 40px;">
-      <span class="sub">الحماية والأمان لخصوصيتكِ</span>
-      <h2>وثيقة سياسة الخصوصية العامة للزوار</h2>
-    </div>
+  <slot name="head" slot="head">
+    <style is:global>
+      .legal-page-wrap {
+        padding: 120px 20px 80px;
+        max-width: 780px;
+        margin: 0 auto;
+      }
 
-    <div class="product" style="text-align: right; max-width: 800px; margin: 0 auto; padding: 40px; animation: none; opacity: 1;">
-      <p class="p-desc" style="margin-bottom: 24px;">مرحباً بكم في منصة <strong>Dandy</strong> الإلكترونية. إننا نقدر اهتمامكم وثقتكم المطلقة بنضارة وخصوصية بياناتكم، ونسعى بكل وضوح لحماية سرية وحجم معلومات الزوار الأفاضل.</p>
+      .legal-header {
+        margin-bottom: 36px;
+        text-align: right;
+      }
 
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-database" style="color:var(--color-blush)"></i> جمع وحفظ البيانات</h3>
-      <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">نحتاج فقط وبكل دقة إلى بيانات الشحن وتأكيد الطلب المتمثلة في: الاسم ثلاثياً، العنوان الجغرافي، رقم الهاتف، والبريد الإلكتروني لنتمكن من شحن طلبكِ بمنتهى السلاسة وباب المنزل.</p>
-      <p style="color: var(--color-muted); margin-bottom: 16px; font-size:0.95rem;">إننا نطمئن معاليكِ التزامنا الكامل **بعدم مشاركة أو بيع أي من هذه التفاصيل الحيوية** مع أي أطراف ثالثة تجارية خارجية بتاتاً.</p>
+      .legal-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
+      }
 
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-user-lock" style="color:var(--color-blush)"></i> خصوصية وأمان حسابات العملاء</h3>
-      <div style="background:var(--color-surface-soft, #fdf2f8); border-radius:12px; padding:18px 20px; margin-bottom:20px; border:1px solid #fbcfe8;">
-        <p style="color:var(--color-text); font-size:0.95rem; line-height:1.8; margin-bottom:12px;">عند قيامكِ بإنشاء حساب شخصي في متجر داندي، يتم التعامل مع بياناتكِ بأعلى معايير الحماية والتشفير القياسية:</p>
-        <ul style="margin:0; padding-right:20px; color:var(--color-text); font-size:0.95rem; line-height:1.8;">
-          <li style="margin-bottom:8px;"><strong>تشفير كلمات المرور:</strong> يتم تشفير كلمات المرور باستخدام بروتوكولات مصادقة Firebase العالمية؛ ولا يمكن لأي موظف أو طرف في متجر داندي الاطلاع على كلمة مروركِ أو كشفها.</li>
-          <li style="margin-bottom:8px;"><strong>البيانات المخزنة في الحساب:</strong> تقتصر البيانات المرتبطة بملفكِ على (الاسم، البريد الإلكتروني، رقم الهاتف، قائمة العناوين المحفوظة للشحن، المنتجات المضافة للمفضلة، وسجل الفواتير والطلبات السابقة).</li>
-          <li style="margin-bottom:8px;"><strong>الاستخدام الحصري للبيانات:</strong> لا تُستخدم بياناتكِ إلا لغرض إتمام الطلبات، وتيسير عملية الدفع، والتواصل بخصوص حالة الشحن، وإرسال روابط استعادة كلمة المرور عند طلبكِ.</li>
-          <li><strong>حقوقكِ الكاملة في التحكم والحذف:</strong> يمكنكِ في أي وقت تعديل عناوينكِ المحفوظة أو حذفها مباشرة من لوحة "حسابي"، كما يحق لكِ طلب حذف الحساب بالكامل وكافة البيانات المرتبطة به بالتواصل المباشر معنا.</li>
-        </ul>
+      .legal-header p {
+        font-size: 0.95rem;
+        color: var(--color-muted);
+        margin: 0;
+      }
+
+      .legal-article {
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 36px;
+        color: var(--color-primary);
+        font-size: 0.95rem;
+        line-height: 1.8;
+      }
+
+      .legal-article h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin: 28px 0 10px;
+      }
+
+      .legal-article h2:first-child {
+        margin-top: 0;
+      }
+
+      .legal-article p {
+        color: var(--color-muted);
+        margin-bottom: 16px;
+      }
+
+      .legal-article ul {
+        margin: 12px 0 20px;
+        padding-right: 20px;
+        color: var(--color-muted);
+      }
+
+      .legal-article li {
+        margin-bottom: 8px;
+      }
+
+      .legal-article strong {
+        color: var(--color-primary);
+      }
+
+      .legal-footer-date {
+        margin-top: 32px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-light);
+        font-size: 0.85rem;
+        color: var(--color-muted);
+      }
+
+      @media (max-width: 600px) {
+        .legal-page-wrap {
+          padding-top: 100px;
+        }
+        .legal-article {
+          padding: 24px;
+        }
+      }
+    </style>
+  </slot>
+
+  <div class="legal-page-wrap container" dir="rtl">
+    <header class="legal-header">
+      <h1>سياسة الخصوصية</h1>
+      <p>التزامنا بحماية وأمان بياناتكِ وخصوصيتكِ أثناء التسوق في متجر داندي.</p>
+    </header>
+
+    <main class="legal-article">
+      <p>
+        نقدر في متجر <strong>Dandy</strong> ثقتكم، ونلتزم بحماية خصوصية وأمان بيانات الزوار والعملاء وفق أعلى المعايير.
+      </p>
+
+      <h2>1. جمع واستخدام البيانات</h2>
+      <p>
+        تقتصر البيانات التي نجمعها على ما هو ضروري لتجهيز وشحن طلبكِ والتواصل بشأن الشحنة (الاسم، رقم الهاتف، العنوان الجغرافي، والبريد الإلكتروني). لا نقوم بمشاركة أو بيع بياناتكِ الشخصية لأي طرف ثالث غير مرتبط بتوصيل الطلب.
+      </p>
+
+      <h2>2. أمان حسابات العملاء</h2>
+      <p>
+        عند إنشاء حساب شخصي في متجر داندي:
+      </p>
+      <ul>
+        <li><strong>حماية كلمات المرور:</strong> يتم تشفير كلمات المرور باستخدام بروتوكولات مصادقة Firebase القياسية، ولا يمكن لأي من موظفينا الاطلاع عليها.</li>
+        <li><strong>البيانات المخزنة:</strong> تقتصر على تفاصيل ملفكِ الشخصي وعناوين التوصيل المحفوظة وسجل الطلبات والمفضلة لتسهيل تجارب الشراء القادمة.</li>
+        <li><strong>التحكم والحذف:</strong> يمكنكِ تعديل أو حذف عناوينكِ وبياناتكِ في أي وقت عبر لوحة "حسابي"، أو طلب إغلاق الحساب بالكامل بالتواصل المباشر مع الدعم.</li>
+      </ul>
+
+      <h2>3. الأمان التقني</h2>
+      <p>
+        نستخدم اتصالات مشفرة وآمنة (SSL) لحماية تدفق البيانات بين متصفحكِ وخوادمنا، مما يضمن أمان وسلامة تجربة التصفح والطلب.
+      </p>
+
+      <h2>4. ملفات تعريف الارتباط (Cookies)</h2>
+      <p>
+        تُستخدم ملفات تعريف الارتباط محلياً لحفظ محتويات سلة التسوق وتفضيلات الجلسة لتوفير تجربة تسوق سلسة وسريعة.
+      </p>
+
+      <div class="legal-footer-date">
+        آخر تحديث: سبتمبر 2026
       </div>
-
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-lock" style="color:var(--color-blush)"></i> آليات الأمان والحماية</h3>
-      <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">نستخدم خوادم مستقرة وحزم اتصالات آمنة (SSL) تضمن سرية النقل اللحظي لمشترياتكم. كما نلجأ إلى منصات معتمدة لوساطة معالجة المدفوعات.</p>
-
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-cookie-bite" style="color:var(--color-blush)"></i> ملفات الـ Cookies</h3>
-      <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">نطلق حزم كوكيز مؤقتة بهدف تحسين وتخصيص استعراض المتجر وتذكر عناصر الحقيبة المضافة دون تكليف الزوار بإعادة الاختيار.</p>
-
-      <hr style="margin: 30px 0; border: none; border-top: 1px dashed var(--border-light);" />
-      <p style="color: var(--color-muted); font-size: 0.9rem;">📅 تاريخ آخر تحديث واثق للبنود: <strong>سبتمبر 2026</strong></p>
-    </div>
-  </main>
+    </main>
+  </div>
 </BaseLayout>
+

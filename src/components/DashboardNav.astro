@@ -20,184 +20,235 @@ function isItemActive(itemHref: string) {
 }
 ---
 
-<nav class="dashboard-unified-nav" aria-label="شريط تنقل لوحة التحكم">
-  <div class="dash-nav-container container">
-    <div class="dash-nav-brand">
-      <span class="dash-badge"><i class="fas fa-shield-alt"></i> الإدارة</span>
+<header class="admin-top-nav" aria-label="شريط إدارة العمليات" dir="rtl">
+  <div class="admin-nav-inner">
+    <!-- Brand / Status -->
+    <div class="admin-brand-group">
+      <a href="/dashboard" class="admin-logo-link">
+        <span class="admin-brand-name">DANDY</span>
+        <span class="admin-env-pill">الإدارة</span>
+      </a>
     </div>
     
-    <div class="dash-nav-scroll">
-      <ul class="dash-nav-list">
+    <!-- Navigation Tabs -->
+    <nav class="admin-nav-tabs-wrap">
+      <ul class="admin-nav-tabs">
         {navItems.map((item) => {
           const active = isItemActive(item.href);
           return (
             <li>
               <a 
                 href={item.href} 
-                class:list={['dash-nav-link', { 'active': active }]}
+                class:list={['admin-tab-link', { 'active': active }]}
                 aria-current={active ? 'page' : undefined}
               >
-                <i class:list={['fas', item.icon, 'nav-icon']}></i>
-                <span class="nav-text">{item.label}</span>
+                <i class:list={['fas', item.icon, 'admin-tab-icon']}></i>
+                <span>{item.label}</span>
               </a>
             </li>
           );
         })}
       </ul>
-    </div>
+    </nav>
 
-    <div class="dash-nav-actions">
-      <a href="/" target="_blank" class="dash-store-link" title="معاينة المتجر المباشر">
+    <!-- Utility Actions -->
+    <div class="admin-nav-actions">
+      <a href="/" target="_blank" class="admin-btn-preview" title="معاينة المتجر المباشر">
         <i class="fas fa-external-link-alt"></i>
-        <span>المتجر</span>
+        <span>عرض المتجر</span>
       </a>
+      <button type="button" class="admin-btn-logout" id="dashGlobalLogoutBtn" title="تسجيل الخروج">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>خروج</span>
+      </button>
     </div>
   </div>
-</nav>
+</header>
+
+<script is:inline>
+  document.getElementById('dashGlobalLogoutBtn')?.addEventListener('click', async () => {
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    if (auth) {
+      try {
+        await auth.signOut();
+        window.location.href = '/login';
+      } catch (err) {
+        console.error('Logout error:', err);
+      }
+    } else {
+      window.location.href = '/login';
+    }
+  });
+</script>
 
 <style>
-  .dashboard-unified-nav {
+  .admin-top-nav {
     background: #ffffff;
-    border-bottom: 1px solid #e8e8e8;
+    border-bottom: 1px solid var(--border-light, #dedbdb);
     position: sticky;
-    top: 70px;
-    z-index: 900;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    font-family: inherit;
-    direction: rtl;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    font-family: 'Cairo', sans-serif;
   }
 
-  .dash-nav-container {
+  .admin-nav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    gap: 20px;
   }
 
-  .dash-nav-brand {
+  .admin-brand-group {
     display: flex;
     align-items: center;
     flex-shrink: 0;
   }
 
-  .dash-badge {
-    background: #fdf2f8;
-    color: var(--color-blush, #DB2777);
-    border: 1px solid rgba(219, 39, 119, 0.2);
-    padding: 6px 12px;
-    border-radius: 99px;
-    font-size: 0.8rem;
-    font-weight: 800;
+  .admin-logo-link {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    letter-spacing: 0.5px;
+    gap: 8px;
+    text-decoration: none;
   }
 
-  .dash-nav-scroll {
-    overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE 10+ */
+  .admin-brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--color-dust-grey-100, #2c2828);
+  }
+
+  .admin-env-pill {
+    background: var(--color-surface-soft, #f7f6f6);
+    color: var(--color-text-secondary, #595050);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--border-radius-xs, 4px);
+    border: 1px solid var(--border-light, #dedbdb);
+  }
+
+  .admin-nav-tabs-wrap {
     flex: 1;
+    overflow-x: auto;
+    scrollbar-width: none;
     display: flex;
     justify-content: flex-start;
   }
-  .dash-nav-scroll::-webkit-scrollbar {
-    display: none; /* WebKit */
+  .admin-nav-tabs-wrap::-webkit-scrollbar {
+    display: none;
   }
 
-  .dash-nav-list {
+  .admin-nav-tabs {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     list-style: none;
     padding: 0;
     margin: 0;
     white-space: nowrap;
   }
 
-  .dash-nav-link {
+  .admin-tab-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    color: #4b5563;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: var(--border-radius-sm, 6px);
+    color: var(--color-muted, #857979);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast, 0.15s ease);
     border: 1px solid transparent;
   }
 
-  .dash-nav-link:hover {
-    color: var(--color-blush, #DB2777);
-    background: #fdf2f8;
+  .admin-tab-link:hover {
+    color: var(--color-dust-grey-100, #2c2828);
+    background: var(--color-surface-soft, #f7f6f6);
   }
 
-  .dash-nav-link.active {
-    background: var(--color-blush, #DB2777);
+  .admin-tab-link.active {
+    background: var(--color-dust-grey-100, #2c2828);
     color: #ffffff;
     font-weight: 700;
-    box-shadow: 0 2px 6px rgba(219, 39, 119, 0.25);
   }
 
-  .dash-nav-link.active .nav-icon {
-    color: #ffffff;
+  .admin-tab-icon {
+    font-size: 0.82rem;
   }
 
-  .nav-icon {
-    font-size: 0.9rem;
-    transition: transform 0.2s ease;
-  }
-  .dash-nav-link:hover .nav-icon {
-    transform: scale(1.1);
-  }
-
-  .dash-nav-actions {
+  .admin-nav-actions {
     display: flex;
     align-items: center;
+    gap: 8px;
     flex-shrink: 0;
   }
 
-  .dash-store-link {
+  .admin-btn-preview {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: var(--border-radius-sm, 6px);
     font-size: 0.8rem;
     font-weight: 600;
-    color: #64748b;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    color: var(--color-text-secondary, #595050);
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--border-light, #dedbdb);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast, 0.15s ease);
   }
 
-  .dash-store-link:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-    border-color: #cbd5e1;
+  .admin-btn-preview:hover {
+    border-color: var(--color-dust-grey-100, #2c2828);
+    color: var(--color-dust-grey-100, #2c2828);
+  }
+
+  .admin-btn-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--border-radius-sm, 6px);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    cursor: pointer;
+    font-family: inherit;
+    transition: var(--transition-fast, 0.15s ease);
+  }
+
+  .admin-btn-logout:hover {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
   }
 
   @media (max-width: 768px) {
-    .dashboard-unified-nav {
-      top: 60px;
+    .admin-nav-inner {
+      padding: 0 12px;
+      height: 52px;
     }
-    .dash-nav-container {
-      padding-top: 6px;
-      padding-bottom: 6px;
-      gap: 10px;
-    }
-    .dash-nav-brand {
+    .admin-brand-name {
       display: none;
     }
-    .dash-nav-link {
-      padding: 6px 10px;
-      font-size: 0.85rem;
+    .admin-tab-link {
+      padding: 5px 8px;
+      font-size: 0.8rem;
+    }
+    .admin-btn-preview span,
+    .admin-btn-logout span {
+      display: none;
     }
   }
 </style>

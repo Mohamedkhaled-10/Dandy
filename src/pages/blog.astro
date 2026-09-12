@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="مدونة داندي للعناية | أسرار ونصائح الجمال الطبيعي"
-  description="تصفحى مدونة داندي بيوتي واكتشفي أسرار ونِقاط العناية العضوية بالبشرة والروتين الصحي للشهر مع تركيبات طبيعية 100% لإشراقة ملكية دائمًا."
+  description="تصفحي مدونة داندي واكتشفي أسرار العناية بالبشرة والشعر والروتين الصحي بتركيبات طبيعية."
   keywords="مدونة داندي بيوتي، العناية بالبشرة، العناية بالشعر، خلطات تجميلية طبيعية، روتين صحي للبشرة مصر"
   canonical="https://dandy-ebon.vercel.app/blog"
 >
@@ -12,40 +12,60 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://dandy-ebon.vercel.app/blog" />
     <meta property="og:title" content="مدونة داندي للعناية | أسرار ونصائح الجمال الطبيعي" />
-    <meta property="og:description" content="تصفحى مدونة داندي بيوتي واكتشفي أسرار ونِقاط العناية العضوية بالبشرة والروتين الصحي للشهر" />
-    <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
+    <meta property="og:description" content="تصفحي مدونة داندي واكتشفي أسرار العناية بالبشرة والشعر والروتين الصحي." />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="مدونة داندي للعناية | أسرار ونصائح الجمال الطبيعي" />
-    <meta name="twitter:description" content="تصفحى مدونة داندي بيوتي واكتشفي أسرار ونِقاط العناية العضوية بالبشرة والروتين الصحي للشهر" />
-    <meta name="twitter:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
 
     <style is:global>
+      .blog-page-header {
+        padding: 120px 20px 32px;
+        text-align: right;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .blog-page-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
+      }
+
+      .blog-page-header p {
+        font-size: 0.95rem;
+        color: var(--color-muted);
+        margin: 0;
+        max-width: 600px;
+        line-height: 1.6;
+      }
+
       .blog-section {
-        padding: 130px 0 80px;
+        padding: 10px 0 80px;
       }
 
       .blog-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 30px;
+        gap: 28px;
       }
 
-      /* Luxury Editorial Blog Card */
+      /* Editorial Blog Card */
       .blog-card {
         background: var(--color-surface);
         border: 1px solid var(--border-light);
         border-radius: var(--border-radius-md);
         overflow: hidden;
-        box-shadow: var(--shadow-sm);
         display: flex;
         flex-direction: column;
-        transition: var(--transition-smooth);
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+        text-decoration: none;
       }
 
       .blog-card:hover {
-        transform: translateY(-6px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--color-blush);
+        border-color: var(--color-soft-blossom-400, #efa2c4);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
       }
 
       .blog-thumb {
@@ -60,15 +80,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: var(--transition-smooth);
+        transition: transform 0.3s ease;
       }
 
       .blog-card:hover .blog-thumb img {
-        transform: scale(1.05);
+        transform: scale(1.03);
       }
 
       .blog-card-body {
-        padding: 24px;
+        padding: 22px;
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -79,32 +99,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         justify-content: space-between;
         align-items: center;
         margin-bottom: 12px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: var(--color-muted);
       }
 
       .blog-card-body .category-tag {
-        background: var(--color-gold-cream);
-        color: var(--color-gold);
-        padding: 4px 12px;
+        background: var(--color-surface-soft);
+        color: var(--color-primary);
+        border: 1px solid var(--border-light);
+        padding: 3px 10px;
         font-weight: 700;
+        font-size: 0.78rem;
         border-radius: 99px;
       }
 
-      .blog-card-body h3 {
-        font-size: 1.25rem;
+      .blog-card-body h2 {
+        font-size: 1.15rem;
         font-weight: 800;
         color: var(--color-primary);
-        margin-bottom: 12px;
-        line-height: 1.4;
+        margin: 0 0 10px;
+        line-height: 1.45;
       }
 
       .blog-card-body p {
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         color: var(--color-muted);
         line-height: 1.6;
-        margin-bottom: 20px;
-        height: 72px;
+        margin: 0 0 18px;
+        height: 66px;
         overflow: hidden;
         display: -webkit-box;
         -webkit-line-clamp: 3;
@@ -115,40 +137,63 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         margin-top: auto;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        color: var(--color-blush);
+        gap: 6px;
+        color: var(--color-rose-kiss-500, #fe5d9f);
         text-decoration: none;
         font-weight: 700;
-        font-size: 0.95rem;
-        transition: var(--transition-fast);
+        font-size: 0.88rem;
+        transition: color 0.2s, gap 0.2s;
       }
 
       .blog-card-body .read-more-btn:hover {
         color: var(--color-primary);
-        padding-right: 6px;
+        gap: 9px;
+      }
+
+      .blog-empty-state {
+        text-align: center;
+        grid-column: 1 / -1;
+        padding: 60px 20px;
+        color: var(--color-muted);
+        background: var(--color-surface);
+        border: 1px dashed var(--border-light);
+        border-radius: var(--border-radius-md);
+      }
+
+      .blog-empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        color: var(--color-muted);
+        opacity: 0.6;
+      }
+
+      @media (max-width: 640px) {
+        .blog-page-header {
+          padding-top: 100px;
+        }
+        .blog-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
       }
     </style>
   </slot>
 
-  <!-- Header Blog -->
-  <section class="container" style="padding-top: 140px; text-align: center;">
-    <div class="section-header">
-      <span class="sub">ركن العناية والجمال</span>
-      <h2>أسرار وكتالوج المدونة الفخمة</h2>
-      <p style="color: var(--color-muted); max-width: 600px; margin: 10px auto 0;">اكتشفي خبايا العناية بالبشرة، روتين ترطيب الشعر وسحره الغني، وأفضل الوصفات المنزلية الطبيعية المدعومة بأقلام خبرائنا.</p>
-    </div>
-  </section>
+  <!-- Editorial Blog Header -->
+  <header class="blog-page-header" dir="rtl">
+    <h1>مدونة داندي</h1>
+    <p>دليلكِ الشامل للعناية اليومية بالبشرة والشعر، مع نصائح تركيبات طبيعية متوازنة.</p>
+  </header>
 
   <!-- Blog Listings -->
-  <section class="blog-section container">
+  <main class="blog-section container" dir="rtl">
     <div class="blog-grid" id="blogContainer">
-      <!-- dynamic content container -->
-      <p style="text-align: center; grid-column:1/-1; color:var(--color-muted);">جاري جمع مواضيعنا المتميزة والمثبتة من أجلكِ...</p>
+      <p style="text-align: center; grid-column:1/-1; color:var(--color-muted); padding: 40px 0;">جاري تحميل المقالات...</p>
     </div>
-  </section>
+  </main>
 
   <script is:inline>
-    const db = window.firestore || firebase.firestore();
+    const db = window.firestore || (window.firebase && firebase.firestore ? firebase.firestore() : null);
 
     function formatArticleDate(data) {
       if (data.createdAt && typeof data.createdAt.toDate === 'function') {
@@ -163,21 +208,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     async function loadArticles() {
       const container = document.getElementById('blogContainer');
       if (!container) return;
-      container.innerHTML = '';
       
       try {
-        const snapshot = await db.collection('articles').orderBy('createdAt', 'desc').get();
-        if(snapshot.empty) {
-          container.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:40px 10px;color:var(--color-muted);"><i class="fas fa-edit" style="font-size:3rem;margin-bottom:12px;"></i><p>لا توجد مقالات منشورة بعد بالمدونة الفاخرة.</p></div>';
+        if (!db) {
+          container.innerHTML = '<div class="blog-empty-state"><i class="far fa-newspaper"></i><p>لا توجد مقالات منشورة حالياً بالمدونة.</p></div>';
           return;
         }
 
+        const fetchPromise = db.collection('articles').orderBy('createdAt', 'desc').get();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 4000));
+        const snapshot = await Promise.race([fetchPromise, timeoutPromise]);
+
+        if (snapshot.empty) {
+          container.innerHTML = '<div class="blog-empty-state"><i class="far fa-newspaper"></i><p>لا توجد مقالات منشورة حالياً بالمدونة.</p></div>';
+          return;
+        }
+
+        container.innerHTML = '';
         let visibleCount = 0;
 
         snapshot.forEach(doc => {
           const data = doc.data();
-
-          // Display only articles that are not drafts (status !== 'draft') or legacy articles without a status field
           if (data.status === 'draft') return;
           visibleCount++;
 
@@ -185,24 +236,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           const title = data.title ? data.title : 'عنوان غير متوفر';
           const dateText = formatArticleDate(data);
           const excerpt = data.excerpt ? data.excerpt : (data.content ? (data.content.replace(/<[^>]+>/g,'').substring(0, 160) + '...') : '');
-          const category = data.category ? data.category : 'روتين الجمال';
+          const category = data.category ? data.category : 'العناية بالبشرة';
 
           const postLink = data.slug
-            ? `/blog/${encodeURIComponent(data.slug)}`
+            ? `/post?slug=${encodeURIComponent(data.slug)}`
             : `/post?id=${doc.id}`;
 
           const card = document.createElement('article');
           card.className = 'blog-card';
           card.innerHTML = `
-            <div class="blog-thumb">
+            <a href="${postLink}" class="blog-thumb" aria-label="${title}">
               <img src="${img}" alt="${title}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80';">
-            </div>
+            </a>
             <div class="blog-card-body">
               <div class="meta-row">
                 <span class="category-tag">${category}</span>
-                ${dateText ? `<span>📅 ${dateText}</span>` : ''}
+                ${dateText ? `<span>${dateText}</span>` : ''}
               </div>
-              <h3>${title}</h3>
+              <h2><a href="${postLink}" style="color:inherit; text-decoration:none;">${title}</a></h2>
               <p>${excerpt}</p>
               <a href="${postLink}" class="read-more-btn">
                 اقرئي المقال <i class="fas fa-arrow-left"></i>
@@ -213,14 +264,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
 
         if (visibleCount === 0) {
-          container.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:40px 10px;color:var(--color-muted);"><i class="fas fa-edit" style="font-size:3rem;margin-bottom:12px;"></i><p>لا توجد مقالات منشورة بعد بالمدونة الفاخرة.</p></div>';
+          container.innerHTML = '<div class="blog-empty-state"><i class="far fa-newspaper"></i><p>لا توجد مقالات منشورة حالياً بالمدونة.</p></div>';
         }
 
       } catch(err) {
-        container.innerHTML = '<div style="text-align:center;grid-column:1/-1;padding:40px 10px;color:var(--color-muted);">خطأ أثناء سحب المقالات. نرجو منكِ المحاولة مرة أخرى.</div>';
+        container.innerHTML = '<div class="blog-empty-state"><p>تعذر تحميل المقالات حالياً. يرجى المحاولة مرة أخرى لاحقاً.</p></div>';
       }
     }
 
     loadArticles();
   </script>
 </BaseLayout>
+

@@ -1,0 +1,615 @@
+/**
+ * ====================================================================
+ * DANDY COSMETICS — GLOBAL DESIGN FOUNDATION (PHASE 01)
+ * Modern Minimal E-Commerce Design System
+ * ====================================================================
+ */
+
+:root {
+  /* ------------------------------------------------------------------
+     1. COLOR SYSTEM (Dandy Brand Palette - Modern Minimal Restraint)
+     ------------------------------------------------------------------ */
+  --color-canvas: #ffffff;
+  --color-canvas-subtle: #faf8f6;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fbf7f6;
+  --color-surface-hover: #f5eeea;
+
+  /* Primary Deep Brand Anchors */
+  --color-primary: #38121d;          /* Deep luxury burgundy/plum for refined hierarchy */
+  --color-primary-hover: #4e1828;
+  --color-burgundy: #4a1525;
+
+  /* Signature Dandy Rose & Blush Accents (Commerce & Interaction) */
+  --color-blush: #db2777;            /* Dandy vibrant signature blush/rose */
+  --color-blush-hover: #be185d;
+  --color-blush-soft: #fdf2f8;       /* Subtle powder rose background tint */
+  --color-magenta: #be185d;
+  --color-accent: #db2777;
+  --color-accent-hover: #be185d;
+  --color-accent-soft: #fdf2f8;
+
+  /* Subtle Warm Accents */
+  --color-gold: #b38728;             /* Muted restrained metallic bronze gold */
+  --color-gold-cream: #fef8ee;
+  --color-cream: #faf5f0;
+
+  /* High-legibility Neutrals (WCAG AAA / AA compliant) */
+  --color-text: #1c1917;             /* Crisp warm charcoal black */
+  --color-text-secondary: #44403c;   /* Supporting readable dark */
+  --color-muted: #78716c;            /* Quiet neutral gray-brown for secondary copy */
+  --color-subtle: #a8a29e;           /* Placeholder and faint text */
+
+  /* Functional Status Colors */
+  --color-success: #15803d;
+  --color-success-soft: #f0fdf4;
+  --color-danger: #be123c;
+  --color-danger-soft: #fff1f2;
+  --color-warning: #b45309;
+  --color-warning-soft: #fffbeb;
+
+  /* Quiet, Thin Borders */
+  --border-subtle: #f2ede9;
+  --border-light: #e8e1dd;
+  --border-medium: #d6cbc3;
+  --border-strong: #a8a29e;
+  --border-blush: #fbcfe8;
+
+  /* ------------------------------------------------------------------
+     2. TYPOGRAPHY SYSTEM (Arabic-First Modern Hierarchy)
+     ------------------------------------------------------------------ */
+  --font-sans: 'Alexandria', 'Cairo', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Typographic Scales */
+  --text-xs: 0.75rem;       /* 12px */
+  --text-sm: 0.84375rem;    /* 13.5px */
+  --text-base: 0.9375rem;   /* 15px */
+  --text-md: 1rem;          /* 16px */
+  --text-lg: 1.125rem;      /* 18px */
+  --text-xl: 1.25rem;       /* 20px */
+  --text-2xl: 1.5rem;       /* 24px */
+  --text-3xl: 1.875rem;     /* 30px */
+  --text-4xl: 2.25rem;      /* 36px */
+
+  /* ------------------------------------------------------------------
+     3. SPACING SYSTEM (8-point Rhythm)
+     ------------------------------------------------------------------ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Container bounds */
+  --container-max-width: 1240px;
+  --container-px: 20px;
+
+  /* ------------------------------------------------------------------
+     4. RESTRAINED RADII (Controlled rounding, NO pills everywhere)
+     ------------------------------------------------------------------ */
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;          /* Standard controls, cards & inputs */
+  --radius-lg: 12px;         /* Maximum container radius */
+  --radius-full: 9999px;     /* Reserved strictly for small circular badges / status dots */
+
+  /* Legacy variable compatibility */
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  /* ------------------------------------------------------------------
+     5. SUBTLE DIFFUSED SHADOWS (Low-intensity, no neon halos)
+     ------------------------------------------------------------------ */
+  --shadow-xs: 0 1px 2px 0 rgba(28, 25, 23, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(28, 25, 23, 0.05), 0 1px 2px -1px rgba(28, 25, 23, 0.03);
+  --shadow-md: 0 4px 12px -2px rgba(28, 25, 23, 0.06), 0 2px 4px -2px rgba(28, 25, 23, 0.03);
+  --shadow-lg: 0 10px 24px -4px rgba(28, 25, 23, 0.07), 0 4px 8px -4px rgba(28, 25, 23, 0.04);
+
+  /* Transitions */
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ------------------------------------------------------------------
+   BASE DOCUMENT & ARABIC-FIRST NORMALIZATION
+   ------------------------------------------------------------------ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  direction: inherit;
+  overflow-x: clip;
+}
+
+html[dir="rtl"] body {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="ltr"] body {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Base Headings Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Editorial Serif Accent (strictly for logo and special brand titles) */
+.font-serif,
+.logo-serif {
+  font-family: var(--font-serif);
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+  line-height: 1.65;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ------------------------------------------------------------------
+   CONTAINERS & STRUCTURAL WIDTHS
+   ------------------------------------------------------------------ */
+.container,
+.site-container,
+.page-container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-px);
+  padding-right: var(--container-px);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --container-px: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --container-px: 32px;
+  }
+}
+
+/* Standard Section Layout */
+.section {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-16);
+  }
+}
+
+/* ------------------------------------------------------------------
+   SECTION HEADINGS & HIERARCHY
+   ------------------------------------------------------------------ */
+.page-header {
+  margin-bottom: var(--space-8);
+}
+
+.page-title {
+  font-size: clamp(1.75rem, 3.2vw, 2.25rem);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.25;
+  margin-bottom: var(--space-2);
+}
+
+.page-subtitle {
+  font-size: var(--text-md);
+  color: var(--color-muted);
+  line-height: 1.6;
+  max-width: 65ch;
+  margin: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.section-title,
+.section-heading {
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.section-subtitle,
+.section-description {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  line-height: 1.5;
+  margin-top: var(--space-1);
+  max-width: 60ch;
+}
+
+/* View All Link (Clean, minimalist with directional motion) */
+.view-all-link,
+.section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-blush);
+  text-decoration: none;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.view-all-link:hover,
+.section-link:hover {
+  color: var(--color-primary-hover);
+  gap: 9px;
+}
+
+.view-all-link svg,
+.section-link svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+html[dir="rtl"] .view-all-link svg,
+html[dir="rtl"] .section-link svg {
+  transform: rotate(180deg);
+}
+
+/* ------------------------------------------------------------------
+   BUTTONS SYSTEM (Modern Minimal — Restrained Radii, NO generic pills)
+   ------------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 10px 20px;
+  border-radius: var(--radius-md); /* 8px - NOT a pill */
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.985);
+}
+
+/* 1. Primary Button (Solid Accent) */
+.btn-primary,
+button.btn-primary,
+a.btn-primary {
+  background-color: var(--color-blush);
+  color: #ffffff !important;
+  border-color: var(--color-blush);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-primary:hover,
+button.btn-primary:hover,
+a.btn-primary:hover {
+  background-color: var(--color-blush-hover);
+  border-color: var(--color-blush-hover);
+  color: #ffffff !important;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 2. Secondary Button (Clean Quiet Border) */
+.btn-secondary,
+button.btn-secondary,
+a.btn-secondary {
+  background-color: #ffffff;
+  color: var(--color-text) !important;
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-secondary:hover,
+button.btn-secondary:hover,
+a.btn-secondary:hover {
+  background-color: var(--color-surface-soft);
+  border-color: var(--color-text);
+  color: var(--color-text) !important;
+}
+
+/* 3. Tertiary / Ghost Button (Flat Text with subtle surface on hover) */
+.btn-tertiary,
+.btn-ghost,
+.btn-text,
+button.btn-tertiary,
+a.btn-tertiary {
+  background-color: transparent;
+  color: var(--color-text) !important;
+  border-color: transparent;
+}
+
+.btn-tertiary:hover,
+.btn-ghost:hover,
+.btn-text:hover,
+button.btn-tertiary:hover,
+a.btn-tertiary:hover {
+  background-color: var(--color-surface-soft);
+  color: var(--color-blush) !important;
+}
+
+/* 4. Icon Button (Restrained 40px square with subtle rounding) */
+.btn-icon,
+button.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: #ffffff;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-icon:hover {
+  border-color: var(--border-medium);
+  background-color: var(--color-surface-soft);
+  color: var(--color-blush);
+}
+
+/* Button Sizing Variations */
+.btn-sm {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+  padding: 13px 26px;
+  font-size: var(--text-md);
+  border-radius: var(--radius-md);
+}
+
+.btn-block,
+.btn-full {
+  display: flex;
+  width: 100%;
+}
+
+/* Disabled and Focus States */
+.btn:disabled,
+.btn[disabled],
+.btn.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.btn:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-blush);
+  outline-offset: 2px;
+}
+
+/* Harmonizing Existing Project Button Classes */
+.shop-now-btn,
+.cta-btn,
+.btn-action,
+.btn-auth-submit,
+.btn-checkout-primary {
+  border-radius: var(--radius-md) !important; /* Cap giant pills to clean 8px */
+  font-family: var(--font-sans) !important;
+}
+
+/* ------------------------------------------------------------------
+   FORM ELEMENTS NORMALIZATION
+   ------------------------------------------------------------------ */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+select,
+textarea,
+.form-input,
+.form-select,
+.form-textarea,
+.form-control {
+  display: block;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: #ffffff;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  min-height: 44px; /* Touch friendly */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select,
+.form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 14px center;
+  background-size: 16px;
+  padding-left: 36px;
+}
+
+html[dir="ltr"] select,
+html[dir="ltr"] .form-select {
+  background-position: right 14px center;
+  padding-left: 14px;
+  padding-right: 36px;
+}
+
+textarea,
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Focus State */
+input:focus,
+select:focus,
+textarea:focus,
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-blush);
+  box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.12);
+  background-color: #ffffff;
+}
+
+/* Disabled State */
+input:disabled,
+select:disabled,
+textarea:disabled,
+.form-control:disabled {
+  background-color: #f7f6f5;
+  color: var(--color-subtle);
+  border-color: var(--border-light);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+/* Error / Invalid State */
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid,
+input.error,
+select.error,
+textarea.error,
+.form-control.is-invalid {
+  border-color: var(--color-danger) !important;
+}
+
+input.is-invalid:focus,
+select.is-invalid:focus,
+textarea.is-invalid:focus,
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(190, 18, 60, 0.12) !important;
+}
+
+/* Form Helper Typography */
+.form-group {
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.form-hint,
+.form-helper {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.form-error {
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+  line-height: 1.4;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------------
+   ANTI-SLOP NORMALIZATION (Flatten excessive depth, no giant capsules)
+   ------------------------------------------------------------------ */
+/* Restrain giant 24-30px container borders */
+.card,
+.box,
+.panel {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--color-surface);
+}
+
+/* Bidirectional Numbers formatting */
+.price-tag,
+.price-value,
+.currency-num {
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
+  direction: ltr;
+  display: inline-block;
+}

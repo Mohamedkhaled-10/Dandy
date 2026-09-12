@@ -1,0 +1,808 @@
+/**
+ * ====================================================================
+ * DANDY COSMETICS — GLOBAL DESIGN FOUNDATION (PHASE 01)
+ * Modern Minimal E-Commerce Design System
+ * ====================================================================
+ */
+
+:root {
+  /* ------------------------------------------------------------------
+     1. NEW OFFICIAL DANDY PALETTE (Complete System)
+     ------------------------------------------------------------------ */
+
+  /* Family 1: DUST GREY — Structure / Neutral System */
+  --color-dust-grey-default: #d6d2d2;
+  --color-dust-grey-100: #2c2828;
+  --color-dust-grey-200: #595050;
+  --color-dust-grey-300: #857979;
+  --color-dust-grey-400: #aea5a5;
+  --color-dust-grey-500: #d6d2d2;
+  --color-dust-grey-600: #dedbdb;
+  --color-dust-grey-700: #e6e4e4;
+  --color-dust-grey-800: #efeded;
+  --color-dust-grey-900: #f7f6f6;
+
+  /* Family 2: LAVENDER VEIL — Soft Brand Surfaces & Sophisticated Contrast */
+  --color-lavender-veil-default: #f1e4f3;
+  --color-lavender-veil-100: #3c1d41;
+  --color-lavender-veil-200: #783a81;
+  --color-lavender-veil-300: #ad61b8;
+  --color-lavender-veil-400: #cea2d5;
+  --color-lavender-veil-500: #f1e4f3;
+  --color-lavender-veil-600: #f3e8f5;
+  --color-lavender-veil-700: #f6eef7;
+  --color-lavender-veil-800: #f9f4fa;
+  --color-lavender-veil-900: #fcf9fc;
+
+  /* Family 3: SOFT BLOSSOM — Soft Primary Pink */
+  --color-soft-blossom-default: #f4bbd3;
+  --color-soft-blossom-100: #4b0c26;
+  --color-soft-blossom-200: #95184c;
+  --color-soft-blossom-300: #dc2873;
+  --color-soft-blossom-400: #e873a4;
+  --color-soft-blossom-500: #f4bbd3;
+  --color-soft-blossom-600: #f6cadd;
+  --color-soft-blossom-700: #f9d8e5;
+  --color-soft-blossom-800: #fbe5ee;
+  --color-soft-blossom-900: #fdf2f6;
+
+  /* Family 4: PINK CARNATION — Main Brand Accent */
+  --color-pink-carnation-default: #f686bd;
+  --color-pink-carnation-100: #470525;
+  --color-pink-carnation-200: #8e0b4a;
+  --color-pink-carnation-300: #d5106f;
+  --color-pink-carnation-400: #f14196;
+  --color-pink-carnation-500: #f686bd;
+  --color-pink-carnation-600: #f8a0cb;
+  --color-pink-carnation-700: #fab8d8;
+  --color-pink-carnation-800: #fbd0e5;
+  --color-pink-carnation-900: #fde7f2;
+
+  /* Family 5: ROSE KISS — Strong Brand / High Emphasis Accent */
+  --color-rose-kiss-default: #fe5d9f;
+  --color-rose-kiss-100: #45001d;
+  --color-rose-kiss-200: #8a013a;
+  --color-rose-kiss-300: #cf0157;
+  --color-rose-kiss-400: #fe1878;
+  --color-rose-kiss-500: #fe5d9f;
+  --color-rose-kiss-600: #fe7db3;
+  --color-rose-kiss-700: #ff9ec6;
+  --color-rose-kiss-800: #ffbed9;
+  --color-rose-kiss-900: #ffdfec;
+
+  /* ------------------------------------------------------------------
+     SEMANTIC SYSTEM MAPPINGS
+     ------------------------------------------------------------------ */
+  --color-canvas: #ffffff;
+  --color-canvas-subtle: var(--color-dust-grey-900); /* #f7f6f6 */
+  --color-surface: #ffffff;
+  --color-surface-soft: var(--color-dust-grey-900); /* #f7f6f6 */
+  --color-surface-hover: var(--color-dust-grey-800); /* #efeded */
+  --color-surface-lavender: var(--color-lavender-veil-900); /* #fcf9fc */
+  --color-surface-blossom: var(--color-soft-blossom-900); /* #fdf2f6 */
+
+  /* Neutral Dark Text & Structure (dust_grey) */
+  --color-text: var(--color-dust-grey-100);             /* #2c2828 */
+  --color-text-primary: var(--color-dust-grey-100);     /* #2c2828 */
+  --color-text-secondary: var(--color-dust-grey-200);   /* #595050 */
+  --color-muted: var(--color-dust-grey-300);            /* #857979 */
+  --color-subtle: var(--color-dust-grey-400);           /* #aea5a5 */
+
+  /* Brand Primary Anchors (High contrast, refined luxury) */
+  --color-primary: var(--color-rose-kiss-500);          /* #fe5d9f - Strongest Brand Accent */
+  --color-primary-hover: var(--color-rose-kiss-600);    /* #fe7db3 */
+  --color-primary-active: var(--color-rose-kiss-400);   /* #fe1878 */
+  --color-primary-dark: var(--color-rose-kiss-100);     /* #45001d */
+  --color-primary-soft: var(--color-rose-kiss-900);     /* #ffdfec */
+  --color-burgundy: var(--color-rose-kiss-100);         /* #45001d */
+
+  /* Main Brand Accent & Blush Interactivity (pink_carnation & soft_blossom) */
+  --color-blush: var(--color-pink-carnation-500);       /* #f686bd */
+  --color-blush-hover: var(--color-pink-carnation-600); /* #f8a0cb */
+  --color-blush-soft: var(--color-soft-blossom-900);    /* #fdf2f6 */
+  --color-blush-dark: var(--color-pink-carnation-200);  /* #8e0b4a */
+  --color-magenta: var(--color-rose-kiss-400);          /* #fe1878 */
+  --color-accent: var(--color-pink-carnation-500);      /* #f686bd */
+  --color-accent-hover: var(--color-pink-carnation-600);/* #f8a0cb */
+  --color-accent-soft: var(--color-soft-blossom-900);   /* #fdf2f6 */
+  --color-accent-dark: var(--color-pink-carnation-200); /* #8e0b4a */
+
+  /* Lavender Accents */
+  --color-lavender: var(--color-lavender-veil-500);     /* #f1e4f3 */
+  --color-lavender-dark: var(--color-lavender-veil-100);/* #3c1d41 */
+  --color-lavender-soft: var(--color-lavender-veil-900);/* #fcf9fc */
+
+  /* Subtle Warm Accents */
+  --color-gold: #b38728;
+  --color-gold-cream: #fef8ee;
+  --color-cream: #faf5f0;
+
+  /* Functional Status Colors */
+  --color-success: #15803d;
+  --color-success-soft: #f0fdf4;
+  --color-danger: #be123c;
+  --color-danger-soft: #fff1f2;
+  --color-warning: #b45309;
+  --color-warning-soft: #fffbeb;
+
+  /* Quiet, Thin Borders */
+  --border-subtle: var(--color-dust-grey-700);          /* #e6e4e4 */
+  --border-light: var(--color-dust-grey-600);           /* #dedbdb */
+  --border-medium: var(--color-dust-grey-500);          /* #d6d2d2 */
+  --border-strong: var(--color-dust-grey-400);          /* #aea5a5 */
+  --border-blush: var(--color-soft-blossom-700);        /* #f9d8e5 */
+  --border-accent: var(--color-pink-carnation-700);     /* #fab8d8 */
+  --border-lavender: var(--color-lavender-veil-400);    /* #cea2d5 */
+
+  /* ------------------------------------------------------------------
+     2. TYPOGRAPHY SYSTEM (Arabic-First Modern Hierarchy)
+     ------------------------------------------------------------------ */
+  --font-sans: 'Alexandria', 'Cairo', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Typographic Scales */
+  --text-xs: 0.75rem;       /* 12px */
+  --text-sm: 0.84375rem;    /* 13.5px */
+  --text-base: 0.9375rem;   /* 15px */
+  --text-md: 1rem;          /* 16px */
+  --text-lg: 1.125rem;      /* 18px */
+  --text-xl: 1.25rem;       /* 20px */
+  --text-2xl: 1.5rem;       /* 24px */
+  --text-3xl: 1.875rem;     /* 30px */
+  --text-4xl: 2.25rem;      /* 36px */
+
+  /* ------------------------------------------------------------------
+     3. SPACING SYSTEM (8-point Rhythm)
+     ------------------------------------------------------------------ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Container bounds */
+  --container-max-width: 1240px;
+  --container-px: 20px;
+
+  /* ------------------------------------------------------------------
+     4. RESTRAINED RADII (Controlled rounding, NO pills everywhere)
+     ------------------------------------------------------------------ */
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;          /* Standard controls, cards & inputs */
+  --radius-lg: 12px;         /* Maximum container radius */
+  --radius-full: 9999px;     /* Reserved strictly for small circular badges / status dots */
+
+  /* Legacy variable compatibility */
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  /* ------------------------------------------------------------------
+     5. SUBTLE DIFFUSED SHADOWS (Low-intensity, no neon halos)
+     ------------------------------------------------------------------ */
+  --shadow-xs: 0 1px 2px 0 rgba(28, 25, 23, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(28, 25, 23, 0.05), 0 1px 2px -1px rgba(28, 25, 23, 0.03);
+  --shadow-md: 0 4px 12px -2px rgba(28, 25, 23, 0.06), 0 2px 4px -2px rgba(28, 25, 23, 0.03);
+  --shadow-lg: 0 10px 24px -4px rgba(28, 25, 23, 0.07), 0 4px 8px -4px rgba(28, 25, 23, 0.04);
+
+  /* Transitions */
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ------------------------------------------------------------------
+   BASE DOCUMENT & ARABIC-FIRST NORMALIZATION
+   ------------------------------------------------------------------ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  direction: inherit;
+  overflow-x: hidden;
+}
+
+html[dir="rtl"] body {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="ltr"] body {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Base Headings Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 0;
+  letter-spacing: -0.01em;
+}
+
+/* Editorial Serif Accent (strictly for logo and special brand titles) */
+.font-serif,
+.logo-serif {
+  font-family: var(--font-serif);
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+  line-height: 1.65;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ------------------------------------------------------------------
+   CONTAINERS & STRUCTURAL WIDTHS
+   ------------------------------------------------------------------ */
+.container,
+.site-container,
+.page-container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-px);
+  padding-right: var(--container-px);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --container-px: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --container-px: 32px;
+  }
+}
+
+/* Standard Section Layout */
+.section {
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-16);
+  }
+}
+
+/* ------------------------------------------------------------------
+   SECTION HEADINGS & HIERARCHY
+   ------------------------------------------------------------------ */
+.page-header {
+  margin-bottom: var(--space-8);
+}
+
+.page-title {
+  font-size: clamp(1.75rem, 3.2vw, 2.25rem);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.25;
+  margin-bottom: var(--space-2);
+}
+
+.page-subtitle {
+  font-size: var(--text-md);
+  color: var(--color-muted);
+  line-height: 1.6;
+  max-width: 65ch;
+  margin: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.section-title,
+.section-heading {
+  font-size: clamp(1.25rem, 2.4vw, 1.625rem);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.section-subtitle,
+.section-description {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  line-height: 1.5;
+  margin-top: var(--space-1);
+  max-width: 60ch;
+}
+
+/* View All Link (Clean, minimalist with directional motion) */
+.view-all-link,
+.section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-blush);
+  text-decoration: none;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.view-all-link:hover,
+.section-link:hover {
+  color: var(--color-primary-hover);
+  gap: 9px;
+}
+
+.view-all-link svg,
+.section-link svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+html[dir="rtl"] .view-all-link svg,
+html[dir="rtl"] .section-link svg {
+  transform: rotate(180deg);
+}
+
+/* ------------------------------------------------------------------
+   BUTTONS SYSTEM (Modern Minimal — Restrained Radii, NO generic pills)
+   ------------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 10px 20px;
+  border-radius: var(--radius-md); /* 8px - NOT a pill */
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.985);
+}
+
+/* 1. Primary Button (Strong Brand: Rose Kiss) */
+.btn-primary,
+button.btn-primary,
+a.btn-primary {
+  background-color: var(--color-rose-kiss-500);
+  color: #ffffff !important;
+  border-color: var(--color-rose-kiss-500);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-primary:hover,
+button.btn-primary:hover,
+a.btn-primary:hover {
+  background-color: var(--color-rose-kiss-600);
+  border-color: var(--color-rose-kiss-600);
+  color: #ffffff !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:active,
+button.btn-primary:active,
+a.btn-primary:active {
+  background-color: var(--color-rose-kiss-400);
+  border-color: var(--color-rose-kiss-400);
+}
+
+/* 2. Secondary Button (Pink Carnation Accent) */
+.btn-secondary,
+button.btn-secondary,
+a.btn-secondary {
+  background-color: var(--color-pink-carnation-500);
+  color: #ffffff !important;
+  border-color: var(--color-pink-carnation-500);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-secondary:hover,
+button.btn-secondary:hover,
+a.btn-secondary:hover {
+  background-color: var(--color-pink-carnation-600);
+  border-color: var(--color-pink-carnation-600);
+  color: #ffffff !important;
+}
+
+.btn-secondary:active,
+button.btn-secondary:active,
+a.btn-secondary:active {
+  background-color: var(--color-pink-carnation-400);
+  border-color: var(--color-pink-carnation-400);
+}
+
+/* 3. Soft Button (Soft Blossom / Powder Pink) */
+.btn-soft,
+button.btn-soft,
+a.btn-soft {
+  background-color: var(--color-soft-blossom-800);
+  color: var(--color-pink-carnation-200) !important;
+  border-color: var(--color-soft-blossom-700);
+}
+
+.btn-soft:hover,
+button.btn-soft:hover,
+a.btn-soft:hover {
+  background-color: var(--color-soft-blossom-700);
+  color: var(--color-pink-carnation-100) !important;
+  border-color: var(--color-soft-blossom-600);
+}
+
+/* 4. Outline Button */
+.btn-outline,
+button.btn-outline,
+a.btn-outline {
+  background-color: transparent;
+  color: var(--color-pink-carnation-200) !important;
+  border-color: var(--color-pink-carnation-400);
+}
+
+.btn-outline:hover,
+button.btn-outline:hover,
+a.btn-outline:hover {
+  background-color: var(--color-soft-blossom-900);
+  border-color: var(--color-rose-kiss-500);
+  color: var(--color-rose-kiss-500) !important;
+}
+
+/* 5. Neutral Button */
+.btn-neutral,
+button.btn-neutral,
+a.btn-neutral {
+  background-color: #ffffff;
+  color: var(--color-text) !important;
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-neutral:hover,
+button.btn-neutral:hover,
+a.btn-neutral:hover {
+  background-color: var(--color-surface-soft);
+  border-color: var(--color-dust-grey-400);
+  color: var(--color-text) !important;
+}
+
+/* 6. Tertiary / Ghost Button (Flat Text with subtle surface on hover) */
+.btn-tertiary,
+.btn-ghost,
+.btn-text,
+button.btn-tertiary,
+a.btn-tertiary {
+  background-color: transparent;
+  color: var(--color-text) !important;
+  border-color: transparent;
+}
+
+.btn-tertiary:hover,
+.btn-ghost:hover,
+.btn-text:hover,
+button.btn-tertiary:hover,
+a.btn-tertiary:hover {
+  background-color: var(--color-surface-soft);
+  color: var(--color-rose-kiss-500) !important;
+}
+
+/* 7. Icon Button */
+.btn-icon,
+button.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: #ffffff;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-icon:hover {
+  border-color: var(--color-pink-carnation-500);
+  background-color: var(--color-soft-blossom-900);
+  color: var(--color-rose-kiss-500);
+}
+
+/* ------------------------------------------------------------------
+   BADGES & CHIPS SYSTEM
+   ------------------------------------------------------------------ */
+.badge,
+.tag,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.badge-discount,
+.badge-sale {
+  background-color: var(--color-rose-kiss-500);
+  color: #ffffff;
+}
+
+.badge-promo,
+.badge-featured {
+  background-color: var(--color-pink-carnation-500);
+  color: #ffffff;
+}
+
+.badge-soft,
+.badge-category {
+  background-color: var(--color-soft-blossom-800);
+  color: var(--color-soft-blossom-200);
+  border: 1px solid var(--color-soft-blossom-700);
+}
+
+.badge-lavender {
+  background-color: var(--color-lavender-veil-700);
+  color: var(--color-lavender-veil-100);
+  border: 1px solid var(--color-lavender-veil-400);
+}
+
+.badge-neutral {
+  background-color: var(--color-dust-grey-800);
+  color: var(--color-dust-grey-200);
+  border: 1px solid var(--color-dust-grey-600);
+}
+
+/* Button Sizing Variations */
+.btn-sm {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+  padding: 13px 26px;
+  font-size: var(--text-md);
+  border-radius: var(--radius-md);
+}
+
+.btn-block,
+.btn-full {
+  display: flex;
+  width: 100%;
+}
+
+/* Disabled and Focus States */
+.btn:disabled,
+.btn[disabled],
+.btn.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.btn:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-rose-kiss-500);
+  outline-offset: 2px;
+}
+
+/* Harmonizing Existing Project Button Classes */
+.shop-now-btn,
+.cta-btn,
+.btn-action,
+.btn-auth-submit,
+.btn-checkout-primary {
+  border-radius: var(--radius-md) !important; /* Cap giant pills to clean 8px */
+  font-family: var(--font-sans) !important;
+}
+
+/* ------------------------------------------------------------------
+   FORM ELEMENTS NORMALIZATION
+   ------------------------------------------------------------------ */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+select,
+textarea,
+.form-input,
+.form-select,
+.form-textarea,
+.form-control {
+  display: block;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: #ffffff;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  min-height: 44px; /* Touch friendly */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select,
+.form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23857979' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 14px center;
+  background-size: 16px;
+  padding-left: 36px;
+}
+
+html[dir="ltr"] select,
+html[dir="ltr"] .form-select {
+  background-position: right 14px center;
+  padding-left: 14px;
+  padding-right: 36px;
+}
+
+textarea,
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Focus State */
+input:focus,
+select:focus,
+textarea:focus,
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-pink-carnation-500);
+  box-shadow: 0 0 0 3px rgba(246, 134, 189, 0.18);
+  background-color: #ffffff;
+}
+
+/* Disabled State */
+input:disabled,
+select:disabled,
+textarea:disabled,
+.form-control:disabled {
+  background-color: #f7f6f5;
+  color: var(--color-subtle);
+  border-color: var(--border-light);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+/* Error / Invalid State */
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid,
+input.error,
+select.error,
+textarea.error,
+.form-control.is-invalid {
+  border-color: var(--color-danger) !important;
+}
+
+input.is-invalid:focus,
+select.is-invalid:focus,
+textarea.is-invalid:focus,
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(190, 18, 60, 0.12) !important;
+}
+
+/* Form Helper Typography */
+.form-group {
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.form-hint,
+.form-helper {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.form-error {
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+  line-height: 1.4;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------------------
+   ANTI-SLOP NORMALIZATION (Flatten excessive depth, no giant capsules)
+   ------------------------------------------------------------------ */
+/* Restrain giant 24-30px container borders */
+.card,
+.box,
+.panel {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--color-surface);
+}
+
+/* Bidirectional Numbers formatting */
+.price-tag,
+.price-value,
+.currency-num {
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
+  direction: ltr;
+  display: inline-block;
+}

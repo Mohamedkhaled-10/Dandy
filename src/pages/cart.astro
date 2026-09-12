@@ -14,39 +14,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <meta property="og:url" content="https://dandy-ebon.vercel.app/cart" />
     <meta property="og:title" content="Shopping Cart & Secure Checkout | Dandy" />
     <meta property="og:description" content="Securely finalize your purchase of premium organic botanical items." />
-    <meta property="og:image" content="https://i.postimg.cc/0yKZhwzg/601405410-122174066234434656-1527373666969709188-n.jpg" />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
 
     <style is:global>
       .cart-section {
-        padding: 130px 0 80px;
+        padding: 120px 0 80px;
         min-height: 80vh;
       }
 
       .cart-checkout-container {
-        max-width: 1040px;
+        max-width: 1060px;
         margin: 0 auto;
       }
 
-      /* Stepper Component */
+      /* Modern Minimal Stepper */
       .checkout-stepper {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 25px;
+        margin-bottom: 24px;
         position: relative;
         background: var(--color-surface);
         border: 1px solid var(--border-light);
         border-radius: var(--border-radius-md);
-        padding: 20px 30px;
-        box-shadow: var(--shadow-sm);
+        padding: 18px 28px;
       }
 
       .stepper-line {
         position: absolute;
         top: 50%;
-        left: 15%;
-        right: 15%;
-        height: 3px;
+        left: 14%;
+        right: 14%;
+        height: 2px;
         background: var(--border-light);
         z-index: 1;
         transform: translateY(-50%);
@@ -55,12 +54,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .stepper-line-progress {
         position: absolute;
         top: 50%;
-        left: 15%;
-        height: 3px;
+        left: 14%;
+        height: 2px;
         background: var(--color-blush);
         z-index: 2;
         transform: translateY(-50%);
-        transition: width 0.4s ease;
+        transition: width 0.35s ease;
         width: 0%;
       }
 
@@ -72,167 +71,125 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         position: relative;
         z-index: 3;
         background: var(--color-surface);
-        padding: 0 10px;
+        padding: 0 12px;
         flex: 1;
+        text-align: center;
       }
 
       .step-num-icon {
-        width: 36px;
-        height: 36px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         background: var(--color-surface-soft);
-        border: 2px solid var(--border-light);
+        border: 1.5px solid var(--border-light);
         color: var(--color-muted);
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
         font-size: 0.95rem;
-        transition: var(--transition-smooth);
+        transition: all 0.2s ease;
       }
 
       .stepper-step.active .step-num-icon {
         background: var(--color-blush);
         border-color: var(--color-blush);
         color: #fff;
-        box-shadow: 0 4px 12px rgba(217,141,153,0.3);
+        box-shadow: 0 4px 14px rgba(219, 39, 119, 0.25);
       }
 
       .stepper-step.completed .step-num-icon {
-        background: var(--color-success);
-        border-color: var(--color-success);
+        background: #059669;
+        border-color: #059669;
         color: #fff;
       }
 
       .step-text {
-        font-size: 0.85rem;
+        font-size: 0.88rem;
         font-weight: 700;
         color: var(--color-muted);
-        transition: var(--transition-fast);
+        transition: color 0.2s;
       }
 
       .stepper-step.active .step-text {
         color: var(--color-primary);
       }
 
-      /* Info Bubbles Design */
+      /* Clean Trust Info Bar */
       .info-bubbles-container {
         display: flex;
         justify-content: center;
         align-items: center;
         flex-wrap: wrap;
         gap: 10px;
-        margin-bottom: 30px;
+        margin-bottom: 28px;
       }
 
       .info-bubble {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        background: rgba(217, 141, 153, 0.08);
+        gap: 7px;
+        background: var(--color-surface);
         color: var(--color-primary);
-        border: 1px solid rgba(217, 141, 153, 0.2);
+        border: 1px solid var(--border-light);
         padding: 6px 14px;
-        border-radius: 50px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        border-radius: 99px;
+        font-size: 0.82rem;
+        font-weight: 600;
       }
 
       .info-bubble i {
         color: var(--color-blush);
-        font-size: 0.9rem;
+        font-size: 0.85rem;
       }
 
-      /* Checkout Steps panels */
+      /* Step Panels Transition */
       .checkout-step-panel {
         display: none;
       }
 
       .checkout-step-panel.active {
         display: block;
-        animation: fadeIn 0.4s ease;
+        animation: fadeIn 0.3s ease;
       }
 
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: translateY(0); }
       }
 
-      /* Cart layout cards */
+      /* 2-Column Responsive Layout */
       .catalog-checkout-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 30px;
+        grid-template-columns: 1.85fr 1.15fr;
+        gap: 24px;
+        align-items: start;
       }
 
       @media (max-width: 900px) {
         .catalog-checkout-grid {
           grid-template-columns: 1fr;
-          gap: 24px;
+          gap: 20px;
         }
       }
 
       .panel-main-card {
         background: var(--color-surface);
         border: 1px solid var(--border-light);
-        border-radius: var(--border-radius-lg);
-        padding: 30px;
-        box-shadow: var(--shadow-sm);
+        border-radius: var(--border-radius-md);
+        padding: 24px;
       }
 
       .panel-side-summary {
         background: var(--color-surface);
         border: 1px solid var(--border-light);
-        border-radius: var(--border-radius-lg);
-        padding: 30px;
-        box-shadow: var(--shadow-sm);
-        height: fit-content;
+        border-radius: var(--border-radius-md);
+        padding: 24px;
+        position: sticky;
+        top: 100px;
       }
 
-      /* Tactile control +/- button overrides */
-      .qty-tactile-selector {
-        display: inline-flex;
-        align-items: center;
-        border: 1px solid var(--border-light);
-        border-radius: 99px;
-        padding: 4px;
-        background: var(--color-surface-soft);
-      }
-
-      .qty-btn-adjust {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: none;
-        background: #fff;
-        color: var(--color-primary);
-        font-weight: 800;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition-fast);
-      }
-
-      .qty-btn-adjust:hover {
-        background: var(--color-blush);
-        color: #fff;
-      }
-
-      .qty-display-box {
-        width: 34px;
-        text-align: center;
-        font-weight: 700;
-        font-size: 0.95rem;
-        border: none;
-        background: transparent;
-        outline: none;
-        color: var(--color-primary);
-      }
-
-      /* Cart List items custom elements */
+      /* Modern Minimal Product Row */
       .cart-product-list-item {
         display: flex;
         align-items: center;
@@ -242,62 +199,111 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         gap: 16px;
       }
 
+      .cart-product-list-item:first-child {
+        padding-top: 4px;
+      }
+
       .cart-product-list-item:last-child {
         border-bottom: none;
+        padding-bottom: 4px;
       }
 
       .cart-item-info {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 14px;
         flex: 1;
+        min-width: 0;
       }
 
       .cart-item-info img {
-        width: 76px;
-        height: 76px;
+        width: 72px;
+        height: 72px;
         object-fit: cover;
-        border-radius: var(--border-radius-sm);
+        border-radius: 8px;
         border: 1px solid var(--border-light);
+        flex-shrink: 0;
       }
 
       .cart-item-meta {
         display: flex;
         flex-direction: column;
         gap: 3px;
+        min-width: 0;
       }
 
       .cart-item-meta h3 {
-        font-size: 1.05rem;
+        font-size: 0.98rem;
         font-weight: 700;
         color: var(--color-primary);
         margin: 0;
-        line-height: 1.35;
+        line-height: 1.4;
       }
 
       .cart-item-scent-badge {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        font-size: 0.88rem;
+        gap: 5px;
+        font-size: 0.8rem;
         font-weight: 700;
         color: var(--color-blush);
         background: rgba(219, 39, 119, 0.08);
-        border: 1px solid rgba(219, 39, 119, 0.22);
-        padding: 3px 12px;
+        padding: 2px 10px;
         border-radius: 99px;
         width: fit-content;
-        margin: 3px 0;
+        margin: 2px 0;
       }
 
       .cart-item-scent-badge i {
-        font-size: 0.78rem;
+        font-size: 0.72rem;
       }
 
       .cart-item-unit-price {
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         color: var(--color-muted);
         font-weight: 500;
+      }
+
+      /* Tactile +/- Quantity Selector */
+      .qty-tactile-selector {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--border-light);
+        border-radius: 99px;
+        padding: 3px;
+        background: var(--color-surface-soft);
+      }
+
+      .qty-btn-adjust {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: none;
+        background: #fff;
+        color: var(--color-primary);
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        transition: all 0.15s ease;
+      }
+
+      .qty-btn-adjust:hover {
+        background: var(--color-blush);
+        color: #fff;
+      }
+
+      .qty-display-box {
+        width: 30px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+        background: transparent;
+        outline: none;
+        color: var(--color-primary);
       }
 
       .action-btn-delete {
@@ -305,13 +311,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border: none;
         background: none;
         cursor: pointer;
-        font-size: 1rem;
-        padding: 6px;
-        transition: var(--transition-fast);
+        font-size: 0.95rem;
+        padding: 8px;
+        border-radius: 6px;
+        transition: color 0.2s, background-color 0.2s;
       }
 
       .action-btn-delete:hover {
-        color: var(--color-danger);
+        color: #dc2626;
+        background: #fee2e2;
       }
 
       /* Step 2 Inputs */
@@ -319,68 +327,88 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         flex-direction: column;
         gap: 6px;
-        margin-bottom: 20px;
+        margin-bottom: 18px;
       }
 
       .form-group-checkout label {
         font-weight: 700;
-        font-size: 0.9rem;
-        color: var(--color-text);
+        font-size: 0.88rem;
+        color: var(--color-primary);
       }
 
       .form-group-checkout input, .form-group-checkout select {
-        padding: 12px 16px;
+        padding: 12px 14px;
         border: 1px solid var(--border-light);
-        border-radius: var(--border-radius-sm);
+        border-radius: 8px;
         outline: none;
-        font-size: 0.95rem;
-        background: var(--color-canvas);
-        transition: var(--transition-fast);
+        font-size: 0.92rem;
+        background: var(--color-surface-soft);
+        transition: border-color 0.2s, background-color 0.2s;
         width: 100%;
+        font-family: inherit;
+        box-sizing: border-box;
       }
 
       .form-group-checkout input:focus, .form-group-checkout select:focus {
         border-color: var(--color-blush);
         background: #fff;
+        box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.1);
       }
 
       .form-row-double {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        gap: 14px;
       }
 
       @media (max-width: 600px) {
+        .checkout-stepper {
+          padding: 12px 8px;
+          margin-bottom: 18px;
+        }
+        .stepper-step {
+          padding: 0 4px;
+          gap: 4px;
+        }
+        .step-num-icon {
+          width: 32px;
+          height: 32px;
+          font-size: 0.82rem;
+        }
+        .step-text {
+          font-size: 0.72rem;
+        }
         .form-row-double {
           grid-template-columns: 1fr;
           gap: 0;
         }
+        .checkout-nav-row {
+          flex-direction: column-reverse;
+          gap: 10px;
+        }
+        .btn-checkout-primary, .btn-checkout-secondary {
+          width: 100%;
+          justify-content: center;
+          padding: 11px 18px;
+          font-size: 0.9rem;
+        }
+        .cart-product-list-item {
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .cart-section {
+          padding: 100px 0 60px;
+        }
       }
 
-      /* Badging trust checks */
-      .trust-checkout-tag {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.82rem;
-        color: var(--color-muted);
-        margin-top: 15px;
-        border-top: 1px solid var(--border-light);
-        padding-top: 12px;
-      }
-
-      .trust-checkout-tag i {
-        color: var(--color-success);
-      }
-
-      /* Confirmation summary card */
+      /* Step 3 Review Blocks */
       .final-review-section-header {
-        font-size: 0.92rem;
-        color: var(--color-gold);
-        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--color-primary);
+        font-weight: 800;
         margin-bottom: 10px;
-        border-bottom: 2px solid var(--color-gold-cream);
         padding-bottom: 6px;
+        border-bottom: 1px solid var(--border-light);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -389,33 +417,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .final-review-block {
         background: var(--color-surface-soft);
         border: 1px solid var(--border-light);
-        border-radius: var(--border-radius-md);
+        border-radius: 8px;
         padding: 16px;
         margin-bottom: 20px;
+        font-size: 0.9rem;
+        line-height: 1.6;
       }
 
       .final-review-block p {
-        margin-bottom: 6px;
-        font-size: 0.95rem;
+        margin: 0 0 6px;
       }
-      
+
+      .final-review-block p:last-child {
+        margin-bottom: 0;
+      }
+
       .final-review-block p strong {
         color: var(--color-primary);
       }
 
-      .final-summary-total-lg {
-        font-size: 2.22rem;
-        font-weight: 800;
-        color: var(--color-primary);
-      }
-
-      /* Navigation CTA buttons */
+      /* Navigation CTA Buttons */
       .checkout-nav-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 30px;
-        gap: 16px;
+        margin-top: 24px;
+        gap: 14px;
       }
 
       .btn-checkout-primary {
@@ -423,39 +450,59 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         color: #fff;
         border: none;
         border-radius: 99px;
-        padding: 14px 36px;
+        padding: 13px 30px;
         font-weight: 700;
-        font-size: 1.05rem;
+        font-size: 0.98rem;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        transition: var(--transition-smooth);
-        box-shadow: 0 8px 18px rgba(217, 141, 153, 0.2);
+        gap: 8px;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(219, 39, 119, 0.2);
+        font-family: inherit;
+        text-decoration: none;
       }
 
-      .btn-checkout-primary:hover {
+      .btn-checkout-primary:hover:not(:disabled) {
         background: var(--color-primary);
-        transform: translateY(-2px);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
       }
 
       .btn-checkout-secondary {
-        background: #fff;
+        background: var(--color-surface);
         border: 1px solid var(--border-light);
-        color: var(--color-muted);
+        color: var(--color-text);
         border-radius: 99px;
-        padding: 14px 28px;
+        padding: 12px 24px;
         font-weight: 700;
+        font-size: 0.92rem;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        transition: var(--transition-fast);
+        gap: 8px;
+        transition: all 0.2s ease;
+        font-family: inherit;
       }
 
       .btn-checkout-secondary:hover {
-        color: var(--color-primary);
         border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+
+      .trust-checkout-tag {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--color-muted);
+        margin-top: 16px;
+        border-top: 1px solid var(--border-light);
+        padding-top: 12px;
+      }
+
+      .trust-checkout-tag i {
+        color: #059669;
       }
     </style>
   </slot>
@@ -468,26 +515,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="stepper-line-progress" id="stepperLineProgress"></div>
 
         <div class="stepper-step active" id="stepper-step-1">
-          <div class="step-num-icon"><i class="fas fa-shopping-basket"></i></div>
-          <span class="step-text">Shopping Bag</span>
+          <div class="step-num-icon"><i class="fas fa-shopping-bag"></i></div>
+          <span class="step-text">حقيبة التسوق</span>
         </div>
         
         <div class="stepper-step" id="stepper-step-2">
           <div class="step-num-icon"><i class="fas fa-truck"></i></div>
-          <span class="step-text">تفاصيل الشحن</span>
+          <span class="step-text">بيانات الشحن</span>
         </div>
         
         <div class="stepper-step" id="stepper-step-3">
-          <div class="step-num-icon"><i class="fas fa-check-double"></i></div>
-          <span class="step-text">مراجعة وتأكيد الطلب</span>
+          <div class="step-num-icon"><i class="fas fa-check-circle"></i></div>
+          <span class="step-text">المراجعة والتأكيد</span>
         </div>
       </div>
 
       <div class="info-bubbles-container" dir="rtl">
-        <span class="info-bubble"><i class="fas fa-gift"></i> شحن مجاني للمشتريات فوق 2000 جنيه</span>
+        <span class="info-bubble"><i class="fas fa-truck"></i> شحن مجاني للطلبات فوق 2000 ج.م</span>
         <span class="info-bubble"><i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام</span>
-        <span class="info-bubble"><i class="fas fa-bolt"></i> توصيل سريع لجميع المحافظات</span>
-        <span class="info-bubble"><i class="fas fa-sparkles"></i> منتجات طبيعية وأصلية 100%</span>
+        <span class="info-bubble"><i class="fas fa-shield-alt"></i> منتجات طبيعية أصلية 100%</span>
+        <span class="info-bubble"><i class="fas fa-bolt"></i> شحن سريع لجميع المحافظات</span>
       </div>
 
       <div id="checkoutFlowViews">
@@ -496,35 +543,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="catalog-checkout-grid">
             
             <div class="panel-main-card">
-              <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary); text-align: right;" dir="rtl"><i class="fas fa-shopping-bag"></i> مراجعة المنتجات المختارة في حقيبتك</h2>
+              <h2 style="font-size:1.15rem; font-weight:800; border-bottom:1px solid var(--border-light); padding-bottom:12px; margin-bottom:16px; color:var(--color-primary); text-align: right;" dir="rtl">
+                <i class="fas fa-shopping-bag" style="color:var(--color-blush); margin-left:8px;"></i> المنتجات في حقيبتك
+              </h2>
               
               <div id="cartItemsList">
               </div>
             </div>
 
             <div class="panel-side-summary">
-              <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:16px;">Billing Summary</h3>
+              <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:16px; color:var(--color-primary); text-align: right;" dir="rtl">
+                <i class="fas fa-receipt" style="color:var(--color-blush); margin-left:6px;"></i> ملخص الحساب
+              </h3>
               
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:700;">
-                <span style="color:var(--color-muted);">Items Subtotal:</span>
-                <span id="subtotalValSummary">00.00 EGP</span>
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.92rem;">
+                <span style="color:var(--color-muted);">المجموع الفرعي:</span>
+                <span id="subtotalValSummary" style="font-weight:700; color:var(--color-primary);">00.00 ج.م</span>
               </div>
               
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.9rem; color:var(--color-muted);">
-                <span>Shipping cost:</span>
-                <span style="color:var(--color-muted); font-style:italic;" id="shippingCostSummary1">Calculated at next step</span>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem;">
+                <span style="color:var(--color-muted);">تكلفة الشحن:</span>
+                <span style="color:var(--color-muted);" id="shippingCostSummary1">تُحدد في الخطوة التالية</span>
               </div>
 
-              <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">Estimated Total:</span>
-                <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue1">00 EGP</strong>
+              <div style="border-top:1px solid var(--border-light); margin:14px 0; padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:800; font-size:1rem; color:var(--color-primary);">الإجمالي التقديري:</span>
+                <strong style="font-size:1.35rem; color:var(--color-blush);" id="grandTotalSummaryValue1">00 ج.م</strong>
               </div>
 
-              <button class="btn-checkout-primary" style="width:100%; justify-content:center;" onclick="goToStep(2)">Proceed to Delivery <i class="fas fa-long-arrow-alt-right"></i></button>
+              <button class="btn-checkout-primary" style="width:100%; justify-content:center;" onclick="goToStep(2)">
+                <span>متابعة لبيانات الشحن</span>
+                <i class="fas fa-arrow-left"></i>
+              </button>
               
               <div class="trust-checkout-tag">
                 <i class="fas fa-shield-alt"></i>
-                <span>100% Secure browsing and connection.</span>
+                <span>تسوق آمن 100% وتشفير كامل للبيانات</span>
               </div>
             </div>
 
@@ -535,15 +589,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="catalog-checkout-grid">
             
             <div class="panel-main-card">
-              <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-map-marker-alt"></i> أين يجب أن نقوم بتوصيل طلبك؟</h2>
+              <h2 style="font-size:1.15rem; font-weight:800; border-bottom:1px solid var(--border-light); padding-bottom:12px; margin-bottom:18px; color:var(--color-primary);">
+                <i class="fas fa-map-marker-alt" style="color:var(--color-blush); margin-left:8px;"></i> عنوان وتفاصيل التوصيل
+              </h2>
               
               <!-- اختيار العنوان للعملاء المسجلين ذوي العناوين المحفوظة -->
-              <div id="savedAddressesSection" style="display:none; margin-bottom:20px; padding:16px; background:var(--color-surface-soft, #fafafa); border:1px solid var(--border-light, #eaeaea); border-radius:12px;">
-                <div style="font-weight:700; color:var(--color-primary); margin-bottom:10px; font-size:0.95rem; display:flex; align-items:center; gap:8px;">
+              <div id="savedAddressesSection" style="display:none; margin-bottom:20px; padding:16px; background:var(--color-surface-soft); border:1px solid var(--border-light); border-radius:8px;">
+                <div style="font-weight:700; color:var(--color-primary); margin-bottom:10px; font-size:0.92rem; display:flex; align-items:center; gap:8px;">
                   <i class="fas fa-address-book" style="color:var(--color-blush);"></i>
                   <span>العناوين المحفوظة في حسابكِ</span>
                 </div>
-                <div style="display:flex; gap:18px; margin-bottom:12px; font-size:0.9rem;">
+                <div style="display:flex; gap:18px; margin-bottom:12px; font-size:0.88rem;">
                   <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:600;">
                     <input type="radio" name="addressMode" id="addrModeSaved" value="saved" checked onchange="window.toggleAddressMode('saved')">
                     <span>استخدام عنوان محفوظ</span>
@@ -554,8 +610,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                   </label>
                 </div>
                 <div id="savedSelectWrap">
-                  <label for="savedAddressSelect" style="display:block; font-size:0.85rem; color:var(--color-muted); margin-bottom:5px;">اختاري العنوان المحفوظ:</label>
-                  <select id="savedAddressSelect" class="form-control" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-light); font-family:inherit; background:#fff;" onchange="window.applySavedAddress(this.value)">
+                  <label for="savedAddressSelect" style="display:block; font-size:0.82rem; color:var(--color-muted); margin-bottom:5px;">اختاري العنوان المحفوظ:</label>
+                  <select id="savedAddressSelect" style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border-light); font-family:inherit; background:#fff;" onchange="window.applySavedAddress(this.value)">
                     <option value="">-- اختاري عنواناً محفوظاً --</option>
                   </select>
                 </div>
@@ -563,24 +619,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
               <form id="shippingFormElement" onsubmit="event.preventDefault();">
                 <div class="form-group-checkout">
-                  <label for="f-name">الاسم بالكامل</label>
+                  <label for="f-name">الاسم بالكامل <span style="color:var(--color-blush);">*</span></label>
                   <input type="text" id="f-name" placeholder="اكتب اسمك بالكامل لضمان دقة التوصيل" required>
                 </div>
 
                 <div class="form-row-double">
                   <div class="form-group-checkout">
-                    <label for="f-phone">رقم هاتف فعال (للمندوب وشركة الشحن)</label>
+                    <label for="f-phone">رقم الهاتف (للتواصل مع المندوب) <span style="color:var(--color-blush);">*</span></label>
                     <input type="tel" id="f-phone" placeholder="مثال: 01012345678" required style="text-align: right;" dir="ltr">
                   </div>
                   <div class="form-group-checkout">
                     <label for="f-email">البريد الإلكتروني (اختياري)</label>
-                    <input type="email" id="f-email" placeholder="لاستلام تحديثات تتبع الطلب" style="text-align: right;" dir="ltr">
+                    <input type="email" id="f-email" placeholder="لاستلام تفاصيل الشحن والتتبع" style="text-align: right;" dir="ltr">
                   </div>
                 </div>
 
                 <div class="form-row-double">
                   <div class="form-group-checkout">
-                    <label for="f-gov">المحافظة</label>
+                    <label for="f-gov">المحافظة <span style="color:var(--color-blush);">*</span></label>
                     <select id="f-gov" required onchange="handleGovChange()">
                       <option value="">اختر المحافظة</option>
                       <option value="Cairo">القاهرة</option>
@@ -613,43 +669,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                     </select>
                   </div>
                   <div class="form-group-checkout">
-                    <label for="f-city">المدينة / المنطقة</label>
-                    <input type="text" id="f-city" placeholder="مثال: مدينة نصر، الدقي، سان ستيفانو" required>
+                    <label for="f-city">المدينة / المنطقة <span style="color:var(--color-blush);">*</span></label>
+                    <input type="text" id="f-city" placeholder="مثال: مدينة نصر، الدقي، سموحة" required>
                   </div>
                 </div>
 
                 <div class="form-group-checkout">
-                  <label for="f-address">العنوان بالتفصيل (الشارع، المبنى، الشقة، الدور، علامة مميزة)</label>
-                  <input type="text" id="f-address" placeholder="اكتب التفاصيل الكاملة، اسم الشارع، رقم المبنى، علامة مميزة..." required>
+                  <label for="f-address">العنوان بالتفصيل (اسم الشارع، رقم العقار، الشقة، علامة مميزة) <span style="color:var(--color-blush);">*</span></label>
+                  <input type="text" id="f-address" placeholder="اكتب العنوان بالتفصيل لسرعة الوصول..." required>
                 </div>
               </form>
 
               <div class="checkout-nav-row">
-                <button class="btn-checkout-secondary" onclick="goToStep(1)"><i class="fas fa-long-arrow-alt-right"></i> العودة لحقيبة التسوق</button>
-                <button class="btn-checkout-primary" onclick="validateAndGoToReview()">الانتقال للمراجعة النهائية <i class="fas fa-long-arrow-alt-left"></i></button>
+                <button class="btn-checkout-secondary" onclick="goToStep(1)">
+                  <i class="fas fa-arrow-right"></i>
+                  <span>العودة للحقيبة</span>
+                </button>
+                <button class="btn-checkout-primary" onclick="validateAndGoToReview()">
+                  <span>الانتقال للمراجعة النهائية</span>
+                  <i class="fas fa-arrow-left"></i>
+                </button>
               </div>
             </div>
 
             <div class="panel-side-summary">
-              <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;"><i class="fas fa-receipt"></i> ملخص الطلب</h3>
+              <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:14px; color:var(--color-primary); text-align: right;" dir="rtl">
+                <i class="fas fa-receipt" style="color:var(--color-blush); margin-left:6px;"></i> ملخص الطلب
+              </h3>
               
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span style="color:var(--color-muted); font-size: 0.9rem;">المجموع الفرعي:</span>
-                <span id="subtotalValSummary2" style="font-weight:700;">00.00 ج.م</span>
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.92rem;">
+                <span style="color:var(--color-muted);">المجموع الفرعي:</span>
+                <span id="subtotalValSummary2" style="font-weight:700; color:var(--color-primary);">00.00 ج.م</span>
               </div>
 
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items: center;">
-                <span style="color:var(--color-muted); font-size: 0.9rem;">مصاريف الشحن:</span>
-                <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-blush); font-size: 0.8rem;">شحن مجاني عندما تتخطى القيمة 2000 جنيه</span>
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items: center; font-size:0.88rem;">
+                <span style="color:var(--color-muted);">مصاريف الشحن:</span>
+                <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-blush);">شحن مجاني عند الشراء بأكثر من 2000 ج.م</span>
               </div>
 
-              <div style="border-top:1px dashed var(--border-light); margin:16px 0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:800; font-size:1.1rem; color:var(--color-primary);">الإجمالي الكلي:</span>
-                <strong style="font-size:1.5rem; color:var(--color-blush);" id="grandTotalSummaryValue2">00 ج.م</strong>
+              <div style="border-top:1px solid var(--border-light); margin:14px 0; padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:800; font-size:1rem; color:var(--color-primary);">الإجمالي الكلي:</span>
+                <strong style="font-size:1.35rem; color:var(--color-blush);" id="grandTotalSummaryValue2">00 ج.م</strong>
               </div>
 
-              <div style="background:var(--color-surface-soft); font-size:0.8rem; padding:12px; border-radius:8px; margin-top:14px; border:1px solid var(--border-light); font-weight:700; color:var(--color-primary);">
-                <i class="fas fa-info-circle"></i> تتم عملية التوصيل خلال 2 - 5 أيام عمل من تاريخ تأكيد الطلب.
+              <div style="background:var(--color-surface-soft); font-size:0.8rem; padding:12px; border-radius:8px; margin-top:14px; border:1px solid var(--border-light); color:var(--color-text); line-height:1.5;">
+                <i class="fas fa-shipping-fast" style="color:var(--color-blush); margin-left:4px;"></i> يصلكِ الطلب خلال 2 إلى 5 أيام عمل من تاريخ التأكيد.
               </div>
             </div>
 
@@ -660,55 +724,67 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="catalog-checkout-grid">
             
             <div class="panel-main-card">
-              <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.35rem; border-bottom:1px solid var(--border-light); padding-bottom:10px; margin-bottom:20px; color:var(--color-primary);"><i class="fas fa-clipboard-check"></i> المراجعة النهائية لتفاصيل طلبك</h2>
+              <h2 style="font-size:1.15rem; font-weight:800; border-bottom:1px solid var(--border-light); padding-bottom:12px; margin-bottom:18px; color:var(--color-primary);">
+                <i class="fas fa-clipboard-check" style="color:var(--color-blush); margin-left:8px;"></i> المراجعة وتأكيد الطلب
+              </h2>
               
               <div class="final-review-section-header">
-                <i class="fas fa-map-marked-alt"></i> تفاصيل التوصيل وجهة الاتصال
+                <i class="fas fa-user-check" style="color:var(--color-blush);"></i> تفاصيل الشحن والمستلم
               </div>
               <div class="final-review-block">
                 <p>اسم المستلم: <strong id="revCustName">...</strong></p>
                 <p>رقم التواصل: <strong id="revCustPhone" style="direction:ltr; display:inline-block;">...</strong></p>
                 <p>البريد الإلكتروني: <span id="revCustEmail">...</span></p>
-                <p style="margin-top:10px; border-top:1px solid rgba(0,0,0,0.03); padding-top:10px;">المدينة والمحافظة: <strong id="revCustLocation">...</strong></p>
+                <p style="margin-top:8px; border-top:1px solid var(--border-light); padding-top:8px;">المدينة والمحافظة: <strong id="revCustLocation">...</strong></p>
                 <p>العنوان بالتفصيل: <strong id="revCustAddress">...</strong></p>
               </div>
 
               <div class="final-review-section-header">
-                <i class="fas fa-shopping-basket"></i> المنتجات المختارة في شحنتك
+                <i class="fas fa-shopping-bag" style="color:var(--color-blush);"></i> المنتجات المطلوبة
               </div>
-              <div id="revProductsList" style="margin-bottom:30px;">
+              <div id="revProductsList" style="margin-bottom:24px;">
               </div>
 
               <div class="checkout-nav-row">
-                <button class="btn-checkout-secondary" onclick="goToStep(2)"><i class="fas fa-long-arrow-alt-right"></i> تعديل تفاصيل العنوان</button>
-                <button class="btn-checkout-primary" style="background:var(--color-success); border-color:var(--color-success); box-shadow: 0 8px 24px rgba(60, 119, 90, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()"><i class="fas fa-check"></i> تأكيد وإتمام الطلب</button>
+                <button class="btn-checkout-secondary" onclick="goToStep(2)">
+                  <i class="fas fa-arrow-right"></i>
+                  <span>تعديل العنوان</span>
+                </button>
+                <button class="btn-checkout-primary" style="background:#059669; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);" id="finalPlaceOrderBtn" onclick="submitFinalOrder()">
+                  <i class="fas fa-check"></i>
+                  <span>تأكيد وإتمام الطلب</span>
+                </button>
               </div>
             </div>
 
             <div class="panel-side-summary">
-              <h3 style="font-family:'Space Grotesk', sans-serif; font-size:1.1rem; margin-bottom:12px;">تفاصيل الدفع</h3>
+              <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:14px; color:var(--color-primary); text-align: right;" dir="rtl">
+                <i class="fas fa-money-bill-wave" style="color:#059669; margin-left:6px;"></i> طريقة الدفع
+              </h3>
               
-              <div style="background:rgba(60, 119, 90, 0.05); color:var(--color-success); padding:16px; border-radius:12px; font-weight:700; font-size:0.88rem; line-height:1.7; margin-bottom:20px; border:1px solid rgba(60, 119, 90, 0.1);">
-                <i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام (COD)
-                <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px;">يمكنك فحص جميع المنتجات عند الاستلام قبل الدفع لضمان رضاك التام.</p>
+              <div style="background:rgba(5, 150, 105, 0.06); color:#065f46; padding:14px; border-radius:8px; font-weight:700; font-size:0.88rem; line-height:1.6; margin-bottom:18px; border:1px solid rgba(5, 150, 105, 0.15);">
+                <i class="fas fa-hand-holding-usd"></i> الدفع عند الاستلام (COD)
+                <p style="font-weight:normal; font-size:0.8rem; color:var(--color-text); margin-top:4px; margin-bottom:0;">يمكنكِ فحص وتأكيد المنتجات عند استلام الشحنة قبل الدفع.</p>
               </div>
 
-              <div style="margin-bottom:12px; line-height:1.5;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
+              <div style="margin-bottom:12px; line-height:1.6;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.9rem;">
                   <span style="color:var(--color-muted);">المجموع الفرعي:</span>
-                  <span id="summSubtotal" style="font-weight:700;">00 ج.م</span>
+                  <span id="summSubtotal" style="font-weight:700; color:var(--color-primary);">00 ج.م</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.88rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.9rem;">
                   <span style="color:var(--color-muted);">مصاريف الشحن:</span>
-                  <span id="summShipping" style="font-weight:700; color:var(--color-success);">00 ج.م</span>
+                  <span id="summShipping" style="font-weight:700; color:#059669;">00 ج.م</span>
                 </div>
-                <div style="border-top:1px dashed var(--border-light); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
-                  <span style="color:var(--color-muted); font-size:0.85rem; font-weight:700;">الإجمالي الكلي:</span>
-                  <strong style="font-size: 1.6rem; color:var(--color-primary);" id="finalSummaryTotal">00 ج.م</strong>
+                <div style="border-top:1px solid var(--border-light); margin-top:10px; padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                  <span style="color:var(--color-primary); font-size:0.92rem; font-weight:800;">الإجمالي الكلي:</span>
+                  <strong style="font-size: 1.4rem; color:var(--color-blush);" id="finalSummaryTotal">00 ج.م</strong>
                 </div>
               </div>
               
-              <p style="font-size:0.8rem; color:var(--color-muted); margin-top:8px;" id="savingTextLoader"><i class="fas fa-info-circle"></i> تأكيد الطلب يسجله بأمان ويوفر لك كود تتبع فوري.</p>
+              <p style="font-size:0.78rem; color:var(--color-muted); margin-top:10px; margin-bottom:0;" id="savingTextLoader">
+                <i class="fas fa-lock" style="color:#059669; margin-left:4px;"></i> تأكيد الطلب يسجله بأمان ويوفر لك كود تتبع فوري.
+              </p>
             </div>
 
           </div>
@@ -843,11 +919,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       if (cart.length === 0) {
         document.getElementById('cartCheckoutContainer').innerHTML = `
-          <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm);">
-            <i class="fas fa-shopping-bag" style="font-size:4.5rem; color:var(--color-blush); margin-bottom:20px;"></i>
-            <h2 style="font-family:'Space Grotesk', sans-serif; font-size:1.8em; margin-bottom:10px;">Your shopping bag is empty!</h2>
-            <p style="color:var(--color-muted); margin-bottom:24px; max-width:480px; margin-left:auto; margin-right:auto;">It looks like you haven't filled your cart with our lovely crowns of organic skincare yet. Browse and start pampering!</p>
-            <a href="/all-products" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px;"><i class="fas fa-shopping-basket"></i> Browse Dandy's Collections</a>
+          <div style="text-align:center; padding:64px 24px; background:var(--color-surface); border:1px solid var(--border-light); border-radius:var(--border-radius-md); margin:0 auto; max-width:540px;" dir="rtl">
+            <div style="width:64px; height:64px; border-radius:50%; background:var(--color-surface-soft); display:flex; align-items:center; justify-content:center; margin:0 auto 18px; color:var(--color-blush); font-size:1.6rem; border:1px solid var(--border-light);">
+              <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h2 style="font-size:1.35rem; font-weight:800; margin-bottom:8px; color:var(--color-primary);">حقيبة التسوق فارغة</h2>
+            <p style="color:var(--color-muted); font-size:0.92rem; margin-bottom:24px; line-height:1.6;">لم تقومي بإضافة أي منتجات إلى حقيبتكِ بعد. تصفحي مجموعاتنا الطبيعية الآن!</p>
+            <a href="/all-products" class="btn-checkout-primary" style="display:inline-flex; border-radius:99px; text-decoration:none;">
+              <i class="fas fa-shopping-bag"></i>
+              <span>تصفح جميع المنتجات</span>
+            </a>
           </div>
         `;
         return;
@@ -868,7 +949,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         // إذا كان المنتج لا يحتوي variants: لا تعرض أي سطر متعلق بالرائحة
         const variantHtml = (varInfo && varInfo.text)
           ? `<div class="cart-item-scent-badge">
-               <i class="fas fa-spray-can"></i>
+               <i class="fas fa-sparkles"></i>
                <span>${varInfo.label}: <strong>${varInfo.text}</strong></span>
              </div>`
           : '';
@@ -881,18 +962,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="cart-item-meta">
               <h3>${item.name}</h3>
               ${variantHtml}
-              <div class="cart-item-unit-price">السعر: ${Number(unitPrice).toFixed(0)} ج.م</div>
+              <div class="cart-item-unit-price">${Number(unitPrice).toFixed(0)} ج.م</div>
             </div>
           </div>
 
-          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:16px;">
             <div class="qty-tactile-selector">
               <button class="qty-btn-adjust" onclick="changeQty(${index}, -1)" aria-label="تقليل الكمية">-</button>
               <input type="text" readonly class="qty-display-box" value="${qtyVal}" aria-label="الكمية">
               <button class="qty-btn-adjust" onclick="changeQty(${index}, 1)" aria-label="زيادة الكمية">+</button>
             </div>
 
-            <div style="font-weight:800; color:var(--color-blush); font-size:1.1rem; min-width:85px; text-align:right;">
+            <div style="font-weight:800; color:var(--color-primary); font-size:1rem; min-width:80px; text-align:left;">
               ${Number(rowSubtotal).toFixed(0)} ج.م
             </div>
 
@@ -905,19 +986,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
 
       const sub = calculateCartSubtotal();
-      subtotalValSummary.textContent = sub.toFixed(0) + ' EGP';
+      subtotalValSummary.textContent = sub.toFixed(0) + ' ج.م';
       subtotalValSummary2.textContent = sub.toFixed(0) + ' ج.م';
-      grandTotalSummaryValue1.textContent = sub.toFixed(0) + ' EGP';
+      grandTotalSummaryValue1.textContent = sub.toFixed(0) + ' ج.م';
       grandTotalSummaryValue2.textContent = sub.toFixed(0) + ' ج.م';
 
       const shippingCostSummary1 = document.getElementById('shippingCostSummary1');
       if (shippingCostSummary1) {
         if (sub > 2000) {
-          shippingCostSummary1.textContent = 'Free Shipping';
+          shippingCostSummary1.textContent = 'شحن مجاني';
           shippingCostSummary1.style.color = 'var(--color-success)';
           shippingCostSummary1.style.fontWeight = 'bold';
         } else {
-          shippingCostSummary1.textContent = 'Calculated at next step';
+          shippingCostSummary1.textContent = 'تُحدد في الخطوة التالية';
           shippingCostSummary1.style.color = 'var(--color-muted)';
           shippingCostSummary1.style.fontWeight = 'normal';
         }

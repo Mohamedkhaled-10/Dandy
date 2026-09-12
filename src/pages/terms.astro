@@ -3,43 +3,134 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="الشروط والأحكام العامة للمتجر | Dandy"
-  description="الشروط والأحكام الخاصة بالتسوق والطلب وسياسات الشحن والاسترجاع في متجر داندي (Dandy Cosmetics) لمستحضرات التجميل والعناية الطبيعية في مصر."
+  title="الشروط والأحكام | Dandy"
+  description="الشروط والأحكام الخاصة بالتسوق والطلب وسياسات الشحن والاسترجاع في متجر داندي (Dandy)."
   canonical="https://dandy-ebon.vercel.app/terms"
 >
-  <!-- Main Terms Card -->
-  <main class="container" style="padding-top: 140px; padding-bottom: 80px;">
-    <div class="section-header" style="text-align: center; margin-bottom: 40px;">
-      <span class="sub">تنظيم الخدمة والطلب</span>
-      <h2>وثيقة الشروط والأحكام للمشتريات</h2>
-    </div>
+  <slot name="head" slot="head">
+    <style is:global>
+      .legal-page-wrap {
+        padding: 120px 20px 80px;
+        max-width: 780px;
+        margin: 0 auto;
+      }
 
-    <div class="product" style="text-align: right; max-width: 800px; margin: 0 auto; padding: 40px; animation: none; opacity: 1;">
-      <p class="p-desc" style="margin-bottom: 24px;">مرحباً بكم في <strong>Dandy</strong>. تصفح الطلب أو حجز المستحضرات على هذه المنصة يعني ضمناً موافقتكم الوافية على تفاصيل الشروط التنظيمية المبينة أدناه:</p>
+      .legal-header {
+        margin-bottom: 36px;
+        text-align: right;
+      }
 
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-hand-holding-heart" style="color:var(--color-blush)"></i> 1. دقة وأحقية الاستخدام</h3>
-      <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">يسمح لجميع زوارنا تصفح مجموعات داندي وعروضها والانتفاع بالقراءة الهادفة للمقالات لأغراض شخصية فردية، مع حظر محاولة نسخ أو نسب المحتويات أو المواد البرمجية لأي جهات مروجة دون إذن خطي.</p>
+      .legal-header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin: 0 0 8px 0;
+        letter-spacing: -0.02em;
+      }
 
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-user-shield" style="color:var(--color-blush)"></i> 2. شروط وقوانين حسابات العملاء</h3>
-      <div style="background:var(--color-surface-soft, #fdf2f8); border-radius:12px; padding:18px 20px; margin-bottom:20px; border:1px solid #fbcfe8;">
-        <ul style="margin:0; padding-right:20px; color:var(--color-text); font-size:0.95rem; line-height:1.8;">
-          <li style="margin-bottom:8px;"><strong>أهلية وصحة البيانات:</strong> يتعهد العميل بتقديم بيانات صحيحة ومحدثة عند إنشاء الحساب (الاسم الكامل، رقم الهاتف الفعّال، والبريد الإلكتروني)، مع الامتناع عن انتحال أي شخصية أو استخدام أرقام هواتف وهمية.</li>
-          <li style="margin-bottom:8px;"><strong>سرية الحساب وكلمة المرور:</strong> يتحمل العميل المسؤولية الكاملة عن الحفاظ على سرية بيانات تسجيل الدخول وكلمة المرور، وأي نشاط يتم من خلال حسابه، ويجب إخطار المتجر فوراً في حال الاشتباه في أي اختراق.</li>
-          <li style="margin-bottom:8px;"><strong>ربط الطلبات السابقة:</strong> يتم ربط الطلبات المنفذة كضيف تلقائياً بحساب العميل الجديد استناداً إلى رقم الهاتف المسجل، لتسهيل استعراض سجل الفواتير والمشتريات من لوحة "حسابي".</li>
-          <li style="margin-bottom:8px;"><strong>إدارة العناوين والمفضلة:</strong> يحق للعميل إضافة، تعديل، أو حذف عناوينه المفضلة وقائمة أمنياته في أي وقت لتسريع وتسهيل عمليات الشراء المستقبلية.</li>
-          <li style="margin-bottom:8px;"><strong>الاستخدام العادل وحظر الإساءة:</strong> يحتفظ متجر داندي بحق تجميد أو إغلاق أي حساب يثبت قيامه بإساءة استخدام المنصة، مثل تعمد رفض استلام الشحنات عند الدفع عند الاستلام بشكل متكرر دون مبرر، أو التلاعب بالأسعار والعروض.</li>
-          <li><strong>إغلاق الحساب وحذف البيانات:</strong> يمكن للعميل طلب إيقاف حسابه نهائياً أو حذف بياناته بالتواصل مع فريق الدعم عبر الواتساب أو البريد الرسمي.</li>
-        </ul>
+      .legal-header p {
+        font-size: 0.95rem;
+        color: var(--color-muted);
+        margin: 0;
+      }
+
+      .legal-article {
+        background: var(--color-surface);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-md);
+        padding: 36px;
+        color: var(--color-primary);
+        font-size: 0.95rem;
+        line-height: 1.8;
+      }
+
+      .legal-article h2 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin: 28px 0 10px;
+      }
+
+      .legal-article h2:first-child {
+        margin-top: 0;
+      }
+
+      .legal-article p {
+        color: var(--color-muted);
+        margin-bottom: 16px;
+      }
+
+      .legal-article ul {
+        margin: 12px 0 20px;
+        padding-right: 20px;
+        color: var(--color-muted);
+      }
+
+      .legal-article li {
+        margin-bottom: 8px;
+      }
+
+      .legal-article strong {
+        color: var(--color-primary);
+      }
+
+      .legal-footer-date {
+        margin-top: 32px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-light);
+        font-size: 0.85rem;
+        color: var(--color-muted);
+      }
+
+      @media (max-width: 600px) {
+        .legal-page-wrap {
+          padding-top: 100px;
+        }
+        .legal-article {
+          padding: 24px;
+        }
+      }
+    </style>
+  </slot>
+
+  <div class="legal-page-wrap container" dir="rtl">
+    <header class="legal-header">
+      <h1>الشروط والأحكام</h1>
+      <p>القواعد والضوابط المنظمة لعمليات التسوق والطلب والتوصيل في متجر داندي.</p>
+    </header>
+
+    <main class="legal-article">
+      <p>
+        مرحباً بكم في متجر <strong>Dandy</strong>. استخدامك للموقع وإتمام الطلبات يخضع للشروط والضوابط الموضحة أدناه:
+      </p>
+
+      <h2>1. الاستخدام وحقوق الملكية</h2>
+      <p>
+        يُسمح بتصفح المنتجات والمحتوى للأغراض الشخصية. جميع الصور، التركيبات، النصوص، والعلامات التجارية المنشورة هي ملك حصري لـ Dandy ومحمية بموجب القوانين ذات الصلة.
+      </p>
+
+      <h2>2. شروط حسابات العملاء</h2>
+      <ul>
+        <li><strong>صحة البيانات:</strong> يتعهد العميل بتقديم بيانات دقيقة وصحيحة (الاسم، رقم الهاتف، وعنوان التوصيل).</li>
+        <li><strong>سرية الحساب:</strong> يتحمل العميل مسؤولية الحفاظ على سرية بيانات حسابه وكلمة المرور.</li>
+        <li><strong>ربط الطلبات:</strong> يتم ربط الطلبات المنفذة كضيف تلقائياً برقم الهاتف المسجل عند إنشاء حساب جديد لتسهيل تتبع المشتريات.</li>
+        <li><strong>الاستخدام العادل:</strong> يحتفظ المتجر بحق تقييد أو تعليق أي حساب يثبت إساءة استخدامه للخدمة (مثل تكرار رفض استلام الشحنات عند الدفع عند الاستلام دون سبب مشروع).</li>
+      </ul>
+
+      <h2>3. الطلب والدفع والتوصيل</h2>
+      <p>
+        يتم تأكيد الطلبات والتواصل مع العميل لتنسيق موعد الشحن. نوفر خيار الدفع عند الاستلام لضمان راحة وثقة العميل. مدة التوصيل ورسوم الشحن تتحدد بناءً على المحافظة والمنطقة الجغرافية.
+      </p>
+
+      <h2>4. الاستبدال والاسترجاع</h2>
+      <p>
+        حرصاً على سلامة وصحة عملائنا، تخضع مستحضرات العناية الشخصية لسياسات استبدال واسترجاع صارمة. في حال استلام منتج تالف أو وجود خطأ في الشحنة، يرجى التواصل فوراً مع خدمة العملاء عبر الواتساب لمعالجة الأمر واستبدال المنتج.
+      </p>
+
+      <div class="legal-footer-date">
+        آخر تحديث: سبتمبر 2026
       </div>
-
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-phone-alt" style="color:var(--color-blush)"></i> 3. شروط التواصل والطلب المباشر</h3>
-      <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">إن المعاملات والتفاهمات اللاحقة تتم بصورة مباشرة وتفاعلية بين المشتري والتاجر عبر حزمة قنوات الاتصال الفعالة المبيّنة (مثل الواتساب والمدير الفني للمنصة). نحن نيسر تنسيق هذا الربط دون اللجوء لبوابات بنكية تجبركن على الدفع التقليدي المعقد.</p>
-
-      <h3 style="font-family:'Cairo', sans-serif; font-size:1.3rem; color:var(--color-primary); margin-top:24px; margin-bottom:12px;"><i class="fas fa-undo" style="color:var(--color-blush)"></i> 4. الاستبدال والتعويضات</h3>
-      <p style="color: var(--color-text); margin-bottom: 16px; font-size:0.95rem;">لأن ثقتكِ هي جوهر تواجدنا، نلتزم تماماً باستقبال أي مراجعات أو شكاوى تخص سلامة تغليف الشحنات أو عدم ملاءمة المنتجات، ونسرع في خدمتكن لمعالجة التعويضات بأرقى وأسرع معاملة تليق بكن.</p>
-
-      <hr style="margin: 30px 0; border: none; border-top: 1px dashed var(--border-light);" />
-      <p style="color: var(--color-muted); font-size: 0.9rem;">📅 تاريخ آخر تعديل وتوثيق للبنود: <strong>سبتمبر 2026</strong></p>
-    </div>
-  </main>
+    </main>
+  </div>
 </BaseLayout>
+
