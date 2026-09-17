@@ -646,7 +646,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             
             <div class="admin-p-actions">
               <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${d.id}')"><i class="fas fa-edit"></i> تعديل</button>
-              <a href="${d.slug ? `/product/${encodeURIComponent(d.slug)}` : `/product?id=${d.id}`}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
+              <a href="${typeof window.getProductLink === 'function' ? window.getProductLink(d) : (d.slug ? `/product/${encodeURIComponent(d.slug)}` : `/product?id=${d.id}`)}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
               <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${d.id}')" aria-label="حذف"><i class="fas fa-trash"></i></button>
             </div>
           </div>
@@ -768,7 +768,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (!editId) {
           const existingSlugs = new Set(rawProducts.map(p => p.slug).filter(Boolean));
-          payload.slug = generateProductSlug(name, existingSlugs);
+          payload.slug = (typeof window.getProductSlug === 'function')
+            ? window.getProductSlug({ name })
+            : generateProductSlug(name, existingSlugs);
+        } else {
+          const currentProd = rawProducts.find(p => p.id === editId);
+          if (currentProd && !currentProd.slug) {
+            const existingSlugs = new Set(rawProducts.filter(p => p.id !== editId).map(p => p.slug).filter(Boolean));
+            payload.slug = (typeof window.getProductSlug === 'function')
+              ? window.getProductSlug({ id: editId, name })
+              : generateProductSlug(name, existingSlugs);
+          }
         }
 
         if (hasVariants) {

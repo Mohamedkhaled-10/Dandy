@@ -57,6 +57,10 @@
       <!-- Desktop Primary Navigation Links (Simple, refined text links with subtle indicator) -->
       <nav class="desktop-nav" aria-label="التنقل الرئيسي" id="desktop-primary-nav">
         <a href="/" class="nav-link">الرئيسية</a>
+        <a href="/category/hair-care" class="nav-link">العناية بالشعر</a>
+        <a href="/category/body-care" class="nav-link">العناية بالجسم</a>
+        <a href="/category/fragrance" class="nav-link">العطور</a>
+        <a href="/category/skin-care" class="nav-link">العناية بالبشرة</a>
         <a href="/all-products" class="nav-link">جميع المنتجات</a>
         <a href="/special-offers" class="nav-link badge-link">
           العروض
@@ -217,7 +221,35 @@
     </div>
 
     <!-- Navigation Links -->
-    <div class="drawer-section-title">التنقل</div>
+    <div class="drawer-section-title">الأقسام الرئيسية</div>
+    <ul class="drawer-nav-list" id="mobile-drawer-categories-list">
+      <li>
+        <a href="/category/hair-care" class="drawer-nav-item">
+          <span>العناية بالشعر</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/category/body-care" class="drawer-nav-item">
+          <span>العناية بالجسم</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/category/fragrance" class="drawer-nav-item">
+          <span>العطور والمعطرات</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+      <li>
+        <a href="/category/skin-care" class="drawer-nav-item">
+          <span>العناية بالبشرة</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </li>
+    </ul>
+
+    <div class="drawer-section-title">التنقل العام</div>
     <ul class="drawer-nav-list" id="mobile-drawer-nav-list">
       <li>
         <a href="/" class="drawer-nav-item">
@@ -1562,20 +1594,29 @@
      RESPONSIVE BREAKPOINTS (Mobile Composition & Centered Branding)
      ========================================================================== */
 
-  @media (max-width: 1120px) {
+  @media (max-width: 1200px) {
     .header-container {
       padding-left: 16px;
       padding-right: 16px;
       gap: 16px;
     }
     .header-start {
-      gap: 20px;
+      gap: 16px;
     }
     .desktop-nav {
-      gap: 14px;
+      gap: 12px;
     }
     .nav-link {
       font-size: 0.8125rem;
+    }
+  }
+
+  @media (max-width: 990px) {
+    .desktop-nav {
+      gap: 8px;
+    }
+    .nav-link {
+      font-size: 0.775rem;
     }
   }
 

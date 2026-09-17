@@ -1804,9 +1804,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         productEl.className = 'wishlist-product-card';
         productEl.id = 'wishlist-item-' + data.id;
 
-        const productLink = data.slug
-          ? `/product/${encodeURIComponent(data.slug)}`
-          : `/product?id=${data.id}`;
+        const productLink = (typeof window.getProductLink === 'function')
+          ? window.getProductLink(data)
+          : (data.slug ? `/product/${encodeURIComponent(data.slug)}` : `/product?id=${data.id}`);
 
         const priceRaw = parseFloat(data.price) || 0;
         let priceStr = `${priceRaw} ج.م`;

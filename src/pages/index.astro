@@ -2206,9 +2206,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     initWishlistTracking();
 
     function buildProductCardHtml(prod) {
-      const productLink = prod.slug
-        ? `/product/${encodeURIComponent(prod.slug)}`
-        : `/product?id=${prod.id}`;
+      const productLink = (typeof window.getProductLink === 'function')
+        ? window.getProductLink(prod)
+        : (prod.slug ? `/product/${encodeURIComponent(prod.slug)}` : `/product?id=${prod.id}`);
 
       let badgeHtml = '';
       let priceHtml = `<span class="price-current">${prod.price} ج.م</span>`;
@@ -2287,6 +2287,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     /* --------------------------------------------------------------------------
        4. CATEGORIES RENDERER (Asymmetric Editorial Layout)
        -------------------------------------------------------------------------- */
+    function getCanonicalCategoryHref(name) {
+      const n = (name || '').toLowerCase().trim();
+      if (n.includes('شعر') || n.includes('hair')) return '/category/hair-care';
+      if (n.includes('جسم') || n.includes('body')) return '/category/body-care';
+      if (n.includes('عطر') || n.includes('عطور') || n.includes('perfume') || n.includes('fragrance')) return '/category/fragrance';
+      if (n.includes('بشرة') || n.includes('skin')) return '/category/skin-care';
+      return `/all-products?category=${encodeURIComponent(name)}`;
+    }
+
     function buildEditorialCategoryTile(c, heightClass, defaultTag) {
       const name = c.name || 'قسم داندي';
       const tag = c.tag || defaultTag || 'تشكيلة مميزة';
@@ -2295,7 +2304,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       // Backward-compatible responsive image resolution
       const desktopSrc = c.desktopImage || c.image || c.mobileImage || fallbackImg;
       const mobileSrc = c.mobileImage || c.desktopImage || c.image || fallbackImg;
-      const link = `/all-products?category=${encodeURIComponent(name)}`;
+      const link = c.href || getCanonicalCategoryHref(name);
 
       return `
         <a href="${link}" class="category-editorial-tile ${heightClass}" aria-label="${escapeHtml(name)}">
@@ -2328,35 +2337,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!categories || !categories.length) {
         categories = [
           {
-            name: 'العناية بالبشرة',
-            tag: 'ترطيب ونضارة',
-            image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=80',
-            desktopImage: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1400&q=80',
-            mobileImage: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=80',
-            layoutVariant: 'wide'
-          },
-          {
             name: 'العناية بالشعر',
             tag: 'تغذية ولمعان',
-            image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=700&q=80',
-            desktopImage: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80',
-            mobileImage: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=700&q=80',
+            href: '/category/hair-care',
+            image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208037/Gemini_Generated_Image_hgbam1hgbam1hgba.jpg',
+            desktopImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208037/Gemini_Generated_Image_hgbam1hgbam1hgba.jpg',
+            mobileImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208037/Gemini_Generated_Image_hgbam1hgbam1hgba.jpg',
             layoutVariant: 'tall'
           },
           {
-            name: 'الزيوت الطبيعية',
-            tag: 'مستخلصات عضوية',
-            image: 'https://images.unsplash.com/photo-1608248597359-251f153eeeb0?auto=format&fit=crop&w=700&q=80',
-            desktopImage: 'https://images.unsplash.com/photo-1608248597359-251f153eeeb0?auto=format&fit=crop&w=1400&q=80',
-            mobileImage: 'https://images.unsplash.com/photo-1608248597359-251f153eeeb0?auto=format&fit=crop&w=700&q=80',
+            name: 'العناية بالجسم',
+            tag: 'ترطيب ونعومة',
+            href: '/category/body-care',
+            image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208358/Gemini_Generated_Image_b5iehjb5iehjb5ie.jpg',
+            desktopImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208358/Gemini_Generated_Image_b5iehjb5iehjb5ie.jpg',
+            mobileImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208358/Gemini_Generated_Image_b5iehjb5iehjb5ie.jpg',
+            layoutVariant: 'wide'
+          },
+          {
+            name: 'العطور والمعطرات',
+            tag: 'روائح منعشة وثابتة',
+            href: '/category/fragrance',
+            image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147702/WhatsApp_Image_2026-07-10_at_10.14.43_PM.jpg',
+            desktopImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147702/WhatsApp_Image_2026-07-10_at_10.14.43_PM.jpg',
+            mobileImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147702/WhatsApp_Image_2026-07-10_at_10.14.43_PM.jpg',
             layoutVariant: 'large'
           },
           {
-            name: 'مجموعات التوفير',
-            tag: 'روتين متكامل',
-            image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=80',
-            desktopImage: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1100&q=80',
-            mobileImage: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=80',
+            name: 'العناية بالبشرة',
+            tag: 'نضارة وترطيب',
+            href: '/category/skin-care',
+            image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147700/WhatsApp_Image_2026-07-10_at_6.13.03_PM_1.jpg',
+            desktopImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147700/WhatsApp_Image_2026-07-10_at_6.13.03_PM_1.jpg',
+            mobileImage: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147700/WhatsApp_Image_2026-07-10_at_6.13.03_PM_1.jpg',
             layoutVariant: 'small'
           }
         ];
@@ -2937,9 +2950,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
        -------------------------------------------------------------------------- */
     window.addToCart = function(id, name, price, image, hasVariants, slug) {
       if (hasVariants) {
-        const productLink = slug
-          ? `/product/${encodeURIComponent(slug)}`
-          : `/product?id=${id}`;
+        const productLink = (typeof window.getProductLink === 'function')
+          ? window.getProductLink({ id, slug, name })
+          : (slug ? `/product/${encodeURIComponent(slug)}` : `/product?id=${id}`);
         window.location.href = productLink;
         return;
       }

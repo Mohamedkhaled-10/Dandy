@@ -1,5 +1,44 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getAllArticles, type Article } from '../utils/articles';
+
+// Fetch all published articles server-side via centralized article utility
+let articles: Article[] = [];
+try {
+  articles = await getAllArticles();
+} catch (err) {
+  articles = [];
+}
+
+// Fallback helper for article excerpt if empty
+function getArticleExcerpt(article: Article): string {
+  if (article.excerpt && article.excerpt.trim()) {
+    return article.excerpt.trim();
+  }
+  if (article.content) {
+    const plainText = article.content.replace(/<[^>]+>/g, '').trim();
+    return plainText.length > 160 ? plainText.substring(0, 160) + '...' : plainText;
+  }
+  return '';
+}
+
+// Format date consistently with Arabic locale
+function formatArticleDate(article: Article): string {
+  if (article.date) {
+    return article.date;
+  }
+  if (article.createdAt) {
+    try {
+      const d = new Date(article.createdAt);
+      return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch (e) {
+      return '';
+    }
+  }
+  return '';
+}
 ---
 
 <BaseLayout
@@ -74,6 +113,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         overflow: hidden;
         background: var(--color-surface-soft);
         position: relative;
+        display: block;
       }
 
       .blog-thumb img {
@@ -185,94 +225,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p>دليلكِ الشامل للعناية اليومية بالبشرة والشعر، مع نصائح تركيبات طبيعية متوازنة.</p>
   </header>
 
-  <!-- Blog Listings -->
+  <!-- Blog Listings (Server-Side Rendered) -->
   <main class="blog-section container" dir="rtl">
     <div class="blog-grid" id="blogContainer">
-      <p style="text-align: center; grid-column:1/-1; color:var(--color-muted); padding: 40px 0;">جاري تحميل المقالات...</p>
+      {articles.length > 0 ? (
+        articles.map((item) => {
+          const canonicalLink = `/blog/${encodeURIComponent(item.slug)}`;
+          const imgUrl = item.image || 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80';
+          const title = item.title || 'عنوان غير متوفر';
+          const dateText = formatArticleDate(item);
+          const excerptText = getArticleExcerpt(item);
+          const category = item.category || 'العناية بالبشرة';
+
+          return (
+            <article class="blog-card">
+              <a href={canonicalLink} class="blog-thumb" aria-label={title}>
+                <img
+                  src={imgUrl}
+                  alt={title}
+                  loading="lazy"
+                />
+              </a>
+              <div class="blog-card-body">
+                <div class="meta-row">
+                  <span class="category-tag">{category}</span>
+                  {dateText && <span>{dateText}</span>}
+                </div>
+                <h2>
+                  <a href={canonicalLink} style="color:inherit; text-decoration:none;">
+                    {title}
+                  </a>
+                </h2>
+                <p>{excerptText}</p>
+                <a href={canonicalLink} class="read-more-btn">
+                  اقرئي المقال <i class="fas fa-arrow-left"></i>
+                </a>
+              </div>
+            </article>
+          );
+        })
+      ) : (
+        <div class="blog-empty-state">
+          <i class="far fa-newspaper"></i>
+          <p>لا توجد مقالات منشورة حالياً بالمدونة.</p>
+        </div>
+      )}
     </div>
   </main>
-
-  <script is:inline>
-    const db = window.firestore || (window.firebase && firebase.firestore ? firebase.firestore() : null);
-
-    function formatArticleDate(data) {
-      if (data.createdAt && typeof data.createdAt.toDate === 'function') {
-        try {
-          return data.createdAt.toDate().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'});
-        } catch (e) {}
-      }
-      if (data.date) return data.date;
-      return '';
-    }
-
-    async function loadArticles() {
-      const container = document.getElementById('blogContainer');
-      if (!container) return;
-      
-      try {
-        if (!db) {
-          container.innerHTML = '<div class="blog-empty-state"><i class="far fa-newspaper"></i><p>لا توجد مقالات منشورة حالياً بالمدونة.</p></div>';
-          return;
-        }
-
-        const fetchPromise = db.collection('articles').orderBy('createdAt', 'desc').get();
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 4000));
-        const snapshot = await Promise.race([fetchPromise, timeoutPromise]);
-
-        if (snapshot.empty) {
-          container.innerHTML = '<div class="blog-empty-state"><i class="far fa-newspaper"></i><p>لا توجد مقالات منشورة حالياً بالمدونة.</p></div>';
-          return;
-        }
-
-        container.innerHTML = '';
-        let visibleCount = 0;
-
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.status === 'draft') return;
-          visibleCount++;
-
-          const img = data.image ? data.image : 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80';
-          const title = data.title ? data.title : 'عنوان غير متوفر';
-          const dateText = formatArticleDate(data);
-          const excerpt = data.excerpt ? data.excerpt : (data.content ? (data.content.replace(/<[^>]+>/g,'').substring(0, 160) + '...') : '');
-          const category = data.category ? data.category : 'العناية بالبشرة';
-
-          const postLink = data.slug
-            ? `/post?slug=${encodeURIComponent(data.slug)}`
-            : `/post?id=${doc.id}`;
-
-          const card = document.createElement('article');
-          card.className = 'blog-card';
-          card.innerHTML = `
-            <a href="${postLink}" class="blog-thumb" aria-label="${title}">
-              <img src="${img}" alt="${title}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80';">
-            </a>
-            <div class="blog-card-body">
-              <div class="meta-row">
-                <span class="category-tag">${category}</span>
-                ${dateText ? `<span>${dateText}</span>` : ''}
-              </div>
-              <h2><a href="${postLink}" style="color:inherit; text-decoration:none;">${title}</a></h2>
-              <p>${excerpt}</p>
-              <a href="${postLink}" class="read-more-btn">
-                اقرئي المقال <i class="fas fa-arrow-left"></i>
-              </a>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
-        if (visibleCount === 0) {
-          container.innerHTML = '<div class="blog-empty-state"><i class="far fa-newspaper"></i><p>لا توجد مقالات منشورة حالياً بالمدونة.</p></div>';
-        }
-
-      } catch(err) {
-        container.innerHTML = '<div class="blog-empty-state"><p>تعذر تحميل المقالات حالياً. يرجى المحاولة مرة أخرى لاحقاً.</p></div>';
-      }
-    }
-
-    loadArticles();
-  </script>
 </BaseLayout>
-

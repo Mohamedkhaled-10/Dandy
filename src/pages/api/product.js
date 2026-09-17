@@ -1,4 +1,41 @@
+// src/pages/api/product.js
 export const prerender = false;
+
+const DB_BASE = "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app";
+
+const KNOWN_SLUGS = {
+  '-OW9U9Af024A9LrbOU4f': 'laser-replacement-cream-60gm',
+  '-OW9WB1GTP1GaDoqcd2R': 'treatment-mascara',
+  '-OW9YLJvzoW2u9P4ISmA': 'foot-peeling-cream-60gm',
+  '-OWF2juQihSL1HV8PwTT': 'nail-serum',
+  '-OWF4DCXsfQGlA7OOy11': 'deodorant',
+  '-OWF5L62TkM4Y0odMy-l': 'hair-wax-80gm',
+  '-OWF6uqnhnu3TCvoqLSD': 'body-and-hair-mist',
+  '-OWF8NVhw0HgIaJRVOYL': 'solid-perfume-30gm',
+  '-OWF9Deint3XcB6iNdCE': 'tint',
+  '-OWFAaqOFptMA4YEPL7p': 'hand-cream-60gm',
+  '-O_4D5IO_nPZf1fKcVlJ': 'free-sulfate-shampoo-500ml',
+  '-ObKDCc_il_Dz2_Mih-a': 'hair-wax-50gm',
+  '-OvPo-cuVeLHWSU8KQ22': 'facial-serum-3x1-30ml',
+  '-OvPpP6udx6LlLOL9O34': 'facial-cleanser-150ml',
+  '-OvPpguWTAtcaWirD9Um': 'lip-balm',
+  '-OvPq4qdTQ-LqYbxr6Yv': 'body-splash-250ml',
+  '-OvPqarOBOnNgQ_-kpTl': 'body-butter-150gm',
+  '-OvPqzneo_vqpucc-ef8': 'body-splash-25ml',
+  '-OvPrFcWZtH_7tuSs7HJ': 'body-splash-100ml',
+  '-Ow3pLIN18dRNJ4SdJsq': 'hair-booster-oils-mix',
+  '-Ow3pm4awZPtvEZgewr7': 'anti-hair-loss-spray',
+  '-Ow3qRPqc7hbleYuJOkI': 'anti-dandruff-shampoo-250ml',
+  '-Ox6gMQgCgsSR-DrXTWk': 'anti-hair-loss-shampoo-250ml',
+  '-Ox6gklPQABGE7xPcq9a': 'anti-dandruff-spray-60ml',
+  '-Ox6hMmd9Ku_sU4d8le-': 'hair-mask-repair-250ml',
+  '-Ox6kxYMSw7H675QwVz0': 'anti-dandruff-collection',
+  '-Ox6lYUp_xif6WXAHMGO': 'anti-hair-loss-collection',
+  '-Ox6sNW3Ki0Am9E6R9n_': 'hair-repair-collection',
+  '-Ox6w5wfqsuhTgYlMDBs': 'skin-care-collection',
+  '-Ox74e3NwfE2TabGBnUT': 'musk-collection-3-tola-3ml',
+  '-OxC877LX3vzD-3Pi_th': 'dandy-musk-6ml',
+};
 
 export async function GET({ request, url }) {
   try {
@@ -7,68 +44,28 @@ export async function GET({ request, url }) {
       return new Response("Missing product id", { status: 400 });
     }
 
-    const DB_BASE =
-      "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app";
+    let targetSlug = KNOWN_SLUGS[id];
 
-    const r = await fetch(`${DB_BASE}/products/${id}.json`);
-    if (!r.ok) return new Response("Failed to fetch product", { status: 500 });
-    const product = await r.json();
+    if (!targetSlug) {
+      const r = await fetch(`${DB_BASE}/products/${encodeURIComponent(id)}.json`);
+      if (r.ok) {
+        const product = await r.json();
+        if (product) {
+          targetSlug = product.slug || id;
+        }
+      }
+    }
 
-    if (!product) return new Response("Product not found", { status: 404 });
-
-    const esc = (s) =>
-      String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-
-    const title = esc(product.name || "منتج من Dandy");
-    const desc = esc(product.description || "عندما يلتقي الجمال مع الطبيعة");
-    const image = product.image || "https://dandy-ebon.vercel.app/images/default.jpg";
+    if (!targetSlug) {
+      return new Response("Product not found", { status: 404 });
+    }
 
     const proto = request.headers.get("x-forwarded-proto") || "https";
     const host = request.headers.get("host") || url.host;
-    const selfUrl = `${proto}://${host}/api/product?id=${encodeURIComponent(id)}`;
-    const humanUrl = `${proto}://${host}/product?id=${encodeURIComponent(id)}`;
+    const cleanUrl = `${proto}://${host}/product/${encodeURIComponent(targetSlug)}`;
 
-    const html = `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <title>${title}</title>
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="product">
-  <meta property="og:title" content="${title}">
-  <meta property="og:description" content="${desc}">
-  <meta property="og:image" content="${image}">
-  <meta property="og:url" content="${selfUrl}">
-  <meta property="og:site_name" content="Dandy">
-
-  <!-- Twitter Cards -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${title}">
-  <meta name="twitter:description" content="${desc}">
-  <meta name="twitter:image" content="${image}">
-
-  <meta name="robots" content="noindex,follow">
-</head>
-<body>
-  <!-- للمستخدم العادي نحوله لصفحة المنتج الطبيعية -->
-  <script>location.replace(${JSON.stringify(humanUrl)});</script>
-  <noscript><a href="${humanUrl}">اذهب لصفحة المنتج</a></noscript>
-</body>
-</html>`;
-
-    return new Response(html, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html; charset=utf-8"
-      }
-    });
-  } catch (e) {
-    console.error('Error in product endpoint:', e);
-    return new Response("Internal error", { status: 500 });
+    return Response.redirect(cleanUrl, 301);
+  } catch (err) {
+    return new Response("Internal server error", { status: 500 });
   }
 }

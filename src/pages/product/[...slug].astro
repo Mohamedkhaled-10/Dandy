@@ -1,6 +1,1836 @@
 ---
+// src/pages/product/[...slug].astro
 export const prerender = false;
-import ProductPage from '../product.astro';
----
-<ProductPage />
 
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  getProductBySlug,
+  getProductById,
+  normalizeCategory,
+  parseDescriptionToHtml,
+  generateProductJsonLd,
+  SITE_URL,
+  type Product,
+  type VariantItem
+} from '../../utils/products';
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/all-products', 301);
+}
+
+// 1. Resolve product by slug
+let product: Product | null = await getProductBySlug(slug);
+
+// 2. If not found by slug, check if the parameter was a legacy product ID
+if (!product) {
+  const productById = await getProductById(slug);
+  if (productById) {
+    const searchParams = new URLSearchParams();
+    for (const [k, v] of Astro.url.searchParams.entries()) {
+      if (k.startsWith('utm_') || k === 'fbclid' || k === 'gclid') {
+        searchParams.set(k, v);
+      }
+    }
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return Astro.redirect(`/product/${encodeURIComponent(productById.resolvedSlug)}${qs}`, 301);
+  }
+}
+
+// 3. Handle 404 when product is not found or is hidden
+const isNotFound = !product || product.isHidden;
+if (isNotFound) {
+  Astro.response.status = 404;
+}
+
+// 4. Enforce canonical slug URL (301 redirect if accessed with non-canonical alias)
+if (product && !product.isHidden) {
+  const reqSlug = decodeURIComponent(slug).toLowerCase().trim();
+  if (reqSlug !== product.resolvedSlug.toLowerCase()) {
+    const searchParams = new URLSearchParams();
+    for (const [k, v] of Astro.url.searchParams.entries()) {
+      if (k.startsWith('utm_') || k === 'fbclid' || k === 'gclid') {
+        searchParams.set(k, v);
+      }
+    }
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return Astro.redirect(`/product/${encodeURIComponent(product.resolvedSlug)}${qs}`, 301);
+  }
+}
+
+// 5. Prepare SEO & Meta Tags
+const productName = product?.name || 'المنتج غير متوفر';
+const pageTitle = product ? `${product.name} | داندي كوزمتكس - Dandy Cosmetics` : 'المنتج غير موجود (404) | داندي كوزمتكس';
+
+const rawDesc = (product?.description || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+const metaDescription = rawDesc
+  ? (rawDesc.length > 155 ? rawDesc.substring(0, 155) + '...' : rawDesc)
+  : (product ? `${product.name} - مستحضر طبيعي فاخر للعناية بالجمال من داندي كوزمتكس مصر.` : 'المنتج المطلوب غير متوفر حالياً في متجر داندي كوزمتكس.');
+
+const canonicalUrl = product ? `${SITE_URL}/product/${encodeURIComponent(product.resolvedSlug)}` : `${SITE_URL}/all-products`;
+const ogImage = product?.image || `${SITE_URL}/assets/images/fav-icons/android-chrome-512x512.png`;
+const jsonLd = product ? generateProductJsonLd(product, canonicalUrl) : null;
+const structuredDescriptionHtml = product ? parseDescriptionToHtml(product.description) : '';
+
+const categoryName = product ? normalizeCategory(product.category) : '';
+const priceNumber = product ? Number(product.price) || 0 : 0;
+const originalPriceNumber = product?.originalPrice ? Number(product.originalPrice) : null;
+const discountNumber = product?.discount ? Number(product.discount) : null;
+const isSoldOut = Boolean(product?.isSoldOut);
+const isAvailable = Boolean(product && !product.isSoldOut && product.inStock !== false);
+
+// Pre-render variants if applicable
+const rawVariants = product?.variants;
+const variantsList: VariantItem[] = Array.isArray(rawVariants)
+  ? rawVariants
+  : (rawVariants && typeof rawVariants === 'object' ? Object.values(rawVariants) : []);
+const hasVariants = Boolean(product?.hasVariants && product.variantType === 'scent' && variantsList.length > 0);
+
+// Pre-render WhatsApp link
+const waPhone = '201038941005';
+const waMessage = product ? `مرحباً داندي بيوتي، أود الاستفسار عن هذا المنتج:\n- اسم المنتج: ${product.name}\n- الرابط: ${canonicalUrl}` : '';
+const waLink = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMessage)}`;
+
+// Share URLs
+const shareWaLink = product ? `https://wa.me/?text=${encodeURIComponent(product.name + '\n' + canonicalUrl)}` : '#';
+const shareFbLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}`;
+const shareIgLink = 'https://www.instagram.com/dandy_skincare_cosmotics';
+const shareMessengerLink = 'https://www.facebook.com/profile.php?id=61563039704396';
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={metaDescription}
+  canonical={canonicalUrl}
+  robots={isNotFound ? 'noindex, nofollow' : 'index, follow'}
+  hideFooterTop={false}
+>
+  <Fragment slot="head">
+    <!-- Server-Side SEO Tags -->
+    <meta property="og:type" content="product" />
+    <meta property="og:title" id="og-title-meta" content={pageTitle} />
+    <meta property="og:description" id="og-desc-meta" content={metaDescription} />
+    <meta property="og:image" id="og-image-meta" content={ogImage} />
+    <meta property="og:url" id="og-url-meta" content={canonicalUrl} />
+    <meta property="og:site_name" content="داندي كوزمتكس - Dandy Cosmetics" />
+    {product && (
+      <>
+        <meta property="product:price:amount" content={String(priceNumber)} />
+        <meta property="product:price:currency" content="EGP" />
+        <meta property="product:availability" content={isAvailable ? 'in stock' : 'out of stock'} />
+      </>
+    )}
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Schema.org Product Structured Data JSON-LD -->
+    {jsonLd && (
+      <script id="product-jsonld" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+      /* --- Root Tokens & Foundations --- */
+      :root {
+        --color-primary-dark: #18181b;
+        --color-muted: #71717a;
+        --color-blush: #db2777;
+        --color-gold: #c59b27;
+        --border-light: #f0e6e8;
+        --surface-warm: #faf7f8;
+      }
+
+      body {
+        font-family: 'Tajawal', sans-serif;
+        background-color: #ffffff;
+        color: var(--color-primary-dark, #18181b);
+      }
+
+      /* Breadcrumb */
+      .product-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.88rem;
+        margin-bottom: 24px;
+        direction: rtl;
+        flex-wrap: wrap;
+      }
+      .product-breadcrumb a {
+        color: var(--color-muted, #71717a);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+      .product-breadcrumb a:hover {
+        color: var(--color-blush, #db2777);
+      }
+      .product-breadcrumb .separator {
+        font-size: 0.72rem;
+        color: #d4d4d8;
+      }
+      .product-breadcrumb .current {
+        color: var(--color-primary-dark, #18181b);
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 260px;
+      }
+
+      /* Layout Two-Column Grid */
+      .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 40px;
+        align-items: start;
+        direction: rtl;
+        position: relative;
+      }
+
+      /* Left Column: Image Box */
+      .detail-image-box {
+        position: sticky;
+        top: 100px;
+        background: var(--surface-warm, #faf7f8);
+        border: 1px solid var(--border-light, #f0e6e8);
+        border-radius: 20px;
+        overflow: hidden;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      }
+      .detail-image-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 12px;
+        transition: transform 0.4s ease;
+      }
+      .detail-image-box:hover img {
+        transform: scale(1.03);
+      }
+
+      .btn-detail-wishlist {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 1px solid var(--border-light, #f0e6e8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        color: var(--color-muted, #71717a);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        z-index: 10;
+      }
+      .btn-detail-wishlist:hover {
+        transform: scale(1.1);
+        color: #e11d48;
+        border-color: #fecdd3;
+      }
+      .btn-detail-wishlist.active {
+        color: #e11d48;
+        background: #fff1f2;
+        border-color: #fda4af;
+      }
+      .btn-detail-wishlist.active i {
+        font-weight: 900;
+      }
+
+      /* Right Column: Information */
+      .detail-info-box {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        text-align: right;
+      }
+
+      .product-header-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .p-category {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--color-blush, #db2777);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .badge-sold-out {
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.76rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 99px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .product-main-title {
+        font-size: 2rem;
+        font-weight: 900;
+        line-height: 1.35;
+        color: var(--color-primary-dark, #18181b);
+        margin: 0;
+      }
+
+      /* Rating */
+      .p-rating {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+      }
+      .p-rating.has-reviews {
+        cursor: pointer;
+      }
+      .p-rating-stars {
+        display: flex;
+        gap: 3px;
+        font-size: 1rem;
+        direction: ltr;
+      }
+      .p-rating-text {
+        font-size: 0.86rem;
+        color: var(--color-muted, #71717a);
+        font-weight: 600;
+      }
+      .p-rating-no-reviews {
+        color: var(--color-muted, #71717a);
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Price */
+      .product-price-container {
+        padding: 14px 18px;
+        background: var(--surface-warm, #faf7f8);
+        border: 1px solid var(--border-light, #f0e6e8);
+        border-radius: 14px;
+        width: fit-content;
+      }
+      .product-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .price-current {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--color-blush, #db2777);
+      }
+      .price-old {
+        font-size: 1.15rem;
+        color: #a1a1aa;
+        text-decoration: line-through;
+        font-weight: 600;
+      }
+      .price-discount-badge {
+        background: #fdf2f8;
+        color: var(--color-blush, #db2777);
+        border: 1px solid #fbcfe8;
+        font-size: 0.8rem;
+        font-weight: 800;
+        padding: 3px 10px;
+        border-radius: 99px;
+      }
+
+      /* Variants / Scent selector */
+      .variant-selector-wrapper {
+        border-top: 1px solid var(--border-light, #f0e6e8);
+        padding-top: 16px;
+      }
+      .variant-title-row {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--color-primary-dark, #18181b);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .variant-pills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .variant-pill-btn {
+        background: #ffffff;
+        border: 1.5px solid #e4e4e7;
+        padding: 8px 16px;
+        border-radius: 99px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #3f3f46;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+      .variant-pill-btn:hover {
+        border-color: var(--color-blush, #db2777);
+        color: var(--color-blush, #db2777);
+      }
+      .variant-pill-btn.selected {
+        background: #fdf2f8;
+        border-color: var(--color-blush, #db2777);
+        color: var(--color-blush, #db2777);
+      }
+      .variant-pill-btn.disabled {
+        background: #f4f4f5;
+        border-color: #e4e4e7;
+        color: #a1a1aa;
+        cursor: not-allowed;
+        text-decoration: line-through;
+      }
+
+      /* Purchase Actions */
+      .purchase-controls-area {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 8px;
+      }
+      .primary-purchase-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .qty-selector {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1.5px solid #e4e4e7;
+        border-radius: 99px;
+        height: 52px;
+        padding: 4px;
+        flex: 0 0 120px;
+      }
+      .qty-btn {
+        background: transparent;
+        border: none;
+        width: 38px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #3f3f46;
+        cursor: pointer;
+        transition: color 0.15s ease;
+      }
+      .qty-btn:hover {
+        color: var(--color-blush, #db2777);
+      }
+      .qty-input {
+        width: 100%;
+        border: none;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-primary-dark, #18181b);
+        outline: none;
+        background: transparent;
+      }
+
+      .btn-add-to-cart {
+        flex: 1;
+        height: 52px;
+        background: var(--color-blush, #db2777);
+        color: #ffffff;
+        border: none;
+        border-radius: 99px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 14px rgba(219, 39, 119, 0.3);
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+      .btn-add-to-cart:hover:not(:disabled) {
+        background: #be185d;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(219, 39, 119, 0.4);
+      }
+      .btn-add-to-cart:disabled {
+        background: #a1a1aa;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .secondary-actions-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .btn-action-wishlist {
+        background: #fff;
+        color: #e11d48;
+        border: 1.5px solid #fecdd3;
+        height: 46px;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        width: 100%;
+      }
+      .btn-action-wishlist:hover {
+        background: #fff1f2;
+        border-color: #fda4af;
+      }
+      .btn-action-wishlist.active {
+        background: #e11d48;
+        color: #fff;
+        border-color: #e11d48;
+      }
+      .btn-action-wa {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1.5px solid #bbf7d0;
+        height: 46px;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 0.92rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        width: 100%;
+      }
+      .btn-action-wa:hover {
+        background: #dcfce7;
+        border-color: #86efac;
+      }
+
+      /* Social mini group & Share */
+      .social-share-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+      }
+      .social-mini-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-mini-social {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-weight: 600;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 99px;
+        text-decoration: none;
+        font-size: 0.84rem;
+        transition: all 0.2s ease;
+        border: 1px solid #e4e4e7;
+        color: #71717a;
+        background: #fff;
+      }
+      .btn-mini-social:hover {
+        border-color: var(--color-blush, #db2777);
+        color: var(--color-blush, #db2777);
+        background: #fff8fa;
+      }
+
+      .detail-share-area {
+        position: relative;
+      }
+      .share-pill {
+        background: #fff;
+        border: 1px solid #e4e4e7;
+        padding: 7px 14px;
+        border-radius: 99px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #71717a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .share-pill:hover {
+        border-color: var(--color-blush, #db2777);
+        color: var(--color-blush, #db2777);
+      }
+      .pop-options {
+        position: absolute;
+        bottom: 120%;
+        left: 0;
+        background: #fff;
+        border: 1px solid #e4e4e7;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 10px 14px;
+        display: flex;
+        gap: 14px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(6px);
+        transition: all 0.2s ease;
+        z-index: 20;
+      }
+      .share-pill.active .pop-options {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+      .pop-options a {
+        color: #18181b;
+        font-size: 1.15rem;
+        transition: all 0.15s ease;
+      }
+      .pop-options a:hover {
+        color: var(--color-blush, #db2777);
+        transform: scale(1.15);
+      }
+
+      /* Structured Description Area */
+      .product-description-container {
+        border-top: 1px solid var(--border-light, #f0e6e8);
+        padding-top: 24px;
+        margin-top: 8px;
+      }
+      .description-section-heading {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--color-primary-dark, #18181b);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .product-desc-wrapper {
+        direction: rtl;
+        text-align: right;
+      }
+      .product-intro-header {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--color-primary-dark, #18181b);
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+      .product-intro-p {
+        font-size: 0.98rem;
+        color: #4b5563;
+        line-height: 1.7;
+        margin-bottom: 18px;
+      }
+      .desc-card-section {
+        background: #faf7f8;
+        border: 1px solid var(--border-light, #f0e6e8);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+        transition: border-color 0.2s ease;
+      }
+      .desc-card-section:hover {
+        border-color: rgba(219, 39, 119, 0.3);
+      }
+      .desc-section-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-primary-dark, #18181b);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .desc-text-content {
+        font-size: 0.95rem;
+        color: #4b5563;
+        line-height: 1.65;
+        margin: 0;
+      }
+      .desc-list-points {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .desc-list-points li {
+        font-size: 0.95rem;
+        color: #374151;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        line-height: 1.55;
+      }
+      .desc-list-points li i {
+        color: var(--color-blush, #db2777);
+        margin-top: 4px;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+      }
+      .step-list-points li i {
+        color: #eab308;
+      }
+      .results-highlight-box {
+        background: #f0fdf4;
+        border-right: 4px solid #16a34a;
+        border-left: 1px solid #dcfce7;
+        border-top: 1px solid #dcfce7;
+        border-bottom: 1px solid #dcfce7;
+      }
+      .results-highlight-box .desc-section-title {
+        color: #15803d;
+      }
+
+      /* Related Products Section */
+      .related-section {
+        padding: 60px 0;
+        direction: rtl;
+        display: none;
+        background: #faf7f8;
+        border-top: 1px solid var(--border-light, #f0e6e8);
+        margin-top: 50px;
+      }
+      .related-section .section-title {
+        font-weight: 800;
+        font-size: 1.6rem;
+        text-align: center;
+        margin-bottom: 28px;
+        color: var(--color-primary-dark, #18181b);
+      }
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .product-card {
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        background: #fff;
+        border: 1px solid var(--border-light, #f0e6e8);
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+      .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        border-color: rgba(219, 39, 119, 0.2);
+      }
+      .product-image-wrap {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 1 / 1;
+        background: #faf7f8;
+        margin-bottom: 12px;
+        padding: 8px;
+      }
+      .product-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+        border-radius: 8px;
+      }
+      .product-card:hover .product-image-wrap img {
+        transform: scale(1.04);
+      }
+      .card-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: var(--color-blush, #db2777);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 99px;
+        z-index: 2;
+      }
+      .btn-card-wishlist {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 3;
+        color: #9ca3af;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+      .btn-card-wishlist:hover { transform: scale(1.15); color: #e11d48; }
+      .btn-card-wishlist.active { color: #e11d48; background: #fff; }
+      .card-category {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--color-blush, #db2777);
+        margin-bottom: 4px;
+        display: block;
+      }
+      .product-title-card {
+        font-size: 0.92rem;
+        color: var(--color-primary-dark, #18181b);
+        font-weight: 700;
+        line-height: 1.4;
+        margin-bottom: 6px;
+        min-height: 2.6em;
+        text-align: right;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .product-price-card {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-blush, #db2777);
+        text-align: right;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .product-price-card .price-old {
+        color: #9ca3af;
+        font-size: 0.85rem;
+        text-decoration: line-through;
+        font-weight: 600;
+      }
+      .card-add-btn {
+        width: 100%;
+        background: var(--color-blush, #db2777);
+        color: #fff;
+        border: none;
+        border-radius: 99px;
+        padding: 9px 14px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        margin-top: auto;
+      }
+      .card-add-btn:hover {
+        background: #be185d;
+        transform: translateY(-1px);
+      }
+      .card-add-btn svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      /* Reviews Section */
+      .product-reviews-container {
+        border-top: 1px solid var(--border-light, #f0e6e8);
+        padding-top: 28px;
+        margin-top: 28px;
+      }
+      .reviews-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .reviews-count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fffbeb;
+        color: #b45309;
+        font-weight: 700;
+        font-size: 0.88rem;
+        padding: 4px 12px;
+        border-radius: 99px;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+      .empty-reviews-box {
+        background: #faf8f7;
+        border: 1px dashed #ede7e4;
+        border-radius: 12px;
+        padding: 30px 20px;
+        text-align: center;
+      }
+      .reviews-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 14px;
+      }
+      .review-comment-card {
+        background: #fff;
+        border: 1px solid var(--border-light, #f0e6e8);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      }
+      .review-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+      .review-user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .review-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #ffe4e6;
+        color: #e11d48;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+      }
+      .review-user-name {
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: var(--color-primary-dark, #18181b);
+      }
+      .verified-buyer-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.72rem;
+        color: #15803d;
+        font-weight: 700;
+      }
+      .review-meta-date {
+        font-size: 0.76rem;
+        color: var(--color-muted, #71717a);
+      }
+      .review-stars-row {
+        display: flex;
+        gap: 3px;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        direction: ltr;
+        width: fit-content;
+      }
+      .review-text-comment {
+        font-size: 0.88rem;
+        color: #374151;
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      /* 404 Fallback Box */
+      .not-found-box {
+        text-align: center;
+        padding: 80px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        direction: rtl;
+      }
+      .not-found-box i {
+        font-size: 3.5rem;
+        color: var(--color-blush, #db2777);
+        margin-bottom: 20px;
+      }
+      .not-found-box h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+      .not-found-box p {
+        color: var(--color-muted, #71717a);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+      .not-found-box .btn-catalog {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--color-blush, #db2777);
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 99px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.2s ease;
+      }
+      .not-found-box .btn-catalog:hover {
+        background: #be185d;
+        transform: translateY(-2px);
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 900px) {
+        .detail-grid {
+          grid-template-columns: 1fr;
+          gap: 28px;
+        }
+        .detail-image-box {
+          position: static;
+          max-width: 440px;
+          width: 100%;
+          margin: 0 auto;
+        }
+        .product-main-title {
+          font-size: 1.65rem;
+        }
+        .price-current {
+          font-size: 1.8rem;
+        }
+        .product-detail-main-wrapper {
+          padding-bottom: 100px !important;
+        }
+      }
+      @media (max-width: 480px) {
+        .primary-purchase-row {
+          gap: 8px;
+        }
+        .qty-selector {
+          flex: 0 0 100px;
+          height: 48px;
+        }
+        .btn-add-to-cart {
+          height: 48px;
+          padding: 0 16px;
+          font-size: 0.95rem;
+        }
+        .product-breadcrumb .current {
+          max-width: 160px;
+        }
+        .product-main-title {
+          font-size: 1.35rem;
+        }
+        .price-current {
+          font-size: 1.55rem;
+        }
+        .variant-pill-btn {
+          padding: 6px 12px;
+          font-size: 0.82rem;
+        }
+        .secondary-actions-row {
+          grid-template-columns: 1fr;
+        }
+        .social-share-row {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .social-mini-group {
+          justify-content: center;
+        }
+        .detail-share-area {
+          align-self: center;
+        }
+      }
+    </style>
+  </Fragment>
+
+  <main class="container product-detail-page product-detail-main-wrapper" style="padding-top: 130px; padding-bottom: 70px;">
+    {isNotFound ? (
+      <div class="not-found-box" id="product-not-found-view">
+        <i class="fas fa-search"></i>
+        <h1>عذراً، المستحضر المطلوب غير متوفر</h1>
+        <p>قد يكون الرابط الذي اتبعته غير صحيح أو تم تحديث اسم المنتج أو نقله في تشكيلتنا الطبيعية.</p>
+        <a href="/all-products" class="btn-catalog">
+          <i class="fas fa-th-large"></i>
+          <span>استكشفي جميع مستحضرات داندي</span>
+        </a>
+      </div>
+    ) : (
+      <>
+        <!-- 1. Breadcrumb with Real Product Name -->
+        <nav class="product-breadcrumb" id="product-breadcrumb" aria-label="مسار التنقل">
+          <a href="/">الرئيسية</a>
+          <i class="fas fa-chevron-left separator"></i>
+          <a href="/all-products">المنتجات</a>
+          <i class="fas fa-chevron-left separator"></i>
+          <span class="current" id="bread-product">{product!.name}</span>
+        </nav>
+
+        <!-- 2. Two-Column Desktop Grid -->
+        <div class="detail-grid" id="detailFrame">
+          <!-- Product Imagery / Gallery (Left Column in RTL) -->
+          <div class="detail-image-box">
+            <button
+              type="button"
+              class="btn-detail-wishlist"
+              id="detailWishlistBtn"
+              data-product-id={product!.id}
+              title="حفظ في المفضلة"
+              aria-label="حفظ في المفضلة"
+            >
+              <i class="far fa-heart"></i>
+            </button>
+            <img
+              loading="eager"
+              id="product-img"
+              src={product!.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80'}
+              alt={product!.name}
+            />
+          </div>
+
+          <!-- Product Information & Purchase Controls (Right Column in RTL) -->
+          <div class="detail-info-box">
+            <!-- Category & Title -->
+            <div class="product-header-meta">
+              <span class="p-category" id="product-category">
+                {categoryName}
+                {isSoldOut && (
+                  <span class="badge-sold-out"><i class="fas fa-box-open"></i> نفدت الكمية</span>
+                )}
+              </span>
+              <h1 class="product-main-title" id="product-title">{product!.name}</h1>
+            </div>
+
+            <!-- Rating Summary -->
+            <div class="p-rating" id="product-rating-header">
+              <div class="p-rating-stars" id="header-rating-stars"></div>
+              <span class="p-rating-text" id="header-rating-text"></span>
+            </div>
+
+            <!-- Price & Discount -->
+            <div class="product-price-container" id="product-price-section">
+              <div class="product-price-row">
+                <span class="price-current" id="product-price">{priceNumber.toFixed(0)} ج.م</span>
+                {originalPriceNumber && (
+                  <span class="price-old">{originalPriceNumber.toFixed(0)} ج.م</span>
+                )}
+                {originalPriceNumber && (
+                  <span class="price-discount-badge">توفير {(originalPriceNumber - priceNumber).toFixed(0)} ج.م</span>
+                )}
+                {!originalPriceNumber && discountNumber && (
+                  <span class="price-discount-badge">خصم {discountNumber}%</span>
+                )}
+              </div>
+            </div>
+
+            <!-- Purchase & Variant Area -->
+            <div class="action-group">
+              <!-- Variant / Scent Selection -->
+              <div
+                id="variant-section-container"
+                class="variant-selector-wrapper"
+                style={hasVariants ? 'display: block;' : 'display: none;'}
+              >
+                {hasVariants && (
+                  <div>
+                    <div class="variant-title-row">
+                      <i class="fas fa-spray-can" style="color:var(--color-blush, #db2777);"></i>
+                      <span>اختاري الرائحة المفضلة:</span>
+                    </div>
+                    <div class="variant-pills-list" id="variant-pills-container">
+                      {variantsList.map((v) => {
+                        const isAvail = v.isAvailable !== false;
+                        return (
+                          <button
+                            type="button"
+                            class={`variant-pill-btn ${isAvail ? '' : 'disabled'}`}
+                            data-id={v.id}
+                            data-name={v.name}
+                            aria-disabled={!isAvail}
+                            onclick={isAvail ? `toggleScentVariant('${v.id}')` : undefined}
+                          >
+                            <i class="fas fa-check" style="display:none;"></i>
+                            <span>{v.name}</span>
+                            {!isAvail && <span style="font-size:0.75rem; color:#ef4444;">(نفدت)</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <!-- Quantity + Add to Cart -->
+              <div class="purchase-controls-area">
+                <div class="primary-purchase-row">
+                  <div class="qty-selector">
+                    <button type="button" class="qty-btn" id="qty-minus" aria-label="تقليل الكمية">-</button>
+                    <input type="number" class="qty-input" id="qty-input" value="1" min="1" max="99" aria-label="الكمية" />
+                    <button type="button" class="qty-btn" id="qty-plus" aria-label="زيادة الكمية">+</button>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="btn-add-to-cart"
+                    id="add-to-cart-btn"
+                    disabled={isSoldOut}
+                  >
+                    {isSoldOut ? (
+                      <>
+                        <i class="fas fa-ban"></i>
+                        <span>نفدت الكمية</span>
+                      </>
+                    ) : (
+                      <>
+                        <i class="fas fa-shopping-basket"></i>
+                        <span>أضيفي للسلة</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <!-- Secondary Actions: Wishlist + WhatsApp -->
+                <div class="secondary-actions-row">
+                  <button
+                    type="button"
+                    class="btn-action-wishlist"
+                    id="actionWishlistBtn"
+                    data-product-id={product!.id}
+                    aria-label="إضافة للمفضلة"
+                  >
+                    <i class="far fa-heart"></i>
+                    <span id="actionWishlistText">إضافة إلى المفضلة</span>
+                  </button>
+
+                  <a
+                    class="btn-action-wa"
+                    id="whatsapp-link"
+                    href={waLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="استفسار عبر واتساب"
+                  >
+                    <i class="fab fa-whatsapp"></i>
+                    <span>استفسار عبر واتساب</span>
+                  </a>
+                </div>
+
+                <!-- Social Links & Share -->
+                <div class="social-share-row">
+                  <div class="social-mini-group">
+                    <a class="btn-mini-social" id="facebook-link" href={shareMessengerLink} target="_blank" rel="noopener noreferrer">
+                      <i class="fab fa-facebook-messenger" style="color:#1877f2;"></i>
+                      <span>ماسنجر</span>
+                    </a>
+                    <a class="btn-mini-social" id="instagram-link" href={shareIgLink} target="_blank" rel="noopener noreferrer">
+                      <i class="fab fa-instagram" style="color:#e1306c;"></i>
+                      <span>انستجرام</span>
+                    </a>
+                  </div>
+
+                  <div class="detail-share-area">
+                    <div class="share-pill" id="share-toggle" role="button" tabindex="0">
+                      <i class="fas fa-share-alt"></i>
+                      <span>مشاركة المنتج</span>
+                      <div class="pop-options">
+                        <a id="share-whatsapp" href={shareWaLink} target="_blank" title="واتساب"><i class="fab fa-whatsapp" style="color:#25d366;"></i></a>
+                        <a id="share-facebook" href={shareFbLink} target="_blank" title="فيسبوك"><i class="fab fa-facebook-f" style="color:#1877f2;"></i></a>
+                        <a id="share-instagram" href={shareIgLink} target="_blank" title="انستجرام"><i class="fab fa-instagram" style="color:#e1306c;"></i></a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Server-Rendered Structured Description -->
+            <div class="product-description-container">
+              <h2 class="description-section-heading">
+                <i class="fas fa-feather-alt" style="color:var(--color-blush, #db2777);"></i>
+                <span>تفاصيل وخواص المستحضر</span>
+              </h2>
+              <div id="product-desc" class="product-desc-container" set:html={structuredDescriptionHtml} />
+            </div>
+
+            <!-- Verified Customer Reviews Section -->
+            <div class="product-reviews-container" id="product-reviews-container">
+              <div class="reviews-header-row">
+                <h2 class="description-section-heading" style="margin-bottom: 0;">
+                  <i class="fas fa-star" style="color:#f59e0b;"></i>
+                  <span>تجارب وآراء العميلات</span>
+                </h2>
+                <div id="reviews-header-badge" class="reviews-count-badge" style="display: none;"></div>
+              </div>
+
+              <div id="reviews-list-wrapper" class="reviews-list-wrapper">
+                <p style="color: var(--color-muted); font-size: 0.88rem; margin-top: 10px;">جاري تحميل التقييمات الحقيقية...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )}
+  </main>
+
+  <!-- Related Products Section -->
+  {!isNotFound && (
+    <section class="related-section" id="related-products-section">
+      <div class="container">
+        <h2 class="section-title plain">منتجات مشابهة</h2>
+        <div class="product-grid" id="related-products-grid"></div>
+      </div>
+    </section>
+  )}
+
+  <!-- Client-side Interactive Hydration -->
+  {!isNotFound && (
+    <script is:inline define:vars={{ serverProduct: product }}>
+      const db = firebase.database();
+      const loadedProduct = serverProduct;
+      const id = loadedProduct ? loadedProduct.id : null;
+      let selectedVariants = [];
+
+      // Facebook Pixel ViewContent event
+      if (loadedProduct && typeof fbq === 'function') {
+        fbq('track', 'ViewContent', {
+          content_name: loadedProduct.name,
+          content_ids: [loadedProduct.id],
+          content_type: 'product',
+          value: parseFloat(loadedProduct.price) || 0,
+          currency: 'EGP'
+        });
+      }
+
+      // Scent Variant Selection Logic
+      window.toggleScentVariant = function(variantId) {
+        const btn = document.querySelector(`.variant-pill-btn[data-id="${variantId}"]`);
+        if (!btn || btn.classList.contains('disabled')) return;
+
+        const isSelected = btn.classList.contains('selected');
+        if (isSelected) {
+          btn.classList.remove('selected');
+          const checkIcon = btn.querySelector('.fa-check');
+          if (checkIcon) checkIcon.style.display = 'none';
+          selectedVariants = selectedVariants.filter(v => v.id !== variantId);
+        } else {
+          btn.classList.add('selected');
+          const checkIcon = btn.querySelector('.fa-check');
+          if (checkIcon) checkIcon.style.display = 'inline-block';
+          const vName = btn.getAttribute('data-name') || '';
+          selectedVariants.push({ id: variantId, name: vName });
+        }
+      };
+      window.selectScentVariant = window.toggleScentVariant;
+
+      // Quantity controls
+      const qtyInput = document.getElementById('qty-input');
+      const qtyMinus = document.getElementById('qty-minus');
+      const qtyPlus = document.getElementById('qty-plus');
+
+      if (qtyMinus && qtyPlus && qtyInput) {
+        qtyMinus.addEventListener('click', () => {
+          let val = parseInt(qtyInput.value) || 1;
+          if (val > 1) qtyInput.value = val - 1;
+        });
+        qtyPlus.addEventListener('click', () => {
+          let val = parseInt(qtyInput.value) || 1;
+          if (val < 99) qtyInput.value = val + 1;
+        });
+        qtyInput.addEventListener('change', () => {
+          let val = parseInt(qtyInput.value) || 1;
+          if (val < 1) val = 1;
+          if (val > 99) val = 99;
+          qtyInput.value = val;
+        });
+      }
+
+      // Share Popover Toggle
+      const shareToggle = document.getElementById('share-toggle');
+      if (shareToggle) {
+        shareToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          shareToggle.classList.toggle('active');
+        });
+        document.addEventListener('click', () => {
+          shareToggle.classList.remove('active');
+        });
+      }
+
+      // Add to Cart
+      const addToCartBtn = document.getElementById('add-to-cart-btn');
+      if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', () => {
+          if (!loadedProduct) return;
+          if (loadedProduct.isSoldOut === true || loadedProduct.isSoldOut === 'true') {
+            alert('نعتذر، هذا المنتج غير متوفر حالياً (نفدت الكمية).');
+            return;
+          }
+
+          const hasVars = typeof hasSelectableVariants === 'function'
+            ? hasSelectableVariants(loadedProduct)
+            : (loadedProduct.hasVariants === true || loadedProduct.hasVariants === 'true');
+
+          if (hasVars && (!Array.isArray(selectedVariants) || selectedVariants.length === 0)) {
+            alert('يرجى اختيار الرائحة أولاً');
+            return;
+          }
+
+          let validSelectedVariants = [];
+          if (hasVars && Array.isArray(selectedVariants) && selectedVariants.length > 0) {
+            const rawVariants = typeof getProductVariants === 'function'
+              ? getProductVariants(loadedProduct)
+              : (Array.isArray(loadedProduct.variants) ? loadedProduct.variants : []);
+
+            validSelectedVariants = selectedVariants.filter(sv => {
+              return rawVariants.some(rv => String(rv.id) === String(sv.id) && rv.isAvailable !== false);
+            });
+            validSelectedVariants.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+          }
+
+          if (typeof fbq === 'function') {
+            fbq('track', 'AddToCart', {
+              content_name: loadedProduct.name,
+              content_ids: [loadedProduct.id],
+              content_type: 'product',
+              value: parseFloat(loadedProduct.price) || 0,
+              currency: 'EGP'
+            });
+          }
+
+          let cart = JSON.parse(localStorage.getItem('cart')) || [];
+          const hasChosenVariants = validSelectedVariants.length > 0;
+          const sortedIdsStr = hasChosenVariants ? validSelectedVariants.map(v => v.id).join('_') : '';
+          const cartItemId = hasChosenVariants ? `${id}::${sortedIdsStr}` : id;
+          const qty = parseInt(document.getElementById('qty-input')?.value) || 1;
+
+          const productItem = {
+            id: cartItemId,
+            productId: id,
+            name: loadedProduct.name,
+            price: loadedProduct.price,
+            image: loadedProduct.image,
+            discount: loadedProduct.discount || null,
+            onSale: loadedProduct.onSale || false,
+            quantity: qty
+          };
+
+          if (hasChosenVariants) {
+            productItem.hasVariants = true;
+            productItem.variantType = 'scent';
+            productItem.selectedVariants = validSelectedVariants;
+            if (validSelectedVariants.length === 1) {
+              productItem.selectedVariant = validSelectedVariants[0];
+              productItem.variantId = validSelectedVariants[0].id;
+              productItem.variantName = validSelectedVariants[0].name;
+            } else {
+              productItem.variantName = validSelectedVariants.map(v => v.name).join('، ');
+            }
+          }
+
+          const targetItemKey = typeof getCartItemKey === 'function' ? getCartItemKey(productItem) : cartItemId;
+          const existIndex = cart.findIndex(item => {
+            const itemKey = typeof getCartItemKey === 'function' ? getCartItemKey(item) : (item.id || item.productId);
+            return itemKey === targetItemKey;
+          });
+
+          if (existIndex !== -1) {
+            cart[existIndex].quantity = (parseInt(cart[existIndex].quantity) || 0) + qty;
+            if (hasChosenVariants) {
+              cart[existIndex].selectedVariants = validSelectedVariants;
+              cart[existIndex].id = cartItemId;
+              cart[existIndex].productId = id;
+            }
+          } else {
+            cart.push(productItem);
+          }
+
+          localStorage.setItem('cart', JSON.stringify(cart));
+          if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
+          if (typeof updateCartCount === 'function') updateCartCount();
+
+          const alertDiv = document.createElement('div');
+          alertDiv.style.position = 'fixed';
+          alertDiv.style.bottom = '100px';
+          alertDiv.style.left = '50%';
+          alertDiv.style.transform = 'translateX(-50%)';
+          alertDiv.style.background = 'var(--color-success, #2e6648)';
+          alertDiv.style.color = '#fff';
+          alertDiv.style.padding = '14px 28px';
+          alertDiv.style.borderRadius = '50px';
+          alertDiv.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+          alertDiv.style.zIndex = '1030';
+          alertDiv.style.fontWeight = '700';
+          alertDiv.style.textAlign = 'center';
+
+          let itemTitle = loadedProduct.name || 'المستحضر';
+          if (hasChosenVariants) {
+            itemTitle += ` (${validSelectedVariants.map(v => v.name).join('، ')})`;
+          }
+          alertDiv.innerHTML = `<i class="fas fa-check-circle" style="margin-left:8px;"></i> تمت إضافة ${itemTitle} إلى سلتك بنجاح!`;
+          document.body.appendChild(alertDiv);
+
+          setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            alertDiv.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => alertDiv.remove(), 400);
+          }, 2800);
+        });
+      }
+
+      // Ratings & Reviews Rendering
+      function renderProductRating(ratingVal, countVal) {
+        const ratingHeader = document.getElementById('product-rating-header');
+        const ratingStars = document.getElementById('header-rating-stars');
+        const ratingText = document.getElementById('header-rating-text');
+        if (!ratingHeader || !ratingStars || !ratingText) return;
+
+        ratingHeader.style.display = 'flex';
+        const numRating = Number(ratingVal) || 0;
+        const numCount = Number(countVal) || 0;
+
+        if (numCount === 0) {
+          ratingStars.innerHTML = '';
+          ratingText.innerHTML = '<span class="p-rating-no-reviews"><i class="far fa-star"></i> لا توجد تقييمات بعد</span>';
+          ratingHeader.classList.remove('has-reviews');
+          ratingHeader.removeAttribute('title');
+          ratingHeader.onclick = null;
+        } else {
+          const fullStars = Math.floor(numRating);
+          const hasHalf = (numRating - fullStars) >= 0.5;
+          let starsHtml = '';
+          for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) {
+              starsHtml += '<i class="fas fa-star" style="color: #f59e0b;"></i>';
+            } else if (i === fullStars + 1 && hasHalf) {
+              starsHtml += '<i class="fas fa-star-half-alt" style="color: #f59e0b;"></i>';
+            } else {
+              starsHtml += '<i class="far fa-star" style="color: #d1d5db;"></i>';
+            }
+          }
+          ratingStars.innerHTML = starsHtml;
+          ratingText.innerHTML = `(${numCount} تقييم)`;
+          ratingHeader.classList.add('has-reviews');
+          ratingHeader.title = 'الانتقال إلى قائمة تقييمات المنتج';
+          ratingHeader.onclick = () => {
+            document.getElementById('product-reviews-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          };
+        }
+      }
+
+      function escapeReviewHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      async function loadProductReviews(prodId) {
+        const wrapper = document.getElementById('reviews-list-wrapper');
+        const badge = document.getElementById('reviews-header-badge');
+        if (!wrapper || !prodId) return;
+
+        try {
+          const snap = await db.ref(`reviews/${prodId}`).once('value');
+          if (!snap.exists()) {
+            renderProductRating(0, 0);
+            wrapper.innerHTML = `
+              <div class="empty-reviews-box">
+                <i class="far fa-comment-dots" style="font-size: 1.8rem; color: var(--color-muted); margin-bottom: 8px;"></i>
+                <p style="font-weight: 700; color: var(--color-primary-dark, #18181b); margin-bottom: 4px;">لا توجد تقييمات بعد</p>
+                <p style="font-size: 0.85rem; color: var(--color-muted); margin: 0;">يتاح التقييم ومشاركة التجربة لعميلاتنا بعد استلام الطلب من صفحة الحساب ✨</p>
+              </div>
+            `;
+            if (badge) badge.style.display = 'none';
+            return;
+          }
+
+          const reviewsObj = snap.val() || {};
+          const reviews = Object.values(reviewsObj);
+          reviews.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+
+          const actualCount = reviews.length;
+          const sumRating = reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+          const actualAvg = actualCount > 0 ? (Math.round((sumRating / actualCount) * 10) / 10) : 0;
+
+          renderProductRating(actualAvg, actualCount);
+
+          if (badge) {
+            badge.style.display = 'inline-flex';
+            badge.innerHTML = `<i class="fas fa-star" style="color:#f59e0b;"></i> <span>${actualAvg.toFixed(1)} / 5 (${actualCount} تقييم)</span>`;
+          }
+
+          wrapper.innerHTML = `
+            <div class="reviews-cards-grid">
+              ${reviews.map(r => {
+                const starsCount = Math.min(5, Math.max(1, Number(r.rating) || 5));
+                let stars = '';
+                for (let i = 1; i <= 5; i++) {
+                  stars += (i <= starsCount)
+                    ? '<i class="fas fa-star" style="color:#f59e0b;"></i>'
+                    : '<i class="far fa-star" style="color:#d1d5db;"></i>';
+                }
+                const name = r.customerName || r.name || r.userName || 'عميلة داندي';
+                let dateStr = 'تاريخ حديث';
+                if (r.createdAt) {
+                  dateStr = new Date(r.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+                }
+                return `
+                  <div class="review-comment-card">
+                    <div class="review-card-header">
+                      <div class="review-user-info">
+                        <div class="review-avatar">${escapeReviewHtml(name).charAt(0).toUpperCase()}</div>
+                        <div>
+                          <div class="review-user-name">${escapeReviewHtml(name)}</div>
+                          <span class="verified-buyer-tag"><i class="fas fa-check-circle"></i> تجربة شراء مؤكدة</span>
+                        </div>
+                      </div>
+                      <div class="review-meta-date">${dateStr}</div>
+                    </div>
+                    <div class="review-stars-row" title="${starsCount} من 5 نجوم">${stars}</div>
+                    ${r.comment ? `<p class="review-text-comment">${escapeReviewHtml(r.comment)}</p>` : `<p class="review-text-comment" style="color:#9ca3af; font-size:0.82rem; font-style:italic;">(تقييم بالنجوم دون تعليق مكتوب)</p>`}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } catch (e) {
+          console.warn('Error loading reviews:', e);
+          wrapper.innerHTML = '<p style="color: var(--color-muted); font-size: 0.85rem;">تعذر استرجاع التقييمات حالياً.</p>';
+        }
+      }
+
+      // Related Products Fetching & Rendering
+      function fetchRelatedProducts(category, currentProductId) {
+        if (!category) return;
+        db.ref('products').once('value').then(snap => {
+          if (!snap.exists()) return;
+          let products = [];
+          snap.forEach(child => {
+            let p = child.val();
+            if (!p.isHidden && child.key !== currentProductId && (p.category === category || p.category?.toLowerCase() === category?.toLowerCase())) {
+              products.push({ ...p, id: child.key });
+            }
+          });
+          products = products.slice(0, 4);
+          if (products.length > 0) {
+            document.getElementById('related-products-section').style.display = 'block';
+            let gridHtml = '';
+            products.forEach(prod => {
+              const priceRaw = parseFloat(prod.price) || 0;
+              let priceStr = `<span class="price-current">${priceRaw.toFixed(0)} ج.م</span>`;
+              let badgeStr = '';
+              if (prod.originalPrice) {
+                const oldPrice = parseFloat(prod.originalPrice) || 0;
+                priceStr = `<span class="price-current">${priceRaw.toFixed(0)} ج.م</span><span class="price-old">${oldPrice.toFixed(0)} ج.م</span>`;
+                if (prod.onSale && prod.discount) badgeStr = `<span class="card-badge">خصم ${prod.discount}%</span>`;
+              } else if (prod.onSale && prod.discount) {
+                const discountPercent = parseFloat(prod.discount) || 0;
+                const oldPrice = (discountPercent > 0 && discountPercent < 100) ? Math.round(priceRaw / (1 - (discountPercent/100))) : 0;
+                priceStr = `<span class="price-current">${priceRaw.toFixed(0)} ج.م</span>${oldPrice ? `<span class="price-old">${oldPrice.toFixed(0)} ج.م</span>` : ''}`;
+                badgeStr = `<span class="card-badge">خصم ${prod.discount}%</span>`;
+              }
+
+              const relatedLink = (typeof window.getProductLink === 'function')
+                ? window.getProductLink(prod)
+                : (prod.slug ? `/product/${encodeURIComponent(prod.slug)}` : `/product?id=${prod.id}`);
+
+              const hasVars = typeof hasSelectableVariants === 'function'
+                ? hasSelectableVariants(prod)
+                : (prod.hasVariants === true || prod.hasVariants === 'true');
+
+              const isFav = window.userWishlistSet && window.userWishlistSet.has(prod.id);
+              const heartActive = isFav ? 'active' : '';
+              const heartFill = isFav ? 'currentColor' : 'none';
+
+              gridHtml += `
+                <article class="modern-product-card product-card" onclick="window.location.href='${relatedLink}'">
+                  <div class="card-image-box product-image-wrap">
+                    ${badgeStr}
+                    <button type="button" class="btn-card-wishlist ${heartActive}" data-product-id="${prod.id}" onclick="event.stopPropagation(); window.toggleWishlist('${prod.id}', this);" title="حفظ في المفضلة" aria-label="حفظ في المفضلة">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="${heartFill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      </svg>
+                    </button>
+                    <img loading="lazy" src="${prod.image || '/assets/images/logo.png'}" alt="${prod.name || 'منتج داندي'}">
+                  </div>
+                  <div class="card-content-box product-info-box">
+                    ${prod.category ? `<span class="card-category">${prod.category}</span>` : ''}
+                    <h3 class="card-title product-title-card">${prod.name || ''}</h3>
+                    <div class="card-price-row product-price-card">
+                      ${priceStr}
+                    </div>
+                    ${hasVars
+                      ? `<button type="button" class="card-add-btn add-cart-btn" onclick="event.stopPropagation(); window.location.href='${relatedLink}'"><span>اختاري الرائحة</span></button>`
+                      : `<button type="button" class="card-add-btn add-cart-btn" onclick="event.stopPropagation(); window.location.href='${relatedLink}'"><span>عرض المستحضر</span></button>`
+                    }
+                  </div>
+                </article>
+              `;
+            });
+            document.getElementById('related-products-grid').innerHTML = gridHtml;
+          }
+        });
+      }
+
+      // Wishlist Integration
+      window.userWishlistSet = new Set();
+      let isCurrentProductInWishlist = false;
+
+      function setupProductWishlist(currentProdId) {
+        if (!currentProdId) return;
+        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (!auth) return;
+
+        const detailBtn = document.getElementById('detailWishlistBtn');
+        const actionBtn = document.getElementById('actionWishlistBtn');
+
+        function updateUI(fav) {
+          isCurrentProductInWishlist = fav;
+          if (detailBtn) {
+            if (fav) {
+              detailBtn.classList.add('active');
+              detailBtn.innerHTML = '<i class="fas fa-heart"></i>';
+            } else {
+              detailBtn.classList.remove('active');
+              detailBtn.innerHTML = '<i class="far fa-heart"></i>';
+            }
+          }
+          if (actionBtn) {
+            if (fav) {
+              actionBtn.classList.add('active');
+              actionBtn.innerHTML = '<i class="fas fa-heart"></i> <span>في قائمة المفضلة</span>';
+            } else {
+              actionBtn.classList.remove('active');
+              actionBtn.innerHTML = '<i class="far fa-heart"></i> <span id="actionWishlistText">إضافة إلى المفضلة</span>';
+            }
+          }
+        }
+
+        async function handleToggle() {
+          const user = auth.currentUser;
+          if (!user) {
+            alert('سجّلي دخولك لحفظ المفضلة');
+            window.location.href = '/account-login';
+            return;
+          }
+
+          try {
+            if (isCurrentProductInWishlist) {
+              await db.ref('wishlists/' + user.uid + '/' + currentProdId).remove();
+              window.userWishlistSet.delete(currentProdId);
+              updateUI(false);
+            } else {
+              await db.ref('wishlists/' + user.uid + '/' + currentProdId).set(true);
+              window.userWishlistSet.add(currentProdId);
+              updateUI(true);
+            }
+          } catch (err) {
+            console.error('Error toggling wishlist:', err);
+          }
+        }
+
+        if (detailBtn) detailBtn.onclick = handleToggle;
+        if (actionBtn) actionBtn.onclick = handleToggle;
+
+        auth.onAuthStateChanged(async (user) => {
+          if (!user) {
+            window.userWishlistSet.clear();
+            updateUI(false);
+            return;
+          }
+          try {
+            const snap = await db.ref('wishlists/' + user.uid).once('value');
+            if (snap.exists()) {
+              const val = snap.val() || {};
+              window.userWishlistSet = new Set(Object.keys(val).filter(k => !!val[k]));
+              updateUI(window.userWishlistSet.has(currentProdId));
+            } else {
+              updateUI(false);
+            }
+          } catch (e) {
+            console.warn('Error fetching wishlist:', e);
+          }
+        });
+      }
+
+      window.toggleWishlist = async function(productId, btnEl) {
+        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const user = auth ? auth.currentUser : null;
+        if (!user) {
+          alert('سجّلي دخولك لحفظ المفضلة');
+          window.location.href = '/account-login';
+          return;
+        }
+        const isFav = btnEl.classList.contains('active');
+        const icon = btnEl.querySelector('i');
+        try {
+          if (isFav) {
+            await db.ref('wishlists/' + user.uid + '/' + productId).remove();
+            window.userWishlistSet.delete(productId);
+            btnEl.classList.remove('active');
+            if (icon) icon.className = 'far fa-heart';
+          } else {
+            await db.ref('wishlists/' + user.uid + '/' + productId).set(true);
+            window.userWishlistSet.add(productId);
+            btnEl.classList.add('active');
+            if (icon) icon.className = 'fas fa-heart';
+          }
+        } catch (err) {
+          console.error('Error toggling wishlist:', err);
+        }
+      };
+
+      // Initialization on Load
+      if (id) {
+        loadProductReviews(id);
+        fetchRelatedProducts(loadedProduct?.category, id);
+        setupProductWishlist(id);
+      }
+    </script>
+  )}
+</BaseLayout>

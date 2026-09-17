@@ -1,422 +1,122 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getArticleById, getArticleBySlug, type Article } from '../utils/articles';
+
+const idParam = Astro.url.searchParams.get('id');
+const slugParam = Astro.url.searchParams.get('slug');
+
+const cleanId = typeof idParam === 'string' ? idParam.trim() : '';
+const cleanSlug = typeof slugParam === 'string' ? slugParam.trim() : '';
+
+let article: Article | null = null;
+
+// Case A & Deterministic Precedence: Document ID takes precedence as the immutable database primary key
+if (cleanId) {
+  article = await getArticleById(cleanId);
+} else if (cleanSlug) {
+  // Case B: Slug parameter
+  article = await getArticleBySlug(cleanSlug);
+}
+
+// Validate published status and presence of canonical slug before redirecting
+if (article && article.status === 'published' && article.slug && typeof article.slug === 'string' && article.slug.trim()) {
+  const canonicalSlug = article.slug.trim();
+  // Case A & B: Redirect with HTTP 301 to the stored canonical slug route
+  return Astro.redirect(`/blog/${canonicalSlug}`, 301);
+}
+
+// Case C & D: Missing, invalid, unpublished, or no query params -> Return 404 Not Found
+Astro.response.status = 404;
+
+const pageTitle = 'المقال غير موجود (404) | Dandy';
+const pageDescription = 'عذراً، المقال الذي تبحثين عنه غير متوفر أو تم نقله.';
+const canonicalUrl = 'https://dandy-ebon.vercel.app/404';
 ---
 
 <BaseLayout
-  title="ركن الجمال والمقالات | Dandy"
-  description="تصفحي أحدث نصائح العناية بالبشرة والشعر بتركيبات داندي الطبيعية."
-  keywords="داندي, مقالات داندي, العناية بالبشرة, جمال طبيعي, العناية بالبشرة مصر"
-  canonical="https://dandy-ebon.vercel.app/post"
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
+  robots="noindex, follow"
 >
   <slot name="head" slot="head">
-    <meta property="og:type" content="article" />
-    <meta property="og:title" id="og-title-meta" content="ركن الجمال | Dandy" />
-    <meta property="og:description" id="og-desc-meta" content="نصائح وأسرار الجمال الطبيعي للعناية بالبشرة والشعر بتركيبات داندي." />
-    <meta property="og:image" id="og-image-meta" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
-    <meta property="og:url" id="og-url-meta" content="https://dandy-ebon.vercel.app/post" />
-    <meta name="twitter:card" content="summary_large_image" />
-
     <style is:global>
-      .article-page-wrap {
-        padding: 120px 20px 80px;
-      }
-
-      .article-reader {
-        max-width: 760px;
+      .error-page-wrap {
+        min-height: 65vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 140px 20px 80px;
+        max-width: 540px;
         margin: 0 auto;
       }
-
-      .article-breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.85rem;
-        color: var(--color-muted);
-        margin-bottom: 24px;
+      .error-code {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 4.5rem;
+        font-weight: 800;
+        color: var(--border-medium);
+        line-height: 1;
+        margin-bottom: 12px;
       }
-
-      .article-breadcrumb a {
-        color: var(--color-muted);
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-
-      .article-breadcrumb a:hover {
-        color: var(--color-rose-kiss-500, #fe5d9f);
-      }
-
-      .article-header {
-        margin-bottom: 32px;
-      }
-
-      .article-header h1 {
-        font-size: 2.1rem;
+      .error-page-wrap h1 {
+        font-size: 1.5rem;
         font-weight: 800;
         color: var(--color-primary);
-        line-height: 1.35;
-        margin: 0 0 16px;
-        letter-spacing: -0.02em;
+        margin: 0 0 10px;
       }
-
-      .article-meta {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        font-size: 0.85rem;
+      .error-page-wrap p {
+        font-size: 0.95rem;
         color: var(--color-muted);
+        line-height: 1.6;
+        margin: 0 0 28px;
       }
-
-      .article-hero-media {
-        width: 100%;
-        max-height: 440px;
-        border-radius: var(--border-radius-md);
-        overflow: hidden;
-        margin-bottom: 36px;
+      .error-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .error-btn-primary {
+        background: var(--color-primary);
+        color: #fff;
+        padding: 11px 22px;
+        border-radius: var(--border-radius-sm);
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 700;
+        transition: opacity 0.2s;
+      }
+      .error-btn-primary:hover {
+        opacity: 0.9;
+      }
+      .error-btn-secondary {
         background: var(--color-surface-soft);
+        color: var(--color-primary);
         border: 1px solid var(--border-light);
-      }
-
-      .article-hero-media img {
-        width: 100%;
-        height: 100%;
-        max-height: 440px;
-        object-fit: cover;
-        display: block;
-      }
-
-      .article-content {
-        font-size: 1.08rem;
-        line-height: 1.85;
-        color: var(--color-primary);
-      }
-
-      .article-content p {
-        margin-bottom: 24px;
-      }
-
-      .article-content h2 {
-        font-size: 1.45rem;
-        font-weight: 800;
-        color: var(--color-primary);
-        margin: 40px 0 16px;
-        line-height: 1.4;
-      }
-
-      .article-content h3 {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--color-primary);
-        margin: 30px 0 12px;
-      }
-
-      .article-content blockquote {
-        margin: 32px 0;
-        padding: 18px 24px;
-        border-right: 3px solid var(--color-rose-kiss-500, #fe5d9f);
-        background: var(--color-lavender-veil-600, #f3e8f5);
-        border-radius: 0 8px 8px 0;
-        color: var(--color-muted);
-        font-style: italic;
-        line-height: 1.7;
-      }
-
-      .article-content ul,
-      .article-content ol {
-        margin-right: 24px;
-        margin-bottom: 24px;
-      }
-
-      .article-content li {
-        margin-bottom: 10px;
-        line-height: 1.7;
-      }
-
-      .article-content img {
-        max-width: 100%;
-        border-radius: var(--border-radius-md);
-        margin: 24px 0;
-      }
-
-      /* Related Section */
-      .related-articles-section {
-        max-width: 1000px;
-        margin: 60px auto 0;
-        padding-top: 40px;
-        border-top: 1px solid var(--border-light);
-      }
-
-      .related-title {
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: var(--color-primary);
-        margin-bottom: 24px;
-      }
-
-      .related-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-      }
-
-      .related-card {
-        background: var(--color-surface);
-        border: 1px solid var(--border-light);
-        border-radius: var(--border-radius-md);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
+        padding: 11px 22px;
+        border-radius: var(--border-radius-sm);
         text-decoration: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-      }
-
-      .related-card:hover {
-        border-color: var(--color-soft-blossom-400, #efa2c4);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-      }
-
-      .related-card img {
-        width: 100%;
-        height: 160px;
-        object-fit: cover;
-      }
-
-      .related-card-body {
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-      }
-
-      .related-card-body span {
-        font-size: 0.78rem;
-        color: var(--color-muted);
-        margin-bottom: 6px;
-      }
-
-      .related-card-body h4 {
-        font-size: 0.98rem;
+        font-size: 0.88rem;
         font-weight: 700;
-        color: var(--color-primary);
-        line-height: 1.45;
-        margin: 0 0 12px;
+        transition: background 0.2s;
       }
-
-      .related-card-body .read-link {
-        margin-top: auto;
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: var(--color-rose-kiss-500, #fe5d9f);
-      }
-
-      @media (max-width: 640px) {
-        .article-page-wrap {
-          padding-top: 100px;
-        }
-        .article-header h1 {
-          font-size: 1.6rem;
-        }
+      .error-btn-secondary:hover {
+        background: var(--border-light);
       }
     </style>
   </slot>
 
-  <div class="article-page-wrap container" dir="rtl">
-    <main class="article-reader">
-      <nav class="article-breadcrumb" aria-label="مسار المقال">
-        <a href="/"><i class="fas fa-home"></i> الرئيسية</a>
-        <span>/</span>
-        <a href="/blog">المدونة</a>
-        <span>/</span>
-        <span id="breadcrumbCurrent">المقال</span>
-      </nav>
-
-      <article id="postArticleArea">
-        <header class="article-header">
-          <h1 id="postTitle">جاري تحميل المقال...</h1>
-          <div class="article-meta">
-            <span id="postDate"></span>
-          </div>
-        </header>
-
-        <div class="article-hero-media" id="postImageWrapper" style="display:none;">
-          <img loading="lazy" id="postImage" src="" alt="غلاف المقال" />
-        </div>
-
-        <div class="article-content" id="postContent">
-          <p style="color:var(--color-muted);">جاري تجهيز نص المقال...</p>
-        </div>
-      </article>
-    </main>
-
-    <!-- Related Articles -->
-    <section class="related-articles-section">
-      <h3 class="related-title">مقالات مقترحة</h3>
-      <div class="related-grid" id="suggestedContainer">
-        <p style="color: var(--color-muted); font-size: 0.9rem;">جاري تحميل المقالات المقترحة...</p>
-      </div>
-    </section>
+  <div class="error-page-wrap container" dir="rtl">
+    <div class="error-code">404</div>
+    <h1>عذراً، هذا المقال غير موجود</h1>
+    <p>قد يكون الرابط غير صحيح أو تم نقل المقال إلى مسار جديد في مدونة داندي.</p>
+    <div class="error-actions">
+      <a href="/blog" class="error-btn-primary"><i class="fas fa-book-open"></i> تصفح المدونة</a>
+      <a href="/" class="error-btn-secondary"><i class="fas fa-home"></i> الصفحة الرئيسية</a>
+    </div>
   </div>
-
-  <script is:inline>
-    const db = window.firestore || (window.firebase && firebase.firestore ? firebase.firestore() : null);
-
-    function formatArticleDate(data) {
-      if (data.createdAt && typeof data.createdAt.toDate === 'function') {
-        try {
-          return data.createdAt.toDate().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'});
-        } catch (e) {}
-      }
-      if (data.date) return data.date;
-      return '';
-    }
-
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    const isSlugRoute = pathParts[0] === 'blog' && pathParts[1];
-    const slugFromPath = isSlugRoute ? decodeURIComponent(pathParts[1]) : null;
-
-    const urlParams = new URLSearchParams(window.location.search);
-    let postId = urlParams.get("id");
-    let slugParam = urlParams.get("slug");
-    let targetSlug = slugFromPath || slugParam;
-
-    let articleDoc = null;
-
-    async function loadPost() {
-      try {
-        if (!db) {
-          showNotFound();
-          return;
-        }
-
-        const timeoutPromise = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), ms));
-
-        if (targetSlug) {
-          const queryPromise = db.collection('articles').where('slug', '==', targetSlug).limit(1).get();
-          const query = await Promise.race([queryPromise, timeoutPromise(4000)]);
-          if (!query.empty) articleDoc = query.docs[0];
-        }
-
-        if (!articleDoc && postId) {
-          const docPromise = db.collection('articles').doc(postId).get();
-          const doc = await Promise.race([docPromise, timeoutPromise(4000)]);
-          if (doc.exists) articleDoc = doc;
-        }
-
-        if (!articleDoc || !articleDoc.exists) {
-          showNotFound();
-          return;
-        }
-        
-        postId = articleDoc.id;
-        const data = articleDoc.data();
-        const pImg = document.getElementById('postImage');
-        const pImgWrap = document.getElementById('postImageWrapper');
-        const pTitle = document.getElementById('postTitle');
-        const pDate = document.getElementById('postDate');
-        const pContent = document.getElementById('postContent');
-        const bc = document.getElementById('breadcrumbCurrent');
-
-        const dateStr = formatArticleDate(data);
-        if (data.image && pImg && pImgWrap) {
-          pImg.src = data.image;
-          pImgWrap.style.display = 'block';
-        }
-        if (pTitle) pTitle.textContent = data.title || '';
-        if (bc) bc.textContent = data.title || 'المقال';
-        if (pDate) pDate.textContent = dateStr || '';
-        if (pContent) pContent.innerHTML = data.content || '';
-
-        document.title = data.title ? `${data.title} | مدونة داندي` : 'عرض المقال | داندي';
-
-        const cleanDesc = (data.content || "نصائح العناية بالبشرة والشعر من داندي.").replace(/<[^>]*>/g, '').substring(0, 155).trim() + "...";
-        const cleanImg = data.image || 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1200&q=80';
-
-        const updateMeta = (selector, attr, val) => {
-          try {
-            let m = document.querySelector(selector);
-            if (m) m.setAttribute(attr, val || '');
-          } catch(e) {}
-        };
-
-        updateMeta('meta[name="description"]', 'content', cleanDesc);
-        updateMeta('#og-title-meta', 'content', data.title);
-        updateMeta('#og-desc-meta', 'content', cleanDesc);
-        updateMeta('#og-image-meta', 'content', cleanImg);
-        updateMeta('#og-url-meta', 'content', window.location.href);
-
-      } catch(e) {
-        console.error(e);
-      }
-    }
-
-    function showNotFound() {
-      const area = document.getElementById('postArticleArea');
-      if (area) {
-        area.innerHTML = `
-          <div style="text-align:center; padding:50px 20px; border: 1px dashed var(--border-light); border-radius: var(--border-radius-md);">
-            <i class="far fa-file-alt" style="font-size:2.5rem; color:var(--color-muted); margin-bottom:12px; opacity:0.6;"></i>
-            <h2 style="font-size:1.3rem; margin-bottom:10px; color:var(--color-primary);">المقال غير موجود أو تم نقله</h2>
-            <a href="/blog" class="cta-btn" style="border-radius:99px; padding:10px 20px; font-size:0.88rem; display:inline-block; margin-top:12px;">العودة للمدونة</a>
-          </div>
-        `;
-      }
-    }
-
-    async function loadSuggested() {
-      const container = document.getElementById('suggestedContainer');
-      if (!container) return;
-      
-      try {
-        if (!db) {
-          container.innerHTML = '<p style="color:var(--color-muted); font-size:0.88rem;">لا توجد مقالات مقترحة حالياً.</p>';
-          return;
-        }
-
-        const fetchPromise = db.collection('articles').orderBy('createdAt', 'desc').limit(4).get();
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 4000));
-        const snapshot = await Promise.race([fetchPromise, timeoutPromise]);
-        let matchCount = 0;
-
-        container.innerHTML = '';
-
-        snapshot.forEach(doc => {
-          if (doc.id === postId) return;
-          const d = doc.data();
-          if (d.status === 'draft') return;
-          matchCount++;
-          
-          const img = d.image ? d.image : 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80';
-          const title = d.title || 'بدون عنوان';
-          const dateText = formatArticleDate(d);
-          const postLink = d.slug ? `/post?slug=${encodeURIComponent(d.slug)}` : `/post?id=${doc.id}`;
-
-          const cardEl = document.createElement('a');
-          cardEl.href = postLink;
-          cardEl.className = 'related-card';
-          cardEl.innerHTML = `
-            <img loading="lazy" src="${img}" alt="${title}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80';">
-            <div class="related-card-body">
-              ${dateText ? `<span>${dateText}</span>` : ''}
-              <h4>${title}</h4>
-              <span class="read-link">اقرئي المقال ←</span>
-            </div>
-          `;
-          container.appendChild(cardEl);
-        });
-
-        if (matchCount === 0) {
-          container.innerHTML = '<p style="color:var(--color-muted); font-size:0.88rem;">لا توجد مقالات مقترحة حالياً.</p>';
-        }
-
-      } catch(err) {
-        container.innerHTML = '<p style="color:var(--color-muted); font-size:0.88rem;">تعذر تحميل المقترحات.</p>';
-      }
-    }
-
-    async function init() {
-      await loadPost();
-      loadSuggested();
-    }
-    init();
-  </script>
 </BaseLayout>
-

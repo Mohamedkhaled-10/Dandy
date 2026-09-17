@@ -1,5 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+// SEO Crawl Discipline: Parameter-aware robots signaling for catalog query states
+const AUDITED_CATALOG_PARAMS = ['category', 'search', 'sort', 'page'];
+const hasAuditedCatalogParam = AUDITED_CATALOG_PARAMS.some(param => Astro.url.searchParams.has(param));
+const robotsDirective = hasAuditedCatalogParam ? 'noindex, follow' : 'index, follow';
 ---
 
 <BaseLayout
@@ -7,6 +12,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="تصفحي جميع منتجات داندي (Dandy Cosmetics) للعناية بالبشرة والشعر. تشكيلة واسعة من مستحضرات التجميل الطبيعية والمضمونة بأسعار ممتازة."
   keywords="Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, جميع المنتجات, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل, Skincare, Haircare"
   canonical="https://dandy-ebon.vercel.app/all-products"
+  robots={robotsDirective}
 >
   <slot name="head" slot="head">
     <meta property="og:type" content="website" />
@@ -1174,9 +1180,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // دالة الإضافة السريعة للسلة
     window.quickAdd = function(id, name, price, image, discount, onSale, hasVariants, slug) {
       if (hasVariants) {
-        const productLink = slug
-          ? `/product/${encodeURIComponent(slug)}`
-          : `/product?id=${id}`;
+        const productLink = (typeof window.getProductLink === 'function')
+          ? window.getProductLink({ id, slug, name })
+          : (slug ? `/product/${encodeURIComponent(slug)}` : `/product?id=${id}`);
         window.location.href = productLink;
         return;
       }
@@ -1277,9 +1283,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         productEl.setAttribute("data-price", priceRaw);
         productEl.setAttribute("data-index", index);
 
-        const productLink = data.slug
-          ? `/product/${encodeURIComponent(data.slug)}`
-          : `/product?id=${data.id}`;
+        const productLink = (typeof window.getProductLink === 'function')
+          ? window.getProductLink(data)
+          : (data.slug ? `/product/${encodeURIComponent(data.slug)}` : `/product?id=${data.id}`);
         productEl.onclick = function() { window.location.href = productLink; };
 
         let priceStr = `<span class="price-current">${priceRaw} ج.م</span>`;

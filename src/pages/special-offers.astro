@@ -154,9 +154,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     window.quickAdd = function(id, name, price, image, discount, onSale, hasVariants, slug) {
       if (hasVariants) {
-        const productLink = slug
-          ? `/product/${encodeURIComponent(slug)}`
-          : `/product?id=${id}`;
+        const productLink = (typeof window.getProductLink === 'function')
+          ? window.getProductLink({ id, slug, name })
+          : (slug ? `/product/${encodeURIComponent(slug)}` : `/product?id=${id}`);
         window.location.href = productLink;
         return;
       }
@@ -229,9 +229,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           
           productEl.className = "product-card product";
           productEl.setAttribute("data-category", data.category || 'Special Promo');
-          const productLink = data.slug
-            ? `/product/${encodeURIComponent(data.slug)}`
-            : `/product?id=${child.key}`;
+          const productLink = (typeof window.getProductLink === 'function')
+            ? window.getProductLink({ ...data, id: child.key })
+            : (data.slug ? `/product/${encodeURIComponent(data.slug)}` : `/product?id=${child.key}`);
           productEl.onclick = function() { window.location.href = productLink; };
 
           const priceRaw = parseFloat(data.price) || 0;

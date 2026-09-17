@@ -95,10 +95,22 @@
   <div class="footer-core-content">
     <div class="footer-main-container">
 
-      <!-- 3 Columns Section (Focused & Clean) -->
+      <!-- 4 Columns Section (Focused & Clean with Category Discovery) -->
       <div class="footer-primary-grid">
+
+        <!-- Column 1: Categories Navigation (Canonical SEO Department Links) -->
+        <div class="footer-col-box">
+          <h3 class="footer-heading">الأقسام الرئيسية</h3>
+          <ul class="footer-plain-list">
+            <li><a href="/category/hair-care">العناية بالشعر</a></li>
+            <li><a href="/category/body-care">العناية بالجسم</a></li>
+            <li><a href="/category/fragrance">العطور والمعطرات</a></li>
+            <li><a href="/category/skin-care">العناية بالبشرة</a></li>
+            <li><a href="/all-products">جميع المنتجات</a></li>
+          </ul>
+        </div>
         
-        <!-- Column 1: Terms & Advantages -->
+        <!-- Column 2: Terms & Advantages -->
         <div class="footer-col-box">
           <h3 class="footer-heading">الشروط والمزايا</h3>
           <ul class="footer-plain-list">
@@ -124,7 +136,7 @@
           </div>
         </div>
 
-        <!-- Column 2: Information & Help -->
+        <!-- Column 3: Information & Help -->
         <div class="footer-col-box">
           <h3 class="footer-heading">معلومات المتجر</h3>
           <ul class="footer-plain-list" id="footer-menu-links">
@@ -141,7 +153,7 @@
           </div>
         </div>
 
-        <!-- Column 3: Contact & Brand Identity -->
+        <!-- Column 4: Contact & Brand Identity -->
         <div class="footer-col-box brand-contact-col">
           <h3 class="footer-heading">تواصل معنا</h3>
           
@@ -268,8 +280,8 @@
 
   .footer-primary-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.2fr;
-    gap: 48px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 36px;
     padding-bottom: 36px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
