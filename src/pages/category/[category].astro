@@ -51,6 +51,31 @@ const ogImage = categoryConfig
 const schemas = categoryConfig
   ? generateCategoryJsonLd(categoryConfig, categoryProducts, canonicalUrl)
   : [];
+
+// 5. Approved Category-to-Article Editorial Guides (Phase 3.5)
+interface CategoryArticleGuide {
+  title: string;
+  description: string;
+  anchorText: string;
+  articleUrl: string;
+}
+
+const CATEGORY_ARTICLE_MAP: Record<string, CategoryArticleGuide> = {
+  'hair-care': {
+    title: 'دليل العناية التحريري',
+    description: 'تعرفي على أفضل النصائح والخطوات العملية لتغذية وترميم خصلات شعرك وحمايتها من التلف:',
+    anchorText: 'دليل روتين العناية بالشعر الجاف والمتقصف',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'skin-care': {
+    title: 'دليل العناية التحريري',
+    description: 'اكتشفي الترتيب اليومي المثالي لخطوات التنظيف والترطيب وتغذية بشرتك للحفاظ على نضارتها:',
+    anchorText: 'دليل روتين العناية بالبشرة والحفاظ على نضارتها',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+};
+
+const categoryArticle = categoryConfig ? CATEGORY_ARTICLE_MAP[categoryConfig.slug] : null;
 ---
 
 <BaseLayout
@@ -524,6 +549,78 @@ const schemas = categoryConfig
         transform: translateY(-2px);
         box-shadow: 0 6px 18px rgba(254, 93, 159, 0.35);
       }
+
+      /* Editorial Guide Section (Phase 3.5) */
+      .category-editorial-section {
+        padding: 0 0 54px;
+      }
+
+      .category-editorial-card {
+        background: #faf7f8;
+        border: 1px solid var(--border-light, #ede7e4);
+        border-radius: 14px;
+        padding: 24px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .category-editorial-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: rgba(223, 63, 133, 0.08);
+        color: var(--color-rose-kiss-600, #df3f85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+
+      .category-editorial-body {
+        flex: 1;
+        min-width: 260px;
+      }
+
+      .category-editorial-heading {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-primary-dark, #18181b);
+        margin: 0 0 6px;
+      }
+
+      .category-editorial-text {
+        font-size: 0.92rem;
+        color: var(--color-dust-grey-300, #5c5553);
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      .category-editorial-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #ffffff;
+        color: var(--color-rose-kiss-600, #df3f85);
+        border: 1px solid rgba(223, 63, 133, 0.25);
+        padding: 10px 20px;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+
+      .category-editorial-link:hover {
+        background: var(--color-rose-kiss-600, #df3f85);
+        color: #ffffff;
+        transform: translateX(-3px);
+        box-shadow: 0 4px 12px rgba(223, 63, 133, 0.25);
+      }
     </style>
   </Fragment>
 
@@ -697,6 +794,29 @@ const schemas = categoryConfig
             </div>
           </div>
         </main>
+
+        {/* 4. Editorial Guide Block (If approved article exists for this category) */}
+        {categoryArticle && (
+          <section class="category-editorial-section" aria-label="دليل العناية التحريري">
+            <div class="category-container">
+              <div class="category-editorial-card">
+                <div class="category-editorial-icon" aria-hidden="true">
+                  <i class="fas fa-book-open"></i>
+                </div>
+                <div class="category-editorial-body">
+                  <h2 class="category-editorial-heading">{categoryArticle.title}</h2>
+                  <p class="category-editorial-text">{categoryArticle.description}</p>
+                </div>
+                <div class="category-editorial-action">
+                  <a href={categoryArticle.articleUrl} class="category-editorial-link">
+                    <span>{categoryArticle.anchorText}</span>
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
       </>
     )}
   </div>

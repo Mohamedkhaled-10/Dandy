@@ -97,6 +97,71 @@ const shareWaLink = product ? `https://wa.me/?text=${encodeURIComponent(product.
 const shareFbLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}`;
 const shareIgLink = 'https://www.instagram.com/dandy_skincare_cosmotics';
 const shareMessengerLink = 'https://www.facebook.com/profile.php?id=61563039704396';
+
+// 6. Approved Product-to-Article Editorial Guides (Phase 3.5)
+interface ProductArticleGuide {
+  label: string;
+  leadText: string;
+  anchorText: string;
+  tailText?: string;
+  articleUrl: string;
+}
+
+const PRODUCT_ARTICLE_MAP: Record<string, ProductArticleGuide> = {
+  'free-sulfate-shampoo-500ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تعرفي على كيفية دمج الشامبو الخالي من السلفات لحماية الزيوت الطبيعية ضمن',
+    anchorText: 'روتين العناية بالشعر الجاف والمتقصف',
+    tailText: 'للحصول على أفضل النتائج.',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'hair-mask-repair-250ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'اكتشفي خطوات تطبيق حمام الكريم والترطيب الأسبوعي بالتفصيل في',
+    anchorText: 'روتين علاج الشعر التالف والمتقصف',
+    tailText: 'لاستعادة نعومة ولمعان شعركِ.',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'hair-repair-collection': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تغطي هذه المجموعة المتكاملة الخطوات الأساسية الموصى بها في',
+    anchorText: 'دليل العناية بالشعر الجاف والتالف',
+    tailText: 'من التنظيف اللطيف إلى الترميم العميق.',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'facial-cleanser-150ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'يُمثل هذا الغسول الخطوة الأولى الأساسية لتنقية البشرة ضمن',
+    anchorText: 'روتين العناية اليومي بالبشرة وتنظيفها',
+    tailText: 'صباحاً ومساءً.',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+  'facial-serum-3x1-30ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'اكتشفي الترتيب الصحيح لتطبيق السيروم وتعزيز نضارة الوجه في',
+    anchorText: 'خطوات روتين العناية بالبشرة اليومي',
+    tailText: 'للحفاظ على إشراقة وصحة بشرتك.',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+  'skin-care-collection': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تجمع هذه المجموعة بين خطوتي التنظيف والترطيب المشروحتين في',
+    anchorText: 'دليل روتين نضارة البشرة اليومي',
+    tailText: 'لروتين عناية متكامل ومتوازن.',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+  'hand-cream-60gm': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تعرفي على أهمية العناية اليومية وترطيب اليدين وحمايتهما من الجفاف ضمن',
+    anchorText: 'خطوات روتين العناية اليومية باليدين والجسم',
+    tailText: 'للحفاظ على نعومة ملمسكِ.',
+    articleUrl: '/blog/daily-beauty-routine-hair-skin-body',
+  },
+};
+
+const productArticle = (product && !product.isHidden && product.resolvedSlug)
+  ? PRODUCT_ARTICLE_MAP[product.resolvedSlug]
+  : null;
 ---
 
 <BaseLayout
@@ -727,6 +792,43 @@ const shareMessengerLink = 'https://www.facebook.com/profile.php?id=615630397043
         color: #15803d;
       }
 
+      /* Editorial Routine Guidance Card (Phase 3.5) */
+      .product-editorial-card {
+        background: #faf7f8;
+        border: 1px solid var(--border-light, #f0e6e8);
+        border-right: 4px solid var(--color-blush, #db2777);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-top: 18px;
+        direction: rtl;
+        text-align: right;
+      }
+      .product-editorial-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--color-blush, #db2777);
+        margin-bottom: 8px;
+      }
+      .product-editorial-text {
+        font-size: 0.94rem;
+        color: #374151;
+        line-height: 1.65;
+        margin: 0;
+      }
+      .product-editorial-link {
+        color: var(--color-blush, #db2777);
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        transition: color 0.15s ease;
+      }
+      .product-editorial-link:hover {
+        color: #be185d;
+      }
+
       /* Related Products Section */
       .related-section {
         padding: 60px 0;
@@ -1292,6 +1394,22 @@ const shareMessengerLink = 'https://www.facebook.com/profile.php?id=615630397043
                 <span>تفاصيل وخواص المستحضر</span>
               </h2>
               <div id="product-desc" class="product-desc-container" set:html={structuredDescriptionHtml} />
+
+              {productArticle && (
+                <div class="product-editorial-card" aria-label="دليل العناية والروتين">
+                  <div class="product-editorial-badge">
+                    <i class="fas fa-spa" aria-hidden="true"></i>
+                    <span>{productArticle.label}</span>
+                  </div>
+                  <p class="product-editorial-text">
+                    {productArticle.leadText}{' '}
+                    <a href={productArticle.articleUrl} class="product-editorial-link">
+                      {productArticle.anchorText}
+                    </a>
+                    {productArticle.tailText ? ` ${productArticle.tailText}` : ''}
+                  </p>
+                </div>
+              )}
             </div>
 
             <!-- Verified Customer Reviews Section -->
