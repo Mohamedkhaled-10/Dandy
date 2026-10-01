@@ -284,6 +284,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 
   <script is:inline>
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
     const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
@@ -306,19 +316,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!logBox) return;
       const t = new Date().toLocaleTimeString('en-US', {hour12:false});
       const d = new Date().toISOString().split('T')[0];
-      logBox.innerHTML += `[LIVE] ${d} ${t} - ${msg}<br>`;
+      logBox.innerHTML += `[LIVE] ${d} ${t} - ${escapeHtml(msg)}<br>`;
       logBox.scrollTop = logBox.scrollHeight;
     }
 
-    if (auth) {
-      auth.onAuthStateChanged(user => {
-        if (!user) {
+    // Strict Admin Auth Guard
+    function handleStatuesAuth(user) {
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+        window.location.replace('/');
+        return;
+      }
+      initializeLiveMetrics();
+      loadFullSalesAnalytics();
+    }
+
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      auth.onAuthStateChanged(handleStatuesAuth);
+    } else {
+      let attempts = 0;
+      const pollInterval = setInterval(() => {
+        attempts++;
+        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (a && typeof a.onAuthStateChanged === 'function') {
+          clearInterval(pollInterval);
+          a.onAuthStateChanged(handleStatuesAuth);
+        } else if (attempts > 30) {
+          clearInterval(pollInterval);
           window.location.href = '/login';
-        } else {
-          initializeLiveMetrics();
-          loadFullSalesAnalytics();
         }
-      });
+      }, 100);
     }
 
     function initializeLiveMetrics() {
@@ -584,7 +614,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
-          <td style="font-weight: 700; color: #1e293b;">${p.name}</td>
+          <td style="font-weight: 700; color: #1e293b;">${escapeHtml(p.name)}</td>
           <td style="text-align: center;"><span class="qty-pill">${p.quantity} قطعة</span></td>
           <td style="text-align: left; font-weight: 700; color: var(--color-blush, #DB2777);">${currencyFormatter.format(p.revenue)} ج.م</td>
         `;

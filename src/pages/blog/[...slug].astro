@@ -363,7 +363,7 @@ const breadcrumbSchema = article ? {
 
           {article.image && (
             <div class="article-hero-media">
-              <img fetchpriority="high" src={article.image} alt={article.title} />
+              <img fetchpriority="high" src={article.image} alt={article.title} width="1280" height="720" decoding="async" />
             </div>
           )}
 
@@ -378,7 +378,7 @@ const breadcrumbSchema = article ? {
             {relatedArticles.map((item) => (
               <a href={`/blog/${item.slug}`} class="related-card">
                 {item.image && (
-                  <img loading="lazy" src={item.image} alt={item.title} />
+                  <img loading="lazy" src={item.image.includes('/c_fill,') ? item.image.replace('w_1280,h_720', 'w_400,h_225') : item.image} alt={item.title} width="400" height="225" decoding="async" />
                 )}
                 <div class="related-card-body">
                   {item.category && <span>{item.category}</span>}

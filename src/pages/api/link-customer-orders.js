@@ -4,6 +4,7 @@ export const prerender = false;
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
+import { getClientIp, getLinkOrdersRateLimiter } from '../../utils/rate-limit.js';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -25,6 +26,33 @@ function getAdminApp() {
 
 export async function POST({ request }) {
   try {
+    const clientIp = getClientIp(request);
+
+    // تطبيق Rate Limiting عبر Upstash Redis (5 محاولات في الدقيقة لكل IP) بمبدأ Fail Open
+    try {
+      const linkLimiter = getLinkOrdersRateLimiter();
+      if (linkLimiter) {
+        const { success, limit, remaining, reset } = await linkLimiter.limit(clientIp);
+        if (!success) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'RATE_LIMIT_EXCEEDED',
+            message: 'تم تجاوز الحد المسموح من طلبات ربط الحساب. يرجى الانتظار دقيقة والمحاولة لاحقًا.'
+          }), {
+            status: 429,
+            headers: {
+              'Content-Type': 'application/json',
+              'X-RateLimit-Limit': String(limit),
+              'X-RateLimit-Remaining': String(remaining),
+              'X-RateLimit-Reset': String(reset)
+            }
+          });
+        }
+      }
+    } catch (redisErr) {
+      console.warn(`[RATE-LIMIT WARNING - FAIL OPEN] Upstash Redis check failed in link-customer-orders for IP ${clientIp}:`, redisErr?.message || redisErr);
+    }
+
     if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
       console.warn('FIREBASE_SERVICE_ACCOUNT not configured in environment. Operation simulated.');
       return new Response(JSON.stringify({
@@ -39,17 +67,10 @@ export async function POST({ request }) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { idToken, phone } = body;
+    const { idToken } = body;
 
     if (!idToken) {
       return new Response(JSON.stringify({ error: 'Missing idToken' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    if (!phone) {
-      return new Response(JSON.stringify({ error: 'Missing phone' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
@@ -70,8 +91,23 @@ export async function POST({ request }) {
       });
     }
 
+    // سد ثغرة IDOR: جلب رقم الهاتف من السجل الموثق للعميل حصراً وتجاهل أي رقم قادم في الطلب
+    const custPhoneSnap = await adminDb.ref(`customers/${uid}/phone`).once('value');
+    const registeredPhone = custPhoneSnap.val();
+
+    if (!registeredPhone || typeof registeredPhone !== 'string' || registeredPhone.trim().length < 10) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'PHONE_NOT_REGISTERED',
+        message: 'لا يوجد رقم هاتف مسجل ومؤكد في ملف العميل لربط الطلبات به'
+      }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // تنظيف وتجهيز صيغ أرقام الهاتف المختلفة (01xxxxxxxxx أو +201xxxxxxxxx)
-    const phoneStr = String(phone).trim();
+    const phoneStr = String(registeredPhone).trim();
     const cleanDigits = phoneStr.replace(/\D/g, '');
     const phoneVariants = new Set();
     phoneVariants.add(phoneStr);

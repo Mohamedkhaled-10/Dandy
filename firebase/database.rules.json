@@ -14,22 +14,24 @@
       ".write": "auth != null && auth.token.email == 'admin@dandy.com'",
       "$productId": {
         "stockQuantity": {
-          ".write": true
+          ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || (data.exists() && newData.isNumber())",
+          ".validate": "(auth != null && auth.token.email == 'admin@dandy.com') || (newData.isNumber() && data.exists() && newData.val() <= data.val() && newData.val() >= 0)"
         },
         "isSoldOut": {
-          ".write": true
+          ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || (newData.isBoolean() && newData.val() == true)",
+          ".validate": "newData.isBoolean() && ((auth != null && auth.token.email == 'admin@dandy.com') || (newData.val() == true))"
         },
         "avgRating": {
-          ".write": "auth != null"
+          ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
         },
         "reviewCount": {
-          ".write": "auth != null"
+          ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
         }
       }
     },
     "orders": {
-      ".read": true,
-      ".indexOn": ["phone", "customerId"],
+      ".read": "(auth != null && auth.token.email == 'admin@dandy.com') || (auth != null && query.orderByChild == 'customerId' && query.equalTo == auth.uid) || (query.orderByChild == 'invoiceCode' && query.equalTo != null)",
+      ".indexOn": ["phone", "customerId", "invoiceCode"],
       ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || !data.exists()",
       "$orderId": {
         ".read": true,
@@ -69,7 +71,10 @@
     "customers": {
       "$uid": {
         ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
-        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length >= 10 && (!data.exists() || (auth != null && auth.token.email == 'admin@dandy.com') || newData.val() == data.val())"
+        }
       }
     },
     "wishlists": {

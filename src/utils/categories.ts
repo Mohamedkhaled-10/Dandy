@@ -2,7 +2,7 @@
 // Centralized Category Taxonomy & SEO Configuration for Dandy Cosmetics
 // Scope: Application-level SEO categories mapping, overrides, and Schema.org generators
 
-import { SITE_URL, type Product } from './products';
+import { SITE_URL, type Product } from './products.ts';
 
 export interface CategoryTaxonomy {
   slug: string;
@@ -27,7 +27,7 @@ export const CATEGORY_TAXONOMY: Record<string, CategoryTaxonomy> = {
     seoDescription: 'اكتشفي مجموعة داندي للعناية بالشعر: شامبو خالي من السلفات، ماسك ترميم الشعر، زيوت الإنبات، وحلول تساقط الشعر والقشرة بتركيبات لطيفة ومغذية.',
     introText: 'مجموعة متكاملة للعناية بصحة ومظهر شعركِ، تشمل الشامبو الخالي من السلفات، ماسكات الترميم، وزيوت التغذية المصممة لروتين عناية يومي متوازن.',
     sourceFirebaseCategories: ['Hair care', 'hair care', 'منتجات الشعر', 'عناية بالشعر'],
-    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208037/Gemini_Generated_Image_hgbam1hgbam1hgba.jpg',
+    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/c_fill,w_1200,h_630,g_center,q_auto:good,f_auto/v1789208037/Gemini_Generated_Image_hgbam1hgbam1hgba.jpg',
   },
   'body-care': {
     slug: 'body-care',
@@ -38,7 +38,7 @@ export const CATEGORY_TAXONOMY: Record<string, CategoryTaxonomy> = {
     seoDescription: 'تسوقي مستحضرات العناية بالجسم من داندي: زبدة الجسم، كريم تقشير القدمين، كريم اليدين، بديل الليزر، ومزيلات العرق الطبيعية لترطيب ونعومة تدوم.',
     introText: 'تشكيلة مختارة من مستحضرات ترطيب وتنعيم الجسم، من زبدة الجسم الغنية وكريمات اليدين والقدمين إلى بديل الليزر ومزيلات العرق الطبيعية.',
     sourceFirebaseCategories: ['Body care', 'body care', 'منتجات الجسم'],
-    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789208358/Gemini_Generated_Image_b5iehjb5iehjb5ie.jpg',
+    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/c_fill,w_1200,h_630,g_center,q_auto:good,f_auto/v1789208358/Gemini_Generated_Image_b5iehjb5iehjb5ie.jpg',
   },
   'fragrance': {
     slug: 'fragrance',
@@ -49,7 +49,7 @@ export const CATEGORY_TAXONOMY: Record<string, CategoryTaxonomy> = {
     seoDescription: 'استمتعي بتشكيلة العطور والمعطرات من داندي: بادي سبلاش بأحجام مختلفة، معطر الجسم والشعر، مسك داندي، والمخمرية بروائح ثابتة ومنعشة طوال اليوم.',
     introText: 'تشكيلة بادي سبلاش ومعطرات الجسم والشعر من داندي، بأحجام وروائح متنوعة، إلى جانب المخمرية ومسك داندي.',
     sourceFirebaseCategories: ['Perfume', 'perfume', 'منتجات العطور', 'Fragrances'],
-    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147702/WhatsApp_Image_2026-07-10_at_10.14.43_PM.jpg',
+    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/c_fill,w_1200,h_630,g_center,q_auto:good,f_auto/v1789147702/WhatsApp_Image_2026-07-10_at_10.14.43_PM.jpg',
   },
   'skin-care': {
     slug: 'skin-care',
@@ -60,7 +60,7 @@ export const CATEGORY_TAXONOMY: Record<string, CategoryTaxonomy> = {
     seoDescription: 'مستحضرات العناية بالبشرة والوجه من داندي: غسول للبشرة الدهنية والمختلطة، سيروم نضارة 3 في 1، مرطب شفاه وتنت طبيعي لروتين يومي مشرق.',
     introText: 'روتين يومي لطيف لنضارة وترطيب البشرة، يشمل غسول الوجه المنعش، سيروم العناية المتكاملة، ومستحضرات الشفاه والرموش الطبيعية.',
     sourceFirebaseCategories: ['Skin care', 'skin care', 'عناية بالبشرة'],
-    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147700/WhatsApp_Image_2026-07-10_at_6.13.03_PM_1.jpg',
+    image: 'https://res.cloudinary.com/dogk78w9z/image/upload/c_fill,w_1200,h_630,g_center,q_auto:good,f_auto/v1789147700/WhatsApp_Image_2026-07-10_at_6.13.03_PM_1.jpg',
   },
 };
 

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 ---
 
 <BaseLayout
@@ -7,6 +8,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="انضمي إلى عائلة داندي وتابعي طلباتك السابقة، عناوينك المحفوظة، وقائمتك المفضلة بكل سهولة."
 >
   <slot name="head" slot="head">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style is:global>
       .account-auth-container {
         min-height: calc(85vh - 120px);
@@ -194,6 +196,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <input type="password" id="c-pass" name="password" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
         </div>
 
+        <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
+        <div class="signup-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+        </div>
+
         <button type="submit" id="signupSubmitBtn" class="btn-auth-submit">
           <span>إنشاء الحساب</span>
           <i class="fas fa-arrow-left"></i>
@@ -268,11 +275,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             return;
           }
 
+          // جلب توكن كابتشا Cloudflare Turnstile
+          let turnstileToken = '';
+          if (typeof turnstile !== 'undefined') {
+            try { turnstileToken = turnstile.getResponse() || ''; } catch(e) {}
+          }
+          if (!turnstileToken) {
+            const input = document.querySelector('[name="cf-turnstile-response"]');
+            if (input) turnstileToken = input.value;
+          }
+
+          if (!turnstileToken) {
+            showAlert('يرجى التحقق من اختبار الكابتشا (CAPTCHA) أولاً.', 'error');
+            return;
+          }
+
           submitBtn.disabled = true;
           const originalBtnHTML = submitBtn.innerHTML;
           submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إنشاء الحساب...';
 
           try {
+            // التحقق السيرفري الصارم من التوكن ومعدل الطلبات
+            const verifyRes = await fetch('/api/verify-turnstile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: turnstileToken, action: 'signup', email })
+            });
+
+            const verifyData = await verifyRes.json().catch(() => ({}));
+            if (!verifyRes.ok || !verifyData.success) {
+              showAlert(verifyData.message || 'فشل التحقق الأمني من الكابتشا. يرجى المحاولة مرة أخرى.', 'error');
+              if (typeof turnstile !== 'undefined') {
+                try { turnstile.reset(); } catch(e) {}
+              }
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnHTML;
+              return;
+            }
+
             // إنشاء المستخدم في Firebase Auth
             const cred = await auth.createUserWithEmailAndPassword(email, password);
             const uid = cred.user.uid;
@@ -304,6 +344,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           } catch (err) {
             console.error('Signup error:', err);
+            if (typeof turnstile !== 'undefined') {
+              try { turnstile.reset(); } catch(e) {}
+            }
             let message = 'حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.';
             if (err.code === 'auth/email-already-in-use') {
               message = 'هذا البريد الإلكتروني مسجل بالفعل! يمكنكِ تسجيل الدخول به.';

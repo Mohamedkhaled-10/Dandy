@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 ---
 
 <BaseLayout
@@ -7,6 +8,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   description="سجّلي الدخول إلى حسابك في داندي لمتابعة طلباتك، تعديل عناوين الشحن، ومشاهدة قائمتك المفضلة."
 >
   <slot name="head" slot="head">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style is:global>
       .login-editorial-page {
         min-height: calc(100vh - 80px);
@@ -489,6 +491,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </button>
           </div>
 
+          <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
+          <div class="login-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
+            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+          </div>
+
           <button type="submit" id="loginSubmitBtn" class="login-submit-btn">
             <span>تسجيل الدخول</span>
             <i class="fas fa-arrow-left"></i>
@@ -621,6 +628,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             return;
           }
 
+          // جلب توكن كابتشا Cloudflare Turnstile
+          let turnstileToken = '';
+          if (typeof turnstile !== 'undefined') {
+            try { turnstileToken = turnstile.getResponse() || ''; } catch(e) {}
+          }
+          if (!turnstileToken) {
+            const input = document.querySelector('[name="cf-turnstile-response"]');
+            if (input) turnstileToken = input.value;
+          }
+
+          if (!turnstileToken) {
+            showAlert('يرجى إكمال اختبار التحقق البشري (CAPTCHA) أولاً.');
+            return;
+          }
+
           if (rememberCheckbox && rememberCheckbox.checked) {
             try { localStorage.setItem('dandy_saved_email', email); } catch(e) {}
           } else {
@@ -632,6 +654,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>جاري تسجيل الدخول...</span>';
 
           try {
+            // التحقق السيرفري الصارم من التوكن ومعدل الطلبات
+            const verifyRes = await fetch('/api/verify-turnstile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: turnstileToken, action: 'login', email })
+            });
+
+            const verifyData = await verifyRes.json().catch(() => ({}));
+            if (!verifyRes.ok || !verifyData.success) {
+              showAlert(verifyData.message || 'فشل التحقق الأمني من الكابتشا. يرجى المحاولة مرة أخرى.');
+              if (typeof turnstile !== 'undefined') {
+                try { turnstile.reset(); } catch(e) {}
+              }
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnHTML;
+              return;
+            }
+
             await auth.signInWithEmailAndPassword(email, password);
             showAlert('تم تسجيل الدخول بنجاح! جاري التوجيه...', 'success');
             setTimeout(function() {
@@ -639,6 +679,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             }, 500);
           } catch (err) {
             console.error('Login error:', err);
+
+            // تسجيل المحاولة الفاشلة في السيرفر لرصد Brute Force
+            fetch('/api/verify-turnstile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'report-failed-login',
+                email,
+                reason: err.code || 'invalid_credentials'
+              })
+            }).catch(() => {});
+
+            if (typeof turnstile !== 'undefined') {
+              try { turnstile.reset(); } catch(e) {}
+            }
+
             let message = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
             if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
               message = 'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التحقق وإعادة المحاولة.';

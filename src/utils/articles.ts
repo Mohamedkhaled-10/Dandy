@@ -75,12 +75,53 @@ export function parseFirestoreArticle(doc: unknown): Article | null {
 
   const category = fields.category?.stringValue?.trim() || 'روتين الجمال';
   const status: 'published' | 'draft' = fields.status?.stringValue === 'draft' ? 'draft' : 'published';
-  const image = fields.image?.stringValue?.trim() || '';
+  let image = fields.image?.stringValue?.trim() || '';
   const excerpt = fields.excerpt?.stringValue?.trim() || '';
-  const content = fields.content?.stringValue || '';
+  let content = fields.content?.stringValue || '';
   const date = fields.date?.stringValue?.trim() || undefined;
   const createdAt = fields.createdAt?.timestampValue || raw.createTime || undefined;
   const updatedAt = fields.updatedAt?.timestampValue || raw.updateTime || undefined;
+
+  // Phase 8.2: Optimize Cloudinary blog featured image delivery (1280x720 16:9 banner with f_auto,q_auto)
+  if (image && image.includes('res.cloudinary.com')) {
+    if (!image.includes('/c_fill,')) {
+      image = image.replace('/image/upload/', '/image/upload/c_fill,w_1280,h_720,g_center,q_auto:good,f_auto/');
+    } else if (!image.includes(',f_auto')) {
+      image = image.replace('/c_fill,', '/c_fill,f_auto,');
+    }
+  }
+
+  // Phase 8.2: Add descriptive alt texts, explicit dimensions matching natural aspect ratio, and lazy loading to inline article images
+  if (content.includes('https://i.postimg.cc/kM22LxBM/pexels-a-darmel-8989961.jpg')) {
+    content = content.replace(
+      /<img\s+src="https:\/\/i\.postimg\.cc\/kM22LxBM\/pexels-a-darmel-8989961\.jpg"[^>]*>/g,
+      '<img src="https://i.postimg.cc/kM22LxBM/pexels-a-darmel-8989961.jpg" alt="تطبيق التونر المرطب للبشرة بعد تنظيف الوجه" width="533" height="800" loading="lazy" decoding="async">'
+    );
+  }
+  if (content.includes('https://i.postimg.cc/zvDXyvLD/pexels-element5-973401.jpg')) {
+    content = content.replace(
+      /<img([^>]*src="https:\/\/i\.postimg\.cc\/zvDXyvLD\/pexels-element5-973401\.jpg"[^>]*)>/g,
+      '<img$1 alt="خطوات روتين العناية بالشعر وتغذيته اليومية" width="800" height="534" loading="lazy" decoding="async">'
+    );
+  }
+  if (content.includes('https://i.postimg.cc/qvWkjr1K/pexels-shiny-diamond-3373714jpg.webp')) {
+    content = content.replace(
+      /<img([^>]*src="https:\/\/i\.postimg\.cc\/qvWkjr1K\/pexels-shiny-diamond-3373714jpg\.webp"[^>]*)>/g,
+      '<img$1 alt="العناية بالبشرة والحفاظ على نضارتها الطبيعية" width="800" height="534" loading="lazy" decoding="async">'
+    );
+  }
+  if (content.includes('https://i.postimg.cc/7hdQLgkr/pexels-gabby-k-6621182.jpg')) {
+    content = content.replace(
+      /<img([^>]*src="https:\/\/i\.postimg\.cc\/7hdQLgkr\/pexels-gabby-k-6621182\.jpg"[^>]*)>/g,
+      '<img$1 alt="ترطيب وتغذية بشرة الجسم بعد الاستحمام" width="533" height="800" loading="lazy" decoding="async">'
+    );
+  }
+  if (content.includes('https://i.postimg.cc/YqPbMqCQ/pexels-shiny-diamond-3762875.jpg')) {
+    content = content.replace(
+      /<img([^>]*src="https:\/\/i\.postimg\.cc\/YqPbMqCQ\/pexels-shiny-diamond-3762875\.jpg"[^>]*)>/g,
+      '<img$1 alt="روتين العناية باليدين والأظافر وترطيبهما" width="534" height="800" loading="lazy" decoding="async">'
+    );
+  }
 
   return {
     id,

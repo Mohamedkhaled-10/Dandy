@@ -342,15 +342,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       return candidate;
     }
 
-    // Guard redirection checks
-    if (auth) {
-      auth.onAuthStateChanged(user => {
-        if (!user) {
+    // Strict Admin Auth Guard
+    function handleBlogAuth(user) {
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+        window.location.replace('/');
+        return;
+      }
+      loadArticlesAdmin();
+    }
+
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      auth.onAuthStateChanged(handleBlogAuth);
+    } else {
+      let attempts = 0;
+      const pollInterval = setInterval(() => {
+        attempts++;
+        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (a && typeof a.onAuthStateChanged === 'function') {
+          clearInterval(pollInterval);
+          a.onAuthStateChanged(handleBlogAuth);
+        } else if (attempts > 30) {
+          clearInterval(pollInterval);
           window.location.href = '/login';
-        } else {
-          loadArticlesAdmin();
         }
-      });
+      }, 100);
     }
 
     // Load articles for operational dashboard table

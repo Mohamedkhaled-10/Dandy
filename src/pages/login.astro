@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 ---
 
 <BaseLayout
@@ -8,6 +9,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   robots="noindex, nofollow"
 >
   <slot name="head" slot="head">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style is:global>
       .login-container {
         min-height: 85vh;
@@ -96,6 +98,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h2>الدخول للوحة العمليات</h2>
       <p>مخصص لمشرفي وموظفي متجر داندي للتجميل</p>
 
+      <div id="adminOnlyNotice" style="display:none; margin-bottom:20px; padding:12px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; color:#991b1b; font-size:0.88rem; text-align:right; line-height:1.6;">
+        <i class="fas fa-exclamation-triangle" style="margin-left:6px; color:#dc2626;"></i>
+        <strong>تنبيه للمستخدم:</strong> هذه البوابة مخصصة لإدارة المتجر فقط. لعملاء داندي، يرجى <a href="/account-login" style="color:#b91c1c; text-decoration:underline; font-weight:700;">تسجيل الدخول من بوابة حساب العميل هنا</a>.
+      </div>
+
       <form id="loginForm">
         <div class="form-group">
           <label for="l-email">البريد الإلكتروني المعتمد</label>
@@ -107,7 +114,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <input type="password" id="l-pass" placeholder="••••••••" required />
         </div>
 
-        <button type="submit" class="btn-login" style="margin-top: 10px;">تسجيل الدخول الآمن</button>
+        <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
+        <div class="login-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+        </div>
+
+        <button type="submit" id="adminLoginBtn" class="btn-login" style="margin-top: 10px;">تسجيل الدخول الآمن</button>
       </form>
     </div>
   </main>
@@ -117,9 +129,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     if (auth) {
       // Active check redirect if already signed in
-      auth.onAuthStateChanged(user => {
+      auth.onAuthStateChanged(async user => {
         if (user) {
-          window.location.href = '/dashboard';
+          if (user.email && user.email.toLowerCase() === 'admin@dandy.com') {
+            window.location.href = '/dashboard';
+          } else {
+            // Non-admin user detected: sign out immediately and show warning
+            try {
+              await auth.signOut();
+            } catch (e) {
+              console.warn('Sign-out notice:', e);
+            }
+            const notice = document.getElementById('adminOnlyNotice');
+            if (notice) {
+              notice.style.display = 'block';
+            }
+          }
         }
       });
 
@@ -129,12 +154,83 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         const email = document.getElementById('l-email').value.trim();
         const password = document.getElementById('l-pass').value.trim();
+        const submitBtn = document.getElementById('adminLoginBtn');
+
+        // جلب توكن كابتشا Cloudflare Turnstile
+        let turnstileToken = '';
+        if (typeof turnstile !== 'undefined') {
+          try { turnstileToken = turnstile.getResponse() || ''; } catch(e) {}
+        }
+        if (!turnstileToken) {
+          const input = document.querySelector('[name="cf-turnstile-response"]');
+          if (input) turnstileToken = input.value;
+        }
+
+        if (!turnstileToken) {
+          alert('يرجى إكمال اختبار التحقق البشري (CAPTCHA) أولاً.');
+          return;
+        }
+
+        if (email.toLowerCase() !== 'admin@dandy.com') {
+          const notice = document.getElementById('adminOnlyNotice');
+          if (notice) {
+            notice.style.display = 'block';
+          }
+          alert('هذه البوابة مخصصة لمشرفي النظام فقط. لعملاء داندي، يرجى تسجيل الدخول من صفحة حساب العميل.');
+          window.location.href = '/account-login';
+          return;
+        }
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'جاري التحقق...';
+        }
 
         try {
+          // التحقق السيرفري من الكابتشا ومعدل المحاولات
+          const verifyRes = await fetch('/api/verify-turnstile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: turnstileToken, action: 'admin-login', email })
+          });
+
+          const verifyData = await verifyRes.json().catch(() => ({}));
+          if (!verifyRes.ok || !verifyData.success) {
+            alert(verifyData.message || 'فشل التحقق الأمني من الكابتشا. يرجى المحاولة مرة أخرى.');
+            if (typeof turnstile !== 'undefined') {
+              try { turnstile.reset(); } catch(e) {}
+            }
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'تسجيل الدخول الآمن';
+            }
+            return;
+          }
+
           await auth.signInWithEmailAndPassword(email, password);
           // Automatic redirect triggers onAuthStateChanged above
         } catch (err) {
-          alert('بينات الدخول خاطئة أو غير مسجلة! نرجو مراجعة مسؤول النظام للتحقق.');
+          console.error('Admin login error:', err);
+
+          // تسجيل المحاولة الفاشلة في السيرفر
+          fetch('/api/verify-turnstile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'report-failed-login',
+              email,
+              reason: err.code || 'invalid_admin_credentials'
+            })
+          }).catch(() => {});
+
+          if (typeof turnstile !== 'undefined') {
+            try { turnstile.reset(); } catch(e) {}
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'تسجيل الدخول الآمن';
+          }
+          alert('بيانات الدخول خاطئة أو غير مسجلة! نرجو مراجعة مسؤول النظام للتحقق.');
         }
       });
     }

@@ -1437,7 +1437,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="hero-slide-item active" id="heroFallbackSlide">
             <picture class="hero-slide-picture">
               <source media="(max-width: 767px)" srcset="https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg">
-              <img class="hero-slide-img" src="https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg" alt="مستحضرات داندي الطبيعية • Dandy Cosmetics" fetchpriority="high" decoding="sync" />
+              <img class="hero-slide-img" src="https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg" alt="مستحضرات داندي الطبيعية • Dandy Cosmetics" width="1600" height="666" fetchpriority="high" decoding="async" />
             </picture>
             <div class="hero-text-card">
               <span class="hero-tagline">مستحضرات داندي الطبيعية • Dandy Cosmetics</span>
@@ -1578,8 +1578,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="promo-img-side" id="promo-img-container">
             <img 
               id="promo-main-img"
-              src="https://res.cloudinary.com/dogk78w9z/image/upload/v1789147704/WhatsApp_Image_2026-07-10_at_8.28.01_PM.jpg" 
+              src="https://res.cloudinary.com/dogk78w9z/image/upload/c_fill,w_1200,h_600,g_center,q_auto:good,f_auto/v1789147704/WhatsApp_Image_2026-07-10_at_8.28.01_PM.jpg" 
               alt="منتجات داندي الطبيعية" 
+              width="1200"
+              height="600"
+              decoding="async"
               loading="lazy" 
             />
           </div>

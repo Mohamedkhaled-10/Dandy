@@ -1480,24 +1480,53 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     });
 
     async function initStudio() {
-      const auth = (window as any).auth || (typeof (window as any).firebase !== 'undefined' ? (window as any).firebase.auth() : null);
-      if (auth) {
-        auth.onAuthStateChanged(async (user: any) => {
-          if (!user) {
-            window.location.href = '/login';
-          } else {
-            await loadProductsCatalog();
-            await loadStudioFirebaseData();
-          }
+      // Helper function to reliably resolve auth even if Firebase scripts are still loading
+      function waitForAuth(): Promise<any> {
+        return new Promise((resolve) => {
+          const immediateAuth = (window as any).auth || (typeof (window as any).firebase !== 'undefined' && (window as any).firebase.auth ? (window as any).firebase.auth() : null);
+          if (immediateAuth) return resolve(immediateAuth);
+
+          let attempts = 0;
+          const maxAttempts = 40; // 40 * 100ms = 4 seconds
+          const interval = setInterval(() => {
+            attempts++;
+            const a = (window as any).auth || (typeof (window as any).firebase !== 'undefined' && (window as any).firebase.auth ? (window as any).firebase.auth() : null);
+            if (a) {
+              clearInterval(interval);
+              resolve(a);
+            } else if (attempts >= maxAttempts) {
+              clearInterval(interval);
+              resolve(null);
+            }
+          }, 100);
         });
-      } else {
-        await loadProductsCatalog();
-        await loadStudioFirebaseData();
       }
 
-      setupKeyboardShortcuts();
-      setupWindowUnloadWarning();
-      setupPreviewBridgeListener();
+      const auth = await waitForAuth();
+      if (!auth) {
+        // If auth fails to initialize after timeout, redirect securely to login without loading ANY data
+        window.location.replace('/login');
+        return;
+      }
+
+      auth.onAuthStateChanged(async (user: any) => {
+        if (!user) {
+          window.location.href = '/login';
+          return;
+        }
+        if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+          // Immediate kickout for non-admin logged-in users before loading any data
+          window.location.replace('/');
+          return;
+        }
+
+        // ONLY executed if user is authenticated and verified as admin@dandy.com
+        await loadProductsCatalog();
+        await loadStudioFirebaseData();
+        setupKeyboardShortcuts();
+        setupWindowUnloadWarning();
+        setupPreviewBridgeListener();
+      });
     }
 
     async function loadProductsCatalog() {

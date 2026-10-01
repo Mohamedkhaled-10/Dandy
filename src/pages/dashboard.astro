@@ -303,6 +303,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </main>
 
   <script is:inline>
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
     const db = window.firestore || (typeof firebase !== 'undefined' ? firebase.firestore() : null);
 
@@ -311,19 +321,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const operatorInitials = document.getElementById('operatorInitials');
     const logsTableBody = document.getElementById('logsTableBody');
 
-    // Auth guard
-    if (auth) {
-      auth.onAuthStateChanged(user => {
-        if (!user) {
+    // Strict Admin Auth Guard
+    function handleDashboardAuth(user) {
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+        window.location.replace('/');
+        return;
+      }
+      if (operatorCard) operatorCard.style.display = 'inline-flex';
+      if (operatorEmail) operatorEmail.textContent = user.email || 'Admin';
+      if (operatorInitials) operatorInitials.textContent = (user.email ? user.email.charAt(0).toUpperCase() : 'A');
+      
+      fetchChangeLogs();
+    }
+
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      auth.onAuthStateChanged(handleDashboardAuth);
+    } else {
+      let attempts = 0;
+      const pollInterval = setInterval(() => {
+        attempts++;
+        const a = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+        if (a && typeof a.onAuthStateChanged === 'function') {
+          clearInterval(pollInterval);
+          a.onAuthStateChanged(handleDashboardAuth);
+        } else if (attempts > 30) {
+          clearInterval(pollInterval);
           window.location.href = '/login';
-        } else {
-          if (operatorCard) operatorCard.style.display = 'inline-flex';
-          if (operatorEmail) operatorEmail.textContent = user.email || 'Admin';
-          if (operatorInitials) operatorInitials.textContent = (user.email ? user.email.charAt(0).toUpperCase() : 'A');
-          
-          fetchChangeLogs();
         }
-      });
+      }, 100);
     }
 
     // Fetch Change Logs from Firestore
@@ -358,9 +387,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><span class="admin-user-pill"><i class="fas fa-user-circle"></i> ${adminEmail}</span></td>
-            <td style="font-weight: 500; color: var(--color-primary, #111827);">${action}</td>
-            <td class="log-date" dir="ltr" style="text-align: right;">${dateString}</td>
+            <td><span class="admin-user-pill"><i class="fas fa-user-circle"></i> ${escapeHtml(adminEmail)}</span></td>
+            <td style="font-weight: 500; color: var(--color-primary, #111827);">${escapeHtml(action)}</td>
+            <td class="log-date" dir="ltr" style="text-align: right;">${escapeHtml(dateString)}</td>
           `;
           logsTableBody.appendChild(tr);
         });

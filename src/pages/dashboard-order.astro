@@ -375,6 +375,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </div>
 
   <script is:inline>
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
     const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
@@ -435,15 +445,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       drawOrdersTable();
     };
 
-    // Auth Guard
-    if (auth) {
-      auth.onAuthStateChanged(user => {
-        if (!user) {
+    // Strict Admin Auth Guard
+    function handleOrderAuth(user) {
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+        window.location.replace('/');
+        return;
+      }
+      listenToOrders();
+    }
+
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      auth.onAuthStateChanged(handleOrderAuth);
+    } else {
+      let attempts = 0;
+      const pollInterval = setInterval(() => {
+        attempts++;
+        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (a && typeof a.onAuthStateChanged === 'function') {
+          clearInterval(pollInterval);
+          a.onAuthStateChanged(handleOrderAuth);
+        } else if (attempts > 30) {
+          clearInterval(pollInterval);
           window.location.href = '/login';
-        } else {
-          listenToOrders();
         }
-      });
+      }, 100);
     }
 
     // Search with Debounce
@@ -555,15 +584,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         
         tr.innerHTML = `
           <td class="chk-col" style="text-align: center;">
-            <input type="checkbox" class="row-checkbox order-select-cb" value="${o.id}">
+            <input type="checkbox" class="row-checkbox order-select-cb" value="${escapeHtml(o.id)}">
           </td>
-          <td data-label="كود الفاتورة" style="font-weight:800;color:var(--color-primary);"><i class="fas fa-hashtag" style="color:var(--border-light); font-size:0.8rem;"></i> ${o.invoiceCode || o.id}</td>
-          <td data-label="العميلة" style="font-weight:700;">${o.name ?? '-'}</td>
-          <td data-label="رقم الهاتف" style="direction:ltr; text-align:right; font-weight:600; color:var(--color-muted);">${o.phone ?? '-'}</td>
-          <td data-label="المحافظة"><i class="fas fa-map-marker-alt" style="color:var(--color-blush); font-size:0.8rem; margin-left:4px;"></i> ${o.governorate ?? '-'}</td>
-          <td data-label="تاريخ الصدور" style="font-size: 0.85rem; color:var(--color-muted);">${dateText}</td>
+          <td data-label="كود الفاتورة" style="font-weight:800;color:var(--color-primary);"><i class="fas fa-hashtag" style="color:var(--border-light); font-size:0.8rem;"></i> ${escapeHtml(o.invoiceCode || o.id)}</td>
+          <td data-label="العميلة" style="font-weight:700;">${escapeHtml(o.name ?? '-')}</td>
+          <td data-label="رقم الهاتف" style="direction:ltr; text-align:right; font-weight:600; color:var(--color-muted);">${escapeHtml(o.phone ?? '-')}</td>
+          <td data-label="المحافظة"><i class="fas fa-map-marker-alt" style="color:var(--color-blush); font-size:0.8rem; margin-left:4px;"></i> ${escapeHtml(o.governorate ?? '-')}</td>
+          <td data-label="تاريخ الصدور" style="font-size: 0.85rem; color:var(--color-muted);">${escapeHtml(dateText)}</td>
           <td data-label="الحالة الإدارية">
-            <select class="status-dropdown-admin ${dropdownClass}" onchange="changeOrderStatus('${o.id}', this.value)" aria-label="تغيير الحالة">
+            <select class="status-dropdown-admin ${dropdownClass}" data-order-id="${escapeHtml(o.id)}" onchange="changeOrderStatus(this.getAttribute('data-order-id'), this.value)" aria-label="تغيير الحالة">
               <option value="جديد" ${state === 'جديد' ? 'selected' : ''}>جديد</option>
               <option value="قيد التجهيز" ${state === 'قيد التجهيز' || state === 'تم التواصل' ? 'selected' : ''}>قيد التجهيز</option>
               <option value="تم الشحن" ${state === 'تم الشحن' || state === 'جاري الشحن' ? 'selected' : ''}>تم الشحن</option>
@@ -572,8 +601,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </select>
           </td>
           <td data-label="" style="text-align:center; white-space:nowrap;">
-            <button class="action-badge-btn badge-btn-edit" onclick="revealOrder('${o.id}')" title="معاينة التفاصيل"><i class="fas fa-eye"></i> معاينة</button>
-            <button class="action-badge-btn badge-btn-del" onclick="deleteOrder('${o.id}')" title="حذف الطلب" aria-label="حذف"><i class="fas fa-trash-alt"></i></button>
+            <button class="action-badge-btn badge-btn-edit" data-order-id="${escapeHtml(o.id)}" onclick="revealOrder(this.getAttribute('data-order-id'))" title="معاينة التفاصيل"><i class="fas fa-eye"></i> معاينة</button>
+            <button class="action-badge-btn badge-btn-del" data-order-id="${escapeHtml(o.id)}" onclick="deleteOrder(this.getAttribute('data-order-id'))" title="حذف الطلب" aria-label="حذف"><i class="fas fa-trash-alt"></i></button>
           </td>
         `;
         ordersListArea.appendChild(tr);
@@ -743,7 +772,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             variantBadge = `
               <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--color-blush); font-weight:700; background:rgba(219,39,119,0.08); padding:3px 10px; border-radius:99px; border:1px solid rgba(219,39,119,0.22); margin-top:4px;">
                 <i class="fas fa-spray-can" style="font-size:0.75rem;"></i>
-                <span>${varInfo.label}: <strong>${varInfo.text}</strong></span>
+                <span>${escapeHtml(varInfo.label)}: <strong>${escapeHtml(varInfo.text)}</strong></span>
               </div>
             `;
           }
@@ -754,9 +783,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><img loading="lazy" src="${p.image}" alt="صورة المنتج" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light); display:block;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';"></td>
+            <td><img loading="lazy" src="${escapeHtml(p.image || '')}" alt="صورة المنتج" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light); display:block;" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=100&q=80';"></td>
             <td style="color: var(--color-primary);">
-              <div style="font-weight:700; font-size:0.98rem;">${p.name ?? 'منتج غير معروف'}</div>
+              <div style="font-weight:700; font-size:0.98rem;">${escapeHtml(p.name ?? 'منتج غير معروف')}</div>
               ${variantBadge}
               <div style="font-size:0.84rem; color:var(--color-muted); font-weight:600; margin-top:3px;">
                 السعر: ${currencyFormatter.format(unitPrice)} ج.م
@@ -861,7 +890,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (!data) {
           if (summaryEl) {
-            summaryEl.innerHTML = `<span style="color:#b45309;"><i class="fas fa-info-circle"></i> لم يتم العثور على أي طلبات سابقة مسجلة لرقم الهاتف: <strong>${phoneValue}</strong></span>`;
+            summaryEl.innerHTML = `<span style="color:#b45309;"><i class="fas fa-info-circle"></i> لم يتم العثور على أي طلبات سابقة مسجلة لرقم الهاتف: <strong>${escapeHtml(phoneValue)}</strong></span>`;
           }
           if (bodyEl) {
             bodyEl.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--color-muted);">لا توجد أي فواتير مسجلة بهذا الرقم في النظام.</td></tr>`;
@@ -888,7 +917,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           summaryEl.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
               <div>
-                <strong>العميل\\ة:</strong> ${customerName} &nbsp;|&nbsp; <strong>الهاتف:</strong> <span style="direction:ltr; display:inline-block;">${phoneValue}</span>
+                <strong>العميل\\ة:</strong> ${escapeHtml(customerName)} &nbsp;|&nbsp; <strong>الهاتف:</strong> <span style="direction:ltr; display:inline-block;">${escapeHtml(phoneValue)}</span>
               </div>
               <div style="display:flex; gap:16px; align-items:center;">
                 <span><strong>عدد الطلبات السابقة:</strong> ${ordersArr.length}</span>
@@ -913,12 +942,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           rowsHtml += `
             <tr>
-              <td><strong style="color:var(--color-blush);">${invoiceCode}</strong></td>
-              <td style="color:#666; font-size:0.85rem;">${orderDate}</td>
+              <td><strong style="color:var(--color-blush);">${escapeHtml(invoiceCode)}</strong></td>
+              <td style="color:#666; font-size:0.85rem;">${escapeHtml(orderDate)}</td>
               <td><strong>${currencyFormatter.format(total)} ج.م</strong></td>
-              <td><span class="status-dropdown-admin ${statusClass}" style="display:inline-block; text-align:center; padding:4px 10px; width:auto;">${status}</span></td>
+              <td><span class="status-dropdown-admin ${statusClass}" style="display:inline-block; text-align:center; padding:4px 10px; width:auto;">${escapeHtml(status)}</span></td>
               <td style="text-align:center;">
-                <button class="action-badge-btn badge-btn-edit" onclick="openOrderFromHistory('${order.id}')" title="عرض تفاصيل الفاتورة"><i class="fas fa-eye"></i> التفاصيل</button>
+                <button class="action-badge-btn badge-btn-edit" data-order-id="${escapeHtml(order.id)}" onclick="openOrderFromHistory(this.getAttribute('data-order-id'))" title="عرض تفاصيل الفاتورة"><i class="fas fa-eye"></i> التفاصيل</button>
               </td>
             </tr>
           `;
@@ -929,7 +958,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       } catch (err) {
         console.error('Error searching customer history:', err);
         if (summaryEl) {
-          summaryEl.innerHTML = `<span style="color:var(--color-danger, #dc2626);"><i class="fas fa-exclamation-triangle"></i> حدث خطأ أثناء جلب سجل العميل: ${err.message}</span>`;
+          summaryEl.innerHTML = `<span style="color:var(--color-danger, #dc2626);"><i class="fas fa-exclamation-triangle"></i> حدث خطأ أثناء جلب سجل العميل: ${escapeHtml(err.message)}</span>`;
         }
         if (bodyEl) {
           bodyEl.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--color-danger, #dc2626);">تعذر استرجاع البيانات. يرجى التحقق من اتصال الإنترنت.</td></tr>`;

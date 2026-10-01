@@ -291,6 +291,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 
   <script is:inline>
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
     const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
@@ -377,10 +387,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       currentVariants.forEach((v, idx) => {
         const row = document.createElement('div');
         row.className = 'variant-item-row';
-        row.dataset.id = v.id;
+        row.dataset.id = escapeHtml(v.id);
         row.innerHTML = `
           <span class="v-order-num">${idx + 1}</span>
-          <input type="text" class="v-name-input" placeholder="اسم الرائحة (مثال: مسك أبيض)" value="${v.name || ''}" oninput="updateVariantName(${idx}, this.value)" required />
+          <input type="text" class="v-name-input" placeholder="اسم الرائحة (مثال: مسك أبيض)" value="${escapeHtml(v.name || '')}" oninput="updateVariantName(${idx}, this.value)" required />
           <label class="v-avail-label" title="حالة توفر هذه الرائحة">
             <input type="checkbox" class="v-avail-input" ${v.isAvailable !== false ? 'checked' : ''} onchange="updateVariantAvail(${idx}, this.checked)" />
             <span>متاح</span>
@@ -473,14 +483,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       return cat;
     }
 
-    if (auth) {
-      auth.onAuthStateChanged(user => {
-        if (!user) {
+    // Strict Admin Auth Guard
+    function handleProductAuth(user) {
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+        window.location.replace('/');
+        return;
+      }
+      listenToProducts();
+    }
+
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      auth.onAuthStateChanged(handleProductAuth);
+    } else {
+      let attempts = 0;
+      const pollInterval = setInterval(() => {
+        attempts++;
+        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (a && typeof a.onAuthStateChanged === 'function') {
+          clearInterval(pollInterval);
+          a.onAuthStateChanged(handleProductAuth);
+        } else if (attempts > 30) {
+          clearInterval(pollInterval);
           window.location.href = '/login';
-        } else {
-          listenToProducts();
         }
-      });
+      }, 100);
     }
 
     function listenToProducts(){
@@ -628,26 +658,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         card.innerHTML = `
           <div class="admin-p-img-box">
             <div class="admin-p-badges">${badgesHtml}</div>
-            <img src="${d.image || ''}" alt="${d.name || ''}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+            <img src="${escapeHtml(d.image || '')}" alt="${escapeHtml(d.name || '')}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
           </div>
           <div class="admin-p-content">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:6px;">
-              <span class="admin-p-cat" style="margin-bottom:0;"><i class="fas fa-tags"></i> ${normCat}</span>
+              <span class="admin-p-cat" style="margin-bottom:0;"><i class="fas fa-tags"></i> ${escapeHtml(normCat)}</span>
               ${stockBadgeHtml}
             </div>
-            <h4 class="admin-p-title" title="${d.name || ''}">${d.name || ''}</h4>
+            <h4 class="admin-p-title" title="${escapeHtml(d.name || '')}">${escapeHtml(d.name || '')}</h4>
             
             <div class="quick-toggles-row">
-              <button class="btn-qt ${d.isSoldOut ? 'active-danger' : ''}" onclick="toggleStatus('${d.id}', 'isSoldOut', ${!!d.isSoldOut})" title="إيقاف / تشغيل: نفذت الكمية"><i class="fas fa-ban"></i> ${d.isSoldOut ? 'متوفر' : 'نفاذ'}</button>
-              <button class="btn-qt ${d.isHidden ? 'active-muted' : ''}" onclick="toggleStatus('${d.id}', 'isHidden', ${!!d.isHidden})" title="إخفاء / إظهار المنتج"><i class="fas ${d.isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${d.isHidden ? 'إظهار' : 'إخفاء'}</button>
+              <button class="btn-qt ${d.isSoldOut ? 'active-danger' : ''}" data-prod-id="${escapeHtml(d.id)}" onclick="toggleStatus(this.getAttribute('data-prod-id'), 'isSoldOut', ${!!d.isSoldOut})" title="إيقاف / تشغيل: نفذت الكمية"><i class="fas fa-ban"></i> ${d.isSoldOut ? 'متوفر' : 'نفاذ'}</button>
+              <button class="btn-qt ${d.isHidden ? 'active-muted' : ''}" data-prod-id="${escapeHtml(d.id)}" onclick="toggleStatus(this.getAttribute('data-prod-id'), 'isHidden', ${!!d.isHidden})" title="إخفاء / إظهار المنتج"><i class="fas ${d.isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i> ${d.isHidden ? 'إظهار' : 'إخفاء'}</button>
             </div>
 
             <div class="admin-p-price">${priceHtml}</div>
             
             <div class="admin-p-actions">
-              <button class="admin-p-btn admin-btn-edit" onclick="startProductEdit('${d.id}')"><i class="fas fa-edit"></i> تعديل</button>
-              <a href="${typeof window.getProductLink === 'function' ? window.getProductLink(d) : (d.slug ? `/product/${encodeURIComponent(d.slug)}` : `/product?id=${d.id}`)}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
-              <button class="admin-p-btn admin-btn-del" onclick="deleteProduct('${d.id}')" aria-label="حذف"><i class="fas fa-trash"></i></button>
+              <button class="admin-p-btn admin-btn-edit" data-prod-id="${escapeHtml(d.id)}" onclick="startProductEdit(this.getAttribute('data-prod-id'))"><i class="fas fa-edit"></i> تعديل</button>
+              <a href="${typeof window.getProductLink === 'function' ? window.getProductLink(d) : (d.slug ? `/product/${encodeURIComponent(d.slug)}` : `/product?id=${encodeURIComponent(d.id)}`)}" target="_blank" class="admin-p-btn admin-btn-view"><i class="fas fa-external-link-alt"></i></a>
+              <button class="admin-p-btn admin-btn-del" data-prod-id="${escapeHtml(d.id)}" onclick="deleteProduct(this.getAttribute('data-prod-id'))" aria-label="حذف"><i class="fas fa-trash"></i></button>
             </div>
           </div>
         `;

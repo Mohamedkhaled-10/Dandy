@@ -397,25 +397,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <script is:inline>
     const db = firebase.database();
 
-    function sendTelegramNotification(order, orderId) {
-      if (localStorage.getItem('notified_' + orderId)) return;
-
-      fetch('/api/send-telegram', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order, orderId })
-      })
-      .then(res => {
-        if (res.ok) {
-          console.log("تم إرسال الإشعار الآمن عبر Vercel بنجاح");
-          localStorage.setItem('notified_' + orderId, 'true');
-        } else {
-          console.error("فشل السيرفر في إرسال الإشعار");
-        }
-      })
-      .catch(err => console.error("خطأ أثناء الاتصال بالسيرفر الخلفي:", err));
-    }
-
     const params = new URLSearchParams(window.location.search);
     const idParam = params.get('id');
     const invoiceParam = params.get('invoice');
@@ -629,11 +610,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       setStatusBadge(order.status || 'New');
-
-      const currentStatus = order.status || 'New';
-      if ((currentStatus === 'جديد' || currentStatus === 'New' || currentStatus === 'Pending' || currentStatus === 'قيد الانتظار') && key) {
-        sendTelegramNotification(order, key);
-      }
     }
 
     function orderError() {

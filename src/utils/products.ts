@@ -451,3 +451,34 @@ export function generateProductJsonLd(product: Product, canonicalUrl: string): R
 
   return schema;
 }
+
+/**
+ * Optimizes Cloudinary image URLs with automatic format (f_auto), quality (q_auto),
+ * and optional resize/crop transformations without altering non-Cloudinary or already-transformed URLs.
+ */
+export function optimizeCloudinaryUrl(
+  url?: string,
+  options: { width?: number; height?: number; crop?: string; quality?: string; format?: string } = {}
+): string {
+  if (!url || typeof url !== 'string') return url || '';
+  if (!url.includes('res.cloudinary.com')) return url;
+  const uploadIndex = url.indexOf('/image/upload/');
+  if (uploadIndex === -1) return url;
+
+  const afterUpload = url.substring(uploadIndex + '/image/upload/'.length);
+  // If it already has transformation prefix before /v\d+ or public_id
+  if (/^(?:[a-z]_[^/]+,?)+\//.test(afterUpload)) {
+    return url;
+  }
+
+  const transforms: string[] = [];
+  if (options.crop || options.width || options.height) {
+    if (options.crop) transforms.push(`c_${options.crop}`);
+    if (options.width) transforms.push(`w_${options.width}`);
+    if (options.height) transforms.push(`h_${options.height}`);
+  }
+  transforms.push(options.quality ? `q_${options.quality}` : 'q_auto:good');
+  transforms.push(options.format ? `f_${options.format}` : 'f_auto');
+
+  return url.replace('/image/upload/', `/image/upload/${transforms.join(',')}/`);
+}

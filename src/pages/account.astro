@@ -2008,20 +2008,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       });
 
-      // المرحلة 3 — إعادة حساب متوسط التقييم بعد كل تقييم جديد أو مُعدَّل
-      async function recalculateProductRating(productId) {
-        const snap = await db.ref(`reviews/${productId}`).once('value');
-        const reviews = snap.val() || {};
-        const values = Object.values(reviews);
-        const count = values.length;
-        const avg = count > 0 ? values.reduce((sum, r) => sum + Number(r.rating || 0), 0) / count : 0;
-        await db.ref(`products/${productId}`).update({
-          avgRating: Math.round(avg * 10) / 10,
-          reviewCount: count
-        });
-      }
-
-      // إرسال نموذج التقييم
+      // إرسال نموذج التقييم عبر السيرفر الآمن (/api/submit-review)
       document.getElementById('productReviewForm')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentUser) return;
@@ -2048,16 +2035,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
 
         try {
-          await db.ref(`reviews/${productId}/${currentUser.uid}`).set({
-            rating: currentSelectedRating,
-            comment: commentText || '',
-            customerName: currentUserName,
-            orderId: orderId,
-            createdAt: firebase.database.ServerValue.TIMESTAMP
+          const idToken = await currentUser.getIdToken();
+          const response = await fetch('/api/submit-review', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              idToken,
+              productId,
+              rating: currentSelectedRating,
+              comment: commentText,
+              customerName: currentUserName,
+              orderId
+            })
           });
 
-          // إعادة حساب متوسط التقييم كما هو موضح في المرحلة 3
-          await recalculateProductRating(productId);
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok || !result.success) {
+            throw new Error(result.message || 'فشل حفظ التقييم على السيرفر.');
+          }
 
           // تحديث الكاش المحلي
           userProductReviews[productId] = {

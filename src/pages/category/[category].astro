@@ -5,7 +5,7 @@
 export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getAllProducts, SITE_URL, type Product } from '../../utils/products';
+import { getAllProducts, optimizeCloudinaryUrl, SITE_URL, type Product } from '../../utils/products';
 import {
   getCategoryBySlug,
   getProductsForCategory,
@@ -739,8 +739,10 @@ const categoryArticle = categoryConfig ? CATEGORY_ARTICLE_MAP[categoryConfig.slu
                     <a href={productUrl} class="product-card-link" aria-label={product.name}>
                       <div class="card-image-box product-image-wrap">
                         <img
-                          src={product.image || '/assets/images/logo.png'}
+                          src={optimizeCloudinaryUrl(product.image, { width: 500, height: 500, crop: 'limit' }) || '/assets/images/logo.png'}
                           alt={`${product.name} - داندي كوزمتكس`}
+                          width="400"
+                          height="400"
                           loading="lazy"
                           decoding="async"
                           onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';"
