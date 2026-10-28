@@ -1294,12 +1294,12 @@ const robotsDirective = hasAuditedCatalogParam ? 'noindex, follow' : 'index, fol
         if (data.originalPrice) {
           const oldPrice = parseFloat(data.originalPrice) || 0;
           priceStr = `<span class="price-current">${priceRaw} ج.م</span><span class="price-old">${oldPrice} ج.م</span>`;
-          badgeStr = `<span class="card-badge">تخفيض</span>`;
+          badgeStr = `<span class="card-badge black-friday-badge">بلاك فرايداي • تخفيض</span>`;
         } else if (data.onSale && data.discount) {
           const discountPercent = parseFloat(data.discount) || 0;
           const oldPrice = (discountPercent > 0 && discountPercent < 100) ? Math.round(priceRaw / (1 - (discountPercent/100))) : 0;
           priceStr = `<span class="price-current">${priceRaw} ج.م</span>${oldPrice ? `<span class="price-old">${oldPrice} ج.م</span>` : ''}`;
-          badgeStr = `<span class="card-badge">خصم ${data.discount}%</span>`;
+          badgeStr = `<span class="card-badge black-friday-badge">بلاك فرايداي • خصم ${data.discount}%</span>`;
         }
         
         const hasVars = typeof hasSelectableVariants === 'function' 

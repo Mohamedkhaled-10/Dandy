@@ -46,6 +46,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         ]
       }
     </script>
+    <!-- Preload Hero Image for optimal LCP -->
+    <link rel="preload" as="image" href="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" fetchpriority="high" />
 
     <style is:global>
       /* ==========================================================================
@@ -79,6 +81,264 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         background-color: var(--color-canvas, #ffffff);
         color: var(--color-text, #2c2828);
         overflow-x: hidden;
+      }
+
+      /* Temporary Black Friday Page-Level Layout Matching image_79e6d5fd.png */
+      html.is-black-friday .hero-editorial-wrap {
+        position: relative !important;
+        width: 100% !important;
+        height: 560px !important;
+        min-height: 480px !important;
+        max-height: 640px !important;
+        overflow: hidden !important;
+        background-color: #f7f6f6 !important;
+      }
+      html.is-black-friday .hero-stage {
+        position: relative !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 480px !important;
+        overflow: hidden !important;
+        background-color: transparent !important;
+      }
+      html.is-black-friday .hero-slides-track {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+      html.is-black-friday .hero-slide-item {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+      html.is-black-friday .hero-slide-picture {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+      }
+      html.is-black-friday .hero-slide-img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center center !important;
+        display: block !important;
+      }
+      @media (max-width: 768px) {
+        html.is-black-friday .hero-editorial-wrap {
+          height: 440px !important;
+          min-height: 380px !important;
+          max-height: 500px !important;
+        }
+        html.is-black-friday .hero-stage {
+          min-height: 380px !important;
+        }
+      }
+      html.is-black-friday .hero-text-card {
+        display: none !important;
+      }
+      html.is-black-friday #sec-black-friday {
+        display: none !important;
+      }
+
+      /* ==========================================================================
+         DANDY PROMOTIONAL BANNER SECTION (Inspired by Reference Design)
+         ========================================================================== */
+      .black-friday-banner-section {
+        padding: 36px 0 16px;
+        width: 100%;
+        position: relative;
+        z-index: 10;
+      }
+      .dandy-promo-card {
+        background: linear-gradient(135deg, #ff5e9c 0%, #fe5d9f 40%, #e02f78 85%, #c41e64 100%);
+        border-radius: 22px;
+        padding: 36px 44px;
+        box-shadow: 0 16px 36px rgba(254, 93, 159, 0.28), 0 4px 12px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+        position: relative;
+        overflow: hidden;
+        color: #ffffff;
+        direction: rtl;
+      }
+      .dandy-promo-card::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.22) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .dandy-promo-card::after {
+        content: '';
+        position: absolute;
+        bottom: -60px;
+        left: 20%;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+      }
+
+      .dandy-promo-info {
+        flex: 1 1 360px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        z-index: 2;
+      }
+      .dandy-promo-eyebrow {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 8px;
+        letter-spacing: 0.02em;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dandy-promo-title {
+        font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+        font-weight: 800;
+        color: #ffffff;
+        margin: 0 0 8px 0;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .dandy-promo-sub {
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.92);
+        margin: 0 0 20px 0;
+        line-height: 1.5;
+        font-weight: 500;
+      }
+      .dandy-promo-btn {
+        background: #ffffff;
+        color: #d82b72;
+        font-size: 0.95rem;
+        font-weight: 800;
+        padding: 11px 26px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      }
+      .dandy-promo-btn:hover {
+        background: #fff5f8;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+        color: #c41e64;
+      }
+      .dandy-promo-btn svg {
+        transition: transform 0.2s ease;
+      }
+      .dandy-promo-btn:hover svg {
+        transform: translateX(-4px);
+      }
+
+      /* Countdown timer inside banner */
+      .dandy-promo-countdown {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 16px;
+        padding: 14px 20px;
+        z-index: 2;
+        flex-shrink: 0;
+      }
+      .dandy-countdown-label {
+        font-size: 0.78rem;
+        color: #ffffff;
+        font-weight: 700;
+      }
+      .dandy-countdown-grid {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        direction: ltr;
+      }
+      .dandy-cd-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 8px;
+        min-width: 48px;
+        padding: 5px 6px;
+      }
+      .dandy-cd-val {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #ffffff;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        font-family: var(--font-sans, sans-serif);
+      }
+      .dandy-cd-unit {
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin-top: 3px;
+        font-weight: 600;
+      }
+      .dandy-cd-sep {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 6px;
+      }
+
+      /* Big Flat Gift Icon on the left */
+      .dandy-promo-graphic {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        flex-shrink: 0;
+        color: #ffffff;
+        filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.12));
+      }
+      .dandy-gift-svg {
+        width: 82px;
+        height: 82px;
+      }
+
+      @media (max-width: 960px) {
+        .dandy-promo-card {
+          flex-direction: column;
+          align-items: stretch;
+          padding: 28px 22px;
+          gap: 20px;
+          border-radius: 18px;
+        }
+        .dandy-promo-graphic {
+          display: none;
+        }
+        .dandy-promo-countdown {
+          align-self: flex-start;
+          width: 100%;
+          align-items: center;
+        }
+        .dandy-promo-btn {
+          width: 100%;
+          justify-content: center;
+        }
       }
 
       /* Base Section Utility */
@@ -384,6 +644,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         object-fit: cover;
         object-position: center center;
         display: block;
+      }
+      @media (max-width: 767px) {
+        .hero-slide-img {
+          object-position: center center;
+        }
+      }
+
+      .hero-full-click-link {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        display: block;
+        cursor: pointer;
+        text-decoration: none;
       }
 
       .hero-text-card {
@@ -1436,9 +1712,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <!-- Default Clean Fallback Slide -->
           <div class="hero-slide-item active" id="heroFallbackSlide">
             <picture class="hero-slide-picture">
-              <source media="(max-width: 767px)" srcset="https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg">
-              <img class="hero-slide-img" src="https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg" alt="مستحضرات داندي الطبيعية • Dandy Cosmetics" width="1600" height="666" fetchpriority="high" decoding="async" />
+              <source media="(max-width: 767px)" srcset="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg">
+              <img class="hero-slide-img" src="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" alt="Dandy Cosmetics - Complete Care for Strong, Healthy & Beautiful Hair" width="2000" height="850" fetchpriority="high" decoding="sync" />
             </picture>
+            <a href="/all-products" class="hero-full-click-link" aria-label="تسوقي منتجات داندي"></a>
             <div class="hero-text-card">
               <span class="hero-tagline">مستحضرات داندي الطبيعية • Dandy Cosmetics</span>
               <h1 class="hero-heading">جمال طبيعي مستخلص بعناية فائقة</h1>
@@ -1494,6 +1771,64 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <strong>جودة وفعالية معتمدة</strong>
               <p>نتائج ملموسة مجربة من آلاف العميلات السعيدات</p>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2.5 DANDY PROMOTIONAL BANNER SECTION (Inspired by Reference Design) -->
+    <section class="black-friday-banner-section scroll-reveal-up" id="sec-black-friday" aria-label="عروض الجمعة البيضاء الكبرى">
+      <div class="home-container">
+        <div class="dandy-promo-card">
+          <!-- Text Information on Right (RTL) -->
+          <div class="dandy-promo-info">
+            <span class="dandy-promo-eyebrow">
+              <span>🔥</span>
+              <span>عروض الجمعة البيضاء • Black Friday Sale</span>
+            </span>
+            <h2 class="dandy-promo-title">خصم يصل إلى 50% على جميع المنتجات</h2>
+            <p class="dandy-promo-sub">استمتعي بأقوى تخفيضات العام وباقات العناية الفاخرة للبشرة والشعر + توصيل مجاني فوق 2000 ج.م.</p>
+            <a href="/special-offers" class="dandy-promo-btn">
+              <span>تسوقي الآن</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </a>
+          </div>
+
+          <!-- Live Countdown Timer in Center Glass Pill -->
+          <div class="dandy-promo-countdown">
+            <span class="dandy-countdown-label">تنتهي العروض خلال:</span>
+            <div class="dandy-countdown-grid" id="bfCountdownTimer">
+              <div class="dandy-cd-item">
+                <span class="dandy-cd-val" id="bfDays">00</span>
+                <span class="dandy-cd-unit">يوم</span>
+              </div>
+              <span class="dandy-cd-sep">:</span>
+              <div class="dandy-cd-item">
+                <span class="dandy-cd-val" id="bfHours">00</span>
+                <span class="dandy-cd-unit">ساعة</span>
+              </div>
+              <span class="dandy-cd-sep">:</span>
+              <div class="dandy-cd-item">
+                <span class="dandy-cd-val" id="bfMinutes">00</span>
+                <span class="dandy-cd-unit">دقيقة</span>
+              </div>
+              <span class="dandy-cd-sep">:</span>
+              <div class="dandy-cd-item">
+                <span class="dandy-cd-val" id="bfSeconds">00</span>
+                <span class="dandy-cd-unit">ثانية</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Big White Flat Gift Box Icon on Left (matching reference image) -->
+          <div class="dandy-promo-graphic" aria-hidden="true">
+            <svg width="84" height="84" viewBox="0 0 64 64" fill="currentColor" class="dandy-gift-svg">
+              <path d="M26 12 C20 12, 17 15, 17 19 C17 23, 23 25, 29 25 L31 25 L31 23 C31 17, 28 12, 26 12 Z" />
+              <path d="M38 12 C44 12, 47 15, 47 19 C47 23, 41 25, 35 25 L33 25 L33 23 C33 17, 36 12, 38 12 Z" />
+              <rect x="10" y="25" width="44" height="10" rx="4" />
+              <path d="M13 38 L28 38 L28 54 C28 56.2 26.2 58 24 58 L17 58 C14.8 58 13 56.2 13 54 Z" />
+              <path d="M36 38 L51 38 L51 54 C51 56.2 49.2 58 47 58 L40 58 C37.8 58 36 56.2 36 54 Z" />
+            </svg>
           </div>
         </div>
       </div>
@@ -1711,7 +2046,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     function applyHomepageData(data) {
       if (!data) return;
 
-      // 1. Hero
+      // 1. Hero (Original hero slides preserved as they are)
       if (data.dynamicHero && data.dynamicHero.length) {
         renderHero(data.dynamicHero);
       }
@@ -1812,6 +2147,69 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       // 3. Load Blog Articles
       loadHomeBlog();
+
+      // 4. Black Friday Countdown
+      initBlackFridayCountdown();
+    }
+
+    function initBlackFridayCountdown() {
+      // 35 days target deadline: Nov 30, 2026, 23:59:59 Egypt Time (UTC+2)
+      const targetDate = new Date('2026-11-30T23:59:59+02:00').getTime();
+
+      function update() {
+        const now = Date.now();
+        const diff = targetDate - now;
+
+        // AUTOMATIC EXPIRATION AFTER 35 DAYS
+        if (diff <= 0) {
+          document.documentElement.classList.remove('is-black-friday');
+          const fullBf = document.getElementById('dandyBfFullBanner');
+          if (fullBf) fullBf.style.display = 'none';
+
+          const bfSec = document.getElementById('sec-black-friday');
+          if (bfSec) bfSec.style.display = 'none';
+
+          const topBar = document.getElementById('site-announce-bar');
+          if (topBar) {
+            topBar.innerHTML = '<div style="font-size:0.78rem; font-weight:500; color:#fff;">توصيل مجاني لجميع الطلبات فوق 2000 جنيه • Dandy Cosmetics</div>';
+            topBar.style.background = 'var(--color-rose-kiss-500, #fe5d9f)';
+            topBar.style.display = 'flex';
+          }
+
+          document.querySelectorAll('.black-friday-badge').forEach(b => {
+            b.classList.remove('black-friday-badge');
+            b.textContent = b.textContent.replace('بلاك فرايداي • ', '');
+          });
+
+          if (window.bfIntervalId) clearInterval(window.bfIntervalId);
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        ['bfDays', 'topBfDays'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = String(days).padStart(2, '0');
+        });
+        ['bfHours', 'topBfHours'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = String(hours).padStart(2, '0');
+        });
+        ['bfMinutes', 'topBfMinutes'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = String(minutes).padStart(2, '0');
+        });
+        ['bfSeconds', 'topBfSeconds'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = String(seconds).padStart(2, '0');
+        });
+      }
+
+      update();
+      window.bfIntervalId = setInterval(update, 1000);
     }
 
     if (document.readyState === 'loading') {
@@ -1855,7 +2253,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const btnLink = slide.link || '/all-products';
         
         // Responsive Image Resolution with Backward Compatibility
-        const fallbackDefault = 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg';
+        const fallbackDefault = 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg';
+        const fallbackMobile = 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg';
         const desktopSrc = slide.desktopImage || slide.image || slide.mobileImage || fallbackDefault;
         const mobileSrc = slide.mobileImage || slide.desktopImage || slide.image || fallbackDefault;
         const priorityAttr = idx === 0 ? 'fetchpriority="high" decoding="sync"' : 'loading="lazy" decoding="async"';
@@ -1866,6 +2265,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <source media="(max-width: 767px)" srcset="${mobileSrc}">
               <img class="hero-slide-img" src="${desktopSrc}" alt="${escapeHtml(title || 'مستحضرات داندي الطبيعية • Dandy Cosmetics')}" ${priorityAttr} />
             </picture>
+            <a href="${btnLink || '/all-products'}" class="hero-full-click-link" aria-label="تسوقي منتجات داندي"></a>
             <div class="hero-text-card">
               <span class="hero-tagline">مستحضرات داندي الطبيعية • Dandy Cosmetics</span>
               <h1 class="hero-heading">${escapeHtml(title)}</h1>
@@ -2218,7 +2618,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       if (prod.discount || prod.onSale) {
         const discountText = prod.discount ? `خصم ${prod.discount}%` : 'تخفيض';
-        badgeHtml = `<span class="card-badge">${discountText}</span>`;
+        badgeHtml = `<span class="card-badge black-friday-badge">بلاك فرايداي • ${discountText}</span>`;
         if (prod.originalPrice) {
           priceHtml = `
             <span class="price-current">${prod.price} ج.م</span>
@@ -2827,18 +3227,49 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const container = document.getElementById('homeBlogContainer');
       if (!container) return;
 
-      const firestore = window.firestore || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
-      if (!firestore) {
-        document.getElementById('editorial-blog-section')?.style.setProperty('display', 'none');
-        return;
-      }
-
       try {
-        const fetchPromise = firestore.collection('articles').orderBy('createdAt', 'desc').limit(3).get();
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3500));
-        const snapshot = await Promise.race([fetchPromise, timeoutPromise]);
+        let articlesData = [];
 
-        if (snapshot.empty) {
+        const firestore = window.firestore || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
+        if (firestore) {
+          const fetchPromise = firestore.collection('articles').orderBy('createdAt', 'desc').limit(3).get();
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3500));
+          const snapshot = await Promise.race([fetchPromise, timeoutPromise]);
+          if (!snapshot.empty) {
+            snapshot.forEach(doc => {
+              const d = doc.data();
+              articlesData.push({ id: doc.id, ...d });
+            });
+          }
+        } else {
+          // Native zero-dependency REST fetch (No SDK overhead)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3500);
+          const res = await fetch('https://firestore.googleapis.com/v1/projects/dandy-562fc/databases/(default)/documents/articles?pageSize=3', {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const json = await res.json();
+            const docs = json.documents || [];
+            articlesData = docs.map(doc => {
+              const f = doc.fields || {};
+              const id = doc.name ? doc.name.split('/').pop() : '';
+              return {
+                id,
+                title: f.title?.stringValue || '',
+                category: f.category?.stringValue || '',
+                excerpt: f.excerpt?.stringValue || '',
+                content: f.content?.stringValue || '',
+                image: f.image?.stringValue || '',
+                slug: f.slug?.stringValue || '',
+                status: f.status?.stringValue || 'published'
+              };
+            });
+          }
+        }
+
+        if (!articlesData.length) {
           document.getElementById('editorial-blog-section')?.style.setProperty('display', 'none');
           return;
         }
@@ -2846,8 +3277,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         let html = '';
         let validCount = 0;
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
+        articlesData.forEach(data => {
           if (data.status === 'draft') return;
           validCount++;
 
@@ -2855,7 +3285,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           const title = data.title || 'أسرار العناية بالجمال الطبيعي';
           const category = data.category || 'العناية بالبشرة';
           const excerpt = data.excerpt || (data.content ? data.content.replace(/<[^>]+>/g, '').substring(0, 110) + '...' : 'اكتشفي أفضل النصائح والوصفات الطبيعية للحفاظ على نضارة وإشراقة بشرتكِ.');
-          const postLink = data.slug ? `/blog/${encodeURIComponent(data.slug)}` : `/post?id=${doc.id}`;
+          const postLink = data.slug ? `/blog/${encodeURIComponent(data.slug)}` : `/post?id=${data.id}`;
 
           html += `
             <a href="${postLink}" class="blog-journal-card">

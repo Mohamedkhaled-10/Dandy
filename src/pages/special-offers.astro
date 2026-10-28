@@ -31,23 +31,127 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <style is:global>
       .offers-hero-badge {
-        display: inline-block;
-        padding: 4px 14px;
-        background: var(--color-lavender-veil-600, #f3e8f5);
-        color: var(--color-rose-kiss-500, #fe5d9f);
-        border: 1px solid var(--color-soft-blossom-500, #f4bbd3);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 16px;
+        background: rgba(254, 93, 159, 0.18);
+        color: #ff9ec7;
+        border: 1px solid rgba(254, 93, 159, 0.35);
         font-weight: 700;
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         border-radius: 99px;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
+        letter-spacing: 0.02em;
+      }
+      .offers-bf-hero-card {
+        background: linear-gradient(135deg, #ff5e9c 0%, #fe5d9f 40%, #e02f78 85%, #c41e64 100%);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: var(--radius-lg, 20px);
+        padding: 34px 28px;
+        box-shadow: 0 16px 36px rgba(254, 93, 159, 0.28), 0 4px 12px rgba(0, 0, 0, 0.05);
+        max-width: 860px;
+        margin: 0 auto 30px;
+        text-align: center;
+        color: #ffffff;
+      }
+      .offers-title {
+        font-size: 2.15rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin: 0 0 10px;
+        line-height: 1.3;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .offers-subtitle {
+        color: rgba(255, 255, 255, 0.95);
+        max-width: 620px;
+        margin: 0 auto 24px;
+        font-size: 0.98rem;
+        line-height: 1.6;
+      }
+      .offers-countdown-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(254, 93, 159, 0.2);
+      }
+      .offers-countdown-title {
+        font-size: 0.82rem;
+        color: #f7b4ce;
+        font-weight: 600;
+      }
+      .bf-countdown-timer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        direction: ltr;
+      }
+      .bf-time-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(254, 93, 159, 0.35);
+        border-radius: 8px;
+        min-width: 58px;
+        padding: 8px 10px;
+      }
+      .bf-time-num {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #ffffff;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .bf-time-unit {
+        font-size: 0.68rem;
+        color: #c4b0bd;
+        margin-top: 4px;
+        font-weight: 500;
+      }
+      .bf-time-sep {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #fe5d9f;
+        margin-bottom: 8px;
       }
     </style>
   </slot>
 
   <section class="container" style="padding-top: 130px; text-align: center;">
-    <span class="offers-hero-badge">عروض وخصومات خاصة</span>
-    <h1 style="font-size: 1.9rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">العروض الخاصة والتخفيضات</h1>
-    <p style="color: var(--color-muted); max-width: 600px; margin: 0 auto 30px; font-size: 0.95rem;">استمتعي بأقوى عروض وتخفيضات داندي على منتجات العناية الطبيعية المتميزة بأسعار استثنائية.</p>
+    <div class="offers-bf-hero-card">
+      <span class="offers-hero-badge">🔥 موسم الجمعة البيضاء • Dandy Black Friday</span>
+      <h1 class="offers-title">أقوى عروض وتخفيضات الجمعة البيضاء</h1>
+      <p class="offers-subtitle">استمتعي بخصومات استثنائية وباقات توفير حصرية على منتجات العناية الطبيعية الأصلية من داندي، سارعي بالطلب قبل نفاد الكمية.</p>
+
+      <div class="offers-countdown-box">
+        <span class="offers-countdown-title">تنتهي العروض والباقات الحصرية خلال:</span>
+        <div class="bf-countdown-timer" id="offersBfCountdown">
+          <div class="bf-time-block">
+            <span class="bf-time-num" id="spDays">00</span>
+            <span class="bf-time-unit">يوم</span>
+          </div>
+          <span class="bf-time-sep">:</span>
+          <div class="bf-time-block">
+            <span class="bf-time-num" id="spHours">00</span>
+            <span class="bf-time-unit">ساعة</span>
+          </div>
+          <span class="bf-time-sep">:</span>
+          <div class="bf-time-block">
+            <span class="bf-time-num" id="spMinutes">00</span>
+            <span class="bf-time-unit">دقيقة</span>
+          </div>
+          <span class="bf-time-sep">:</span>
+          <div class="bf-time-block">
+            <span class="bf-time-num" id="spSeconds">00</span>
+            <span class="bf-time-unit">ثانية</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="products" style="padding: 10px 0 80px;">
@@ -241,12 +345,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           if (data.originalPrice) {
             const oldPrice = parseFloat(data.originalPrice) || 0;
             priceStr = `<span class="price-current">${priceRaw} ج.م</span><span class="price-old">${oldPrice} ج.م</span>`;
-            badgeStr = `<span class="card-badge">عرض خاص</span>`;
+            badgeStr = `<span class="card-badge black-friday-badge">بلاك فرايداي • عرض خاص</span>`;
           } else if (data.discount) {
             const discountPercent = parseFloat(data.discount) || 0;
             const oldPrice = (discountPercent > 0 && discountPercent < 100) ? Math.round(priceRaw / (1 - (discountPercent/100))) : 0;
             priceStr = `<span class="price-current">${priceRaw} ج.م</span>${oldPrice ? `<span class="price-old">${oldPrice} ج.م</span>` : ''}`;
-            badgeStr = `<span class="card-badge">خصم ${data.discount}%</span>`;
+            badgeStr = `<span class="card-badge black-friday-badge">بلاك فرايداي • خصم ${data.discount}%</span>`;
           }
 
           const hasVars = typeof hasSelectableVariants === 'function' 
@@ -322,5 +426,48 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         offersContainer.innerHTML = `<p style="text-align:center;grid-column:1/-1;color:var(--color-muted);padding:40px 0;">لا توجد عروض ترويجية نشطة حالياً. يرجى تصفح باقي تشكيلة المنتجات.</p>`;
       }
     });
+
+    function initOffersCountdown() {
+      // 35 days target deadline: Nov 30, 2026, 23:59:59 Egypt Time (UTC+2)
+      const targetDate = new Date('2026-11-30T23:59:59+02:00').getTime();
+
+      function update() {
+        const now = Date.now();
+        const diff = targetDate - now;
+
+        // AUTOMATIC EXPIRATION AFTER 35 DAYS
+        if (diff <= 0) {
+          const cdBox = document.getElementById('offersBfCountdown');
+          if (cdBox && cdBox.closest('.offers-bf-hero-card')) {
+            cdBox.closest('.offers-bf-hero-card').style.display = 'none';
+          }
+          document.querySelectorAll('.black-friday-badge').forEach(b => {
+            b.classList.remove('black-friday-badge');
+            b.textContent = b.textContent.replace('بلاك فرايداي • ', '');
+          });
+          if (window.spIntervalId) clearInterval(window.spIntervalId);
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const dEl = document.getElementById('spDays');
+        const hEl = document.getElementById('spHours');
+        const mEl = document.getElementById('spMinutes');
+        const sEl = document.getElementById('spSeconds');
+
+        if (dEl) dEl.textContent = String(days).padStart(2, '0');
+        if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+        if (mEl) mEl.textContent = String(minutes).padStart(2, '0');
+        if (sEl) sEl.textContent = String(seconds).padStart(2, '0');
+      }
+
+      update();
+      window.spIntervalId = setInterval(update, 1000);
+    }
+    initOffersCountdown();
   </script>
 </BaseLayout>
