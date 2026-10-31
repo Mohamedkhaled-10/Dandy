@@ -6,7 +6,6 @@ import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
 import { getClientIp, getOrderRateLimiter } from '../../utils/rate-limit.js';
 import { verifyTurnstileToken } from '../../utils/turnstile.js';
-import { sendTelegramNotification } from '../../utils/telegram.js';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -399,11 +398,27 @@ export async function POST({ request }) {
             await adminDb.ref(`products/${prodId}/isSoldOut`).set(true);
           }
           if (typeof newQty === 'number' && !isNaN(newQty) && newQty <= 3 && newQty > 0) {
-            sendTelegramNotification({
-              lowStockAlert: true,
-              productName: snap.name,
-              remainingQty: newQty
-            }).catch(tgErr => console.error('Telegram low stock notification failed:', tgErr));
+            if (!internalSecret) {
+              console.error('Telegram low stock notification skipped (Fail Closed): INTERNAL_API_SECRET is missing or empty in environment.');
+            } else {
+              try {
+                const sendTelegramUrl = new URL('/api/send-telegram', request.url).toString();
+                fetch(sendTelegramUrl, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-internal-secret': internalSecret
+                  },
+                  body: JSON.stringify({
+                    lowStockAlert: true,
+                    productName: snap.name,
+                    remainingQty: newQty
+                  })
+                }).catch(tgErr => console.error('Telegram low stock notification failed:', tgErr));
+              } catch (e) {
+                console.error('Error initiating low stock telegram fetch:', e);
+              }
+            }
           }
         } catch (stockErr) {
           console.error(`Error updating stock for product ${prodId}:`, stockErr);
@@ -411,11 +426,23 @@ export async function POST({ request }) {
       }
     }
 
-    // إرسال إشعار التيليجرام للطلب الجديد مباشرة وبأمان قبل إنهاء الطلب
-    try {
-      await sendTelegramNotification({ order: orderData, orderId });
-    } catch (tgErr) {
-      console.error('Telegram order notification failed:', tgErr);
+    // إرسال إشعار التيليجرام للطلب الجديد داخلياً مع الرمز السري (سيرفر لسيرفر)
+    if (!internalSecret) {
+      console.error('Telegram order notification skipped (Fail Closed): INTERNAL_API_SECRET is missing or empty in environment.');
+    } else {
+      try {
+        const sendTelegramUrl = new URL('/api/send-telegram', request.url).toString();
+        fetch(sendTelegramUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-internal-secret': internalSecret
+          },
+          body: JSON.stringify({ order: orderData, orderId })
+        }).catch(tgErr => console.error('Telegram order notification failed:', tgErr));
+      } catch (e) {
+        console.error('Error initiating telegram fetch:', e);
+      }
     }
 
     // إرسال Webhook (Make.com) من متغير البيئة MAKE_WEBHOOK_URL
