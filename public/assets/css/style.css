@@ -1389,19 +1389,6 @@ footer.legacy-footer {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.card-badge.black-friday-badge,
-.discount-badge.black-friday-badge {
-  background: linear-gradient(135deg, #181419 0%, #2a1a25 100%);
-  color: #fff4f8;
-  border: 1px solid rgba(254, 93, 159, 0.55);
-  box-shadow: 0 2px 8px rgba(254, 93, 159, 0.25);
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  letter-spacing: 0.01em;
-}
-
 .card-badge.sold-out,
 .discount-badge.sold-out {
   background-color: var(--color-dust-grey-100, #2c2828);

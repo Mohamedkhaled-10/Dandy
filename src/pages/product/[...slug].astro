@@ -1368,10 +1368,10 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
                   <span class="price-old">{originalPriceNumber.toFixed(0)} ج.م</span>
                 )}
                 {originalPriceNumber && (
-                  <span class="price-discount-badge black-friday-badge">🔥 بلاك فرايداي • توفير {(originalPriceNumber - priceNumber).toFixed(0)} ج.م</span>
+                  <span class="price-discount-badge">توفير {(originalPriceNumber - priceNumber).toFixed(0)} ج.م</span>
                 )}
                 {!originalPriceNumber && discountNumber && (
-                  <span class="price-discount-badge black-friday-badge">🔥 بلاك فرايداي • خصم {discountNumber}%</span>
+                  <span class="price-discount-badge">خصم {discountNumber}%</span>
                 )}
               </div>
             </div>
@@ -1894,12 +1894,12 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
               if (prod.originalPrice) {
                 const oldPrice = parseFloat(prod.originalPrice) || 0;
                 priceStr = `<span class="price-current">${priceRaw.toFixed(0)} ج.م</span><span class="price-old">${oldPrice.toFixed(0)} ج.م</span>`;
-                if (prod.onSale && prod.discount) badgeStr = `<span class="card-badge black-friday-badge">بلاك فرايداي • خصم ${prod.discount}%</span>`;
+                if (prod.onSale && prod.discount) badgeStr = `<span class="card-badge">خصم ${prod.discount}%</span>`;
               } else if (prod.onSale && prod.discount) {
                 const discountPercent = parseFloat(prod.discount) || 0;
                 const oldPrice = (discountPercent > 0 && discountPercent < 100) ? Math.round(priceRaw / (1 - (discountPercent/100))) : 0;
                 priceStr = `<span class="price-current">${priceRaw.toFixed(0)} ج.م</span>${oldPrice ? `<span class="price-old">${oldPrice.toFixed(0)} ج.م</span>` : ''}`;
-                badgeStr = `<span class="card-badge black-friday-badge">بلاك فرايداي • خصم ${prod.discount}%</span>`;
+                badgeStr = `<span class="card-badge">خصم ${prod.discount}%</span>`;
               }
 
               const relatedLink = (typeof window.getProductLink === 'function')

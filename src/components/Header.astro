@@ -10,20 +10,14 @@
   }
 </script>
 <div class="announce-bar" id="site-announce-bar">
-  <div class="announce-inner-container">
-    <div class="announce-badge-pill">
-      <span>🔥</span>
-      <span>الجمعة البيضاء</span>
-    </div>
-    <div class="announce-text-group">
-      <strong class="announce-headline">أقوى عروض وتخفيضات العام حتى 50%</strong>
-      <span class="announce-divider" aria-hidden="true">•</span>
-      <span class="announce-subtext">باقات العناية الحصرية + توصيل مجاني فوق 2000 ج.م</span>
-    </div>
-    <a href="/special-offers" class="announce-cta-btn">
-      <span>تسوقي العروض</span>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
+  <div class="announce-track">
+    <span>Enjoy Free Shipping on orders above 2000 LE</span>
+    <span>•</span>
+    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
+    <span>•</span>
+    <span>Enjoy Free Shipping on orders above 2000 LE</span>
+    <span>•</span>
+    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
   </div>
 </div>
 
@@ -151,51 +145,6 @@
 
   </div>
 </header>
-
-<!-- 2.5 Full-Width Black Friday Promotional Banner (Matching Exact Mockup from image_79e6d5fd.png) -->
-<div class="dandy-bf-full-banner" id="dandyBfFullBanner" aria-label="عروض الجمعة البيضاء">
-  <div class="dandy-bf-banner-inner">
-    <!-- Right Zone (RTL Content): Eyebrow, Main Headline, Subtitle, CTA Button -->
-    <div class="dandy-bf-content">
-      <div class="dandy-bf-eyebrow">
-        <span>Black Friday Sale | عروض الجمعة البيضاء</span>
-        <span class="dandy-bf-flame">🔥</span>
-      </div>
-      <h2 class="dandy-bf-title">خصم يصل إلى 50% على جميع المنتجات</h2>
-      <p class="dandy-bf-subtitle">استمتعي بأقوى تخفيضات العام وباقي الخدمات الحصرية من صبغة ومنتجات شعر + توصيل مجاني فوق 2000 جنية</p>
-      <a href="/special-offers" class="dandy-bf-cta-btn">
-        <span>تسوقي الآن</span>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      </a>
-    </div>
-
-    <!-- Left Zone (RTL End): Live Countdown Section with 4 Units -->
-    <div class="dandy-bf-timer-wrap">
-      <div class="dandy-bf-timer-label">ينتهي العروض خلال:</div>
-      <div class="dandy-bf-timer-grid">
-        <div class="dandy-bf-time-box">
-          <span class="dandy-bf-time-val" id="topBfDays">00</span>
-          <span class="dandy-bf-time-unit">يوم</span>
-        </div>
-        <span class="dandy-bf-time-sep">:</span>
-        <div class="dandy-bf-time-box">
-          <span class="dandy-bf-time-val" id="topBfHours">00</span>
-          <span class="dandy-bf-time-unit">ساعة</span>
-        </div>
-        <span class="dandy-bf-time-sep">:</span>
-        <div class="dandy-bf-time-box">
-          <span class="dandy-bf-time-val" id="topBfMinutes">00</span>
-          <span class="dandy-bf-time-unit">دقيقة</span>
-        </div>
-        <span class="dandy-bf-time-sep">:</span>
-        <div class="dandy-bf-time-box">
-          <span class="dandy-bf-time-val" id="topBfSeconds">00</span>
-          <span class="dandy-bf-time-unit">ثانية</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- 3. Side Navigation Drawer: Modern Minimal Polish -->
 <div class="menu-overlay" id="menu-overlay" onclick="window.toggleNav()" aria-hidden="true"></div>
@@ -818,66 +767,13 @@
     }
   }
 
-  function initBlackFridayBanner() {
-    const bfEnd = new Date('2026-11-30T23:59:59+02:00').getTime();
-    const banner = document.getElementById('dandyBfFullBanner');
-    const topBar = document.getElementById('site-announce-bar');
-
-    function update() {
-      const now = Date.now();
-      const diff = bfEnd - now;
-
-      if (diff <= 0) {
-        // Expired after 35 days: Revert completely to baseline design
-        document.documentElement.classList.remove('is-black-friday');
-        if (banner) banner.style.display = 'none';
-        if (topBar) {
-          topBar.innerHTML = '<div style="font-size:0.78rem; font-weight:500; color:#fff;">توصيل مجاني لجميع الطلبات فوق 2000 جنيه • Dandy Cosmetics</div>';
-          topBar.style.background = 'var(--color-rose-kiss-500, #fe5d9f)';
-          topBar.style.display = 'flex';
-        }
-        document.querySelectorAll('.black-friday-badge').forEach(b => {
-          b.classList.remove('black-friday-badge');
-          b.textContent = b.textContent.replace('بلاك فرايداي • ', '');
-        });
-        if (window.bfHeaderInterval) clearInterval(window.bfHeaderInterval);
-        return;
-      }
-
-      // Active state: mark document element and update countdown values
-      document.documentElement.classList.add('is-black-friday');
-      if (banner) banner.style.display = 'block';
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      const dEl = document.getElementById('topBfDays');
-      const hEl = document.getElementById('topBfHours');
-      const mEl = document.getElementById('topBfMinutes');
-      const sEl = document.getElementById('topBfSeconds');
-
-      if (dEl) dEl.textContent = String(days).padStart(2, '0');
-      if (hEl) hEl.textContent = String(hours).padStart(2, '0');
-      if (mEl) mEl.textContent = String(minutes).padStart(2, '0');
-      if (sEl) sEl.textContent = String(seconds).padStart(2, '0');
-    }
-
-    update();
-    if (window.bfHeaderInterval) clearInterval(window.bfHeaderInterval);
-    window.bfHeaderInterval = setInterval(update, 1000);
-  }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      initBlackFridayBanner();
       initHeaderAuth();
       initActiveNavLinks();
       initHeroNavScroll();
     });
   } else {
-    initBlackFridayBanner();
     initHeaderAuth();
     initActiveNavLinks();
     initHeroNavScroll();
@@ -889,380 +785,50 @@
      ANNOUNCEMENT BAR (Branded Dandy Rose Kiss Treatment)
      ========================================================================== */
   .announce-bar {
-    background: linear-gradient(90deg, #ff5e9c 0%, #fe5d9f 50%, #da2c73 100%);
+    background: var(--color-rose-kiss-500, #fe5d9f);
     color: #ffffff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    white-space: nowrap;
     position: relative;
-    width: 100%;
-    min-height: 38px;
+    height: 34px;
     display: flex;
     align-items: center;
-    justify-content: center;
     font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
     z-index: 101;
-    padding: 6px 16px;
-    box-sizing: border-box;
-    box-shadow: 0 2px 10px rgba(254, 93, 159, 0.25);
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
   }
 
-  .announce-inner-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    max-width: 1240px;
-    width: 100%;
-    margin: 0 auto;
-    flex-wrap: wrap;
-    text-align: center;
-  }
-
-  .announce-badge-pill {
+  .announce-track {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    background: rgba(255, 255, 255, 0.22);
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    color: #ffffff;
-    padding: 2px 10px;
-    border-radius: 99px;
-    font-size: 0.72rem;
-    font-weight: 700;
+    animation: scrollBar 24s linear infinite;
+    white-space: nowrap;
+    will-change: transform;
+  }
+
+  .announce-track:hover {
+    animation-play-state: paused;
+  }
+
+  .announce-track span {
+    padding: 0 2rem;
+    font-size: var(--text-xs, 0.78rem);
+    font-weight: 500;
     letter-spacing: 0.02em;
-    flex-shrink: 0;
-  }
-
-  .announce-text-group {
+    color: #ffffff;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.78rem;
-    color: #ffffff;
-    line-height: 1.4;
   }
 
-  .announce-headline {
-    color: #ffffff;
-    font-weight: 700;
-  }
-
-  .announce-divider {
+  .announce-track span:nth-child(even) {
+    padding: 0 0.5rem;
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.85rem;
   }
 
-  .announce-subtext {
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 400;
-  }
-
-  .announce-cta-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #ffffff;
-    color: #d82b72;
-    padding: 3px 14px;
-    border-radius: 8px;
-    font-size: 0.74rem;
-    font-weight: 800;
-    text-decoration: none;
-    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  }
-
-  .announce-cta-btn:hover {
-    background: #fff5f8;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
-    color: #c41e64;
-  }
-
-  @media (max-width: 768px) {
-    .announce-bar {
-      min-height: 34px;
-      padding: 5px 10px;
-    }
-    .announce-inner-container {
-      gap: 6px;
-    }
-    .announce-badge-pill {
-      font-size: 0.68rem;
-      padding: 1px 8px;
-    }
-    .announce-text-group {
-      font-size: 0.72rem;
-      gap: 4px;
-    }
-    .announce-subtext {
-      display: none;
-    }
-    .announce-divider {
-      display: none;
-    }
-    .announce-cta-btn {
-      font-size: 0.68rem;
-      padding: 2px 10px;
-    }
-  }
-
-  /* ==========================================================================
-     TEMPORARY FULL-WIDTH BLACK FRIDAY PROMOTIONAL BANNER (image_79e6d5fd.png)
-     ========================================================================== */
-  .dandy-bf-full-banner {
-    display: none;
-    width: 100%;
-    background-color: #b81b5e;
-    background: linear-gradient(135deg, #c01962 0%, #b81b5e 55%, #9e144f 100%);
-    color: #ffffff;
-    position: relative;
-    z-index: 90;
-    box-shadow: 0 4px 16px rgba(184, 27, 94, 0.2);
-    direction: rtl;
-    font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
-  }
-
-  html.is-black-friday .dandy-bf-full-banner {
-    display: block;
-  }
-
-  /* Temporary Black Friday overrides matching image_79e6d5fd.png */
-  html.is-black-friday.is-homepage .announce-bar {
-    display: none !important;
-  }
-  html.is-black-friday.is-homepage .site-header {
-    margin-bottom: 0 !important;
-  }
-  html.is-black-friday .site-header {
-    background: #ffffff !important;
-    border-bottom: 1px solid rgba(44, 40, 40, 0.08) !important;
-    position: sticky !important;
-    top: 0 !important;
-  }
-  html.is-black-friday .site-header.is-hero-nav-active {
-    background-color: #ffffff !important;
-    border-bottom: 1px solid rgba(44, 40, 40, 0.08) !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
-  }
-  html.is-black-friday .site-header.is-hero-nav-active .brand-logo img {
-    filter: none !important;
-  }
-  html.is-black-friday .site-header.is-hero-nav-active .desktop-nav .nav-link {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    transform: none !important;
-    color: var(--color-dust-grey-800, #2c2828) !important;
-    text-shadow: none !important;
-  }
-  html.is-black-friday .site-header.is-hero-nav-active .desktop-nav .nav-link:hover {
-    color: var(--color-rose-kiss-500, #fe5d9f) !important;
-  }
-  html.is-black-friday .site-header.is-hero-nav-active #desktop-search-btn,
-  html.is-black-friday .site-header.is-hero-nav-active #header-cart-link,
-  html.is-black-friday .site-header.is-hero-nav-active #header-auth-guest,
-  html.is-black-friday .site-header.is-hero-nav-active .mobile-menu-btn {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    transform: none !important;
-    color: var(--color-dust-grey-800, #2c2828) !important;
-    text-shadow: none !important;
-  }
-
-  .dandy-bf-banner-inner {
-    max-width: var(--container-max-width, 1240px);
-    margin: 0 auto;
-    padding: 24px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-  }
-
-  .dandy-bf-content {
-    flex: 1 1 600px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: right;
-  }
-
-  .dandy-bf-eyebrow {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.95);
-    margin-bottom: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    letter-spacing: 0.01em;
-  }
-
-  .dandy-bf-flame {
-    font-size: 1rem;
-  }
-
-  .dandy-bf-title {
-    font-size: clamp(1.6rem, 2.7vw, 2.25rem);
-    font-weight: 800;
-    color: #ffffff;
-    margin: 0 0 8px 0;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-  }
-
-  .dandy-bf-subtitle {
-    font-size: 0.92rem;
-    color: rgba(255, 255, 255, 0.92);
-    margin: 0 0 18px 0;
-    line-height: 1.5;
-    font-weight: 500;
-    max-width: 650px;
-  }
-
-  .dandy-bf-cta-btn {
-    background: #ffffff;
-    color: #b81b5e;
-    font-size: 0.92rem;
-    font-weight: 800;
-    padding: 10px 28px;
-    border-radius: 8px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-  }
-
-  .dandy-bf-cta-btn:hover {
-    background: #fff5f8;
-    color: #9e144f;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-  }
-
-  .dandy-bf-cta-btn svg {
-    transition: transform 0.2s ease;
-  }
-
-  .dandy-bf-cta-btn:hover svg {
-    transform: translateX(-4px);
-  }
-
-  .dandy-bf-timer-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .dandy-bf-timer-label {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-
-  .dandy-bf-timer-grid {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    direction: ltr;
-  }
-
-  .dandy-bf-time-box {
-    background: rgba(255, 255, 255, 0.22);
-    border-radius: 6px;
-    min-width: 52px;
-    padding: 8px 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-
-  .dandy-bf-time-val {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: #ffffff;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    font-family: var(--font-sans, 'Alexandria', sans-serif);
-  }
-
-  .dandy-bf-time-unit {
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.95);
-    margin-top: 4px;
-  }
-
-  .dandy-bf-time-sep {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #ffffff;
-    margin: 0 2px 4px 2px;
-    line-height: 1;
-    align-self: center;
-  }
-
-  @media (max-width: 768px) {
-    .dandy-bf-banner-inner {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 20px 16px;
-      gap: 12px;
-    }
-    .dandy-bf-content {
-      align-items: center;
-      text-align: center;
-      width: 100%;
-      flex: none;
-    }
-    .dandy-bf-eyebrow {
-      font-size: 0.78rem;
-      margin-bottom: 6px;
-    }
-    .dandy-bf-title {
-      font-size: 1.55rem;
-      line-height: 1.3;
-      margin: 0 0 10px 0;
-      text-align: center;
-      max-width: 290px;
-    }
-    .dandy-bf-subtitle {
-      display: none;
-    }
-    .dandy-bf-timer-wrap {
-      width: 100%;
-      margin-top: 2px;
-    }
-    .dandy-bf-timer-label {
-      font-size: 0.82rem;
-      margin-bottom: 6px;
-    }
-    .dandy-bf-time-box {
-      min-width: 46px;
-      padding: 6px 4px;
-    }
-    .dandy-bf-time-val {
-      font-size: 1.25rem;
-    }
-    .dandy-bf-cta-btn {
-      width: 100%;
-      margin-top: 14px;
-      padding: 12px;
-      font-size: 0.95rem;
-      justify-content: center;
-    }
+  @keyframes scrollBar {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 
   /* ==========================================================================
@@ -1287,16 +853,25 @@
      ========================================================================== */
 
   html.is-homepage .announce-bar {
-    display: flex !important;
+    display: none !important;
   }
 
   html.is-homepage .site-header {
     margin-bottom: -64px;
   }
 
+  .announce-bar {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 34px;
+    will-change: transform, opacity;
+  }
+
   body.has-hero-nav .announce-bar {
-    opacity: 1;
-    pointer-events: auto;
+    transform: translate3d(0, -100%, 0);
+    opacity: 0;
+    pointer-events: none;
+    border-bottom: none;
   }
 
   .site-header.is-hero-nav-active {

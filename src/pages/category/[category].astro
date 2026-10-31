@@ -701,10 +701,10 @@ const categoryArticle = categoryConfig ? CATEGORY_ARTICLE_MAP[categoryConfig.slu
                 if (isSoldOut) {
                   badgeText = 'نفذت الكمية';
                 } else if (product.originalPrice) {
-                  badgeText = 'بلاك فرايداي • تخفيض';
+                  badgeText = 'تخفيض';
                   isSaleBadge = true;
                 } else if (product.onSale && product.discount) {
-                  badgeText = `بلاك فرايداي • خصم ${product.discount}%`;
+                  badgeText = `خصم ${product.discount}%`;
                   isSaleBadge = true;
                 } else if (product.bestSeller) {
                   badgeText = 'الأكثر مبيعاً';
@@ -718,7 +718,7 @@ const categoryArticle = categoryConfig ? CATEGORY_ARTICLE_MAP[categoryConfig.slu
                 return (
                   <article class="product-card-item product" data-id={product.id} data-category={categoryConfig!.slug}>
                     {badgeText && (
-                      <span class={`card-badge ${isSoldOut ? 'sold-out' : ''} ${isSaleBadge ? 'black-friday-badge' : ''}`}>
+                      <span class={`card-badge ${isSoldOut ? 'sold-out' : ''}`}>
                         {badgeText}
                       </span>
                     )}
