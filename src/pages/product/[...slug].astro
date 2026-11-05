@@ -14,6 +14,7 @@ import {
   type Product,
   type VariantItem
 } from '../../utils/products';
+import { PINK_FRIDAY_CONFIG, calculatePinkFridayPricing } from '../../config/pink-friday';
 
 const { slug } = Astro.params;
 
@@ -78,6 +79,8 @@ const categoryName = product ? normalizeCategory(product.category) : '';
 const priceNumber = product ? Number(product.price) || 0 : 0;
 const originalPriceNumber = product?.originalPrice ? Number(product.originalPrice) : null;
 const discountNumber = product?.discount ? Number(product.discount) : null;
+const pfPricing = product ? calculatePinkFridayPricing(product, PINK_FRIDAY_CONFIG) : { isEligible: false, regularPrice: 0, campaignPrice: 0, discountAmount: 0, discountPercentage: 0 };
+const isPfEligible = pfPricing.isEligible;
 const isSoldOut = Boolean(product?.isSoldOut);
 const isAvailable = Boolean(product && !product.isSoldOut && product.inStock !== false);
 
@@ -1363,15 +1366,25 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
             <!-- Price & Discount -->
             <div class="product-price-container" id="product-price-section">
               <div class="product-price-row">
-                <span class="price-current" id="product-price">{priceNumber.toFixed(0)} ج.م</span>
-                {originalPriceNumber && (
-                  <span class="price-old">{originalPriceNumber.toFixed(0)} ج.م</span>
-                )}
-                {originalPriceNumber && (
-                  <span class="price-discount-badge">توفير {(originalPriceNumber - priceNumber).toFixed(0)} ج.م</span>
-                )}
-                {!originalPriceNumber && discountNumber && (
-                  <span class="price-discount-badge">خصم {discountNumber}%</span>
+                {isPfEligible ? (
+                  <>
+                    <span class="price-current" id="product-price">{pfPricing.campaignPrice.toFixed(0)} ج.م</span>
+                    <span class="price-old">{pfPricing.regularPrice.toFixed(0)} ج.م</span>
+                    <span class="price-discount-badge" style="background:#fe5d9f; color:#ffffff; font-weight:700;">{pfPricing.offer?.badgeText || 'Pink Friday'} (توفير {pfPricing.discountAmount.toFixed(0)} ج.م)</span>
+                  </>
+                ) : (
+                  <>
+                    <span class="price-current" id="product-price">{priceNumber.toFixed(0)} ج.م</span>
+                    {originalPriceNumber && (
+                      <span class="price-old">{originalPriceNumber.toFixed(0)} ج.م</span>
+                    )}
+                    {originalPriceNumber && (
+                      <span class="price-discount-badge">توفير {(originalPriceNumber - priceNumber).toFixed(0)} ج.م</span>
+                    )}
+                    {!originalPriceNumber && discountNumber && (
+                      <span class="price-discount-badge">خصم {discountNumber}%</span>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -1682,6 +1695,17 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
             onSale: loadedProduct.onSale || false,
             quantity: qty
           };
+
+          if (window.DandyPinkFriday && typeof window.DandyPinkFriday.getPricing === 'function') {
+            const pf = window.DandyPinkFriday.getPricing(loadedProduct);
+            if (pf.isEligible) {
+              productItem.isPinkFriday = true;
+              productItem.campaignPrice = pf.campaignPrice;
+              productItem.regularPrice = pf.regularPrice;
+              productItem.price = pf.campaignPrice;
+              productItem.badgeText = pf.badgeText;
+            }
+          }
 
           if (hasChosenVariants) {
             productItem.hasVariants = true;

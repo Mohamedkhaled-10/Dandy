@@ -6,6 +6,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
 import { getClientIp, getOrderRateLimiter } from '../../utils/rate-limit.js';
 import { verifyTurnstileToken } from '../../utils/turnstile.js';
+import { getPublishedPinkFridayCampaign, calculatePinkFridayPricing } from '../../utils/pink-friday-server.ts';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -260,6 +261,18 @@ export async function POST({ request }) {
     const productsSnapshot = [];
     let subtotal = 0;
 
+    // جلب أحدث نسخة منشورة ومعتمدة لحملة Pink Friday من قاعدة البيانات
+    let activeCampaign = null;
+    try {
+      const campSnap = await adminDb.ref('settings/pinkFriday/publishedActiveCampaign').once('value');
+      activeCampaign = campSnap.val();
+    } catch (campErr) {
+      console.warn('Could not fetch publishedActiveCampaign from RTDB:', campErr.message);
+    }
+    if (!activeCampaign) {
+      activeCampaign = await getPublishedPinkFridayCampaign();
+    }
+
     for (const item of items) {
       const rawId = item.productId || (item.id ? String(item.id).split('::')[0] : '');
       const quantity = parseInt(item.quantity) || 1;
@@ -279,7 +292,31 @@ export async function POST({ request }) {
 
       const pData = productSnap.val();
       const priceVal = parseFloat(String(pData.price).replace(/[^0-9.-]+/g, '')) || 0;
-      const effectiveUnitPrice = priceVal;
+
+      // التحقق الصارم من عروض Pink Friday من السيرفر فقط
+      const pfPricing = calculatePinkFridayPricing({
+        id: rawId,
+        price: priceVal,
+        isHidden: Boolean(pData.isHidden),
+        isSoldOut: Boolean(pData.isSoldOut),
+        onSale: Boolean(pData.onSale),
+        discount: pData.discount
+      }, activeCampaign);
+
+      // في حال كان العميل يدّعي وجود عرض Pink Friday
+      const isClientClaimingCampaign = Boolean(item.isPinkFriday || item.campaignPrice);
+      if (isClientClaimingCampaign && !pfPricing.isEligible) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'CAMPAIGN_OFFER_CONFLICT',
+          message: `عذراً، عرض Pink Friday للمنتج "${pData.name || item.name || ''}" لم يعد متاحاً أو تم تحديث سعره. يرجى مراجعة سلة المشتريات.`
+        }), {
+          status: 409,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      const effectiveUnitPrice = pfPricing.isEligible ? pfPricing.campaignPrice : priceVal;
       const lineTotal = effectiveUnitPrice * quantity;
       subtotal += lineTotal;
 
@@ -293,7 +330,14 @@ export async function POST({ request }) {
         image: pData.image || item.image || ''
       };
 
-      if (pData.discount) snap.discount = pData.discount;
+      if (pfPricing.isEligible) {
+        snap.isPinkFriday = true;
+        snap.campaignPrice = pfPricing.campaignPrice;
+        snap.regularPrice = priceVal;
+        snap.badgeText = pfPricing.offer?.badgeText || 'Pink Friday';
+      }
+
+      if (pData.discount && !pfPricing.isEligible) snap.discount = pData.discount;
       if (pData.onSale) snap.onSale = pData.onSale;
 
       // استخراج ومعالجة الروائح والمتغيرات (مطابق لـ cart.astro)

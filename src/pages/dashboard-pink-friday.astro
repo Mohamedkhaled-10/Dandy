@@ -1,0 +1,1928 @@
+---
+// src/pages/dashboard-pink-friday.astro
+// Dandy Cosmetics — Dedicated Pink Friday Multi-Year Campaign Management Suite
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="إدارة حملة Pink Friday | Dandy Operations"
+  description="لوحة التحكم السنوية لإدارة حملة وتخفيضات Pink Friday لمتجر داندي"
+  robots="noindex, nofollow"
+  showHeader={false}
+  showFooter={false}
+  showDashboardNav={true}
+>
+  <slot name="head" slot="head">
+    <style is:global>
+      :root {
+        --pf-pink: #d98d99;
+        --pf-pink-dark: #b86b77;
+        --pf-pink-light: #fdf2f4;
+        --pf-pink-border: #f5cbd1;
+      }
+
+      .pf-admin-wrap {
+        padding: 24px 20px 80px;
+        max-width: 1400px;
+        margin: 0 auto;
+        font-family: 'Cairo', sans-serif;
+      }
+
+      /* Top Header & Year Selector */
+      .pf-admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        background: #ffffff;
+        padding: 20px 24px;
+        border-radius: 10px;
+        border: 1px solid var(--border-light, #e5e7eb);
+      }
+
+      .pf-header-info h1 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--color-primary, #111827);
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .pf-header-info h1 .pf-badge {
+        font-size: 0.75rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        background: var(--pf-pink-light);
+        color: var(--pf-pink-dark);
+        border: 1px solid var(--pf-pink-border);
+        font-weight: 700;
+      }
+
+      .pf-header-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--color-muted, #6b7280);
+      }
+
+      .pf-header-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .pf-year-select-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #f9fafb;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .pf-year-select-wrap label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #374151;
+      }
+
+      .pf-year-select {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #111827;
+        background: #ffffff;
+        outline: none;
+      }
+
+      .btn-new-year {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        background: #ffffff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .btn-new-year:hover {
+        border-color: #111827;
+        color: #111827;
+      }
+
+      /* Draft & Publish Action Ribbon */
+      .pf-ribbon-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        margin-bottom: 24px;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+      }
+
+      .pf-ribbon-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .status-pill.active { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+      .status-pill.scheduled { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+      .status-pill.ended { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+      .status-pill.disabled { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+      .draft-indicator {
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #fdf2f8;
+        color: #be185d;
+        border: 1px solid #fbcfe8;
+      }
+
+      .pf-action-btns {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+        font-family: inherit;
+      }
+
+      .btn-action-preview {
+        background: #ffffff;
+        color: #374151;
+        border-color: #d1d5db;
+      }
+      .btn-action-preview:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+      }
+
+      .btn-action-save {
+        background: #ffffff;
+        color: #1e40af;
+        border-color: #bfdbfe;
+      }
+      .btn-action-save:hover {
+        background: #eff6ff;
+      }
+
+      .btn-action-publish {
+        background: var(--pf-pink);
+        color: #ffffff;
+        border-color: var(--pf-pink);
+      }
+      .btn-action-publish:hover {
+        background: var(--pf-pink-dark);
+      }
+
+      .btn-action-revert {
+        background: #ffffff;
+        color: #6b7280;
+        border-color: #e5e7eb;
+      }
+      .btn-action-revert:hover {
+        color: #b91c1c;
+        border-color: #fecaca;
+      }
+
+      /* KPI Stats Grid */
+      .pf-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .pf-stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .pf-stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+      }
+
+      .pf-stat-body h4 {
+        margin: 0 0 2px 0;
+        font-size: 0.78rem;
+        color: #6b7280;
+        font-weight: 600;
+      }
+
+      .pf-stat-body span {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #111827;
+      }
+
+      /* Main Sections Layout: Controls & Products */
+      .pf-layout-grid {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      @media (max-width: 1024px) {
+        .pf-layout-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .pf-panel-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+
+      .pf-panel-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 16px 0;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .pf-form-group {
+        margin-bottom: 14px;
+      }
+
+      .pf-form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 6px;
+      }
+
+      .pf-form-input, .pf-form-select, .pf-form-textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-family: inherit;
+        background: #ffffff;
+        outline: none;
+        box-sizing: border-box;
+      }
+      .pf-form-input:focus, .pf-form-select:focus, .pf-form-textarea:focus {
+        border-color: #111827;
+      }
+
+      .pf-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 14px;
+      }
+
+      .pf-toggle-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .pf-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+      }
+      .pf-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .pf-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #d1d5db;
+        transition: .2s;
+        border-radius: 24px;
+      }
+      .pf-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .2s;
+        border-radius: 50%;
+      }
+      input:checked + .pf-slider {
+        background-color: #10b981;
+      }
+      input:checked + .pf-slider:before {
+        transform: translateX(20px);
+      }
+
+      /* Hero Visual Preview */
+      .pf-visual-preview-box {
+        margin-top: 10px;
+        height: 120px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        background: #f3f4f6;
+        position: relative;
+      }
+
+      .pf-visual-preview-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Products Table & Search */
+      .pf-products-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .btn-add-prod {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        background: #111827;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .btn-add-prod:hover {
+        background: #374151;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+      }
+
+      .pf-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+        text-align: right;
+      }
+
+      .pf-table th {
+        background: #f9fafb;
+        padding: 10px 14px;
+        font-weight: 700;
+        color: #4b5563;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+      }
+
+      .pf-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+      }
+
+      .prod-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .prod-thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+      }
+
+      .prod-meta-title {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 2px;
+        max-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .prod-meta-id {
+        font-size: 0.72rem;
+        color: #9ca3af;
+      }
+
+      .discount-input {
+        width: 70px;
+        padding: 6px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-align: center;
+      }
+
+      .price-calc {
+        font-weight: 800;
+        color: #047857;
+      }
+
+      .price-old {
+        font-size: 0.72rem;
+        text-decoration: line-through;
+        color: #9ca3af;
+        margin-top: 2px;
+      }
+
+      .btn-del-offer {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        color: #b91c1c;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+      }
+      .btn-del-offer:hover {
+        background: #dc2626;
+        color: #ffffff;
+      }
+
+      .offer-status-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .offer-status-badge.valid { background: #ecfdf5; color: #047857; }
+      .offer-status-badge.warning { background: #fffbeb; color: #b45309; }
+      .offer-status-badge.error { background: #fef2f2; color: #b91c1c; }
+
+      /* Modals */
+      .pf-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+      }
+
+      .pf-modal-dialog {
+        background: #ffffff;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      .pf-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .pf-modal-header h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #111827;
+      }
+
+      .pf-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #9ca3af;
+      }
+
+      /* Multi-Device Interactive Preview Drawer / Modal */
+      .pf-preview-modal-dialog {
+        max-width: 1280px;
+        width: 95%;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .pf-preview-header {
+        background: #111827;
+        color: #ffffff;
+        padding: 14px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .preview-device-toggles {
+        display: flex;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px;
+        border-radius: 8px;
+      }
+
+      .btn-device {
+        background: transparent;
+        color: #9ca3af;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: inherit;
+      }
+      .btn-device.active {
+        background: #ffffff;
+        color: #111827;
+      }
+
+      .preview-view-toggles {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 4px;
+      }
+
+      .btn-view-tab {
+        background: transparent;
+        color: #d1d5db;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: inherit;
+      }
+      .btn-view-tab.active {
+        background: var(--pf-pink);
+        border-color: var(--pf-pink);
+        color: #ffffff;
+        font-weight: 700;
+      }
+
+      .pf-preview-stage {
+        background: #e5e7eb;
+        min-height: 520px;
+        max-height: 75vh;
+        overflow-y: auto;
+        display: flex;
+        justify-content: center;
+        padding: 24px 16px;
+      }
+
+      .pf-preview-frame {
+        background: #ffffff;
+        transition: width 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .pf-preview-frame.desktop { width: 100%; max-width: 1200px; }
+      .pf-preview-frame.tablet { width: 768px; }
+      .pf-preview-frame.mobile { width: 390px; }
+
+      .catalog-search-wrap {
+        margin-bottom: 14px;
+      }
+
+      .catalog-list {
+        max-height: 340px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+      }
+
+      .catalog-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+      .catalog-item:hover {
+        background: #f9fafb;
+      }
+      .catalog-item.already-added {
+        opacity: 0.5;
+        background: #f3f4f6;
+        cursor: not-allowed;
+      }
+
+      /* Toast Notification */
+      .pf-toast {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        background: #111827;
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        z-index: 3000;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+      }
+      .pf-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+      .pf-toast.success { background: #065f46; border: 1px solid #059669; }
+      .pf-toast.error { background: #991b1b; border: 1px solid #dc2626; }
+    </style>
+  </slot>
+
+  <main class="pf-admin-wrap" dir="rtl">
+    <!-- Header: Title & Year Switcher -->
+    <div class="pf-admin-header">
+      <div class="pf-header-info">
+        <h1>
+          <i class="fas fa-tags" style="color: var(--pf-pink);"></i>
+          <span>إدارة حملة Pink Friday السنوية</span>
+          <span class="pf-badge" id="headerYearBadge">2026</span>
+        </h1>
+        <p>نظام الحملات السنوية المستقل لتخفيضات شهر نوفمبر وإدارتها بالكامل دون تعديل الكود.</p>
+      </div>
+
+      <div class="pf-header-controls">
+        <div class="pf-year-select-wrap">
+          <label for="yearSelector"><i class="fas fa-calendar-alt"></i> حملة سنة:</label>
+          <select id="yearSelector" class="pf-year-select">
+            <option value="2026">2026</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn-new-year" id="btnOpenNewYearModal">
+          <i class="fas fa-plus"></i>
+          <span>بدء سنة جديدة</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Draft & Publish Ribbon -->
+    <div class="pf-ribbon-actions">
+      <div class="pf-ribbon-status">
+        <span class="status-pill scheduled" id="campaignStatusPill">
+          <i class="fas fa-clock"></i>
+          <span id="campaignStatusText">مجدولة</span>
+        </span>
+        <span class="draft-indicator" id="draftStatusBadge">
+          <i class="fas fa-pen"></i> وضع التعديل (مسودة غير منشورة)
+        </span>
+        <span style="font-size: 0.78rem; color: #6b7280;" id="lastPublishedText">
+          لم يتم النشر بعد
+        </span>
+      </div>
+
+      <div class="pf-action-btns">
+        <button type="button" class="btn-action btn-action-preview" id="btnOpenPreview">
+          <i class="fas fa-eye"></i>
+          <span>معاينة الحملة</span>
+        </button>
+
+        <button type="button" class="btn-action btn-action-save" id="btnSaveDraft">
+          <i class="fas fa-save"></i>
+          <span>حفظ كمسودة</span>
+        </button>
+
+        <button type="button" class="btn-action btn-action-publish" id="btnOpenPublishModal">
+          <i class="fas fa-rocket"></i>
+          <span>اعتماد ونشر الحملة</span>
+        </button>
+
+        <button type="button" class="btn-action btn-action-revert" id="btnRestorePublished" title="إلغاء التعديلات غير المنشورة">
+          <i class="fas fa-undo"></i>
+          <span>استعادة المنشور</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Stats Counters -->
+    <div class="pf-stats-grid">
+      <div class="pf-stat-card">
+        <div class="pf-stat-icon" style="background: #fdf2f8; color: #db2777;">
+          <i class="fas fa-box-open"></i>
+        </div>
+        <div class="pf-stat-body">
+          <h4>إجمالي المنتجات بالحملة</h4>
+          <span id="statTotalOffers">0</span>
+        </div>
+      </div>
+
+      <div class="pf-stat-card">
+        <div class="pf-stat-icon" style="background: #ecfdf5; color: #059669;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="pf-stat-body">
+          <h4>عروض صالحة وجاهزة للعملاء</h4>
+          <span id="statValidOffers">0</span>
+        </div>
+      </div>
+
+      <div class="pf-stat-card">
+        <div class="pf-stat-icon" style="background: #eff6ff; color: #2563eb;">
+          <i class="fas fa-percent"></i>
+        </div>
+        <div class="pf-stat-body">
+          <h4>متوسط نسبة الخصم</h4>
+          <span id="statAvgDiscount">0%</span>
+        </div>
+      </div>
+
+      <div class="pf-stat-card">
+        <div class="pf-stat-icon" style="background: #fffbeb; color: #d97706;">
+          <i class="fas fa-coins"></i>
+        </div>
+        <div class="pf-stat-body">
+          <h4>أعلى وفر للعميل</h4>
+          <span id="statMaxSaving">0 ج.م</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Two-Column Workflow -->
+    <div class="pf-layout-grid">
+      <!-- Left Column: Dates, Visibility & Visuals -->
+      <div class="pf-left-col">
+        <!-- Campaign Controls Panel -->
+        <div class="pf-panel-card">
+          <h3 class="pf-panel-title">
+            <span><i class="fas fa-sliders-h"></i> التحكم الأساسي والجدولة</span>
+          </h3>
+
+          <div class="pf-toggle-row">
+            <div>
+              <div class="pf-toggle-label">تفعيل الحملة برمجياً</div>
+              <small style="color: #6b7280; font-size: 0.72rem;">تتطلب وجود عروض صالحة وتواريخ متوافقة للظهور للعملاء</small>
+            </div>
+            <label class="pf-switch">
+              <input type="checkbox" id="campaignEnabledToggle" checked>
+              <span class="pf-slider"></span>
+            </label>
+          </div>
+
+          <div class="pf-form-group">
+            <label for="campaignStartDate"><i class="fas fa-calendar-plus"></i> تاريخ ووقت البداية (توقيت القاهرة)</label>
+            <input type="datetime-local" id="campaignStartDate" class="pf-form-input">
+          </div>
+
+          <div class="pf-form-group">
+            <label for="campaignEndDate"><i class="fas fa-calendar-minus"></i> تاريخ ووقت النهاية (توقيت القاهرة)</label>
+            <input type="datetime-local" id="campaignEndDate" class="pf-form-input">
+          </div>
+
+          <div style="background: #f9fafb; padding: 10px; border-radius: 6px; font-size: 0.75rem; color: #6b7280; border: 1px solid #e5e7eb;">
+            <i class="fas fa-info-circle"></i>
+            تنتهي الحملة وتختفي العروض تلقائياً فور تخطي توقيت السيرفر المحدد دون الحاجة للإيقاف اليدوي.
+          </div>
+        </div>
+
+        <!-- Visual Editorial Customization -->
+        <div class="pf-panel-card">
+          <h3 class="pf-panel-title">
+            <span><i class="fas fa-paint-brush"></i> المظهر والبانر الإعلاني</span>
+          </h3>
+
+          <div class="pf-form-group">
+            <label for="visualHeadline">عنوان الحملة الرئيسي</label>
+            <input type="text" id="visualHeadline" class="pf-form-input" placeholder="عروض Pink Friday الحصرية">
+          </div>
+
+          <div class="pf-form-group">
+            <label for="visualSubtitle">الوصف الترويجي القصير</label>
+            <textarea id="visualSubtitle" class="pf-form-textarea" rows="2" placeholder="استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."></textarea>
+          </div>
+
+          <div class="pf-form-group">
+            <label for="visualHeroImg">رابط صورة الهيرو (Cloudinary أو رابط مباشر)</label>
+            <input type="url" id="visualHeroImg" class="pf-form-input" placeholder="https://res.cloudinary.com/...">
+            <div class="pf-visual-preview-box" id="heroPreviewBox">
+              <img id="heroPreviewImg" src="" alt="Hero Preview" onerror="this.src='https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';">
+            </div>
+          </div>
+
+          <div class="pf-form-group">
+            <label for="visualBannerPosition">محاذاة صورة الهيرو (Positioning)</label>
+            <select id="visualBannerPosition" class="pf-form-select">
+              <option value="center">في المنتصف (Center)</option>
+              <option value="top">الأعلى (Top)</option>
+              <option value="bottom">الأسفل (Bottom)</option>
+            </select>
+          </div>
+
+          <div class="pf-form-group">
+            <label for="visualCtaText">نص زر التوجيه (CTA Button)</label>
+            <input type="text" id="visualCtaText" class="pf-form-input" placeholder="اكتشفي عروض Pink Friday">
+          </div>
+
+          <div class="pf-form-group">
+            <label for="visualBadgeText">نص الشارة الافتراضية</label>
+            <input type="text" id="visualBadgeText" class="pf-form-input" placeholder="Pink Friday">
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Products & Discount Management -->
+      <div class="pf-right-col">
+        <div class="pf-panel-card">
+          <div class="pf-products-header">
+            <div>
+              <h3 class="pf-panel-title" style="margin-bottom: 4px; border: none; padding: 0;">
+                <i class="fas fa-boxes"></i> المنتجات المشاركة في الحملة
+              </h3>
+              <p style="margin: 0; font-size: 0.8rem; color: #6b7280;">
+                اختاري المستحضرات من كتالوج داندي وحددي نسبة الخصم المستقلة لكل منتج.
+              </p>
+            </div>
+
+            <button type="button" class="btn-add-prod" id="btnOpenAddProductModal">
+              <i class="fas fa-plus"></i>
+              <span>إضافة منتج من الكتالوج</span>
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table class="pf-table">
+              <thead>
+                <tr>
+                  <th style="width: 260px;">المستحضر</th>
+                  <th>السعر الحالي</th>
+                  <th>نسبة الخصم %</th>
+                  <th>سعر الحملة</th>
+                  <th>مقدار الوفر</th>
+                  <th>نص الشارة</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="offersTableBody">
+                <tr>
+                  <td colspan="8" style="text-align: center; padding: 40px; color: #9ca3af;">
+                    جاري تحميل المنتجات المشاركة في الحملة...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Annual History & Change Logs -->
+        <div class="pf-panel-card">
+          <h3 class="pf-panel-title">
+            <span><i class="fas fa-history"></i> الأرشيف السنوي وسجل التعديلات</span>
+          </h3>
+          <div id="annualAuditLogs" style="font-size: 0.82rem; color: #6b7280; max-height: 200px; overflow-y: auto;">
+            <p>يتم تسجيل كل إجراء حفظ ونشر تلقائياً مع اسم المشرف والتوقيت الدقيق.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 1: Add Product from Catalog -->
+    <div class="pf-modal-backdrop" id="addProductModal">
+      <div class="pf-modal-dialog">
+        <div class="pf-modal-header">
+          <h3><i class="fas fa-box-open"></i> اختيار منتج من كتالوج داندي</h3>
+          <button type="button" class="pf-modal-close" data-close-modal="addProductModal">&times;</button>
+        </div>
+
+        <div class="catalog-search-wrap">
+          <input type="text" id="catalogSearchInput" class="pf-form-input" placeholder="ابحثي باسم المنتج أو المعرف...">
+        </div>
+
+        <div class="catalog-list" id="catalogListItems">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <div style="margin-top: 16px; text-align: left;">
+          <button type="button" class="btn-action btn-action-revert" data-close-modal="addProductModal">إلغاء</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 2: Create New Year -->
+    <div class="pf-modal-backdrop" id="newYearModal">
+      <div class="pf-modal-dialog">
+        <div class="pf-modal-header">
+          <h3><i class="fas fa-calendar-plus"></i> بدء حملة سنة جديدة</h3>
+          <button type="button" class="pf-modal-close" data-close-modal="newYearModal">&times;</button>
+        </div>
+
+        <div class="pf-form-group">
+          <label for="newYearInput">السنة الجديدة</label>
+          <input type="number" id="newYearInput" class="pf-form-input" placeholder="2027" min="2026" max="2050">
+        </div>
+
+        <div class="pf-toggle-row">
+          <div>
+            <div class="pf-toggle-label">نسخ إعدادات وعروض السنة الحالية</div>
+            <small style="color: #6b7280; font-size: 0.72rem;">استيراد المنتجات والبانر والخصومات كمسودة لبدء العمل عليها سريعاً</small>
+          </div>
+          <label class="pf-switch">
+            <input type="checkbox" id="copyCurrentYearSettings" checked>
+            <span class="pf-slider"></span>
+          </label>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn-action btn-action-revert" data-close-modal="newYearModal">إلغاء</button>
+          <button type="button" class="btn-action btn-action-publish" id="btnConfirmCreateYear">إنشاء السنة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 3: Publish Confirmation Summary -->
+    <div class="pf-modal-backdrop" id="publishModal">
+      <div class="pf-modal-dialog">
+        <div class="pf-modal-header">
+          <h3><i class="fas fa-shield-alt" style="color: #059669;"></i> تأكيد اعتماد ونشر حملة Pink Friday</h3>
+          <button type="button" class="pf-modal-close" data-close-modal="publishModal">&times;</button>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #374151; line-height: 1.6;">
+          أنتِ على وشك اعتماد المسودة وتطبيقها مباشرة على زوار المتجر وعمليات الدفع في السيرفر:
+        </p>
+
+        <div style="background: #f9fafb; padding: 14px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 16px 0; font-size: 0.82rem; line-height: 1.8;">
+          <div><strong>سنة الحملة:</strong> <span id="pubModalYear">2026</span></div>
+          <div><strong>الحالة بعد النشر:</strong> <span id="pubModalStatus">...</span></div>
+          <div><strong>الفترة الزمنية:</strong> <span id="pubModalDates">...</span></div>
+          <div><strong>عدد العروض الصالحة:</strong> <span id="pubModalValidCount">0</span> من إجمالي <span id="pubModalTotalCount">0</span></div>
+          <div><strong>إمكانية ظهورها للعملاء:</strong> <span id="pubModalVisibility">...</span></div>
+        </div>
+
+        <p style="font-size: 0.78rem; color: #dc2626;">
+          <i class="fas fa-exclamation-triangle"></i>
+          سيتم حفظ نسخة تاريخية في سجل التدقيق وإلزام السيرفر بالأسعار الجديدة فوراً لمنع التلاعب.
+        </p>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn-action btn-action-revert" data-close-modal="publishModal">تراجع</button>
+          <button type="button" class="btn-action btn-action-publish" id="btnConfirmPublish">نشر الحملة الآن</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 4: Interactive Multi-Device Campaign Preview -->
+    <div class="pf-modal-backdrop" id="previewModal">
+      <div class="pf-modal-dialog pf-preview-modal-dialog">
+        <div class="pf-preview-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <strong style="font-size: 0.95rem;"><i class="fas fa-eye"></i> معاينة الحملة التفاعلية</strong>
+            <span style="font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.2);">بيئة محاكاة معزولة</span>
+          </div>
+
+          <!-- Device Selector -->
+          <div class="preview-device-toggles">
+            <button type="button" class="btn-device active" data-device="desktop"><i class="fas fa-desktop"></i> حاسوب (1200px)</button>
+            <button type="button" class="btn-device" data-device="tablet"><i class="fas fa-tablet-alt"></i> تابلت (768px)</button>
+            <button type="button" class="btn-device" data-device="mobile"><i class="fas fa-mobile-alt"></i> جوال (390px)</button>
+          </div>
+
+          <!-- View Selector -->
+          <div class="preview-view-toggles">
+            <button type="button" class="btn-view-tab active" data-view="announcement">شريط الإعلانات</button>
+            <button type="button" class="btn-view-tab" data-view="home">بانر الرئيسية</button>
+            <button type="button" class="btn-view-tab" data-view="landing">صفحة الحملة</button>
+            <button type="button" class="btn-view-tab" data-view="product">بطاقة المنتج</button>
+            <button type="button" class="btn-view-tab" data-view="cart">ملخص السلة</button>
+          </div>
+
+          <button type="button" class="pf-modal-close" style="color: #ffffff;" data-close-modal="previewModal">&times;</button>
+        </div>
+
+        <div class="pf-preview-stage">
+          <div class="pf-preview-frame desktop" id="previewFrameContainer">
+            <!-- Simulated View Render Target -->
+            <div id="previewCanvasContent" style="min-height: 380px; padding: 20px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="pf-toast" id="pfToast">
+      <i class="fas fa-info-circle"></i>
+      <span id="toastMsg">تم تنفيذ الإجراء بنجاح</span>
+    </div>
+  </main>
+</BaseLayout>
+
+<script is:inline>
+  (function() {
+    let currentYear = 2026;
+    let allYears = [2026];
+    let draftCampaign = null;
+    let publishedCampaign = null;
+    let catalogProducts = [];
+    let isDraftDirty = false;
+
+    // Toast helper
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('pfToast');
+      const msgEl = document.getElementById('toastMsg');
+      if (!toast || !msgEl) return;
+      msgEl.textContent = msg;
+      toast.className = `pf-toast show ${type}`;
+      setTimeout(() => {
+        toast.className = 'pf-toast';
+      }, 4000);
+    }
+
+    // Modal helpers
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.style.display = 'flex';
+    }
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.style.display = 'none';
+    }
+
+    document.querySelectorAll('[data-close-modal]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        closeModal(btn.getAttribute('data-close-modal'));
+      });
+    });
+
+    // Helper: Firebase Auth ID Token for API Calls
+    async function getAuthToken() {
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      if (!auth || !auth.currentUser) return '';
+      return await auth.currentUser.getIdToken();
+    }
+
+    // Strict Admin Auth Guard
+    function initAuthGuard() {
+      function check(user) {
+        if (!user) {
+          window.location.href = '/login';
+          return;
+        }
+        if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+          window.location.replace('/');
+          return;
+        }
+        loadAllData();
+      }
+
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      if (auth && typeof auth.onAuthStateChanged === 'function') {
+        auth.onAuthStateChanged(check);
+      } else {
+        let attempts = 0;
+        const interval = setInterval(() => {
+          attempts++;
+          const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+          if (a && typeof a.onAuthStateChanged === 'function') {
+            clearInterval(interval);
+            a.onAuthStateChanged(check);
+          } else if (attempts > 30) {
+            clearInterval(interval);
+            window.location.href = '/login';
+          }
+        }, 100);
+      }
+    }
+
+    // Load Data via API & RTDB
+    async function loadAllData() {
+      try {
+        const token = await getAuthToken();
+        const res = await fetch(`/api/pink-friday/admin?year=${currentYear}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = '/login';
+          return;
+        }
+
+        const data = await res.json();
+        if (data.success) {
+          draftCampaign = data.draft;
+          publishedCampaign = data.published;
+          allYears = data.allYears || [currentYear];
+
+          populateYearSelector();
+          syncFormWithDraft();
+          updateStatusAndKPIs();
+        }
+
+        // Fetch products catalog from RTDB for selection
+        const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        if (db) {
+          db.ref('products').once('value', snap => {
+            catalogProducts = [];
+            if (snap.exists()) {
+              snap.forEach(c => {
+                catalogProducts.push({ id: c.key, ...c.val() });
+              });
+            }
+            renderOffersTable();
+          });
+        }
+      } catch (err) {
+        console.error('Error loading Pink Friday data:', err);
+        showToast('تعذر تحميل بيانات الحملة من السيرفر', 'error');
+      }
+    }
+
+    function populateYearSelector() {
+      const sel = document.getElementById('yearSelector');
+      if (!sel) return;
+      sel.innerHTML = '';
+      allYears.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (Number(y) === Number(currentYear)) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      document.getElementById('headerYearBadge').textContent = currentYear;
+    }
+
+    document.getElementById('yearSelector')?.addEventListener('change', (e) => {
+      currentYear = parseInt(e.target.value, 10);
+      loadAllData();
+    });
+
+    // Populate Form from draftCampaign
+    function syncFormWithDraft() {
+      if (!draftCampaign) return;
+
+      const enabledToggle = document.getElementById('campaignEnabledToggle');
+      if (enabledToggle) enabledToggle.checked = draftCampaign.enabled !== false;
+
+      const startDateInput = document.getElementById('campaignStartDate');
+      if (startDateInput && draftCampaign.startDate) {
+        startDateInput.value = draftCampaign.startDate.slice(0, 16);
+      }
+
+      const endDateInput = document.getElementById('campaignEndDate');
+      if (endDateInput && draftCampaign.endDate) {
+        endDateInput.value = draftCampaign.endDate.slice(0, 16);
+      }
+
+      const visuals = draftCampaign.visuals || {};
+      const headlineInput = document.getElementById('visualHeadline');
+      if (headlineInput) headlineInput.value = visuals.headline || 'عروض Pink Friday الحصرية';
+
+      const subtitleInput = document.getElementById('visualSubtitle');
+      if (subtitleInput) subtitleInput.value = visuals.subtitle || '';
+
+      const heroImgInput = document.getElementById('visualHeroImg');
+      if (heroImgInput) heroImgInput.value = visuals.heroImageUrl || '';
+
+      const heroPreviewImg = document.getElementById('heroPreviewImg');
+      if (heroPreviewImg) {
+        heroPreviewImg.src = visuals.heroImageUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
+      }
+
+      const bannerPos = document.getElementById('visualBannerPosition');
+      if (bannerPos) bannerPos.value = visuals.bannerPosition || 'center';
+
+      const ctaInput = document.getElementById('visualCtaText');
+      if (ctaInput) ctaInput.value = visuals.ctaText || 'اكتشفي عروض Pink Friday';
+
+      const badgeInput = document.getElementById('visualBadgeText');
+      if (badgeInput) badgeInput.value = visuals.badgeText || 'Pink Friday';
+
+      renderOffersTable();
+    }
+
+    // Read form state into draftCampaign
+    function updateDraftFromForm() {
+      if (!draftCampaign) return;
+
+      draftCampaign.enabled = document.getElementById('campaignEnabledToggle').checked;
+      const sVal = document.getElementById('campaignStartDate').value;
+      const eVal = document.getElementById('campaignEndDate').value;
+      if (sVal) draftCampaign.startDate = sVal.length === 16 ? sVal + ':00' : sVal;
+      if (eVal) draftCampaign.endDate = eVal.length === 16 ? eVal + ':00' : eVal;
+
+      draftCampaign.visuals = {
+        headline: document.getElementById('visualHeadline').value.trim(),
+        subtitle: document.getElementById('visualSubtitle').value.trim(),
+        heroImageUrl: document.getElementById('visualHeroImg').value.trim(),
+        bannerPosition: document.getElementById('visualBannerPosition').value,
+        ctaText: document.getElementById('visualCtaText').value.trim(),
+        badgeText: document.getElementById('visualBadgeText').value.trim()
+      };
+
+      isDraftDirty = true;
+      updateStatusAndKPIs();
+    }
+
+    // Listen to form input changes
+    ['campaignEnabledToggle', 'campaignStartDate', 'campaignEndDate', 'visualHeadline', 'visualSubtitle', 'visualHeroImg', 'visualBannerPosition', 'visualCtaText', 'visualBadgeText'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', updateDraftFromForm);
+      document.getElementById(id)?.addEventListener('change', updateDraftFromForm);
+    });
+
+    document.getElementById('visualHeroImg')?.addEventListener('input', (e) => {
+      const img = document.getElementById('heroPreviewImg');
+      if (img) img.src = e.target.value.trim() || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
+    });
+
+    // Render Offers Table
+    function renderOffersTable() {
+      const tbody = document.getElementById('offersTableBody');
+      if (!tbody) return;
+
+      if (!draftCampaign || !draftCampaign.offers || draftCampaign.offers.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
+              <i class="fas fa-tag" style="font-size: 2rem; color: #d1d5db; display: block; margin-bottom: 10px;"></i>
+              لا توجد منتجات مضافة للحملة بعد. انقري على "إضافة منتج من الكتالوج" للبدء.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      draftCampaign.offers.forEach((offer, idx) => {
+        const prod = catalogProducts.find(p => String(p.id) === String(offer.productId));
+        const basePrice = prod ? (parseFloat(prod.price) || 0) : 0;
+        const disc = parseFloat(offer.discountPercentage) || 0;
+        const campPrice = Math.round(basePrice * (1 - disc / 100));
+        const saving = Math.max(0, basePrice - campPrice);
+
+        // Validity check
+        let statusBadge = '<span class="offer-status-badge valid">صالح</span>';
+        if (!prod) {
+          statusBadge = '<span class="offer-status-badge error" title="المنتج غير موجود في الكتالوج">مفقود</span>';
+        } else if (prod.isHidden) {
+          statusBadge = '<span class="offer-status-badge warning" title="المنتج مخفي في المتجر">مخفي</span>';
+        } else if (prod.isSoldOut) {
+          statusBadge = '<span class="offer-status-badge warning" title="المنتج نافذ الكمية">نفذ</span>';
+        } else if (disc <= 0 || disc >= 100) {
+          statusBadge = '<span class="offer-status-badge error" title="نسبة الخصم غير صالحة">خصم غير صالح</span>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div class="prod-cell">
+              <img src="${prod && prod.image ? prod.image : 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" class="prod-thumb" alt="">
+              <div>
+                <div class="prod-meta-title">${prod ? prod.name : 'منتج غير معروف'}</div>
+                <div class="prod-meta-id">ID: ${offer.productId}</div>
+              </div>
+            </div>
+          </td>
+          <td><strong>${basePrice}</strong> ج.م</td>
+          <td>
+            <input type="number" min="1" max="99" value="${disc}" class="discount-input" data-offer-idx="${idx}" onchange="window.updateOfferDiscount(${idx}, this.value)"> %
+          </td>
+          <td>
+            <span class="price-calc">${campPrice} ج.م</span>
+            <div class="price-old">${basePrice} ج.م</div>
+          </td>
+          <td><strong style="color: #d97706;">${saving}</strong> ج.م</td>
+          <td>
+            <input type="text" value="${offer.badgeText || 'Pink Friday'}" style="width: 90px; padding: 4px 6px; font-size: 0.75rem; border: 1px solid #d1d5db; border-radius: 4px;" data-offer-idx="${idx}" onchange="window.updateOfferBadge(${idx}, this.value)">
+          </td>
+          <td>${statusBadge}</td>
+          <td>
+            <button type="button" class="btn-del-offer" title="إزالة من الحملة" onclick="window.removeOfferFromCampaign(${idx})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Global Offer Operations
+    window.updateOfferDiscount = function(idx, val) {
+      if (!draftCampaign || !draftCampaign.offers[idx]) return;
+      const num = Math.min(99, Math.max(1, parseInt(val, 10) || 10));
+      draftCampaign.offers[idx].discountPercentage = num;
+      isDraftDirty = true;
+      renderOffersTable();
+      updateStatusAndKPIs();
+    };
+
+    window.updateOfferBadge = function(idx, val) {
+      if (!draftCampaign || !draftCampaign.offers[idx]) return;
+      draftCampaign.offers[idx].badgeText = (val || '').trim();
+      isDraftDirty = true;
+    };
+
+    window.removeOfferFromCampaign = function(idx) {
+      if (!draftCampaign || !draftCampaign.offers[idx]) return;
+      draftCampaign.offers.splice(idx, 1);
+      isDraftDirty = true;
+      renderOffersTable();
+      updateStatusAndKPIs();
+      showToast('تمت إزالة المنتج من عروض الحملة');
+    };
+
+    // Calculate Campaign Status & KPIs
+    function updateStatusAndKPIs() {
+      if (!draftCampaign) return;
+
+      const now = new Date();
+      const start = draftCampaign.startDate ? new Date(draftCampaign.startDate) : null;
+      const end = draftCampaign.endDate ? new Date(draftCampaign.endDate) : null;
+
+      let status = 'disabled';
+      let statusLabel = 'غير مفعلة';
+      let statusClass = 'disabled';
+
+      if (!draftCampaign.enabled) {
+        status = 'disabled';
+        statusLabel = 'غير مفعلة';
+        statusClass = 'disabled';
+      } else if (start && now < start) {
+        status = 'scheduled';
+        statusLabel = 'مجدولة (تبدأ قريباً)';
+        statusClass = 'scheduled';
+      } else if (end && now > end) {
+        status = 'ended';
+        statusLabel = 'انتهت الحملة';
+        statusClass = 'ended';
+      } else {
+        status = 'active';
+        statusLabel = 'مفعلة ونشطة';
+        statusClass = 'active';
+      }
+
+      const statusPill = document.getElementById('campaignStatusPill');
+      const statusText = document.getElementById('campaignStatusText');
+      if (statusPill && statusText) {
+        statusPill.className = `status-pill ${statusClass}`;
+        statusText.textContent = statusLabel;
+      }
+
+      // KPIs
+      const offers = draftCampaign.offers || [];
+      const totalOffers = offers.length;
+      let validOffers = 0;
+      let totalDiscount = 0;
+      let maxSaving = 0;
+
+      offers.forEach(o => {
+        const prod = catalogProducts.find(p => String(p.id) === String(o.productId));
+        const disc = parseFloat(o.discountPercentage) || 0;
+        if (prod && !prod.isHidden && !prod.isSoldOut && disc > 0 && disc < 100) {
+          validOffers++;
+          totalDiscount += disc;
+          const basePrice = parseFloat(prod.price) || 0;
+          const campPrice = Math.round(basePrice * (1 - disc / 100));
+          const saving = basePrice - campPrice;
+          if (saving > maxSaving) maxSaving = saving;
+        }
+      });
+
+      document.getElementById('statTotalOffers').textContent = totalOffers;
+      document.getElementById('statValidOffers').textContent = validOffers;
+      document.getElementById('statAvgDiscount').textContent = validOffers > 0 ? Math.round(totalDiscount / validOffers) + '%' : '0%';
+      document.getElementById('statMaxSaving').textContent = maxSaving + ' ج.م';
+
+      // Last published info
+      const lpEl = document.getElementById('lastPublishedText');
+      if (lpEl) {
+        if (publishedCampaign && publishedCampaign.updatedAt) {
+          const d = new Date(publishedCampaign.updatedAt);
+          lpEl.textContent = `آخر اعتماد: ${d.toLocaleDateString('ar-EG')} ${d.toLocaleTimeString('ar-EG')}`;
+        } else {
+          lpEl.textContent = 'لم يتم النشر بعد';
+        }
+      }
+    }
+
+    // Modal: Catalog Selection Search
+    document.getElementById('btnOpenAddProductModal')?.addEventListener('click', () => {
+      renderCatalogSearch();
+      openModal('addProductModal');
+    });
+
+    function renderCatalogSearch(filter = '') {
+      const list = document.getElementById('catalogListItems');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const query = (filter || '').toLowerCase().trim();
+      const existingIds = new Set((draftCampaign?.offers || []).map(o => String(o.productId)));
+
+      const matches = catalogProducts.filter(p => {
+        if (!query) return true;
+        const nameMatch = (p.name || '').toLowerCase().includes(query);
+        const idMatch = String(p.id).toLowerCase().includes(query);
+        return nameMatch || idMatch;
+      });
+
+      if (matches.length === 0) {
+        list.innerHTML = '<div style="padding: 24px; text-align: center; color: #9ca3af;">لا توجد منتجات مطابقة في الكتالوج</div>';
+        return;
+      }
+
+      matches.forEach(p => {
+        const isAdded = existingIds.has(String(p.id));
+        const div = document.createElement('div');
+        div.className = `catalog-item ${isAdded ? 'already-added' : ''}`;
+        div.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="${p.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover;">
+            <div>
+              <strong style="font-size: 0.82rem; color: #111827;">${p.name || ''}</strong>
+              <div style="font-size: 0.72rem; color: #6b7280;">السعر: ${p.price || 0} ج.م | ${p.category || 'عام'}</div>
+            </div>
+          </div>
+          <div>
+            ${isAdded ? '<span style="font-size: 0.75rem; color: #6b7280;">مضاف مسبقاً</span>' : '<button type="button" class="btn-action btn-action-publish" style="padding: 4px 10px; font-size: 0.75rem;">+ إضافة</button>'}
+          </div>
+        `;
+
+        if (!isAdded) {
+          div.addEventListener('click', () => {
+            if (!draftCampaign.offers) draftCampaign.offers = [];
+            draftCampaign.offers.push({
+              productId: String(p.id),
+              discountPercentage: 20,
+              badgeText: 'Pink Friday',
+              active: true
+            });
+            isDraftDirty = true;
+            renderOffersTable();
+            updateStatusAndKPIs();
+            closeModal('addProductModal');
+            showToast(`تمت إضافة "${p.name}" إلى عروض الحملة بنسبة 20%`);
+          });
+        }
+        list.appendChild(div);
+      });
+    }
+
+    document.getElementById('catalogSearchInput')?.addEventListener('input', (e) => {
+      renderCatalogSearch(e.target.value);
+    });
+
+    // Save Draft
+    document.getElementById('btnSaveDraft')?.addEventListener('click', async () => {
+      updateDraftFromForm();
+      const btn = document.getElementById('btnSaveDraft');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+      btn.disabled = true;
+
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/pink-friday/admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            action: 'save_draft',
+            year: currentYear,
+            campaignData: draftCampaign
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          isDraftDirty = false;
+          showToast('تم حفظ إعدادات المسودة بنجاح في السيرفر');
+        } else {
+          showToast(data.message || 'فشل حفظ المسودة', 'error');
+        }
+      } catch (err) {
+        showToast('حدث خطأ أثناء الاتصال بالسيرفر', 'error');
+      } finally {
+        btn.innerHTML = '<i class="fas fa-save"></i> <span>حفظ كمسودة</span>';
+        btn.disabled = false;
+      }
+    });
+
+    // Restore Last Published
+    document.getElementById('btnRestorePublished')?.addEventListener('click', async () => {
+      if (!confirm('هل أنتِ متأكدة من إلغاء تعديلات المسودة واستعادة آخر نسخة معتمدة ومنشورة؟')) return;
+      const btn = document.getElementById('btnRestorePublished');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاستعادة...';
+      btn.disabled = true;
+
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/pink-friday/admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            action: 'restore_published',
+            year: currentYear
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          draftCampaign = data.campaign;
+          syncFormWithDraft();
+          updateStatusAndKPIs();
+          showToast('تمت استعادة آخر نسخة معتمدة بنجاح');
+        } else {
+          showToast(data.message || 'لا توجد نسخة منشورة للاستعادة', 'error');
+        }
+      } catch (err) {
+        showToast('تعذر استعادة النسخة المنشورة', 'error');
+      } finally {
+        btn.innerHTML = '<i class="fas fa-undo"></i> <span>استعادة المنشور</span>';
+        btn.disabled = false;
+      }
+    });
+
+    // Publish Workflow & Modal
+    document.getElementById('btnOpenPublishModal')?.addEventListener('click', () => {
+      updateDraftFromForm();
+
+      // Check dates
+      const s = new Date(draftCampaign.startDate);
+      const e = new Date(draftCampaign.endDate);
+      if (isNaN(s.getTime()) || isNaN(e.getTime()) || e <= s) {
+        alert('خطأ: يرجى التأكد من صحة تواريخ البداية والنهاية (يجب أن يكون تاريخ النهاية بعد البداية).');
+        return;
+      }
+
+      // Check valid offers
+      const validCount = (draftCampaign.offers || []).filter(o => {
+        const p = catalogProducts.find(item => String(item.id) === String(o.productId));
+        return p && !p.isHidden && !p.isSoldOut && o.discountPercentage > 0;
+      }).length;
+
+      document.getElementById('pubModalYear').textContent = currentYear;
+      document.getElementById('pubModalStatus').textContent = draftCampaign.enabled ? 'مفعلة' : 'غير مفعلة';
+      document.getElementById('pubModalDates').textContent = `من ${draftCampaign.startDate} إلى ${draftCampaign.endDate}`;
+      document.getElementById('pubModalValidCount').textContent = validCount;
+      document.getElementById('pubModalTotalCount').textContent = (draftCampaign.offers || []).length;
+      document.getElementById('pubModalVisibility').textContent = (draftCampaign.enabled && validCount > 0) ? 'ستظهر فوراً للعملاء في المتجر' : 'ستكون مخفية عن العملاء لعدم وجود عروض صالحة أو لتعطيلها';
+
+      openModal('publishModal');
+    });
+
+    document.getElementById('btnConfirmPublish')?.addEventListener('click', async () => {
+      const btn = document.getElementById('btnConfirmPublish');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر والاعتماد...';
+      btn.disabled = true;
+
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/pink-friday/admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            action: 'publish',
+            year: currentYear,
+            campaignData: draftCampaign
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          publishedCampaign = data.campaign;
+          closeModal('publishModal');
+          updateStatusAndKPIs();
+          showToast('تهانينا! تم اعتماد ونشر حملة Pink Friday بنجاح');
+        } else {
+          showToast(data.message || 'فشل نشر الحملة', 'error');
+        }
+      } catch (err) {
+        showToast('حدث خطأ أثناء اعتماد النشر', 'error');
+      } finally {
+        btn.innerHTML = 'نشر الحملة الآن';
+        btn.disabled = false;
+      }
+    });
+
+    // New Year Modal Workflow
+    document.getElementById('btnOpenNewYearModal')?.addEventListener('click', () => {
+      document.getElementById('newYearInput').value = currentYear + 1;
+      openModal('newYearModal');
+    });
+
+    document.getElementById('btnConfirmCreateYear')?.addEventListener('click', async () => {
+      const yVal = parseInt(document.getElementById('newYearInput').value, 10);
+      if (!yVal || yVal < 2026 || yVal > 2050) {
+        alert('يرجى إدخال سنة صالحة بين 2026 و 2050.');
+        return;
+      }
+
+      const copySettings = document.getElementById('copyCurrentYearSettings').checked;
+      const btn = document.getElementById('btnConfirmCreateYear');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+      btn.disabled = true;
+
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/pink-friday/admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            action: 'create_year',
+            year: yVal,
+            copyFromYear: copySettings ? currentYear : undefined
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          closeModal('newYearModal');
+          currentYear = yVal;
+          if (!allYears.includes(yVal)) allYears.push(yVal);
+          allYears.sort((a, b) => b - a);
+          populateYearSelector();
+          draftCampaign = data.campaign;
+          publishedCampaign = null;
+          syncFormWithDraft();
+          updateStatusAndKPIs();
+          showToast(`تم إنشاء وتفعيل مسودة سنة ${yVal} بنجاح`);
+        } else {
+          showToast(data.message || 'فشل إنشاء السنة الجديدة', 'error');
+        }
+      } catch (err) {
+        showToast('تعذر إنشاء السنة الجديدة', 'error');
+      } finally {
+        btn.innerHTML = 'إنشاء السنة';
+        btn.disabled = false;
+      }
+    });
+
+    // Multi-Device Preview Engine
+    let currentPreviewDevice = 'desktop';
+    let currentPreviewView = 'announcement';
+
+    document.getElementById('btnOpenPreview')?.addEventListener('click', () => {
+      updateDraftFromForm();
+      renderPreview();
+      openModal('previewModal');
+    });
+
+    document.querySelectorAll('.btn-device').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.btn-device').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        currentPreviewDevice = b.getAttribute('data-device');
+        const frame = document.getElementById('previewFrameContainer');
+        if (frame) {
+          frame.className = `pf-preview-frame ${currentPreviewDevice}`;
+        }
+      });
+    });
+
+    document.querySelectorAll('.btn-view-tab').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.btn-view-tab').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        currentPreviewView = b.getAttribute('data-view');
+        renderPreview();
+      });
+    });
+
+    function renderPreview() {
+      const container = document.getElementById('previewCanvasContent');
+      if (!container || !draftCampaign) return;
+
+      const visuals = draftCampaign.visuals || {};
+      const headline = visuals.headline || 'عروض Pink Friday الحصرية من داندي';
+      const subtitle = visuals.subtitle || 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.';
+      const cta = visuals.ctaText || 'اكتشفي عروض Pink Friday';
+      const badge = visuals.badgeText || 'Pink Friday';
+      const heroImg = visuals.heroImageUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
+
+      const validOffers = (draftCampaign.offers || []).map(o => {
+        const prod = catalogProducts.find(p => String(p.id) === String(o.productId));
+        const base = prod ? (parseFloat(prod.price) || 0) : 0;
+        const disc = parseFloat(o.discountPercentage) || 0;
+        const camp = Math.round(base * (1 - disc / 100));
+        return {
+          prod,
+          base,
+          disc,
+          camp,
+          badge: o.badgeText || badge
+        };
+      }).filter(x => x.prod);
+
+      if (currentPreviewView === 'announcement') {
+        container.innerHTML = `
+          <div style="background: linear-gradient(90deg, #d98d99 0%, #b86b77 100%); color: #fff; padding: 10px 16px; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 0.85rem; text-align: center;">
+            <span>✨</span>
+            <span>Pink Friday من داندي — اكتشفي العروض الخاصة الآن</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 20px; font-size: 0.75rem;">عرض المنتجات &larr;</span>
+          </div>
+          <div style="margin-top: 24px; padding: 20px; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db; text-align: center; color: #6b7280; font-size: 0.85rem;">
+            هذا الشريط يظهر في أعلى كافة صفحات المتجر كشريط إعلان ترويجي للحملة طوال فترة الفعالية.
+          </div>
+        `;
+      } else if (currentPreviewView === 'home') {
+        container.innerHTML = `
+          <div style="background: #ffffff; border-radius: 12px; border: 1px solid #fce7f3; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="height: 180px; position: relative;">
+              <img src="${heroImg}" style="width: 100%; height: 100%; object-fit: cover; object-position: ${visuals.bannerPosition || 'center'};">
+              <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%);"></div>
+              <div style="position: absolute; bottom: 16px; right: 20px; color: #fff;">
+                <span style="background: #be185d; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; display: inline-block;">Pink Friday Event</span>
+                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800;">${headline}</h3>
+              </div>
+            </div>
+            <div style="padding: 20px; text-align: right;">
+              <p style="margin: 0 0 16px 0; font-size: 0.88rem; color: #4b5563; line-height: 1.6;">${subtitle}</p>
+              <button style="background: #be185d; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                ${cta} &larr;
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentPreviewView === 'landing') {
+        let gridHtml = '';
+        validOffers.forEach(item => {
+          gridHtml += `
+            <div style="background: #fff; border: 1px solid #fbcfe8; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+              <div style="height: 140px; position: relative; background: #fdf2f8;">
+                <span style="position: absolute; top: 8px; right: 8px; background: #be185d; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">-${item.disc}%</span>
+                <img src="${item.prod.image || ''}" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div style="padding: 12px; display: flex; flex-direction: column; flex: 1;">
+                <h4 style="margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 700; color: #111827;">${item.prod.name}</h4>
+                <div style="margin-top: auto; display: flex; align-items: baseline; gap: 8px;">
+                  <strong style="color: #be185d; font-size: 1rem;">${item.camp} EGP</strong>
+                  <span style="font-size: 0.75rem; text-decoration: line-through; color: #9ca3af;">${item.base} EGP</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = `
+          <div style="text-align: center; margin-bottom: 24px; padding: 20px; background: #fdf2f8; border-radius: 10px;">
+            <span style="color: #be185d; font-weight: 800; font-size: 0.78rem;">حملة الجمال السنوية</span>
+            <h2 style="margin: 6px 0; font-size: 1.4rem; font-weight: 800; color: #111827;">${headline}</h2>
+            <p style="margin: 0; font-size: 0.85rem; color: #4b5563;">${subtitle}</p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px;">
+            ${gridHtml || '<p style="grid-column: 1/-1; text-align: center; color: #9ca3af;">لم يتم إضافة منتجات بعد</p>'}
+          </div>
+        `;
+      } else if (currentPreviewView === 'product') {
+        const item = validOffers[0] || { prod: { name: 'كريم بديل الليزر 60 مل' }, base: 350, camp: 280, disc: 20 };
+        container.innerHTML = `
+          <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; background: #fff; max-width: 400px; margin: 0 auto;">
+            <div style="display: inline-block; background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; font-weight: 800; font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; margin-bottom: 12px;">
+              ✨ عرض حصري: Pink Friday (-${item.disc}%)
+            </div>
+            <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 800; color: #111827;">${item.prod.name}</h3>
+            <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px;">
+              <span style="font-size: 1.4rem; font-weight: 800; color: #be185d;">${item.camp} جنيه</span>
+              <span style="font-size: 0.9rem; text-decoration: line-through; color: #9ca3af;">${item.base} جنيه</span>
+              <span style="font-size: 0.75rem; color: #047857; font-weight: 700; background: #ecfdf5; padding: 2px 6px; border-radius: 4px;">وفّري ${item.base - item.camp} جنيه</span>
+            </div>
+            <button style="width: 100%; background: #111827; color: #fff; padding: 12px; border-radius: 6px; font-weight: 700; border: none; cursor: not-allowed; opacity: 0.8;" disabled>
+              إضافة للسلة (معاينة فقط)
+            </button>
+          </div>
+        `;
+      } else if (currentPreviewView === 'cart') {
+        container.innerHTML = `
+          <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; max-width: 440px; margin: 0 auto;">
+            <h4 style="margin: 0 0 14px 0; font-size: 1rem; font-weight: 800; color: #111827;">ملخص الطلب (Checkout Simulation)</h4>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; color: #4b5563;">
+              <span>إجمالي المنتجات قبل الخصم:</span>
+              <span>750 EGP</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; color: #be185d; font-weight: 700;">
+              <span>وفر عروض Pink Friday:</span>
+              <span>- 150 EGP</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; color: #059669;">
+              <span>الشحن (توصيل مجاني):</span>
+              <span>0 EGP</span>
+            </div>
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; color: #111827;">
+              <span>المجموع النهائي:</span>
+              <span>600 EGP</span>
+            </div>
+            <div style="margin-top: 16px; background: #ecfdf5; color: #065f46; font-size: 0.78rem; padding: 8px 12px; border-radius: 6px; border: 1px solid #a7f3d0; text-align: center;">
+              <i class="fas fa-shield-alt"></i> تم تأكيد وتطبيق تسعير Pink Friday من السيرفر مباشرة
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Startup
+    initAuthGuard();
+  })();
+</script>

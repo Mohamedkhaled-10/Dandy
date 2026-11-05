@@ -3,6 +3,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import DashboardNav from '../components/DashboardNav.astro';
+import { getPublishedPinkFridayCampaign } from '../utils/pink-friday-server.ts';
 
 export interface Props {
   title?: string;
@@ -35,6 +36,7 @@ const defaultCanonical = `https://dandy-ebon.vercel.app${pathname || '/'}`;
 const resolvedCanonical = canonical || defaultCanonical;
 
 const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU";
+const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
 ---
 
 <!DOCTYPE html>
@@ -78,6 +80,10 @@ const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmW
   <!-- Dandy Variants & Slugs Utilities -->
   <script is:inline src="/assets/js/variants.js"></script>
   <script is:inline src="/assets/js/product-slugs.js"></script>
+  <script is:inline define:vars={{ pinkFridayConfig: pinkFridayCampaign }}>
+    window.__PINK_FRIDAY_CONFIG = pinkFridayConfig;
+  </script>
+  <script is:inline src="/assets/js/pink-friday.js"></script>
 
   <!-- Central Firebase Initialization -->
   <script is:inline define:vars={{ firebaseApiKey }}>

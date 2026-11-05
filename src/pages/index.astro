@@ -1,5 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../utils/pink-friday-server';
+const publishedPfCampaign = await getPublishedPinkFridayCampaign();
+const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
 ---
 
 <BaseLayout
@@ -48,6 +51,77 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </script>
 
     <style is:global>
+      /* Temporary Pink Friday Home Banner Styles */
+      .pf-home-banner {
+        padding: 24px 0 36px;
+      }
+      .pf-home-banner-card {
+        background: linear-gradient(135deg, #181416 0%, #2c1a25 50%, #150f13 100%);
+        border: 1px solid rgba(254, 93, 159, 0.35);
+        border-radius: 20px;
+        padding: 42px 32px;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(254, 93, 159, 0.12);
+      }
+      .pf-home-banner-content {
+        position: relative;
+        z-index: 2;
+        max-width: 680px;
+        margin: 0 auto;
+      }
+      .pf-home-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(254, 93, 159, 0.15);
+        border: 1px solid rgba(254, 93, 159, 0.4);
+        color: #fe5d9f;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 14px;
+      }
+      .pf-home-pill-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #fe5d9f;
+      }
+      .pf-home-headline {
+        font-size: clamp(1.4rem, 3.5vw, 2.1rem);
+        color: #ffffff;
+        font-weight: 700;
+        margin: 0 0 10px;
+        line-height: 1.4;
+      }
+      .pf-home-subtext {
+        color: #ddd0d7;
+        font-size: 0.98rem;
+        margin: 0 0 24px;
+        line-height: 1.6;
+      }
+      .pf-home-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        background-color: #fe5d9f;
+        color: #ffffff;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(254, 93, 159, 0.35);
+      }
+      .pf-home-cta-btn:hover {
+        background-color: #e64a8b;
+        transform: translateY(-2px);
+      }
+
       /* ==========================================================================
          CINEMATIC HOMEPAGE EXPERIENCE & BEAUTY EDITORIAL STYLES
          ========================================================================== */
@@ -1498,6 +1572,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
     </section>
+
+    {showPfSection && (
+      <section class="pf-home-banner scroll-reveal-up" id="sec-pink-friday-banner" aria-label="حملة Pink Friday">
+        <div class="home-container">
+          <div class="pf-home-banner-card">
+            <div class="pf-home-banner-content">
+              <div class="pf-home-pill">
+                <span class="pf-home-pill-dot"></span>
+                <span>Pink Friday Event</span>
+              </div>
+              <h2 class="pf-home-headline">{publishedPfCampaign?.visuals?.headline || "عروض Pink Friday الحصرية من داندي"}</h2>
+              <p class="pf-home-subtext">
+                {publishedPfCampaign?.visuals?.subtitle || "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."}
+              </p>
+              <div class="pf-home-cta-wrap">
+                <a href="/pink-friday" class="pf-home-cta-btn">
+                  <span>{publishedPfCampaign?.visuals?.ctaText || "اكتشفي عروض Pink Friday"}</span>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )}
 
     <!-- 3. PRIMARY PRODUCT SECTION (Special Offers Entrance) -->
     <section class="home-section" id="primary-products-section" data-studio-section="offers" data-studio-title="العروض الخاصة (القسم الأول)" data-reveal="offers" aria-label="المنتجات المميزة">

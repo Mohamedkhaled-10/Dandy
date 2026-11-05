@@ -1,0 +1,707 @@
+---
+// src/pages/pink-friday.astro
+// Dedicated Campaign Page for Dandy Cosmetics Pink Friday Event
+export const prerender = false;
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getAllProducts, SITE_URL, type Product } from '../utils/products';
+import {
+  getPublishedPinkFridayCampaign,
+  getCampaignStatus,
+  calculatePinkFridayPricing,
+  validateOffer,
+  type PinkFridayCampaign
+} from '../utils/pink-friday-server';
+
+const campaign: PinkFridayCampaign = await getPublishedPinkFridayCampaign();
+const status = getCampaignStatus(campaign);
+const allProducts = await getAllProducts();
+
+interface ValidCampaignItem {
+  product: Product;
+  regularPrice: number;
+  campaignPrice: number;
+  discountAmount: number;
+  discountPercentage: number;
+  badgeText: string;
+}
+
+const validCampaignItems: ValidCampaignItem[] = [];
+
+if (status === 'active' && campaign.offers) {
+  for (const offer of campaign.offers) {
+    if (!offer.active) continue;
+    const prod = allProducts.find(p => String(p.id) === String(offer.productId));
+    if (!prod) continue;
+
+    const validation = validateOffer(offer, prod, campaign);
+    if (validation.isValid) {
+      const pricing = calculatePinkFridayPricing(prod, campaign);
+      if (pricing.isEligible) {
+        validCampaignItems.push({
+          product: prod,
+          regularPrice: pricing.regularPrice,
+          campaignPrice: pricing.campaignPrice,
+          discountAmount: pricing.discountAmount,
+          discountPercentage: pricing.discountPercentage,
+          badgeText: offer.badgeText || campaign.visuals?.badgeText || 'Pink Friday'
+        });
+      }
+    }
+  }
+}
+
+const pageTitle = "عروض Pink Friday | داندي كوزمتكس";
+const pageDescription = "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday الحصرية من داندي. مستحضرات طبيعية للعناية بالبشرة والشعر بأعلى جودة.";
+const canonicalUrl = `${SITE_URL}/pink-friday`;
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
+>
+  <slot name="head" slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "عروض Pink Friday من داندي كوزمتكس",
+      "url": canonicalUrl,
+      "description": pageDescription,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dandy Cosmetics",
+        "url": SITE_URL
+      }
+    })} />
+  </slot>
+
+  <main class="pf-page" id="pink-friday-main" dir="rtl">
+    <!-- Premium Campaign Hero Section -->
+    <section class="pf-hero" aria-label="بانر عروض Pink Friday">
+      <div class="pf-hero-backdrop"></div>
+      <div class="pf-container pf-hero-content">
+        <div class="pf-pill-tag">
+          <span class="pf-tag-dot"></span>
+          <span>{campaign.visuals?.badgeText || "حملة الجمال الحصرية"}</span>
+        </div>
+        <h1 class="pf-hero-title">{campaign.visuals?.headline || "Pink Friday"}</h1>
+        <p class="pf-hero-subtitle">
+          {campaign.visuals?.subtitle || "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."}
+        </p>
+
+        {status === 'active' && validCampaignItems.length > 0 && (
+          <div class="pf-hero-actions">
+            <a href="#pink-friday-products" class="pf-btn pf-btn-primary">
+              <span>{campaign.visuals?.ctaText || "اكتشفي العروض"}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </a>
+          </div>
+        )}
+
+        {status === 'upcoming' && (
+          <div class="pf-status-badge pf-status-upcoming">
+            <i class="far fa-clock"></i>
+            <span>عروض Pink Friday تنطلق قريبًا جداً</span>
+          </div>
+        )}
+
+        {status === 'ended' && (
+          <div class="pf-status-badge pf-status-ended">
+            <i class="fas fa-check-circle"></i>
+            <span>انتهت عروض Pink Friday لهذا الموسم</span>
+          </div>
+        )}
+
+        {status === 'disabled' && (
+          <div class="pf-status-badge pf-status-neutral">
+            <i class="fas fa-info-circle"></i>
+            <span>نجهّز لكِ تجربة تسوق استثنائية قريبًا</span>
+          </div>
+        )}
+      </div>
+    </section>
+
+    <!-- Products / Status Section -->
+    <section class="pf-section" id="pink-friday-products" aria-label="قائمة منتجات Pink Friday">
+      <div class="pf-container">
+        
+        {status === 'active' && validCampaignItems.length > 0 && (
+          <div>
+            <div class="pf-section-header">
+              <span class="pf-section-pretitle">تشكيلة مختارة</span>
+              <h2 class="pf-section-title">العروض النشطة حالياً</h2>
+              <div class="pf-divider"></div>
+            </div>
+
+            <div class="pf-products-grid">
+              {validCampaignItems.map(({ product, regularPrice, campaignPrice, discountAmount, discountPercentage, badgeText }) => (
+                <article class="pf-card">
+                  <div class="pf-card-media">
+                    <span class="pf-badge">{badgeText}</span>
+                    {discountPercentage > 0 && (
+                      <span class="pf-discount-chip">خصم {discountPercentage}%</span>
+                    )}
+                    <a href={`/product/${product.resolvedSlug}`} class="pf-card-img-link" aria-label={product.name}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        width="380"
+                        height="380"
+                        loading="lazy"
+                        decoding="async"
+                        onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';"
+                      />
+                    </a>
+                  </div>
+
+                  <div class="pf-card-body">
+                    <h3 class="pf-card-title">
+                      <a href={`/product/${product.resolvedSlug}`}>{product.name}</a>
+                    </h3>
+
+                    <div class="pf-card-pricing">
+                      <div class="pf-price-current">
+                        <span class="pf-price-val">{campaignPrice.toFixed(0)}</span>
+                        <span class="pf-price-cur">ج.م</span>
+                      </div>
+                      <div class="pf-price-orig">
+                        <span class="pf-price-val">{regularPrice.toFixed(0)}</span>
+                        <span class="pf-price-cur">ج.م</span>
+                      </div>
+                    </div>
+
+                    <div class="pf-savings-note">
+                      وفّري <strong>{discountAmount.toFixed(0)} ج.م</strong>
+                    </div>
+
+                    <div class="pf-card-footer">
+                      <a href={`/product/${product.resolvedSlug}`} class="pf-card-btn">
+                        <span>عرض التفاصيل والطلب</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State: Active but no offers configured yet */}
+        {status === 'active' && validCampaignItems.length === 0 && (
+          <div class="pf-empty-state">
+            <div class="pf-empty-icon">
+              <i class="fas fa-magic"></i>
+            </div>
+            <h2 class="pf-empty-title">نجهّز لكِ عروض Pink Friday المميزة</h2>
+            <p class="pf-empty-desc">
+              نقوم حالياً بإعداد تشكيلة مختارة من أقوى المنتجات الطبيعية. تابعينا لاكتشاف العروض فور تدشينها!
+            </p>
+            <div class="pf-empty-actions">
+              <a href="/all-products" class="pf-btn pf-btn-secondary">
+                <span>تصفح جميع المنتجات</span>
+              </a>
+              <a href="/special-offers" class="pf-btn pf-btn-outline">
+                <span>العروض الخاصة الحالية</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming State */}
+        {status === 'upcoming' && (
+          <div class="pf-empty-state">
+            <div class="pf-empty-icon pf-icon-accent">
+              <i class="fas fa-hourglass-start"></i>
+            </div>
+            <h2 class="pf-empty-title">عروض Pink Friday قادمة قريبًا</h2>
+            <p class="pf-empty-desc">
+              ترقبي أقوى تجارب العناية والتألق من داندي. عروض خاصة على منتجاتكِ المفضلة قريبًا جداً.
+            </p>
+            <div class="pf-empty-actions">
+              <a href="/all-products" class="pf-btn pf-btn-secondary">
+                <span>تصفح جميع المنتجات</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Ended State */}
+        {status === 'ended' && (
+          <div class="pf-empty-state">
+            <div class="pf-empty-icon pf-icon-muted">
+              <i class="fas fa-gift"></i>
+            </div>
+            <h2 class="pf-empty-title">انتهت عروض Pink Friday</h2>
+            <p class="pf-empty-desc">
+              شكراً لتسوقكِ معنا! يمكنكِ متابعة أحدث العروض والمنتجات الطبيعية من خلال أقسام المتجر المختلفة.
+            </p>
+            <div class="pf-empty-actions">
+              <a href="/all-products" class="pf-btn pf-btn-secondary">
+                <span>تصفح جميع المنتجات</span>
+              </a>
+              <a href="/special-offers" class="pf-btn pf-btn-outline">
+                <span>العروض الحالية</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Disabled State */}
+        {status === 'disabled' && (
+          <div class="pf-empty-state">
+            <div class="pf-empty-icon">
+              <i class="fas fa-sparkles"></i>
+            </div>
+            <h2 class="pf-empty-title">الحملة غير متاحة حالياً</h2>
+            <p class="pf-empty-desc">
+              حملة Pink Friday ليست نشطة في الوقت الحالي. استمتعي بتجربة تسوق طبيعية ومتكاملة عبر تشكيلاتنا الدائمة.
+            </p>
+            <div class="pf-empty-actions">
+              <a href="/all-products" class="pf-btn pf-btn-secondary">
+                <span>تصفح جميع المنتجات</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  /* Dedicated Pink Friday Stylesheet */
+  .pf-page {
+    width: 100%;
+    min-height: 80vh;
+    background-color: #faf8f9;
+    color: #2c2828;
+    font-family: inherit;
+  }
+
+  .pf-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Hero Section */
+  .pf-hero {
+    position: relative;
+    padding: 72px 0 64px;
+    background: linear-gradient(135deg, #181416 0%, #291a22 50%, #150f13 100%);
+    color: #ffffff;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .pf-hero-backdrop {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(254, 93, 159, 0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .pf-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pf-pill-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(254, 93, 159, 0.14);
+    border: 1px solid rgba(254, 93, 159, 0.35);
+    color: #fe5d9f;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    letter-spacing: 0.3px;
+  }
+
+  .pf-tag-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #fe5d9f;
+    box-shadow: 0 0 8px #fe5d9f;
+  }
+
+  .pf-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 14px;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 20px rgba(254, 93, 159, 0.25);
+  }
+
+  .pf-hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: #e0d5db;
+    max-width: 620px;
+    margin: 0 0 28px;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  .pf-hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .pf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .pf-btn-primary {
+    background-color: #fe5d9f;
+    color: #ffffff;
+    border: 1px solid #fe5d9f;
+    box-shadow: 0 4px 16px rgba(254, 93, 159, 0.3);
+  }
+  .pf-btn-primary:hover {
+    background-color: #e64a8b;
+    border-color: #e64a8b;
+    transform: translateY(-2px);
+  }
+
+  .pf-btn-secondary {
+    background-color: #1a1618;
+    color: #ffffff;
+    border: 1px solid #1a1618;
+  }
+  .pf-btn-secondary:hover {
+    background-color: #332b30;
+    transform: translateY(-2px);
+  }
+
+  .pf-btn-outline {
+    background-color: transparent;
+    color: #1a1618;
+    border: 1px solid #d4c8cd;
+  }
+  .pf-btn-outline:hover {
+    background-color: #f0e8ec;
+  }
+
+  .pf-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  .pf-status-upcoming {
+    background: rgba(254, 93, 159, 0.2);
+    border: 1px solid rgba(254, 93, 159, 0.4);
+    color: #ff9ec4;
+  }
+  .pf-status-ended {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #d1c5cc;
+  }
+  .pf-status-neutral {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+
+  /* Section Body */
+  .pf-section {
+    padding: 64px 0 88px;
+  }
+
+  .pf-section-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .pf-section-pretitle {
+    display: block;
+    color: #fe5d9f;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .pf-section-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    color: #1a1618;
+    margin: 0;
+  }
+
+  .pf-divider {
+    width: 56px;
+    height: 3px;
+    background-color: #fe5d9f;
+    margin: 14px auto 0;
+    border-radius: 2px;
+  }
+
+  /* Grid */
+  .pf-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 28px;
+  }
+
+  .pf-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #f0e6eb;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  }
+  .pf-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(254, 93, 159, 0.12);
+  }
+
+  .pf-card-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #fdfbfb;
+    overflow: hidden;
+  }
+
+  .pf-card-img-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pf-card-img-link img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  .pf-card:hover .pf-card-img-link img {
+    transform: scale(1.04);
+  }
+
+  .pf-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background-color: #1a1618;
+    color: #fe5d9f;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid rgba(254, 93, 159, 0.35);
+    z-index: 2;
+  }
+
+  .pf-discount-chip {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background-color: #fe5d9f;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(254, 93, 159, 0.4);
+  }
+
+  .pf-card-body {
+    padding: 22px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .pf-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 14px;
+    line-height: 1.5;
+  }
+  .pf-card-title a {
+    color: #1a1618;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .pf-card-title a:hover {
+    color: #fe5d9f;
+  }
+
+  .pf-card-pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .pf-price-current {
+    color: #fe5d9f;
+    font-size: 1.45rem;
+    font-weight: 800;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .pf-price-current .pf-price-cur {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .pf-price-orig {
+    color: #9c9297;
+    text-decoration: line-through;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+  }
+  .pf-price-orig .pf-price-cur {
+    font-size: 0.75rem;
+  }
+
+  .pf-savings-note {
+    font-size: 0.85rem;
+    color: #27ae60;
+    margin-bottom: 18px;
+  }
+
+  .pf-card-footer {
+    margin-top: auto;
+  }
+
+  .pf-card-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 16px;
+    background-color: #faf5f8;
+    color: #1a1618;
+    border: 1px solid #f0e6eb;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+  .pf-card-btn:hover {
+    background-color: #fe5d9f;
+    color: #ffffff;
+    border-color: #fe5d9f;
+  }
+
+  /* Empty State */
+  .pf-empty-state {
+    max-width: 580px;
+    margin: 32px auto;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 56px 28px;
+    border: 1px solid #f0e6eb;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  }
+
+  .pf-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-color: #fdf1f6;
+    color: #fe5d9f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin: 0 auto 20px;
+  }
+  .pf-icon-accent {
+    background-color: #fff6e5;
+    color: #d97706;
+  }
+  .pf-icon-muted {
+    background-color: #f5f2f4;
+    color: #8c8288;
+  }
+
+  .pf-empty-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1618;
+    margin: 0 0 10px;
+  }
+
+  .pf-empty-desc {
+    font-size: 0.98rem;
+    color: #6d6368;
+    line-height: 1.7;
+    margin: 0 0 28px;
+  }
+
+  .pf-empty-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .pf-hero {
+      padding: 52px 0 44px;
+    }
+    .pf-products-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .pf-empty-state {
+      padding: 40px 20px;
+    }
+  }
+</style>

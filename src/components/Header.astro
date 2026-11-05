@@ -1,7 +1,24 @@
 ---
 // Header.astro
 // Phase 02: Modern Minimal E-commerce Header & Navigation
+import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../utils/pink-friday-server';
+const publishedCampaign = await getPublishedPinkFridayCampaign();
+const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
 ---
+
+<!-- 0. Temporary Campaign Announcement Bar: Pink Friday (Visible only when published, valid & active) -->
+{showPinkFriday && (
+  <div class="pf-announcement-bar" id="pf-announcement-bar" dir="rtl">
+    <div class="pf-bar-content">
+      <span class="pf-bar-sparkle">✨</span>
+      <span class="pf-bar-text">{publishedCampaign?.visuals?.headline || "Pink Friday من داندي — اكتشفي العروض الخاصة الآن"}</span>
+      <a href="/pink-friday" class="pf-bar-link">
+        <span>{publishedCampaign?.visuals?.ctaText || "عرض المنتجات"}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+      </a>
+    </div>
+  </div>
+)}
 
 <!-- 1. Announcement Bar: Branded Dandy Rose Kiss Treatment -->
 <script is:inline>
@@ -66,6 +83,12 @@
           العروض
           <span class="nav-badge">خاص</span>
         </a>
+        {showPinkFriday && (
+          <a href="/pink-friday" class="nav-link badge-link pf-nav-link">
+            Pink Friday
+            <span class="nav-badge pf-nav-badge">{publishedCampaign?.visuals?.badgeText || 'عرض'}</span>
+          </a>
+        )}
         <a href="/track-order" class="nav-link">تتبع طلبك</a>
         <a href="/about-us" class="nav-link">عن داندي</a>
       </nav>
@@ -272,6 +295,17 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </a>
       </li>
+      {showPinkFriday && (
+        <li>
+          <a href="/pink-friday" class="drawer-nav-item highlight-item pf-drawer-item">
+            <span class="with-badge">
+              Pink Friday
+              <span class="special-tag pf-special-tag">{publishedCampaign?.visuals?.badgeText || 'عرض'}</span>
+            </span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          </a>
+        </li>
+      )}
       <li>
         <a href="/track-order" class="drawer-nav-item">
           <span>تتبع حالة طلبك</span>
@@ -781,6 +815,52 @@
 </script>
 
 <style>
+  /* Temporary Pink Friday Announcement & Nav Styles */
+  .pf-announcement-bar {
+    background: linear-gradient(90deg, #181416 0%, #2a1622 50%, #181416 100%);
+    color: #ffffff;
+    border-bottom: 1px solid rgba(254, 93, 159, 0.35);
+    padding: 7px 16px;
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 101;
+  }
+  .pf-bar-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    text-align: center;
+  }
+  .pf-bar-text {
+    font-weight: 600;
+    color: #ffffff;
+  }
+  .pf-bar-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #fe5d9f;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.15s ease;
+  }
+  .pf-bar-link:hover {
+    color: #ff85b6;
+  }
+  .pf-nav-badge {
+    background-color: #fe5d9f !important;
+    color: #ffffff !important;
+  }
+  .pf-special-tag {
+    background-color: #fe5d9f !important;
+    color: #ffffff !important;
+  }
+
   /* ==========================================================================
      ANNOUNCEMENT BAR (Branded Dandy Rose Kiss Treatment)
      ========================================================================== */

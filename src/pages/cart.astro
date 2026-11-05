@@ -1019,6 +1019,40 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     let currentStep = 1;
 
+    // Reconcile cart items with current Pink Friday campaign state
+    function reconcileCartWithCampaign() {
+      let modified = false;
+      cart.forEach(item => {
+        const rawId = item.productId || (item.id ? String(item.id).split('::')[0] : '');
+        if (window.DandyPinkFriday && typeof window.DandyPinkFriday.getPricing === 'function') {
+          const pf = window.DandyPinkFriday.getPricing({ id: rawId, price: item.regularPrice || item.price });
+          if (pf.isEligible) {
+            if (!item.isPinkFriday || item.price !== pf.campaignPrice) {
+              item.isPinkFriday = true;
+              item.campaignPrice = pf.campaignPrice;
+              item.regularPrice = pf.regularPrice;
+              item.price = pf.campaignPrice;
+              item.badgeText = pf.badgeText;
+              modified = true;
+            }
+          } else if (item.isPinkFriday) {
+            item.isPinkFriday = false;
+            if (item.regularPrice) {
+              item.price = item.regularPrice;
+            }
+            delete item.campaignPrice;
+            delete item.regularPrice;
+            delete item.badgeText;
+            modified = true;
+          }
+        }
+      });
+      if (modified) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    }
+    reconcileCartWithCampaign();
+
     // English shipping fees mapped to Egyptian governorate zones
     const shippingRates = {
       "Gharbia": 70,
@@ -1172,6 +1206,13 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
              </div>`
           : '';
 
+        const pfBadgeHtml = item.isPinkFriday
+          ? `<div class="cart-item-pf-badge" style="display:inline-flex; align-items:center; gap:6px; background:#fe5d9f; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:99px; margin-bottom:4px;">
+               <span>${item.badgeText || 'Pink Friday'}</span>
+               ${item.regularPrice ? `<span style="text-decoration:line-through; opacity:0.85;">${Number(item.regularPrice).toFixed(0)} ج.م</span>` : ''}
+             </div>`
+          : '';
+
         const itemCard = document.createElement('div');
         itemCard.className = 'cart-product-list-item';
         itemCard.innerHTML = `
@@ -1179,6 +1220,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
             <img loading="lazy" src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
             <div class="cart-item-meta">
               <h3>${item.name}</h3>
+              ${pfBadgeHtml}
               ${variantHtml}
               <div class="cart-item-unit-price">${Number(unitPrice).toFixed(0)} ج.م للقطعة</div>
             </div>

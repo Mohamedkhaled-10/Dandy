@@ -7,6 +7,7 @@ import type { APIRoute } from 'astro';
 import { SITE_URL, getAllProducts } from '../utils/products';
 import { CATEGORY_TAXONOMY } from '../utils/categories';
 import { getAllArticles } from '../utils/articles';
+import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../utils/pink-friday-server';
 
 // XML special character escaping to ensure valid markup
 function escapeXml(unsafe: string): string {
@@ -48,6 +49,16 @@ export const GET: APIRoute = async () => {
   // 5. Special Offers & Editorial Hub
   urls.push(`${SITE_URL}/special-offers`);
   urls.push(`${SITE_URL}/blog`);
+
+  // Conditionally include Pink Friday campaign URL when published and eligible for customers
+  try {
+    const publishedCampaign = await getPublishedPinkFridayCampaign();
+    if (shouldDisplayCampaignToCustomers(publishedCampaign)) {
+      urls.push(`${SITE_URL}/pink-friday`);
+    }
+  } catch (err) {
+    console.error('[sitemap.xml] Error checking Pink Friday campaign:', err);
+  }
 
   // 6. Published Canonical Editorial Articles (Dynamically resolved via centralized article service)
   try {
