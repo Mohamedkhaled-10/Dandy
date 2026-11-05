@@ -966,6 +966,50 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
         </div>
 
+        <!-- Collections Panel -->
+        <div class="pf-panel-card" style="margin-top: 24px;">
+          <div class="pf-products-header">
+            <div>
+              <h3 class="pf-panel-title" style="margin-bottom: 4px; border: none; padding: 0;">
+                <i class="fas fa-cubes" style="color: #be185d;"></i> الكوليكشنز والعروض المجمعة (Collections)
+              </h3>
+              <p style="margin: 0; font-size: 0.8rem; color: #6b7280;">
+                إدارة البكجات المجمعة مع تحكم كامل في تكرار المنتجات والخصومات ونظام التسعير.
+              </p>
+            </div>
+
+            <button type="button" class="btn-add-prod" id="btnOpenAddCollectionModal" style="background: #be185d; border-color: #be185d;">
+              <i class="fas fa-plus"></i>
+              <span>إنشاء كوليكشن جديد</span>
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table class="pf-table">
+              <thead>
+                <tr>
+                  <th style="width: 220px;">اسم الكوليكشن</th>
+                  <th>عدد المنتجات</th>
+                  <th>تكرار المنتجات</th>
+                  <th>نظام التسعير</th>
+                  <th>السعر الأصلي</th>
+                  <th>سعر الكوليكشن</th>
+                  <th>مقدار الوفر</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="collectionsTableBody">
+                <tr>
+                  <td colspan="9" style="text-align: center; padding: 30px; color: #9ca3af;">
+                    جاري تحميل الكوليكشنز...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Annual History & Change Logs -->
         <div class="pf-panel-card">
           <h3 class="pf-panel-title">
@@ -1102,6 +1146,131 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </div>
 
+    <!-- Modal 5: Create / Edit Collection -->
+    <div class="pf-modal-backdrop" id="collectionModal">
+      <div class="pf-modal-dialog" style="max-width: 800px;">
+        <div class="pf-modal-header">
+          <h3><i class="fas fa-cubes" style="color: #be185d;"></i> <span id="colModalTitle">إنشاء كوليكشن جديد</span></h3>
+          <button type="button" class="pf-modal-close" data-close-modal="collectionModal">&times;</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="pf-form-group">
+            <label for="colNameInput"><i class="fas fa-heading"></i> اسم الكوليكشن</label>
+            <input type="text" id="colNameInput" class="pf-form-input" placeholder="مثال: بكج العناية بالبشرة المتكامل">
+          </div>
+
+          <div class="pf-form-group">
+            <label for="colBadgeInput"><i class="fas fa-tag"></i> نص الشارة</label>
+            <input type="text" id="colBadgeInput" class="pf-form-input" placeholder="كوليكشن Pink Friday">
+          </div>
+        </div>
+
+        <div class="pf-form-group">
+          <label for="colDescInput"><i class="fas fa-align-right"></i> وصف الكوليكشن</label>
+          <textarea id="colDescInput" class="pf-form-textarea" rows="2" placeholder="وصف قصير لمكونات ومميزات هذا البكج..."></textarea>
+        </div>
+
+        <div class="pf-form-group">
+          <label for="colCoverImgInput"><i class="fas fa-image"></i> رابط صورة غلاف الكوليكشن (اختياري)</label>
+          <input type="url" id="colCoverImgInput" class="pf-form-input" placeholder="https://res.cloudinary.com/...">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; background: #f9fafb; padding: 14px; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <div class="pf-toggle-row" style="margin: 0;">
+            <div>
+              <div class="pf-toggle-label" style="font-size: 0.85rem;">تفعيل الكوليكشن</div>
+              <small style="color: #6b7280; font-size: 0.7rem;">إمكانية ظهوره للعملاء عند نشر الحملة</small>
+            </div>
+            <label class="pf-switch">
+              <input type="checkbox" id="colActiveToggle" checked>
+              <span class="pf-slider"></span>
+            </label>
+          </div>
+
+          <div class="pf-toggle-row" style="margin: 0;">
+            <div>
+              <div class="pf-toggle-label" style="font-size: 0.85rem;">تكرار المنتجات (allowDuplicates)</div>
+              <small style="color: #6b7280; font-size: 0.7rem;">السماح بإضافة نفس المنتج أكثر من مرة بصور/روائح مختلفة</small>
+            </div>
+            <label class="pf-switch">
+              <input type="checkbox" id="colDuplicatesToggle">
+              <span class="pf-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div style="background: #fffdf5; border: 1px solid #fef08a; padding: 14px; border-radius: 8px; margin-bottom: 16px;">
+          <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #854d0e; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-calculator"></i> نظام تسعير الكوليكشن
+          </h4>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="pf-form-group" style="margin: 0;">
+              <label for="colPricingType"><i class="fas fa-sliders-h"></i> نوع التسعير</label>
+              <select id="colPricingType" class="pf-form-select">
+                <option value="package">سعر بكج ثابت (Package Price)</option>
+                <option value="percentage">خصم نسبة مئوية (Percentage Discount)</option>
+              </select>
+            </div>
+
+            <div class="pf-form-group" id="colPackagePriceWrap" style="margin: 0;">
+              <label for="colPackagePriceInput"><i class="fas fa-coins"></i> سعر البكج الثابت (ج.م)</label>
+              <input type="number" id="colPackagePriceInput" class="pf-form-input" min="1" placeholder="مثال: 750">
+            </div>
+
+            <div class="pf-form-group" id="colDiscountPctWrap" style="margin: 0; display: none;">
+              <label for="colDiscountPctInput"><i class="fas fa-percent"></i> نسبة الخصم (%)</label>
+              <input type="number" id="colDiscountPctInput" class="pf-form-input" min="1" max="99" placeholder="مثال: 25">
+            </div>
+          </div>
+        </div>
+
+        <!-- Collection Products Builder -->
+        <div style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <strong style="font-size: 0.9rem; color: #111827;"><i class="fas fa-boxes"></i> محتويات الكوليكشن من الكتالوج</strong>
+            <button type="button" class="btn-action btn-action-preview" id="btnPickerForCol" style="font-size: 0.78rem; padding: 5px 12px;">
+              <i class="fas fa-plus"></i> إضافة منتج للكوليكشن
+            </button>
+          </div>
+
+          <div class="table-container" style="max-height: 220px; overflow-y: auto;">
+            <table class="pf-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr>
+                  <th>المنتج</th>
+                  <th>السعر الأصلي</th>
+                  <th>الرائحة/المتغير الافتراضي</th>
+                  <th>ترتيب</th>
+                  <th>إزالة</th>
+                </tr>
+              </thead>
+              <tbody id="colItemsTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">
+                    لم يتم إضافة منتجات للكوليكشن بعد.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Live Pricing Summary -->
+          <div id="colPriceSummaryBox" style="margin-top: 14px; background: #f3f4f6; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border: 1px solid #e5e7eb;">
+            <div>مجموع الأسعار الأصلية: <strong id="colSummaryBasePrice">0</strong> ج.م</div>
+            <div>سعر الكوليكشن النهائى: <strong id="colSummaryFinalPrice" style="color: #be185d;">0</strong> ج.م</div>
+            <div>وفر العميل: <strong id="colSummarySavings" style="color: #047857;">0</strong> ج.م</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn-action btn-action-revert" data-close-modal="collectionModal">إلغاء</button>
+          <button type="button" class="btn-action btn-action-publish" id="btnSaveCollectionItem" style="background: #be185d;">حفظ الكوليكشن</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="pf-toast" id="pfToast">
       <i class="fas fa-info-circle"></i>
@@ -1133,20 +1302,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }, 4000);
     }
 
-    // Modal helpers
+    // Modal Stack & Layering Manager
+    let activeModalStack = [];
+
     function openModal(id) {
       const modal = document.getElementById(id);
-      if (modal) modal.style.display = 'flex';
-    }
-    function closeModal(id) {
-      const modal = document.getElementById(id);
-      if (modal) modal.style.display = 'none';
+      if (!modal) return;
+
+      const existingIndex = activeModalStack.indexOf(id);
+      if (existingIndex !== -1) {
+        activeModalStack.splice(existingIndex, 1);
+      }
+      activeModalStack.push(id);
+
+      // Dynamically calculate z-index to guarantee top-most modal stacking above all lower modals
+      const baseZIndex = 2000;
+      const stackZIndex = baseZIndex + (activeModalStack.length * 100);
+      modal.style.zIndex = String(stackZIndex);
+      modal.style.display = 'flex';
     }
 
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.style.display = 'none';
+      activeModalStack = activeModalStack.filter(mId => mId !== id);
+    }
+
+    // Close button listeners
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
       btn.addEventListener('click', () => {
         closeModal(btn.getAttribute('data-close-modal'));
       });
+    });
+
+    // Close top modal when clicking directly on its backdrop background
+    document.querySelectorAll('.pf-modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          closeModal(backdrop.id);
+        }
+      });
+    });
+
+    // Close top modal on Escape key press
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && activeModalStack.length > 0) {
+        const topModalId = activeModalStack[activeModalStack.length - 1];
+        closeModal(topModalId);
+      }
     });
 
     // Helper: Firebase Auth ID Token for API Calls
@@ -1194,6 +1398,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       isDataLoaded = false;
       hasLoadError = false;
       renderOffersTable();
+      renderCollectionsTable();
       updateStatusAndKPIs();
 
       try {
@@ -1241,6 +1446,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           hasLoadError = true;
           showToast(data.error || 'تعذر تحميل بيانات الحملة من السيرفر', 'error');
           renderOffersTable();
+          renderCollectionsTable();
           updateStatusAndKPIs();
         }
 
@@ -1255,6 +1461,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               });
             }
             renderOffersTable();
+            renderCollectionsTable();
           });
         }
       } catch (err) {
@@ -1265,6 +1472,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         hasLoadError = true;
         showToast('تعذر تحميل بيانات الحملة من السيرفر', 'error');
         renderOffersTable();
+        renderCollectionsTable();
         updateStatusAndKPIs();
       }
     }
@@ -1330,6 +1538,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (badgeInput) badgeInput.value = visuals.badgeText || 'Pink Friday';
 
       renderOffersTable();
+      renderCollectionsTable();
     }
 
     // Read form state into draftCampaign
@@ -1499,6 +1708,347 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       showToast('تمت إزالة المنتج من عروض الحملة');
     };
 
+    // Render Collections Table
+    function renderCollectionsTable() {
+      const tbody = document.getElementById('collectionsTableBody');
+      if (!tbody) return;
+
+      if (hasLoadError || !isDataLoaded || !draftCampaign) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: #9ca3af;">يرجى انتظار تحميل البيانات...</td></tr>`;
+        return;
+      }
+
+      const collections = Array.isArray(draftCampaign.collections) ? draftCampaign.collections : [];
+      if (collections.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 30px; color: #6b7280;">
+              <i class="fas fa-cubes" style="font-size: 1.8rem; color: #d1d5db; display: block; margin-bottom: 8px;"></i>
+              لا توجد كوليكشنز مضافة للحملة بعد. انقري على "إنشاء كوليكشن جديد" للبدء.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      collections.forEach((col, idx) => {
+        const items = Array.isArray(col.items) ? col.items : [];
+        let totalBase = 0;
+        items.forEach(it => {
+          const p = catalogProducts.find(prod => String(prod.id) === String(it.productId));
+          if (p) totalBase += (parseFloat(p.price) || 0);
+        });
+
+        let finalPrice = totalBase;
+        if (col.pricingType === 'package') {
+          finalPrice = parseFloat(col.packagePrice) || totalBase;
+        } else if (col.pricingType === 'percentage') {
+          const pct = parseFloat(col.discountPercentage) || 0;
+          finalPrice = Math.round(totalBase * (1 - pct / 100));
+        }
+
+        const savings = Math.max(0, totalBase - finalPrice);
+        const dupBadge = col.allowDuplicates
+          ? '<span style="color:#047857; background:#ecfdf5; padding:2px 6px; border-radius:4px; font-weight:700;">نعم</span>'
+          : '<span style="color:#6b7280; background:#f3f4f6; padding:2px 6px; border-radius:4px;">لا</span>';
+
+        const statusBadge = col.active !== false
+          ? '<span class="offer-status-badge valid">نشط</span>'
+          : '<span class="offer-status-badge warning">معطل</span>';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong style="color:#111827; font-size:0.85rem;">${col.name || 'كوليكشن بدون اسم'}</strong>
+            <div style="font-size:0.72rem; color:#6b7280;">${col.badgeText || 'كوليكشن Pink Friday'}</div>
+          </td>
+          <td><strong>${items.length}</strong> منتجات</td>
+          <td>${dupBadge}</td>
+          <td><span style="font-size:0.78rem;">${col.pricingType === 'package' ? 'بكج ثابت (' + finalPrice + ' ج.م)' : 'خصم نسبة ' + (col.discountPercentage || 0) + '%'}</span></td>
+          <td>${totalBase} ج.م</td>
+          <td><strong style="color:#be185d;">${finalPrice}</strong> ج.م</td>
+          <td><strong style="color:#047857;">${savings}</strong> ج.م</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.75rem;" onclick="window.editCollection(${idx})">
+              <i class="fas fa-edit"></i> تعديل
+            </button>
+            <button type="button" class="btn-del-offer" title="حذف" onclick="window.deleteCollection(${idx})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Collection Modal State & Logic
+    let currentEditingColIndex = -1;
+    let tempColItems = [];
+
+    window.openAddCollectionModal = function() {
+      currentEditingColIndex = -1;
+      tempColItems = [];
+      document.getElementById('colModalTitle').textContent = 'إنشاء كوليكشن جديد';
+      document.getElementById('colNameInput').value = '';
+      document.getElementById('colBadgeInput').value = 'كوليكشن Pink Friday';
+      document.getElementById('colDescInput').value = '';
+      document.getElementById('colCoverImgInput').value = '';
+      document.getElementById('colActiveToggle').checked = true;
+      document.getElementById('colDuplicatesToggle').checked = false;
+      document.getElementById('colPricingType').value = 'package';
+      document.getElementById('colPackagePriceInput').value = '';
+      document.getElementById('colDiscountPctInput').value = '20';
+      toggleColPricingFields();
+      renderColItemsTable();
+      openModal('collectionModal');
+    };
+
+    document.getElementById('btnOpenAddCollectionModal')?.addEventListener('click', window.openAddCollectionModal);
+
+    window.editCollection = function(idx) {
+      if (!draftCampaign || !Array.isArray(draftCampaign.collections) || !draftCampaign.collections[idx]) return;
+      currentEditingColIndex = idx;
+      const col = draftCampaign.collections[idx];
+      tempColItems = (col.items || []).map((it, i) => {
+        if (typeof it === 'string') {
+          return { collectionItemId: 'ci_' + i + '_' + Date.now(), productId: String(it) };
+        }
+        return {
+          collectionItemId: it.collectionItemId || ('ci_' + i + '_' + Date.now()),
+          productId: String(it.productId || it.id || ''),
+          defaultVariantId: it.defaultVariantId || ''
+        };
+      });
+
+      document.getElementById('colModalTitle').textContent = 'تعديل كوليكشن: ' + (col.name || '');
+      document.getElementById('colNameInput').value = col.name || '';
+      document.getElementById('colBadgeInput').value = col.badgeText || 'كوليكشن Pink Friday';
+      document.getElementById('colDescInput').value = col.description || '';
+      document.getElementById('colCoverImgInput').value = col.coverImage || '';
+      document.getElementById('colActiveToggle').checked = col.active !== false;
+      document.getElementById('colDuplicatesToggle').checked = Boolean(col.allowDuplicates);
+      document.getElementById('colPricingType').value = col.pricingType || 'package';
+      document.getElementById('colPackagePriceInput').value = col.packagePrice || '';
+      document.getElementById('colDiscountPctInput').value = col.discountPercentage || 20;
+
+      toggleColPricingFields();
+      renderColItemsTable();
+      openModal('collectionModal');
+    };
+
+    function toggleColPricingFields() {
+      const type = document.getElementById('colPricingType').value;
+      const pkgWrap = document.getElementById('colPackagePriceWrap');
+      const pctWrap = document.getElementById('colDiscountPctWrap');
+      if (type === 'package') {
+        pkgWrap.style.display = 'block';
+        pctWrap.style.display = 'none';
+      } else {
+        pkgWrap.style.display = 'none';
+        pctWrap.style.display = 'block';
+      }
+      calcColSummary();
+    }
+
+    document.getElementById('colPricingType')?.addEventListener('change', toggleColPricingFields);
+    document.getElementById('colPackagePriceInput')?.addEventListener('input', calcColSummary);
+    document.getElementById('colDiscountPctInput')?.addEventListener('input', calcColSummary);
+
+    function renderColItemsTable() {
+      const tbody = document.getElementById('colItemsTableBody');
+      if (!tbody) return;
+
+      if (tempColItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">لم يتم إضافة منتجات للكوليكشن بعد.</td></tr>`;
+        calcColSummary();
+        return;
+      }
+
+      tbody.innerHTML = '';
+      tempColItems.forEach((item, i) => {
+        const prod = catalogProducts.find(p => String(p.id) === String(item.productId));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <img src="${prod?.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
+              <strong>${prod?.name || item.productId}</strong>
+            </div>
+          </td>
+          <td>${prod?.price || 0} ج.م</td>
+          <td>
+            <input type="text" value="${item.defaultVariantId || ''}" placeholder="كود/اسم الرائحة" style="width:100px; padding:3px 6px; font-size:0.75rem; border:1px solid #d1d5db; border-radius:4px;" onchange="tempColItems[${i}].defaultVariantId = this.value">
+          </td>
+          <td>
+            <button type="button" class="btn-action" style="padding:2px 6px;" onclick="moveColItem(${i}, -1)">▲</button>
+            <button type="button" class="btn-action" style="padding:2px 6px;" onclick="moveColItem(${i}, 1)">▼</button>
+          </td>
+          <td>
+            <button type="button" class="btn-del-offer" style="width:24px; height:24px;" onclick="removeColItem(${i})"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      calcColSummary();
+    }
+
+    window.moveColItem = function(index, dir) {
+      const target = index + dir;
+      if (target < 0 || target >= tempColItems.length) return;
+      const temp = tempColItems[index];
+      tempColItems[index] = tempColItems[target];
+      tempColItems[target] = temp;
+      renderColItemsTable();
+    };
+
+    window.removeColItem = function(index) {
+      tempColItems.splice(index, 1);
+      renderColItemsTable();
+    };
+
+    function calcColSummary() {
+      let baseTotal = 0;
+      tempColItems.forEach(it => {
+        const p = catalogProducts.find(prod => String(prod.id) === String(it.productId));
+        if (p) baseTotal += (parseFloat(p.price) || 0);
+      });
+
+      const type = document.getElementById('colPricingType').value;
+      let finalPrice = baseTotal;
+      if (type === 'package') {
+        finalPrice = parseFloat(document.getElementById('colPackagePriceInput').value) || baseTotal;
+      } else {
+        const pct = parseFloat(document.getElementById('colDiscountPctInput').value) || 0;
+        finalPrice = Math.round(baseTotal * (1 - pct / 100));
+      }
+
+      const savings = Math.max(0, baseTotal - finalPrice);
+      document.getElementById('colSummaryBasePrice').textContent = baseTotal;
+      document.getElementById('colSummaryFinalPrice').textContent = finalPrice;
+      document.getElementById('colSummarySavings').textContent = savings;
+    }
+
+    function renderCatalogSearchForCol(filter = '') {
+      const list = document.getElementById('catalogListItems');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const query = (filter || '').toLowerCase().trim();
+      const allowDup = Boolean(document.getElementById('colDuplicatesToggle')?.checked);
+      const existingIds = new Set(tempColItems.map(it => {
+        const pid = typeof it === 'object' && it !== null ? it.productId : it;
+        return String(pid || '');
+      }));
+
+      const matches = catalogProducts.filter(p => {
+        if (!query) return true;
+        const nameMatch = (p.name || '').toLowerCase().includes(query);
+        const idMatch = String(p.id).toLowerCase().includes(query);
+        return nameMatch || idMatch;
+      });
+
+      if (matches.length === 0) {
+        list.innerHTML = '<div style="padding: 24px; text-align: center; color: #9ca3af;">لا توجد منتجات مطابقة في الكتالوج</div>';
+        return;
+      }
+
+      matches.forEach(p => {
+        const isAdded = !allowDup && existingIds.has(String(p.id));
+        const div = document.createElement('div');
+        div.className = `catalog-item ${isAdded ? 'already-added' : ''}`;
+        div.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="${p.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover;">
+            <div>
+              <strong style="font-size: 0.82rem; color: #111827;">${p.name || ''}</strong>
+              <div style="font-size: 0.72rem; color: #6b7280;">السعر: ${p.price || 0} ج.م</div>
+            </div>
+          </div>
+          <div>
+            ${isAdded ? '<span style="font-size: 0.75rem; color: #6b7280;">مضاف مسبقاً</span>' : '<button type="button" class="btn-action btn-action-publish btn-add-col-prod" style="padding: 4px 10px; font-size: 0.75rem;">+ إضافة للكوليكشن</button>'}
+          </div>
+        `;
+
+        if (!isAdded) {
+          div.addEventListener('click', (e) => {
+            e.preventDefault();
+            const newItemId = 'ci_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            tempColItems.push({
+              collectionItemId: newItemId,
+              productId: String(p.id)
+            });
+            renderColItemsTable();
+            closeModal('addProductModal');
+            showToast(`تمت إضافة "${p.name}" إلى عناصر الكوليكشن`);
+          });
+        }
+        list.appendChild(div);
+      });
+    }
+
+    // Save Collection
+    document.getElementById('btnSaveCollectionItem')?.addEventListener('click', () => {
+      const name = document.getElementById('colNameInput').value.trim();
+      if (!name) {
+        alert('يرجى إدخال اسم الكوليكشن.');
+        return;
+      }
+
+      if (tempColItems.length === 0) {
+        alert('يرجى إضافة منتج واحد على الأقل داخل الكوليكشن.');
+        return;
+      }
+
+      if (!draftCampaign) return;
+      if (!Array.isArray(draftCampaign.collections)) {
+        draftCampaign.collections = [];
+      }
+
+      const allowDuplicates = document.getElementById('colDuplicatesToggle').checked;
+      const pricingType = document.getElementById('colPricingType').value;
+      const packagePrice = parseFloat(document.getElementById('colPackagePriceInput').value) || undefined;
+      const discountPercentage = parseFloat(document.getElementById('colDiscountPctInput').value) || undefined;
+
+      const colData = {
+        id: currentEditingColIndex >= 0 ? draftCampaign.collections[currentEditingColIndex].id : 'col_' + Date.now(),
+        name,
+        description: document.getElementById('colDescInput').value.trim(),
+        coverImage: document.getElementById('colCoverImgInput').value.trim(),
+        badgeText: document.getElementById('colBadgeInput').value.trim() || 'كوليكشن Pink Friday',
+        active: document.getElementById('colActiveToggle').checked,
+        allowDuplicates,
+        pricingType,
+        packagePrice,
+        discountPercentage,
+        items: tempColItems
+      };
+
+      if (currentEditingColIndex >= 0) {
+        draftCampaign.collections[currentEditingColIndex] = colData;
+      } else {
+        draftCampaign.collections.push(colData);
+      }
+
+      isDraftDirty = true;
+      renderCollectionsTable();
+      updateStatusAndKPIs();
+      closeModal('collectionModal');
+      showToast('تم حفظ الكوليكشن في المسودة بنجاح');
+    });
+
+    window.deleteCollection = function(idx) {
+      if (!draftCampaign || !Array.isArray(draftCampaign.collections) || !draftCampaign.collections[idx]) return;
+      if (!confirm('هل أنتِ متأكدة من حذف هذا الكوليكشن؟')) return;
+      draftCampaign.collections.splice(idx, 1);
+      isDraftDirty = true;
+      renderCollectionsTable();
+      updateStatusAndKPIs();
+      showToast('تم حذف الكوليكشن من المسودة');
+    };
+
     // Calculate Campaign Status & KPIs
     function updateStatusAndKPIs() {
       const statusPill = document.getElementById('campaignStatusPill');
@@ -1584,14 +2134,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
-    // Modal: Catalog Selection Search
+    // Modal: Catalog Selection Search Mode Tracking
+    let currentPickerMode = 'offers'; // 'offers' or 'collection'
+
     document.getElementById('btnOpenAddProductModal')?.addEventListener('click', () => {
       if (!draftCampaign) {
         showToast('يرجى انتظار تحميل بيانات الحملة أولاً', 'error');
         return;
       }
+      currentPickerMode = 'offers';
+      const searchInput = document.getElementById('catalogSearchInput');
+      if (searchInput) searchInput.value = '';
       renderCatalogSearch();
       openModal('addProductModal');
+    });
+
+    // Add Product to Temp Collection Picker Opener
+    document.getElementById('btnPickerForCol')?.addEventListener('click', () => {
+      currentPickerMode = 'collection';
+      const searchInput = document.getElementById('catalogSearchInput');
+      if (searchInput) searchInput.value = '';
+      renderCatalogSearchForCol();
+      openModal('addProductModal');
+    });
+
+    document.getElementById('catalogSearchInput')?.addEventListener('input', (e) => {
+      const q = e.target.value;
+      if (currentPickerMode === 'collection') {
+        renderCatalogSearchForCol(q);
+      } else {
+        renderCatalogSearch(q);
+      }
     });
 
     function renderCatalogSearch(filter = '') {

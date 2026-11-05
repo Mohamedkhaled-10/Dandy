@@ -273,3 +273,54 @@ test('Case 19: Stale localStorage cart claiming campaign price on ended campaign
   const isConflict = Boolean(staleCartItem.isPinkFriday) && !serverPricing.isEligible;
   assert.equal(isConflict, true);
 });
+
+// 20. Collection Validation tests
+test('Case 20: Collection package pricing and duplicate prevention validation', () => {
+  const productsMap = new Map([
+    ['prod-001', { id: 'prod-001', price: 500, isHidden: false, isSoldOut: false }],
+    ['prod-002', { id: 'prod-002', price: 300, isHidden: false, isSoldOut: false }]
+  ]);
+
+  const collectionNoDuplicates = {
+    id: 'col-1',
+    name: 'بكج بوني وسيروم',
+    active: true,
+    allowDuplicates: false,
+    pricingType: 'package',
+    packagePrice: 650,
+    items: [
+      { collectionItemId: 'ci_1', productId: 'prod-001' },
+      { collectionItemId: 'ci_2', productId: 'prod-002' }
+    ]
+  };
+
+  // Import validateCollection dynamically from server utils
+  import('../src/utils/pink-friday-server.ts').then(({ validateCollection }) => {
+    const res = validateCollection(collectionNoDuplicates, productsMap, activeConfig, fixedNow);
+    assert.equal(res.isValid, true);
+    assert.equal(res.calculatedPrice, 650);
+    assert.equal(res.totalRegularPrice, 800);
+
+    // Duplicate attempt when allowDuplicates is false
+    const collectionDuplicateErr = {
+      ...collectionNoDuplicates,
+      items: [
+        { collectionItemId: 'ci_1', productId: 'prod-001' },
+        { collectionItemId: 'ci_2', productId: 'prod-001' }
+      ]
+    };
+    const resDup = validateCollection(collectionDuplicateErr, productsMap, activeConfig, fixedNow);
+    assert.equal(resDup.isValid, false);
+    assert.equal(resDup.reason, 'DUPLICATE_PRODUCTS_NOT_ALLOWED');
+
+    // Duplicate allowed
+    const collectionDuplicateAllowed = {
+      ...collectionDuplicateErr,
+      allowDuplicates: true
+    };
+    const resDupAllowed = validateCollection(collectionDuplicateAllowed, productsMap, activeConfig, fixedNow);
+    assert.equal(resDupAllowed.isValid, true);
+    assert.equal(resDupAllowed.totalRegularPrice, 1000);
+  });
+});
+

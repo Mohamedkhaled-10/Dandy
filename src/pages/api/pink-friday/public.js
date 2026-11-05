@@ -34,6 +34,24 @@ export async function GET() {
             discountPercentage: o.discountPercentage,
             badgeText: o.badgeText || 'Pink Friday'
           }))
+        : [],
+      collections: isVisibleToCustomers
+        ? (campaign.collections || []).filter(c => c.active).map(c => ({
+            id: c.id,
+            name: c.name,
+            description: c.description || '',
+            coverImage: c.coverImage || '',
+            allowDuplicates: Boolean(c.allowDuplicates),
+            pricingType: c.pricingType,
+            packagePrice: c.packagePrice,
+            discountPercentage: c.discountPercentage,
+            badgeText: c.badgeText || 'كوليكشن Pink Friday',
+            items: (c.items || []).map(it => ({
+              collectionItemId: it.collectionItemId,
+              productId: it.productId,
+              defaultVariantId: it.defaultVariantId
+            }))
+          }))
         : []
     };
 

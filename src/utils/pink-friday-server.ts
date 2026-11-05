@@ -12,6 +12,28 @@ export interface PinkFridayOffer {
   allowWithGenericDiscount?: boolean;
 }
 
+export interface PinkFridayCollectionItem {
+  collectionItemId: string; // Unique ID per item inside collection e.g. 'ci_1'
+  productId: string;
+  defaultVariantId?: string;
+  sortOrder?: number;
+}
+
+export interface PinkFridayCollection {
+  id: string; // e.g. 'col-1730823421'
+  name: string;
+  description?: string;
+  coverImage?: string;
+  allowDuplicates: boolean; // default false
+  items: PinkFridayCollectionItem[];
+  pricingType: 'package' | 'percentage'; // 'package' = fixed total, 'percentage' = % off
+  packagePrice?: number; // when pricingType === 'package'
+  discountPercentage?: number; // when pricingType === 'percentage'
+  badgeText?: string;
+  active: boolean;
+  allowWithGenericDiscount?: boolean;
+}
+
 export interface PinkFridayVisuals {
   bannerImage?: string;
   bannerPosition?: string; // 'center' | 'top' | 'bottom'
@@ -29,6 +51,7 @@ export interface PinkFridayCampaignData {
   endAt: string;    // ISO 8601 with offset
   enabled: boolean;
   offers: PinkFridayOffer[];
+  collections?: PinkFridayCollection[];
   visuals?: PinkFridayVisuals;
   publishedAt?: string;
   publishedBy?: string;
@@ -51,6 +74,7 @@ export const INITIAL_2026_CAMPAIGN: PinkFridayCampaignData = {
   endAt: '2026-11-30T23:59:59+02:00',
   enabled: true, // Enabled in system, ready for products to be added
   offers: [],
+  collections: [],
   visuals: {
     bannerImage: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80',
     bannerPosition: 'center',
@@ -144,7 +168,7 @@ export function isCampaignEnded(campaign?: PinkFridayCampaignData, now?: Date): 
 
 /**
  * Whether the public website should display Pink Friday marketing elements
- * (requires active/upcoming status AND at least one valid participating offer).
+ * (requires active/upcoming status AND at least one valid participating offer or collection).
  */
 export function shouldDisplayCampaignToCustomers(
   campaign: PinkFridayCampaignData,
@@ -154,7 +178,99 @@ export function shouldDisplayCampaignToCustomers(
   if (status !== 'active' && status !== 'upcoming') return false;
 
   const activeOffers = (campaign.offers || []).filter(o => o.active);
-  return activeOffers.length > 0;
+  const activeCollections = (campaign.collections || []).filter(c => c.active);
+  return activeOffers.length > 0 || activeCollections.length > 0;
+}
+
+export interface CollectionValidationResult {
+  isValid: boolean;
+  reason?: string;
+  calculatedPrice?: number;
+  totalRegularPrice?: number;
+}
+
+/**
+ * Strict Collection Validation against authoritative product data and campaign rules.
+ */
+export function validateCollection(
+  collection: PinkFridayCollection | undefined,
+  productsMap: Map<string, { id: string; price: number; isHidden?: boolean; isSoldOut?: boolean }>,
+  campaign: PinkFridayCampaignData,
+  now: Date = new Date()
+): CollectionValidationResult {
+  if (!campaign.enabled) {
+    return { isValid: false, reason: 'CAMPAIGN_DISABLED' };
+  }
+
+  const status = getCampaignStatus(campaign, now);
+  if (status !== 'active') {
+    return { isValid: false, reason: `CAMPAIGN_${status.toUpperCase()}` };
+  }
+
+  if (!collection) {
+    return { isValid: false, reason: 'COLLECTION_NOT_FOUND' };
+  }
+
+  if (!collection.active) {
+    return { isValid: false, reason: 'COLLECTION_INACTIVE' };
+  }
+
+  if (!Array.isArray(collection.items) || collection.items.length === 0) {
+    return { isValid: false, reason: 'EMPTY_COLLECTION' };
+  }
+
+  // Check duplicate setting
+  if (!collection.allowDuplicates) {
+    const productIds = collection.items.map(item => String(item.productId));
+    const uniqueProductIds = new Set(productIds);
+    if (uniqueProductIds.size !== productIds.length) {
+      return { isValid: false, reason: 'DUPLICATE_PRODUCTS_NOT_ALLOWED' };
+    }
+  }
+
+  let totalRegularPrice = 0;
+  for (const item of collection.items) {
+    const p = productsMap.get(String(item.productId));
+    if (!p) {
+      return { isValid: false, reason: `PRODUCT_NOT_FOUND:${item.productId}` };
+    }
+    if (p.isHidden) {
+      return { isValid: false, reason: `PRODUCT_HIDDEN:${item.productId}` };
+    }
+    if (p.isSoldOut) {
+      return { isValid: false, reason: `PRODUCT_SOLD_OUT:${item.productId}` };
+    }
+    const price = Number(p.price);
+    if (isNaN(price) || price <= 0) {
+      return { isValid: false, reason: `INVALID_PRODUCT_PRICE:${item.productId}` };
+    }
+    totalRegularPrice += price;
+  }
+
+  let calculatedPrice = 0;
+  if (collection.pricingType === 'package') {
+    if (typeof collection.packagePrice !== 'number' || collection.packagePrice <= 0 || isNaN(collection.packagePrice)) {
+      return { isValid: false, reason: 'INVALID_PACKAGE_PRICE' };
+    }
+    if (collection.packagePrice >= totalRegularPrice) {
+      return { isValid: false, reason: 'PACKAGE_PRICE_NOT_LOWER' };
+    }
+    calculatedPrice = collection.packagePrice;
+  } else if (collection.pricingType === 'percentage') {
+    const pct = collection.discountPercentage;
+    if (typeof pct !== 'number' || pct <= 0 || pct >= 100 || isNaN(pct)) {
+      return { isValid: false, reason: 'INVALID_DISCOUNT_PERCENTAGE' };
+    }
+    calculatedPrice = Math.round(totalRegularPrice * (1 - pct / 100));
+  } else {
+    return { isValid: false, reason: 'INVALID_PRICING_TYPE' };
+  }
+
+  return {
+    isValid: true,
+    calculatedPrice,
+    totalRegularPrice
+  };
 }
 
 export interface OfferValidationResult {

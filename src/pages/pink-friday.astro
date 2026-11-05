@@ -51,6 +51,98 @@ if (status === 'active' && campaign.offers) {
   }
 }
 
+interface ResolvedCollectionItem {
+  collectionItemId: string;
+  productId: string;
+  productName: string;
+  image: string;
+  price: number;
+  scents: Array<{ id: string; name: string }>;
+  defaultVariantId?: string;
+}
+
+interface ValidCollectionItem {
+  id: string;
+  name: string;
+  description: string;
+  coverImage: string;
+  badgeText: string;
+  pricingType: 'package' | 'percentage';
+  packagePrice?: number;
+  discountPercentage?: number;
+  calculatedPrice: number;
+  totalRegularPrice: number;
+  savings: number;
+  items: ResolvedCollectionItem[];
+}
+
+const validCollections: ValidCollectionItem[] = [];
+
+if (status === 'active' && campaign.collections) {
+  for (const col of campaign.collections) {
+    if (col.active === false) continue;
+    const colItems = Array.isArray(col.items) ? col.items : [];
+    if (colItems.length === 0) continue;
+
+    let totalRegPrice = 0;
+    let isAllAvailable = true;
+    const resolvedItems: ResolvedCollectionItem[] = [];
+
+    for (const cItem of colItems) {
+      const prod = allProducts.find(p => String(p.id) === String(cItem.productId));
+      if (!prod || prod.isHidden || prod.isSoldOut) {
+        isAllAvailable = false;
+        break;
+      }
+      const itemBasePrice = parseFloat(String(prod.price)) || 0;
+      totalRegPrice += itemBasePrice;
+
+      // Extract scents / variants if available
+      const rawScents = (prod as any).scents || (prod as any).variants || [];
+      const cleanScents = Array.isArray(rawScents) ? rawScents.map(s => ({
+        id: typeof s === 'object' ? (s.id || s.name) : String(s),
+        name: typeof s === 'object' ? s.name : String(s)
+      })) : [];
+
+      resolvedItems.push({
+        collectionItemId: cItem.collectionItemId,
+        productId: cItem.productId,
+        productName: prod.name,
+        image: prod.image,
+        price: itemBasePrice,
+        scents: cleanScents,
+        defaultVariantId: cItem.defaultVariantId
+      });
+    }
+
+    if (!isAllAvailable) continue;
+
+    let calcPrice = totalRegPrice;
+    if (col.pricingType === 'package' && typeof col.packagePrice === 'number' && col.packagePrice > 0) {
+      calcPrice = col.packagePrice;
+    } else if (col.pricingType === 'percentage' && typeof col.discountPercentage === 'number' && col.discountPercentage > 0) {
+      calcPrice = Math.round(totalRegPrice * (1 - col.discountPercentage / 100));
+    }
+
+    const savings = Math.max(0, totalRegPrice - calcPrice);
+
+    validCollections.push({
+      id: col.id,
+      name: col.name,
+      description: col.description || '',
+      coverImage: col.coverImage || resolvedItems[0]?.image || '',
+      badgeText: col.badgeText || 'كوليكشن Pink Friday',
+      pricingType: col.pricingType,
+      packagePrice: col.packagePrice,
+      discountPercentage: col.discountPercentage,
+      calculatedPrice: calcPrice,
+      totalRegularPrice: totalRegPrice,
+      savings,
+      items: resolvedItems
+    });
+  }
+}
+
 const pageTitle = "عروض Pink Friday | داندي كوزمتكس";
 const pageDescription = "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday الحصرية من داندي. مستحضرات طبيعية للعناية بالبشرة والشعر بأعلى جودة.";
 const canonicalUrl = `${SITE_URL}/pink-friday`;
@@ -198,8 +290,92 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
           </div>
         )}
 
-        {/* Empty State: Active but no offers configured yet */}
-        {status === 'active' && validCampaignItems.length === 0 && (
+        {/* Collections / Bundles Section */}
+        {status === 'active' && validCollections.length > 0 && (
+          <div style="margin-bottom: 50px;">
+            <div class="pf-section-header">
+              <span class="pf-section-pretitle">مجموعات متميزة</span>
+              <h2 class="pf-section-title">الكوليكشنز والعروض المجمعة</h2>
+              <div class="pf-divider"></div>
+            </div>
+
+            <div class="pf-products-grid">
+              {validCollections.map((col) => (
+                <article class="pf-card" style="border: 2px solid #fbcfe8;">
+                  <div class="pf-card-media">
+                    <span class="pf-badge" style="background:#be185d; color:#ffffff;">{col.badgeText}</span>
+                    {col.savings > 0 && (
+                      <span class="pf-discount-chip">وفر {col.savings.toFixed(0)} ج.م</span>
+                    )}
+                    <div class="pf-card-img-link">
+                      <img
+                        src={col.coverImage}
+                        alt={col.name}
+                        width="380"
+                        height="380"
+                        loading="lazy"
+                        decoding="async"
+                        onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="pf-card-body">
+                    <h3 class="pf-card-title">
+                      <span>{col.name}</span>
+                    </h3>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 10px 0; line-height: 1.4;">
+                      {col.description || `بكج مميز يحتوي على ${col.items.length} منتجات من داندي.`}
+                    </p>
+
+                    <!-- Included items preview -->
+                    <div style="background: #fdf2f8; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.75rem;">
+                      <div style="font-weight: 700; color: #be185d; margin-bottom: 4px;">مكونات الكوليكشن:</div>
+                      <ul style="margin: 0; padding-right: 16px; color: #374151;">
+                        {col.items.map(it => (
+                          <li>{it.productName}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div class="pf-card-pricing">
+                      <div class="pf-price-current">
+                        <span class="pf-price-val">{col.calculatedPrice.toFixed(0)}</span>
+                        <span class="pf-price-cur">ج.م</span>
+                      </div>
+                      <div class="pf-price-orig">
+                        <span class="pf-price-val">{col.totalRegularPrice.toFixed(0)}</span>
+                        <span class="pf-price-cur">ج.م</span>
+                      </div>
+                    </div>
+
+                    <div class="pf-savings-note">
+                      وفر إجمالي <strong>{col.savings.toFixed(0)} ج.م</strong>
+                    </div>
+
+                    <div class="pf-card-footer">
+                      <button
+                        type="button"
+                        class="pf-card-btn btn-open-col-modal"
+                        data-col-id={col.id}
+                        data-col-name={col.name}
+                        data-col-price={col.calculatedPrice}
+                        data-col-json={JSON.stringify(col)}
+                        style="width: 100%; border: none; background: #be185d; color: #ffffff; cursor: pointer; justify-content: center;"
+                      >
+                        <i class="fas fa-magic" style="margin-left: 6px;"></i>
+                        <span>اختيار الروائح وإضافة للسلة</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State: Active but no offers or collections configured yet */}
+        {status === 'active' && validCampaignItems.length === 0 && validCollections.length === 0 && (
           <div class="pf-empty-state">
             <div class="pf-empty-icon">
               <i class="fas fa-magic"></i>
@@ -278,7 +454,163 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
 
       </div>
     </section>
+
+    <!-- Collection Scent Selection Modal -->
+    <div class="pf-modal-backdrop" id="storefrontColModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 2000; padding: 20px;">
+      <div class="pf-modal-dialog" style="background: #ffffff; border-radius: 16px; max-width: 550px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;">
+          <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-magic" style="color: #be185d;"></i>
+            <span id="sfColModalName">تخصيص الروائح للكوليكشن</span>
+          </h3>
+          <button type="button" id="btnCloseSfColModal" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #9ca3af;">&times;</button>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 16px; line-height: 1.5;">
+          اختاري العطر/الرائحة المفضلة لكل منتج داخل الكوليكشن قبل الإضافة للسلة:
+        </p>
+
+        <div id="sfColItemsContainer" style="display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding-left: 4px;">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 0.8rem; color: #6b7280;">السعر الإجمالي للبكج:</span>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #be185d;" id="sfColModalTotalPrice">0 ج.م</div>
+          </div>
+
+          <button type="button" class="pf-btn pf-btn-primary" id="btnConfirmAddColToCart" style="background: #be185d; border-color: #be185d;">
+            <span>تأكيد وإضافة للسلة</span>
+            <i class="fas fa-shopping-bag" style="margin-right: 6px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <script is:inline>
+    let selectedColData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.btn-open-col-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const rawJson = btn.getAttribute('data-col-json');
+          if (!rawJson) return;
+          try {
+            selectedColData = JSON.parse(rawJson);
+            renderSfColModal();
+            const modal = document.getElementById('storefrontColModal');
+            if (modal) modal.style.display = 'flex';
+          } catch (e) {
+            console.error('Error parsing col json:', e);
+          }
+        });
+      });
+
+      document.getElementById('btnCloseSfColModal')?.addEventListener('click', () => {
+        const modal = document.getElementById('storefrontColModal');
+        if (modal) modal.style.display = 'none';
+      });
+
+      function renderSfColModal() {
+        if (!selectedColData) return;
+        document.getElementById('sfColModalName').textContent = selectedColData.name;
+        document.getElementById('sfColModalTotalPrice').textContent = selectedColData.calculatedPrice + ' ج.م';
+
+        const container = document.getElementById('sfColItemsContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        selectedColData.items.forEach((item, idx) => {
+          const div = document.createElement('div');
+          div.style.cssText = 'background:#f9fafb; padding:10px 14px; border-radius:8px; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; gap:10px;';
+
+          const scents = item.scents || [];
+          let scentSelectHtml = '';
+
+          if (scents.length > 0) {
+            scentSelectHtml = `
+              <select class="sf-item-scent-select" data-item-index="${idx}" style="border:1px solid #d1d5db; border-radius:6px; padding:4px 8px; font-size:0.8rem; outline:none; background:#ffffff;">
+                ${scents.map(s => `<option value="${s.id}" ${String(s.id) === String(item.defaultVariantId) ? 'selected' : ''}>${s.name}</option>`).join('')}
+              </select>
+            `;
+          } else {
+            scentSelectHtml = `<span style="font-size:0.75rem; color:#6b7280;">شامل حسب الصورة</span>`;
+          }
+
+          div.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${item.image}" style="width:36px; height:36px; border-radius:4px; object-fit:cover;">
+              <div>
+                <strong style="font-size:0.82rem; color:#111827; display:block;">${item.productName}</strong>
+              </div>
+            </div>
+            <div>${scentSelectHtml}</div>
+          `;
+
+          container.appendChild(div);
+        });
+      }
+
+      document.getElementById('btnConfirmAddColToCart')?.addEventListener('click', () => {
+        if (!selectedColData) return;
+
+        const selectedItems = [];
+        const scentSelects = document.querySelectorAll('.sf-item-scent-select');
+
+        selectedColData.items.forEach((item, idx) => {
+          const select = Array.from(scentSelects).find(s => s.getAttribute('data-item-index') === String(idx));
+          let chosenScent = null;
+          if (select) {
+            const selectedOpt = select.options[select.selectedIndex];
+            if (selectedOpt) {
+              chosenScent = { id: selectedOpt.value, name: selectedOpt.textContent };
+            }
+          }
+
+          selectedItems.push({
+            collectionItemId: item.collectionItemId,
+            productId: item.productId,
+            productName: item.productName,
+            selectedVariant: chosenScent
+          });
+        });
+
+        const cartItem = {
+          type: 'collection',
+          isCollection: true,
+          isPinkFriday: true,
+          collectionId: selectedColData.id,
+          name: selectedColData.name,
+          price: selectedColData.calculatedPrice,
+          regularPrice: selectedColData.totalRegularPrice,
+          image: selectedColData.coverImage,
+          quantity: 1,
+          selectedItems: selectedItems
+        };
+
+        // Add to localStorage dandy_cart
+        let cart = [];
+        try {
+          cart = JSON.parse(localStorage.getItem('dandy_cart') || '[]');
+        } catch (e) {
+          cart = [];
+        }
+
+        cart.push(cartItem);
+        localStorage.setItem('dandy_cart', JSON.stringify(cart));
+
+        const modal = document.getElementById('storefrontColModal');
+        if (modal) modal.style.display = 'none';
+
+        // Trigger cart drawer if available or redirect to cart
+        if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
+        if (typeof window.openCartDrawer === 'function') window.openCartDrawer();
+        else window.location.href = '/cart';
+      });
+    });
+  </script>
 </BaseLayout>
 
 <style>

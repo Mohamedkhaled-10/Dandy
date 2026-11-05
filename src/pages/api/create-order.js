@@ -273,7 +273,136 @@ export async function POST({ request }) {
       activeCampaign = await getPublishedPinkFridayCampaign();
     }
 
+    // Map to track stock deduction for individual products (including components of collection bundles)
+    const stockDeductionMap = new Map(); // productId -> { name: string, quantityNeeded: number }
+
     for (const item of items) {
+      // Check if this item is a Pink Friday Collection bundle
+      if (item.type === 'collection' || item.isCollection || item.collectionId) {
+        const colId = item.collectionId || item.id;
+        const quantity = parseInt(item.quantity) || 1;
+        if (!colId || quantity <= 0) continue;
+
+        const activeCollections = (activeCampaign && Array.isArray(activeCampaign.collections)) ? activeCampaign.collections : [];
+        const collection = activeCollections.find(c => String(c.id) === String(colId));
+
+        if (!collection || !collection.active) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'CAMPAIGN_COLLECTION_CONFLICT',
+            message: `عذراً، كوليكشن Pink Friday المطلوب غير متاح حالياً أو تم إلغاؤه.`
+          }), {
+            status: 409,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Validate items inside collection
+        const collectionItemsList = Array.isArray(collection.items) ? collection.items : [];
+        if (collectionItemsList.length === 0) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'INVALID_COLLECTION',
+            message: `عذراً، كوليكشن "${collection.name}" لا يحتوي على منتجات.`
+          }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        let totalBasePrice = 0;
+        const resolvedCollectionItems = [];
+
+        for (const cItem of collectionItemsList) {
+          const pSnap = await adminDb.ref(`products/${cItem.productId}`).once('value');
+          if (!pSnap.exists()) {
+            return new Response(JSON.stringify({
+              success: false,
+              error: 'PRODUCT_NOT_FOUND',
+              message: `عذراً، أحد منتجات كوليكشن "${collection.name}" لم يعد متاحاً.`
+            }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
+          const pData = pSnap.val();
+          if (pData.isHidden || pData.isSoldOut) {
+            return new Response(JSON.stringify({
+              success: false,
+              error: 'PRODUCT_UNAVAILABLE',
+              message: `عذراً، المنتج "${pData.name || ''}" داخل كوليكشن "${collection.name}" غير متاح حالياً.`
+            }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
+          const itemBasePrice = parseFloat(String(pData.price).replace(/[^0-9.-]+/g, '')) || 0;
+          totalBasePrice += itemBasePrice;
+
+          // Find variant selected by customer for this specific collection item
+          const clientSelectedItems = Array.isArray(item.selectedItems) ? item.selectedItems : (Array.isArray(item.items) ? item.items : []);
+          const clientChoice = clientSelectedItems.find(csi =>
+            (csi.collectionItemId && String(csi.collectionItemId) === String(cItem.collectionItemId)) ||
+            (csi.productId && String(csi.productId) === String(cItem.productId))
+          );
+
+          let variantText = '';
+          if (clientChoice) {
+            if (clientChoice.selectedVariant?.name) variantText = clientChoice.selectedVariant.name;
+            else if (clientChoice.variantName) variantText = clientChoice.variantName;
+            else if (clientChoice.variant) variantText = typeof clientChoice.variant === 'object' ? clientChoice.variant.name : String(clientChoice.variant);
+          }
+
+          resolvedCollectionItems.push({
+            collectionItemId: cItem.collectionItemId,
+            productId: cItem.productId,
+            productName: pData.name || '',
+            image: pData.image || '',
+            price: itemBasePrice,
+            variantName: variantText
+          });
+
+          // Add to stock deduction requirement
+          const currentQtyNeeded = stockDeductionMap.get(cItem.productId)?.quantityNeeded || 0;
+          stockDeductionMap.set(cItem.productId, {
+            name: pData.name || '',
+            quantityNeeded: currentQtyNeeded + quantity
+          });
+        }
+
+        // Calculate effective collection bundle price
+        let effectiveUnitPrice = totalBasePrice;
+        if (collection.pricingType === 'package' && typeof collection.packagePrice === 'number' && collection.packagePrice > 0) {
+          effectiveUnitPrice = collection.packagePrice;
+        } else if (collection.pricingType === 'percentage' && typeof collection.discountPercentage === 'number' && collection.discountPercentage > 0) {
+          effectiveUnitPrice = Math.round(totalBasePrice * (1 - collection.discountPercentage / 100));
+        }
+
+        const lineTotal = effectiveUnitPrice * quantity;
+        subtotal += lineTotal;
+
+        const snap = {
+          type: 'collection',
+          collectionId: collection.id,
+          name: collection.name || item.name || 'كوليكشن Pink Friday',
+          price: totalBasePrice,
+          effectiveUnitPrice: effectiveUnitPrice,
+          lineTotal: lineTotal,
+          quantity: quantity,
+          image: collection.coverImage || resolvedCollectionItems[0]?.image || '',
+          isPinkFriday: true,
+          isCollection: true,
+          badgeText: collection.badgeText || 'كوليكشن Pink Friday',
+          items: resolvedCollectionItems
+        };
+
+        productsSnapshot.push(snap);
+        continue;
+      }
+
+      // Standard Product Item Handling
       const rawId = item.productId || (item.id ? String(item.id).split('::')[0] : '');
       const quantity = parseInt(item.quantity) || 1;
       if (!rawId || quantity <= 0) continue;
@@ -360,6 +489,13 @@ export async function POST({ request }) {
         }
       }
 
+      // Add to stock deduction map
+      const currentQtyNeeded = stockDeductionMap.get(rawId)?.quantityNeeded || 0;
+      stockDeductionMap.set(rawId, {
+        name: pData.name || item.name || '',
+        quantityNeeded: currentQtyNeeded + quantity
+      });
+
       productsSnapshot.push(snap);
     }
 
@@ -421,11 +557,10 @@ export async function POST({ request }) {
 
     const internalSecret = process.env.INTERNAL_API_SECRET ? process.env.INTERNAL_API_SECRET.trim() : null;
 
-    // تحديث المخزون باستخدام Transaction وإطلاق تنبيه المخزون المنخفض
-    for (const snap of productsSnapshot) {
-      const prodId = snap.id;
-      const orderedQty = snap.quantity;
-      if (prodId) {
+    // تحديث المخزون باستخدام Transaction وإطلاق تنبيه المخزون المنخفض لكل منتج شارك في الطلب
+    for (const [prodId, stockInfo] of stockDeductionMap.entries()) {
+      const orderedQty = stockInfo.quantityNeeded;
+      if (prodId && orderedQty > 0) {
         try {
           const stockRef = adminDb.ref(`products/${prodId}/stockQuantity`);
           await stockRef.transaction(current => {
@@ -455,7 +590,7 @@ export async function POST({ request }) {
                   },
                   body: JSON.stringify({
                     lowStockAlert: true,
-                    productName: snap.name,
+                    productName: stockInfo.name,
                     remainingQty: newQty
                   })
                 }).catch(tgErr => console.error('Telegram low stock notification failed:', tgErr));
