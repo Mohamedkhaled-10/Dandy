@@ -1503,14 +1503,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const enabledToggle = document.getElementById('campaignEnabledToggle');
       if (enabledToggle) enabledToggle.checked = draftCampaign.enabled !== false;
 
+      const startVal = draftCampaign.startAt || draftCampaign.startDate;
       const startDateInput = document.getElementById('campaignStartDate');
-      if (startDateInput && draftCampaign.startDate) {
-        startDateInput.value = draftCampaign.startDate.slice(0, 16);
+      if (startDateInput && startVal) {
+        startDateInput.value = startVal.slice(0, 16);
       }
 
+      const endVal = draftCampaign.endAt || draftCampaign.endDate;
       const endDateInput = document.getElementById('campaignEndDate');
-      if (endDateInput && draftCampaign.endDate) {
-        endDateInput.value = draftCampaign.endDate.slice(0, 16);
+      if (endDateInput && endVal) {
+        endDateInput.value = endVal.slice(0, 16);
       }
 
       const visuals = draftCampaign.visuals || {};
@@ -1548,8 +1550,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       draftCampaign.enabled = document.getElementById('campaignEnabledToggle').checked;
       const sVal = document.getElementById('campaignStartDate').value;
       const eVal = document.getElementById('campaignEndDate').value;
-      if (sVal) draftCampaign.startDate = sVal.length === 16 ? sVal + ':00' : sVal;
-      if (eVal) draftCampaign.endDate = eVal.length === 16 ? eVal + ':00' : eVal;
+      if (sVal) {
+        const isoStart = sVal.length === 16 ? sVal + ':00' : sVal;
+        draftCampaign.startDate = isoStart;
+        draftCampaign.startAt = isoStart;
+      }
+      if (eVal) {
+        const isoEnd = eVal.length === 16 ? eVal + ':00' : eVal;
+        draftCampaign.endDate = isoEnd;
+        draftCampaign.endAt = isoEnd;
+      }
 
       draftCampaign.visuals = {
         headline: document.getElementById('visualHeadline').value.trim(),
@@ -2067,8 +2077,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       const now = new Date();
-      const start = draftCampaign.startDate ? new Date(draftCampaign.startDate) : null;
-      const end = draftCampaign.endDate ? new Date(draftCampaign.endDate) : null;
+      const startStr = draftCampaign.startAt || draftCampaign.startDate;
+      const endStr = draftCampaign.endAt || draftCampaign.endDate;
+      const start = startStr ? new Date(startStr) : null;
+      const end = endStr ? new Date(endStr) : null;
 
       let status = 'disabled';
       let statusLabel = 'غير مفعلة';
@@ -2099,7 +2111,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       // KPIs
       const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
-      const totalOffers = offers.length;
+      const collections = Array.isArray(draftCampaign.collections) ? draftCampaign.collections : [];
       let validOffers = 0;
       let totalDiscount = 0;
       let maxSaving = 0;
@@ -2117,8 +2129,43 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       });
 
-      document.getElementById('statTotalOffers').textContent = totalOffers;
-      document.getElementById('statValidOffers').textContent = validOffers;
+      let validCollections = 0;
+      collections.forEach(col => {
+        if (!col || col.active === false) return;
+        const colItems = Array.isArray(col.items) ? col.items : [];
+        if (colItems.length === 0) return;
+        let isColValid = true;
+        let colBase = 0;
+        colItems.forEach(it => {
+          const prod = catalogProducts.find(p => String(p.id) === String(it.productId));
+          if (!prod || prod.isHidden || prod.isSoldOut) {
+            isColValid = false;
+          } else {
+            colBase += (parseFloat(prod.price) || 0);
+          }
+        });
+        if (isColValid && colBase > 0) {
+          validCollections++;
+          let colFinal = colBase;
+          if (col.pricingType === 'package') {
+            colFinal = parseFloat(col.packagePrice) || colBase;
+          } else if (col.pricingType === 'percentage') {
+            const pct = parseFloat(col.discountPercentage) || 0;
+            colFinal = Math.round(colBase * (1 - pct / 100));
+          }
+          const colSaving = Math.max(0, colBase - colFinal);
+          if (colSaving > maxSaving) maxSaving = colSaving;
+        }
+      });
+
+      document.getElementById('statTotalOffers').textContent = collections.length > 0
+        ? `${offers.length} (+${collections.length} كوليكشن)`
+        : `${offers.length}`;
+
+      document.getElementById('statValidOffers').textContent = validCollections > 0
+        ? `${validOffers} (+${validCollections} كوليكشن)`
+        : `${validOffers}`;
+
       document.getElementById('statAvgDiscount').textContent = validOffers > 0 ? Math.round(totalDiscount / validOffers) + '%' : '0%';
       document.getElementById('statMaxSaving').textContent = maxSaving + ' ج.م';
 
@@ -2331,27 +2378,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       updateDraftFromForm();
 
-      // Check dates
-      const s = new Date(draftCampaign.startDate);
-      const e = new Date(draftCampaign.endDate);
+      const startStr = draftCampaign.startAt || draftCampaign.startDate;
+      const endStr = draftCampaign.endAt || draftCampaign.endDate;
+      const s = new Date(startStr);
+      const e = new Date(endStr);
       if (isNaN(s.getTime()) || isNaN(e.getTime()) || e <= s) {
         alert('خطأ: يرجى التأكد من صحة تواريخ البداية والنهاية (يجب أن يكون تاريخ النهاية بعد البداية).');
         return;
       }
 
-      // Check valid offers
+      // Check valid individual offers
       const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
-      const validCount = offers.filter(o => {
+      const validOffersCount = offers.filter(o => {
         const p = catalogProducts.find(item => String(item.id) === String(o.productId));
         return p && !p.isHidden && !p.isSoldOut && o.discountPercentage > 0;
       }).length;
 
+      // Check valid collections
+      const collections = Array.isArray(draftCampaign.collections) ? draftCampaign.collections : [];
+      const validColCount = collections.filter(col => {
+        if (!col || col.active === false) return false;
+        const colItems = Array.isArray(col.items) ? col.items : [];
+        if (colItems.length === 0) return false;
+        return colItems.every(it => {
+          const p = catalogProducts.find(item => String(item.id) === String(it.productId));
+          return p && !p.isHidden && !p.isSoldOut;
+        });
+      }).length;
+
+      const hasValidCampaignItems = validOffersCount > 0 || validColCount > 0;
+
       document.getElementById('pubModalYear').textContent = currentYear;
       document.getElementById('pubModalStatus').textContent = draftCampaign.enabled ? 'مفعلة' : 'غير مفعلة';
-      document.getElementById('pubModalDates').textContent = `من ${draftCampaign.startDate} إلى ${draftCampaign.endDate}`;
-      document.getElementById('pubModalValidCount').textContent = validCount;
-      document.getElementById('pubModalTotalCount').textContent = offers.length;
-      document.getElementById('pubModalVisibility').textContent = (draftCampaign.enabled && validCount > 0) ? 'ستظهر فوراً للعملاء في المتجر' : 'ستكون مخفية عن العملاء لعدم وجود عروض صالحة أو لتعطيلها';
+      document.getElementById('pubModalDates').textContent = `من ${startStr} إلى ${endStr}`;
+      document.getElementById('pubModalValidCount').textContent = `${validOffersCount} عروض فردية + ${validColCount} كوليكشنز`;
+      document.getElementById('pubModalTotalCount').textContent = `${offers.length} عروض + ${collections.length} كوليكشنز`;
+      document.getElementById('pubModalVisibility').textContent = (draftCampaign.enabled && hasValidCampaignItems)
+        ? 'ستظهر فوراً للعملاء في المتجر'
+        : 'ستكون مخفية عن العملاء لعدم وجود عروض أو كوليكشنز صالحة أو لتعطيلها';
 
       openModal('publishModal');
     });

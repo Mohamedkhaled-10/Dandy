@@ -59,6 +59,8 @@ export interface PinkFridayCampaignData {
   updatedBy?: string;
 }
 
+export type PinkFridayCampaign = PinkFridayCampaignData;
+
 export type CampaignStatus = 'disabled' | 'upcoming' | 'active' | 'ended';
 
 const RTDB_URL = 'https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app';
@@ -104,11 +106,34 @@ export async function getPublishedPinkFridayCampaign(forceFresh = false): Promis
 
     if (res.ok) {
       const data = await res.json();
-      if (data && typeof data === 'object' && data.id) {
+      if (data && typeof data === 'object' && (data.id || data.year)) {
+        const rawOffers = data.offers;
+        const normalizedOffers = Array.isArray(rawOffers)
+          ? rawOffers
+          : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+
+        const rawCollections = data.collections;
+        const collectionsList = Array.isArray(rawCollections)
+          ? rawCollections
+          : (rawCollections && typeof rawCollections === 'object' ? Object.values(rawCollections) : []);
+
+        const normalizedCollections = collectionsList.filter(Boolean).map((col: any) => ({
+          ...col,
+          allowDuplicates: Boolean(col.allowDuplicates),
+          active: col.active !== false,
+          items: Array.isArray(col.items)
+            ? col.items
+            : (col.items && typeof col.items === 'object' ? Object.values(col.items) : [])
+        }));
+
         cachedPublishedCampaign = {
           ...INITIAL_2026_CAMPAIGN,
           ...data,
-          offers: Array.isArray(data.offers) ? data.offers : []
+          id: data.id || `pink-friday-${data.year || 2026}`,
+          startAt: data.startAt || data.startDate || INITIAL_2026_CAMPAIGN.startAt,
+          endAt: data.endAt || data.endDate || INITIAL_2026_CAMPAIGN.endAt,
+          offers: normalizedOffers,
+          collections: normalizedCollections
         };
         lastCacheTime = now;
         return cachedPublishedCampaign;
@@ -131,21 +156,23 @@ export function getCampaignStatus(
   campaign: PinkFridayCampaignData = INITIAL_2026_CAMPAIGN,
   now: Date = new Date()
 ): CampaignStatus {
-  if (!campaign || !campaign.enabled) {
+  if (!campaign || campaign.enabled === false) {
     return 'disabled';
   }
 
   const currentTs = now.getTime();
+  const startAt = campaign.startAt || (campaign as any).startDate;
+  const endAt = campaign.endAt || (campaign as any).endDate;
 
-  if (campaign.startAt) {
-    const startTs = Date.parse(campaign.startAt);
+  if (startAt) {
+    const startTs = Date.parse(startAt);
     if (!isNaN(startTs) && currentTs < startTs) {
       return 'upcoming';
     }
   }
 
-  if (campaign.endAt) {
-    const endTs = Date.parse(campaign.endAt);
+  if (endAt) {
+    const endTs = Date.parse(endAt);
     if (!isNaN(endTs) && currentTs > endTs) {
       return 'ended';
     }
@@ -167,18 +194,35 @@ export function isCampaignEnded(campaign?: PinkFridayCampaignData, now?: Date): 
 }
 
 /**
- * Whether the public website should display Pink Friday marketing elements
- * (requires active/upcoming status AND at least one valid participating offer or collection).
+ * Whether the public website should display Pink Friday marketing elements.
+ * A campaign is considered to have valid offers if it has at least one active individual offer OR at least one active collection.
  */
 export function shouldDisplayCampaignToCustomers(
   campaign: PinkFridayCampaignData,
   now: Date = new Date()
 ): boolean {
+  if (!campaign) return false;
   const status = getCampaignStatus(campaign, now);
   if (status !== 'active' && status !== 'upcoming') return false;
 
-  const activeOffers = (campaign.offers || []).filter(o => o.active);
-  const activeCollections = (campaign.collections || []).filter(c => c.active);
+  const rawOffers = campaign.offers;
+  const offersList = Array.isArray(rawOffers)
+    ? rawOffers
+    : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+  const activeOffers = offersList.filter(o => o && o.active !== false && o.productId);
+
+  const rawCollections = campaign.collections;
+  const collectionsList = Array.isArray(rawCollections)
+    ? rawCollections
+    : (rawCollections && typeof rawCollections === 'object' ? Object.values(rawCollections) : []);
+  const activeCollections = collectionsList.filter(c => {
+    if (!c || c.active === false) return false;
+    const items = Array.isArray(c.items)
+      ? c.items
+      : (c.items && typeof c.items === 'object' ? Object.values(c.items) : []);
+    return items.length > 0;
+  });
+
   return activeOffers.length > 0 || activeCollections.length > 0;
 }
 
@@ -215,13 +259,17 @@ export function validateCollection(
     return { isValid: false, reason: 'COLLECTION_INACTIVE' };
   }
 
-  if (!Array.isArray(collection.items) || collection.items.length === 0) {
+  const items = Array.isArray(collection.items)
+    ? collection.items
+    : (collection.items && typeof collection.items === 'object' ? Object.values(collection.items) : []);
+
+  if (items.length === 0) {
     return { isValid: false, reason: 'EMPTY_COLLECTION' };
   }
 
   // Check duplicate setting
   if (!collection.allowDuplicates) {
-    const productIds = collection.items.map(item => String(item.productId));
+    const productIds = items.map((item: any) => String(item.productId));
     const uniqueProductIds = new Set(productIds);
     if (uniqueProductIds.size !== productIds.length) {
       return { isValid: false, reason: 'DUPLICATE_PRODUCTS_NOT_ALLOWED' };
@@ -229,8 +277,8 @@ export function validateCollection(
   }
 
   let totalRegularPrice = 0;
-  for (const item of collection.items) {
-    const p = productsMap.get(String(item.productId));
+  for (const item of items) {
+    const p = productsMap.get(String((item as any).productId));
     if (!p) {
       return { isValid: false, reason: `PRODUCT_NOT_FOUND:${item.productId}` };
     }

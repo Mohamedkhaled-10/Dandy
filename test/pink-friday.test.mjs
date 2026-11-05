@@ -275,7 +275,7 @@ test('Case 19: Stale localStorage cart claiming campaign price on ended campaign
 });
 
 // 20. Collection Validation tests
-test('Case 20: Collection package pricing and duplicate prevention validation', () => {
+test('Case 20: Collection package pricing and duplicate prevention validation', async () => {
   const productsMap = new Map([
     ['prod-001', { id: 'prod-001', price: 500, isHidden: false, isSoldOut: false }],
     ['prod-002', { id: 'prod-002', price: 300, isHidden: false, isSoldOut: false }]
@@ -294,33 +294,83 @@ test('Case 20: Collection package pricing and duplicate prevention validation', 
     ]
   };
 
-  // Import validateCollection dynamically from server utils
-  import('../src/utils/pink-friday-server.ts').then(({ validateCollection }) => {
-    const res = validateCollection(collectionNoDuplicates, productsMap, activeConfig, fixedNow);
-    assert.equal(res.isValid, true);
-    assert.equal(res.calculatedPrice, 650);
-    assert.equal(res.totalRegularPrice, 800);
+  const { validateCollection } = await import('../src/utils/pink-friday-server.ts');
+  const res = validateCollection(collectionNoDuplicates, productsMap, activeConfig, fixedNow);
+  assert.equal(res.isValid, true);
+  assert.equal(res.calculatedPrice, 650);
+  assert.equal(res.totalRegularPrice, 800);
 
-    // Duplicate attempt when allowDuplicates is false
-    const collectionDuplicateErr = {
-      ...collectionNoDuplicates,
-      items: [
-        { collectionItemId: 'ci_1', productId: 'prod-001' },
-        { collectionItemId: 'ci_2', productId: 'prod-001' }
-      ]
-    };
-    const resDup = validateCollection(collectionDuplicateErr, productsMap, activeConfig, fixedNow);
-    assert.equal(resDup.isValid, false);
-    assert.equal(resDup.reason, 'DUPLICATE_PRODUCTS_NOT_ALLOWED');
+  // Duplicate attempt when allowDuplicates is false
+  const collectionDuplicateErr = {
+    ...collectionNoDuplicates,
+    items: [
+      { collectionItemId: 'ci_1', productId: 'prod-001' },
+      { collectionItemId: 'ci_2', productId: 'prod-001' }
+    ]
+  };
+  const resDup = validateCollection(collectionDuplicateErr, productsMap, activeConfig, fixedNow);
+  assert.equal(resDup.isValid, false);
+  assert.equal(resDup.reason, 'DUPLICATE_PRODUCTS_NOT_ALLOWED');
 
-    // Duplicate allowed
-    const collectionDuplicateAllowed = {
-      ...collectionDuplicateErr,
-      allowDuplicates: true
-    };
-    const resDupAllowed = validateCollection(collectionDuplicateAllowed, productsMap, activeConfig, fixedNow);
-    assert.equal(resDupAllowed.isValid, true);
-    assert.equal(resDupAllowed.totalRegularPrice, 1000);
-  });
+  // Duplicate allowed
+  const collectionDuplicateAllowed = {
+    ...collectionDuplicateErr,
+    allowDuplicates: true
+  };
+  const resDupAllowed = validateCollection(collectionDuplicateAllowed, productsMap, activeConfig, fixedNow);
+  assert.equal(resDupAllowed.isValid, true);
+  assert.equal(resDupAllowed.totalRegularPrice, 1000);
 });
+
+// 21. Collections-only campaign is valid and displays to customers
+test('Case 21: Campaign with collections only (empty offers) is active and visible to customers', async () => {
+  const { shouldDisplayCampaignToCustomers, getCampaignStatus } = await import('../src/utils/pink-friday-server.ts');
+  
+  const collectionsOnlyConfig = {
+    ...activeConfig,
+    offers: [], // ZERO individual offers
+    collections: [
+      {
+        id: 'col-bundle-1',
+        name: 'عرض الكوليكشن الحصري',
+        active: true,
+        pricingType: 'package',
+        packagePrice: 600,
+        items: [
+          { collectionItemId: 'ci_1', productId: 'prod-001' }
+        ]
+      }
+    ]
+  };
+
+  assert.equal(getCampaignStatus(collectionsOnlyConfig, fixedNow), 'active');
+  const shouldDisplay = shouldDisplayCampaignToCustomers(collectionsOnlyConfig, fixedNow);
+  assert.equal(shouldDisplay, true);
+});
+
+// 22. Collections stored as RTDB Object format are safely handled
+test('Case 22: Collections stored as RTDB keyed objects are safely normalized and visible', async () => {
+  const { shouldDisplayCampaignToCustomers } = await import('../src/utils/pink-friday-server.ts');
+  
+  const rtdbKeyedCampaign = {
+    ...activeConfig,
+    offers: {}, // Empty RTDB keyed object instead of array
+    collections: { // RTDB keyed object of collections
+      'col_key_1': {
+        id: 'col_key_1',
+        name: 'باقة التوفير',
+        active: true,
+        pricingType: 'percentage',
+        discountPercentage: 20,
+        items: {
+          '0': { collectionItemId: 'ci_0', productId: 'prod-001' }
+        }
+      }
+    }
+  };
+
+  const shouldDisplay = shouldDisplayCampaignToCustomers(rtdbKeyedCampaign, fixedNow);
+  assert.equal(shouldDisplay, true);
+});
+
 

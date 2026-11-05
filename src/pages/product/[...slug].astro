@@ -14,7 +14,12 @@ import {
   type Product,
   type VariantItem
 } from '../../utils/products';
-import { PINK_FRIDAY_CONFIG, calculatePinkFridayPricing } from '../../config/pink-friday';
+import {
+  getPublishedPinkFridayCampaign,
+  calculatePinkFridayPricing
+} from '../../utils/pink-friday-server';
+
+const livePfCampaign = await getPublishedPinkFridayCampaign();
 
 const { slug } = Astro.params;
 
@@ -79,7 +84,7 @@ const categoryName = product ? normalizeCategory(product.category) : '';
 const priceNumber = product ? Number(product.price) || 0 : 0;
 const originalPriceNumber = product?.originalPrice ? Number(product.originalPrice) : null;
 const discountNumber = product?.discount ? Number(product.discount) : null;
-const pfPricing = product ? calculatePinkFridayPricing(product, PINK_FRIDAY_CONFIG) : { isEligible: false, regularPrice: 0, campaignPrice: 0, discountAmount: 0, discountPercentage: 0 };
+const pfPricing = product ? calculatePinkFridayPricing(product, livePfCampaign) : { isEligible: false, regularPrice: 0, campaignPrice: 0, discountAmount: 0, discountPercentage: 0 };
 const isPfEligible = pfPricing.isEligible;
 const isSoldOut = Boolean(product?.isSoldOut);
 const isAvailable = Boolean(product && !product.isSoldOut && product.inStock !== false);

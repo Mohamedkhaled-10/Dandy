@@ -5,8 +5,11 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
 import { getClientIp, getOrderRateLimiter } from '../../utils/rate-limit.js';
-import { verifyTurnstileToken } from '../../utils/turnstile.js';
-import { getPublishedPinkFridayCampaign, calculatePinkFridayPricing } from '../../utils/pink-friday-server.ts';
+import {
+  getPublishedPinkFridayCampaign,
+  getCampaignStatus,
+  calculatePinkFridayPricing
+} from '../../utils/pink-friday-server.ts';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -283,10 +286,30 @@ export async function POST({ request }) {
         const quantity = parseInt(item.quantity) || 1;
         if (!colId || quantity <= 0) continue;
 
-        const activeCollections = (activeCampaign && Array.isArray(activeCampaign.collections)) ? activeCampaign.collections : [];
-        const collection = activeCollections.find(c => String(c.id) === String(colId));
+        // Verify campaign is active
+        const campStatus = (activeCampaign && activeCampaign.enabled !== false)
+          ? getCampaignStatus(activeCampaign)
+          : 'disabled';
 
-        if (!collection || !collection.active) {
+        if (campStatus !== 'active') {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'CAMPAIGN_COLLECTION_CONFLICT',
+            message: `عذراً، عروض Pink Friday غير متاحة حالياً أو انتهت صلاحيتها.`
+          }), {
+            status: 409,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        const rawColls = activeCampaign?.collections;
+        const activeCollections = Array.isArray(rawColls)
+          ? rawColls
+          : (rawColls && typeof rawColls === 'object' ? Object.values(rawColls) : []);
+
+        const collection = activeCollections.find(c => c && String(c.id) === String(colId));
+
+        if (!collection || collection.active === false) {
           return new Response(JSON.stringify({
             success: false,
             error: 'CAMPAIGN_COLLECTION_CONFLICT',
@@ -298,7 +321,10 @@ export async function POST({ request }) {
         }
 
         // Validate items inside collection
-        const collectionItemsList = Array.isArray(collection.items) ? collection.items : [];
+        const collectionItemsList = Array.isArray(collection.items)
+          ? collection.items
+          : (collection.items && typeof collection.items === 'object' ? Object.values(collection.items) : []);
+
         if (collectionItemsList.length === 0) {
           return new Response(JSON.stringify({
             success: false,
@@ -308,6 +334,22 @@ export async function POST({ request }) {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
           });
+        }
+
+        // Enforce duplicate restriction if allowDuplicates is false
+        if (!collection.allowDuplicates) {
+          const itemPids = collectionItemsList.map(it => String(it.productId));
+          const uniquePids = new Set(itemPids);
+          if (uniquePids.size !== itemPids.length) {
+            return new Response(JSON.stringify({
+              success: false,
+              error: 'COLLECTION_DUPLICATE_DISALLOWED',
+              message: `عذراً، كوليكشن "${collection.name}" يحتوي على تكرار غير مصرح به.`
+            }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
         }
 
         let totalBasePrice = 0;

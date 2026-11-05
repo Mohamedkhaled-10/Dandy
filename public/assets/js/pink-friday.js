@@ -7,15 +7,24 @@
   // Read config from server injection if present, else fallback to safe defaults
   const serverConfig = window.__PINK_FRIDAY_CONFIG || {};
 
+  const rawOffers = Array.isArray(serverConfig.offers)
+    ? serverConfig.offers
+    : (serverConfig.offers && typeof serverConfig.offers === 'object' ? Object.values(serverConfig.offers) : []);
+
+  const rawCollections = Array.isArray(serverConfig.collections)
+    ? serverConfig.collections
+    : (serverConfig.collections && typeof serverConfig.collections === 'object' ? Object.values(serverConfig.collections) : []);
+
   const config = {
     enabled: typeof serverConfig.enabled === 'boolean' ? serverConfig.enabled : false,
-    campaignId: serverConfig.campaignId || 'pink-friday',
+    campaignId: serverConfig.campaignId || serverConfig.id || 'pink-friday',
     title: serverConfig.title || 'Pink Friday',
     subtitleAr: serverConfig.subtitleAr || 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.',
     timezone: serverConfig.timezone || 'Africa/Cairo',
-    startAt: serverConfig.startAt || null,
-    endAt: serverConfig.endAt || null,
-    offers: Array.isArray(serverConfig.offers) ? serverConfig.offers : []
+    startAt: serverConfig.startAt || serverConfig.startDate || null,
+    endAt: serverConfig.endAt || serverConfig.endDate || null,
+    offers: rawOffers,
+    collections: rawCollections
   };
 
   function getStatus(now) {
@@ -37,6 +46,31 @@
 
   function isActive(now) {
     return getStatus(now) === 'active';
+  }
+
+  function hasValidCampaign() {
+    if (!config.enabled || !isActive()) return false;
+    const activeOffers = config.offers.filter(function(o) { return o && o.active !== false && o.productId; });
+    const activeCollections = config.collections.filter(function(c) {
+      if (!c || c.active === false) return false;
+      var items = Array.isArray(c.items) ? c.items : (c.items && typeof c.items === 'object' ? Object.values(c.items) : []);
+      return items.length > 0;
+    });
+    return activeOffers.length > 0 || activeCollections.length > 0;
+  }
+
+  function getCollections() {
+    if (!config.enabled || !isActive()) return [];
+    return config.collections.filter(function(c) {
+      return c && c.active !== false;
+    });
+  }
+
+  function getCollectionById(id) {
+    if (!config.enabled || !isActive() || !id) return null;
+    return config.collections.find(function(c) {
+      return c && String(c.id) === String(id) && c.active !== false;
+    }) || null;
   }
 
   function getOfferForProduct(productId) {
@@ -94,6 +128,9 @@
     config: config,
     getStatus: getStatus,
     isActive: isActive,
+    hasValidCampaign: hasValidCampaign,
+    getCollections: getCollections,
+    getCollectionById: getCollectionById,
     getOfferForProduct: getOfferForProduct,
     getPricing: getPricing
   };

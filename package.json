@@ -33,8 +33,5 @@
   },
   "overrides": {
     "jose": "^5.9.6"
-  },
-  "resolutions": {
-    "jose": "^5.9.6"
   }
 }

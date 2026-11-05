@@ -78,10 +78,17 @@ interface ValidCollectionItem {
 
 const validCollections: ValidCollectionItem[] = [];
 
-if (status === 'active' && campaign.collections) {
-  for (const col of campaign.collections) {
-    if (col.active === false) continue;
-    const colItems = Array.isArray(col.items) ? col.items : [];
+const rawCampaignCollections = campaign.collections;
+const campaignCollectionsList = Array.isArray(rawCampaignCollections)
+  ? rawCampaignCollections
+  : (rawCampaignCollections && typeof rawCampaignCollections === 'object' ? Object.values(rawCampaignCollections) : []);
+
+if (status === 'active' && campaignCollectionsList.length > 0) {
+  for (const col of campaignCollectionsList) {
+    if (!col || col.active === false) continue;
+    const colItems = Array.isArray(col.items)
+      ? col.items
+      : (col.items && typeof col.items === 'object' ? Object.values(col.items) : []);
     if (colItems.length === 0) continue;
 
     let totalRegPrice = 0;
@@ -192,9 +199,9 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
           {campaign.visuals?.subtitle || "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."}
         </p>
 
-        {status === 'active' && validCampaignItems.length > 0 && (
+        {status === 'active' && (validCampaignItems.length > 0 || validCollections.length > 0) && (
           <div class="pf-hero-actions">
-            <a href="#pink-friday-products" class="pf-btn pf-btn-primary">
+            <a href={validCampaignItems.length > 0 ? "#pink-friday-products" : "#pink-friday-collections"} class="pf-btn pf-btn-primary">
               <span>{campaign.visuals?.ctaText || "اكتشفي العروض"}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
             </a>
@@ -292,7 +299,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
 
         {/* Collections / Bundles Section */}
         {status === 'active' && validCollections.length > 0 && (
-          <div style="margin-bottom: 50px;">
+          <div id="pink-friday-collections" style="margin-bottom: 50px;">
             <div class="pf-section-header">
               <span class="pf-section-pretitle">مجموعات متميزة</span>
               <h2 class="pf-section-title">الكوليكشنز والعروض المجمعة</h2>
@@ -590,21 +597,23 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
           selectedItems: selectedItems
         };
 
-        // Add to localStorage dandy_cart
+        // Add to localStorage cart
         let cart = [];
         try {
-          cart = JSON.parse(localStorage.getItem('dandy_cart') || '[]');
+          cart = JSON.parse(localStorage.getItem('cart') || '[]');
         } catch (e) {
           cart = [];
         }
 
         cart.push(cartItem);
+        localStorage.setItem('cart', JSON.stringify(cart));
         localStorage.setItem('dandy_cart', JSON.stringify(cart));
 
         const modal = document.getElementById('storefrontColModal');
         if (modal) modal.style.display = 'none';
 
-        // Trigger cart drawer if available or redirect to cart
+        // Trigger cart badge updates
+        if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
         if (typeof window.updateCartBadge === 'function') window.updateCartBadge();
         if (typeof window.openCartDrawer === 'function') window.openCartDrawer();
         else window.location.href = '/cart';

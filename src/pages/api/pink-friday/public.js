@@ -14,6 +14,14 @@ export async function GET() {
     const status = getCampaignStatus(campaign);
     const isVisibleToCustomers = shouldDisplayCampaignToCustomers(campaign);
 
+    const rawOffers = Array.isArray(campaign.offers)
+      ? campaign.offers
+      : (campaign.offers && typeof campaign.offers === 'object' ? Object.values(campaign.offers) : []);
+
+    const rawCollections = Array.isArray(campaign.collections)
+      ? campaign.collections
+      : (campaign.collections && typeof campaign.collections === 'object' ? Object.values(campaign.collections) : []);
+
     // Only expose public-facing promotional fields
     const publicPayload = {
       campaignId: campaign.id,
@@ -23,12 +31,12 @@ export async function GET() {
       timezone: campaign.timezone,
       status,
       enabled: campaign.enabled && status === 'active',
-      startAt: campaign.startAt,
-      endAt: campaign.endAt,
+      startAt: campaign.startAt || campaign.startDate,
+      endAt: campaign.endAt || campaign.endDate,
       isVisible: isVisibleToCustomers,
       visuals: campaign.visuals || {},
       offers: isVisibleToCustomers
-        ? (campaign.offers || []).filter(o => o.active).map(o => ({
+        ? rawOffers.filter(o => o && o.active !== false && o.productId).map(o => ({
             productId: o.productId,
             campaignPrice: o.campaignPrice,
             discountPercentage: o.discountPercentage,
@@ -36,22 +44,27 @@ export async function GET() {
           }))
         : [],
       collections: isVisibleToCustomers
-        ? (campaign.collections || []).filter(c => c.active).map(c => ({
-            id: c.id,
-            name: c.name,
-            description: c.description || '',
-            coverImage: c.coverImage || '',
-            allowDuplicates: Boolean(c.allowDuplicates),
-            pricingType: c.pricingType,
-            packagePrice: c.packagePrice,
-            discountPercentage: c.discountPercentage,
-            badgeText: c.badgeText || 'كوليكشن Pink Friday',
-            items: (c.items || []).map(it => ({
-              collectionItemId: it.collectionItemId,
-              productId: it.productId,
-              defaultVariantId: it.defaultVariantId
-            }))
-          }))
+        ? rawCollections.filter(c => c && c.active !== false).map(c => {
+            const colItems = Array.isArray(c.items)
+              ? c.items
+              : (c.items && typeof c.items === 'object' ? Object.values(c.items) : []);
+            return {
+              id: c.id,
+              name: c.name,
+              description: c.description || '',
+              coverImage: c.coverImage || '',
+              allowDuplicates: Boolean(c.allowDuplicates),
+              pricingType: c.pricingType,
+              packagePrice: c.packagePrice,
+              discountPercentage: c.discountPercentage,
+              badgeText: c.badgeText || 'كوليكشن Pink Friday',
+              items: colItems.map(it => ({
+                collectionItemId: it.collectionItemId,
+                productId: it.productId,
+                defaultVariantId: it.defaultVariantId
+              }))
+            };
+          })
         : []
     };
 

@@ -135,10 +135,38 @@ export async function POST({ request }) {
         });
       }
 
+      const startAt = campaignData.startAt || campaignData.startDate || null;
+      const endAt = campaignData.endAt || campaignData.endDate || null;
+
+      const rawOffers = campaignData.offers;
+      const normalizedOffers = Array.isArray(rawOffers)
+        ? rawOffers
+        : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+
+      const rawCollections = campaignData.collections;
+      const collectionsList = Array.isArray(rawCollections)
+        ? rawCollections
+        : (rawCollections && typeof rawCollections === 'object' ? Object.values(rawCollections) : []);
+
+      const normalizedCollections = collectionsList.filter(Boolean).map(col => ({
+        ...col,
+        allowDuplicates: Boolean(col.allowDuplicates),
+        active: col.active !== false,
+        items: Array.isArray(col.items)
+          ? col.items
+          : (col.items && typeof col.items === 'object' ? Object.values(col.items) : [])
+      }));
+
       const draftPayload = {
         ...campaignData,
         id: campaignId,
         year: campaignYear,
+        startAt,
+        startDate: startAt,
+        endAt,
+        endDate: endAt,
+        offers: normalizedOffers,
+        collections: normalizedCollections,
         updatedAt: new Date().toISOString(),
         updatedBy: admin.email
       };
@@ -174,8 +202,11 @@ export async function POST({ request }) {
     }
 
     if (action === 'publish') {
-      const draftSnap = await adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/draft`).once('value');
-      const draft = draftSnap.val();
+      let draft = campaignData;
+      if (!draft || typeof draft !== 'object') {
+        const draftSnap = await adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/draft`).once('value');
+        draft = draftSnap.val();
+      }
 
       if (!draft) {
         return new Response(JSON.stringify({ success: false, error: 'DRAFT_NOT_FOUND' }), {
@@ -184,8 +215,11 @@ export async function POST({ request }) {
         });
       }
 
+      const startAt = draft.startAt || draft.startDate;
+      const endAt = draft.endAt || draft.endDate;
+
       // Check dates
-      if (!draft.startAt || !draft.endAt || Date.parse(draft.startAt) >= Date.parse(draft.endAt)) {
+      if (!startAt || !endAt || Date.parse(startAt) >= Date.parse(endAt)) {
         return new Response(JSON.stringify({
           success: false,
           error: 'INVALID_DATES',
@@ -196,11 +230,41 @@ export async function POST({ request }) {
         });
       }
 
+      const rawOffers = draft.offers;
+      const normalizedOffers = Array.isArray(rawOffers)
+        ? rawOffers
+        : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+
+      const rawCollections = draft.collections;
+      const collectionsList = Array.isArray(rawCollections)
+        ? rawCollections
+        : (rawCollections && typeof rawCollections === 'object' ? Object.values(rawCollections) : []);
+
+      const normalizedCollections = collectionsList.filter(Boolean).map(col => ({
+        ...col,
+        allowDuplicates: Boolean(col.allowDuplicates),
+        active: col.active !== false,
+        items: Array.isArray(col.items)
+          ? col.items
+          : (col.items && typeof col.items === 'object' ? Object.values(col.items) : [])
+      }));
+
       const publishedPayload = {
         ...draft,
+        id: campaignId,
+        year: campaignYear,
+        startAt,
+        startDate: startAt,
+        endAt,
+        endDate: endAt,
+        offers: normalizedOffers,
+        collections: normalizedCollections,
         publishedAt: new Date().toISOString(),
         publishedBy: admin.email
       };
+
+      // Keep draft in sync
+      await adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/draft`).set(publishedPayload);
 
       // 1. Save published under campaign year
       await adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/published`).set(publishedPayload);
