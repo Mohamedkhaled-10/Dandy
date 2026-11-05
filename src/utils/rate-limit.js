@@ -68,80 +68,15 @@ export function getAuthRateLimiter() {
   });
 }
 
-// 5. محاولات تسجيل دخول الأدمن الخاصة: 5 محاولات في 5 دقائق لكل IP
-export function getAdminAuthRateLimiter() {
-  const redis = getRedis();
-  if (!redis) return null;
-  return new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(5, '300 s'),
-    prefix: 'ratelimit:admin-auth',
-  });
-}
-
-// ذاكرة مؤقتة للحظر والإغلاق المؤقت (In-Memory Fallback)
-const memoryAdminAttempts = new Map();
-
-export async function checkAdminRateLimitAndLockout(ip, email) {
-  const cleanEmail = (email || '').toLowerCase().trim();
-  const now = Date.now();
-
-  // 1. فحص Upstash Redis المتقدم
-  try {
-    const redis = getRedis();
-    const adminLimiter = getAdminAuthRateLimiter();
-    if (redis && adminLimiter) {
-      const { success, limit, remaining, reset } = await adminLimiter.limit(`admin:${ip}`);
-      if (!success) {
-        return {
-          allowed: false,
-          reason: 'RATE_LIMIT_EXCEEDED',
-          message: 'تم تجاوز الحد المسموح من محاولات دخول المشرف. يرجى الانتظار 5 دقائق ثم المحاولة مجددًا.',
-          limit,
-          remaining,
-          reset
-        };
-      }
-    }
-  } catch (err) {
-    console.warn(`[RATE-LIMIT WARNING] Redis admin rate limiter error for IP ${ip}:`, err?.message || err);
-  }
-
-  // 2. فحص نافذة الحظر المؤقت بذاكرة التطبيق
-  const windowMs = 5 * 60 * 1000; // 5 دقائق
-  const key = `${ip}:${cleanEmail}`;
-  const history = memoryAdminAttempts.get(key) || [];
-  const recentHistory = history.filter(ts => now - ts < windowMs);
-  memoryAdminAttempts.set(key, recentHistory);
-
-  if (recentHistory.length >= 5) {
-    const oldest = recentHistory[0];
-    const waitSec = Math.ceil((windowMs - (now - oldest)) / 1000);
-    return {
-      allowed: false,
-      reason: 'LOCKED_OUT',
-      message: `تم حظر محاولات تسجيل الدخول المؤقتة لكثرة المحاولات الخاطئة. يرجى الانتظار ${waitSec} ثانية ثم المحاولة مجددًا.`
-    };
-  }
-
-  return { allowed: true };
-}
-
 // تسجيل محاولات تسجيل الدخول الفاشلة لرصد Brute Force
 export async function recordFailedLogin(email, ip, reason = 'invalid_credentials') {
   try {
+    const redis = getRedis();
     const timestamp = Date.now();
     const cleanEmail = (email || 'unknown').toLowerCase().trim();
 
     console.warn(`[SECURITY - BRUTE FORCE DETECT] Failed login attempt for: ${cleanEmail} from IP: ${ip} (Reason: ${reason})`);
 
-    // تحديث ذاكرة المحاولات المحلية
-    const key = `${ip}:${cleanEmail}`;
-    const history = memoryAdminAttempts.get(key) || [];
-    history.push(timestamp);
-    memoryAdminAttempts.set(key, history);
-
-    const redis = getRedis();
     if (redis) {
       // 1. حفظ في سجل تدقيق العمليات (قائمة آخر 1000 محاولة فاشلة)
       const auditEntry = JSON.stringify({
@@ -168,34 +103,5 @@ export async function recordFailedLogin(email, ip, reason = 'invalid_credentials
     }
   } catch (err) {
     console.error('Error recording failed login attempt:', err);
-  }
-}
-
-// تسجيل محاولات تسجيل الدخول الناجحة للمشرفين واقتطاع العدادات
-export async function recordSuccessfulLogin(email, ip) {
-  try {
-    const cleanEmail = (email || 'unknown').toLowerCase().trim();
-    const timestamp = Date.now();
-
-    console.info(`[SECURITY - SUCCESSFUL LOGIN] Successful login for: ${cleanEmail} from IP: ${ip}`);
-
-    // إعادة تعيين محاولات الذاكرة المحلية
-    const key = `${ip}:${cleanEmail}`;
-    memoryAdminAttempts.delete(key);
-
-    const redis = getRedis();
-    if (redis) {
-      const auditEntry = JSON.stringify({
-        email: cleanEmail,
-        ip,
-        timestamp,
-        date: new Date(timestamp).toISOString(),
-        type: 'SUCCESS'
-      });
-      await redis.lpush('audit:successful_logins', auditEntry);
-      await redis.ltrim('audit:successful_logins', 0, 999);
-    }
-  } catch (err) {
-    console.error('Error recording successful login:', err);
   }
 }

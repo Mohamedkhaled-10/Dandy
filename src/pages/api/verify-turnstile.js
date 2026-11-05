@@ -2,13 +2,7 @@ export const prerender = false;
 
 // src/pages/api/verify-turnstile.js
 import { verifyTurnstileToken } from '../../utils/turnstile.js';
-import {
-  getClientIp,
-  getAuthRateLimiter,
-  checkAdminRateLimitAndLockout,
-  recordFailedLogin,
-  recordSuccessfulLogin
-} from '../../utils/rate-limit.js';
+import { getClientIp, getAuthRateLimiter, recordFailedLogin } from '../../utils/rate-limit.js';
 
 export async function POST({ request }) {
   try {
@@ -29,43 +23,7 @@ export async function POST({ request }) {
       });
     }
 
-    // 2. تسجيل محاولات تسجيل الدخول الناجحة لتحديث سجل التدقيق وتفريغ العدادات
-    if (action === 'report-successful-login') {
-      await recordSuccessfulLogin(email, clientIp);
-      return new Response(JSON.stringify({
-        success: true,
-        recorded: true,
-        message: 'Successful login recorded.'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // 3. مسار خاص بتسجيل دخول المشرفين (Admin Login Security Check - NO CAPTCHA REQUIRED)
-    if (action === 'admin-login') {
-      const adminCheck = await checkAdminRateLimitAndLockout(clientIp, email);
-      if (!adminCheck.allowed) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: adminCheck.reason || 'RATE_LIMIT_EXCEEDED',
-          message: adminCheck.message || 'تم تجاوز الحد المسموح من محاولات دخول المشرف. يرجى الانتظار بضع دقائق ثم المحاولة مجددًا.'
-        }), {
-          status: 429,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'تم التحقق من قيود أمان المشرف بنجاح (بدون كابتشا)'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // 4. تطبيق Rate Limiting العام لبقية الواجهات عبر Upstash Redis
+    // 2. تطبيق Rate Limiting عبر Upstash Redis لمحاولات التحقق وتسجيل الدخول بمبدأ Fail Open
     try {
       const authLimiter = getAuthRateLimiter();
       if (authLimiter) {
