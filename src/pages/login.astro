@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 ---
 
 <BaseLayout
@@ -9,7 +8,6 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
   robots="noindex, nofollow"
 >
   <slot name="head" slot="head">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style is:global>
       .login-container {
         min-height: 85vh;
@@ -114,11 +112,6 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
           <input type="password" id="l-pass" placeholder="••••••••" required />
         </div>
 
-        <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
-        <div class="login-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
-          <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
-        </div>
-
         <button type="submit" id="adminLoginBtn" class="btn-login" style="margin-top: 10px;">تسجيل الدخول الآمن</button>
       </form>
     </div>
@@ -156,28 +149,12 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         const password = document.getElementById('l-pass').value.trim();
         const submitBtn = document.getElementById('adminLoginBtn');
 
-        // جلب توكن كابتشا Cloudflare Turnstile
-        let turnstileToken = '';
-        if (typeof turnstile !== 'undefined') {
-          try { turnstileToken = turnstile.getResponse() || ''; } catch(e) {}
-        }
-        if (!turnstileToken) {
-          const input = document.querySelector('[name="cf-turnstile-response"]');
-          if (input) turnstileToken = input.value;
-        }
-
-        if (!turnstileToken) {
-          alert('يرجى إكمال اختبار التحقق البشري (CAPTCHA) أولاً.');
-          return;
-        }
-
         if (email.toLowerCase() !== 'admin@dandy.com') {
           const notice = document.getElementById('adminOnlyNotice');
           if (notice) {
             notice.style.display = 'block';
           }
-          alert('هذه البوابة مخصصة لمشرفي النظام فقط. لعملاء داندي، يرجى تسجيل الدخول من صفحة حساب العميل.');
-          window.location.href = '/account-login';
+          alert('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور.');
           return;
         }
 
@@ -187,19 +164,16 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         }
 
         try {
-          // التحقق السيرفري من الكابتشا ومعدل المحاولات
+          // 1. التحقق من قيود معدل المحاولات وسجل الأمان للمشرف بالسيرفر (بدون كابتشا)
           const verifyRes = await fetch('/api/verify-turnstile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: turnstileToken, action: 'admin-login', email })
+            body: JSON.stringify({ action: 'admin-login', email })
           });
 
           const verifyData = await verifyRes.json().catch(() => ({}));
           if (!verifyRes.ok || !verifyData.success) {
-            alert(verifyData.message || 'فشل التحقق الأمني من الكابتشا. يرجى المحاولة مرة أخرى.');
-            if (typeof turnstile !== 'undefined') {
-              try { turnstile.reset(); } catch(e) {}
-            }
+            alert(verifyData.message || 'تم تجاوز حد محاولات الدخول المسموح بها. يرجى الانتظار بضع دقائق ثم المحاولة مجددًا.');
             if (submitBtn) {
               submitBtn.disabled = false;
               submitBtn.textContent = 'تسجيل الدخول الآمن';
@@ -207,12 +181,20 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
             return;
           }
 
+          // 2. تسجيل الدخول عبر Firebase Auth
           await auth.signInWithEmailAndPassword(email, password);
-          // Automatic redirect triggers onAuthStateChanged above
+
+          // 3. تسجيل نجاح عملية الدخول بالسيرفر
+          fetch('/api/verify-turnstile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'report-successful-login', email })
+          }).catch(() => {});
+
         } catch (err) {
           console.error('Admin login error:', err);
 
-          // تسجيل المحاولة الفاشلة في السيرفر
+          // 4. تسجيل المحاولة الفاشلة في السيرفر دون كشف وجود البريد الإلكتروني
           fetch('/api/verify-turnstile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -223,14 +205,13 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
             })
           }).catch(() => {});
 
-          if (typeof turnstile !== 'undefined') {
-            try { turnstile.reset(); } catch(e) {}
-          }
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = 'تسجيل الدخول الآمن';
           }
-          alert('بيانات الدخول خاطئة أو غير مسجلة! نرجو مراجعة مسؤول النظام للتحقق.');
+
+          // رسالة موحدة غير كاشفة لهوية الحساب (Prevent Email Enumeration)
+          alert('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور أو التواصل مع الدعم الفني.');
         }
       });
     }

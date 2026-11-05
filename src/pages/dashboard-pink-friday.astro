@@ -1118,6 +1118,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     let publishedCampaign = null;
     let catalogProducts = [];
     let isDraftDirty = false;
+    let isDataLoaded = false;
+    let hasLoadError = false;
 
     // Toast helper
     function showToast(msg, type = 'success') {
@@ -1189,6 +1191,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Load Data via API & RTDB
     async function loadAllData() {
+      isDataLoaded = false;
+      hasLoadError = false;
+      renderOffersTable();
+      updateStatusAndKPIs();
+
       try {
         const token = await getAuthToken();
         const res = await fetch(`/api/pink-friday/admin?year=${currentYear}`, {
@@ -1201,13 +1208,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
 
         const data = await res.json();
-        if (data.success) {
-          draftCampaign = data.draft;
-          publishedCampaign = data.published;
-          allYears = data.allYears || [currentYear];
+        if (data.success && data.campaigns) {
+          const campaignKey = `pink-friday-${currentYear}`;
+          const yearCampaignObj = data.campaigns[campaignKey] || null;
+
+          if (yearCampaignObj) {
+            draftCampaign = yearCampaignObj.draft || null;
+            publishedCampaign = yearCampaignObj.published || null;
+          } else {
+            draftCampaign = null;
+            publishedCampaign = null;
+          }
+
+          // Extract available years list safely
+          const extractedYears = Object.keys(data.campaigns).map(k => {
+            const m = k.match(/\d{4}/);
+            return m ? parseInt(m[0], 10) : null;
+          }).filter(Boolean);
+
+          allYears = Array.from(new Set([...extractedYears, currentYear])).sort((a, b) => b - a);
+
+          isDataLoaded = true;
+          hasLoadError = false;
 
           populateYearSelector();
           syncFormWithDraft();
+          updateStatusAndKPIs();
+        } else {
+          draftCampaign = null;
+          publishedCampaign = null;
+          isDataLoaded = false;
+          hasLoadError = true;
+          showToast(data.error || 'تعذر تحميل بيانات الحملة من السيرفر', 'error');
+          renderOffersTable();
           updateStatusAndKPIs();
         }
 
@@ -1226,7 +1259,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       } catch (err) {
         console.error('Error loading Pink Friday data:', err);
+        draftCampaign = null;
+        publishedCampaign = null;
+        isDataLoaded = false;
+        hasLoadError = true;
         showToast('تعذر تحميل بيانات الحملة من السيرفر', 'error');
+        renderOffersTable();
+        updateStatusAndKPIs();
       }
     }
 
@@ -1332,7 +1371,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const tbody = document.getElementById('offersTableBody');
       if (!tbody) return;
 
-      if (!draftCampaign || !draftCampaign.offers || draftCampaign.offers.length === 0) {
+      if (hasLoadError) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 40px; color: #b91c1c;">
+              <i class="fas fa-exclamation-triangle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+              فشل تحميل بيانات الحملة من السيرفر. يرجى إعادة تنشيط الصفحة أو المحاولة لاحقاً.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!isDataLoaded) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
+              <i class="fas fa-spinner fa-spin" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+              جاري تحميل بيانات الحملة...
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!draftCampaign) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 40px; color: #4b5563;">
+              <i class="fas fa-calendar-times" style="font-size: 2rem; color: #9ca3af; display: block; margin-bottom: 10px;"></i>
+              لا توجد مسودة بيانات للحملة لسنة ${currentYear}. انقري على "بدء سنة جديدة" لإنشائها.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
+      if (offers.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
@@ -1345,7 +1421,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       tbody.innerHTML = '';
-      draftCampaign.offers.forEach((offer, idx) => {
+      offers.forEach((offer, idx) => {
         const prod = catalogProducts.find(p => String(p.id) === String(offer.productId));
         const basePrice = prod ? (parseFloat(prod.price) || 0) : 0;
         const disc = parseFloat(offer.discountPercentage) || 0;
@@ -1400,7 +1476,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Global Offer Operations
     window.updateOfferDiscount = function(idx, val) {
-      if (!draftCampaign || !draftCampaign.offers[idx]) return;
+      if (!draftCampaign || !Array.isArray(draftCampaign.offers) || !draftCampaign.offers[idx]) return;
       const num = Math.min(99, Math.max(1, parseInt(val, 10) || 10));
       draftCampaign.offers[idx].discountPercentage = num;
       isDraftDirty = true;
@@ -1409,13 +1485,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     window.updateOfferBadge = function(idx, val) {
-      if (!draftCampaign || !draftCampaign.offers[idx]) return;
+      if (!draftCampaign || !Array.isArray(draftCampaign.offers) || !draftCampaign.offers[idx]) return;
       draftCampaign.offers[idx].badgeText = (val || '').trim();
       isDraftDirty = true;
     };
 
     window.removeOfferFromCampaign = function(idx) {
-      if (!draftCampaign || !draftCampaign.offers[idx]) return;
+      if (!draftCampaign || !Array.isArray(draftCampaign.offers) || !draftCampaign.offers[idx]) return;
       draftCampaign.offers.splice(idx, 1);
       isDraftDirty = true;
       renderOffersTable();
@@ -1425,7 +1501,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Calculate Campaign Status & KPIs
     function updateStatusAndKPIs() {
-      if (!draftCampaign) return;
+      const statusPill = document.getElementById('campaignStatusPill');
+      const statusText = document.getElementById('campaignStatusText');
+
+      if (!draftCampaign) {
+        if (statusPill && statusText) {
+          statusPill.className = 'status-pill disabled';
+          statusText.textContent = hasLoadError ? 'خطأ بالتحميل' : 'غير مسجلة';
+        }
+        document.getElementById('statTotalOffers').textContent = '0';
+        document.getElementById('statValidOffers').textContent = '0';
+        document.getElementById('statAvgDiscount').textContent = '0%';
+        document.getElementById('statMaxSaving').textContent = '0 ج.م';
+        return;
+      }
 
       const now = new Date();
       const start = draftCampaign.startDate ? new Date(draftCampaign.startDate) : null;
@@ -1453,15 +1542,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         statusClass = 'active';
       }
 
-      const statusPill = document.getElementById('campaignStatusPill');
-      const statusText = document.getElementById('campaignStatusText');
       if (statusPill && statusText) {
         statusPill.className = `status-pill ${statusClass}`;
         statusText.textContent = statusLabel;
       }
 
       // KPIs
-      const offers = draftCampaign.offers || [];
+      const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
       const totalOffers = offers.length;
       let validOffers = 0;
       let totalDiscount = 0;
@@ -1499,6 +1586,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Modal: Catalog Selection Search
     document.getElementById('btnOpenAddProductModal')?.addEventListener('click', () => {
+      if (!draftCampaign) {
+        showToast('يرجى انتظار تحميل بيانات الحملة أولاً', 'error');
+        return;
+      }
       renderCatalogSearch();
       openModal('addProductModal');
     });
@@ -1508,8 +1599,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!list) return;
       list.innerHTML = '';
 
+      if (!draftCampaign) {
+        list.innerHTML = '<div style="padding: 24px; text-align: center; color: #b91c1c;">لم يتم تحميل بيانات الحملة بعد</div>';
+        return;
+      }
+
+      const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
       const query = (filter || '').toLowerCase().trim();
-      const existingIds = new Set((draftCampaign?.offers || []).map(o => String(o.productId)));
+      const existingIds = new Set(offers.map(o => String(o.productId)));
 
       const matches = catalogProducts.filter(p => {
         if (!query) return true;
@@ -1542,7 +1639,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (!isAdded) {
           div.addEventListener('click', () => {
-            if (!draftCampaign.offers) draftCampaign.offers = [];
+            if (!draftCampaign) {
+              showToast('لم يتم تحميل بيانات الحملة بعد', 'error');
+              return;
+            }
+            if (!Array.isArray(draftCampaign.offers)) {
+              draftCampaign.offers = [];
+            }
             draftCampaign.offers.push({
               productId: String(p.id),
               discountPercentage: 20,
@@ -1566,6 +1669,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Save Draft
     document.getElementById('btnSaveDraft')?.addEventListener('click', async () => {
+      if (!draftCampaign) {
+        showToast('لا توجد بيانات مسودة للحفظ', 'error');
+        return;
+      }
       updateDraftFromForm();
       const btn = document.getElementById('btnSaveDraft');
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
@@ -1603,6 +1710,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Restore Last Published
     document.getElementById('btnRestorePublished')?.addEventListener('click', async () => {
+      if (!publishedCampaign) {
+        showToast('لا توجد نسخة منشورة للاستعادة', 'error');
+        return;
+      }
       if (!confirm('هل أنتِ متأكدة من إلغاء تعديلات المسودة واستعادة آخر نسخة معتمدة ومنشورة؟')) return;
       const btn = document.getElementById('btnRestorePublished');
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاستعادة...';
@@ -1624,7 +1735,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         const data = await res.json();
         if (data.success) {
-          draftCampaign = data.campaign;
+          draftCampaign = data.draft;
           syncFormWithDraft();
           updateStatusAndKPIs();
           showToast('تمت استعادة آخر نسخة معتمدة بنجاح');
@@ -1641,6 +1752,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Publish Workflow & Modal
     document.getElementById('btnOpenPublishModal')?.addEventListener('click', () => {
+      if (!draftCampaign) {
+        showToast('لا توجد بيانات مسودة للاعتماد والنشر', 'error');
+        return;
+      }
       updateDraftFromForm();
 
       // Check dates
@@ -1652,7 +1767,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       // Check valid offers
-      const validCount = (draftCampaign.offers || []).filter(o => {
+      const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
+      const validCount = offers.filter(o => {
         const p = catalogProducts.find(item => String(item.id) === String(o.productId));
         return p && !p.isHidden && !p.isSoldOut && o.discountPercentage > 0;
       }).length;
@@ -1661,13 +1777,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('pubModalStatus').textContent = draftCampaign.enabled ? 'مفعلة' : 'غير مفعلة';
       document.getElementById('pubModalDates').textContent = `من ${draftCampaign.startDate} إلى ${draftCampaign.endDate}`;
       document.getElementById('pubModalValidCount').textContent = validCount;
-      document.getElementById('pubModalTotalCount').textContent = (draftCampaign.offers || []).length;
+      document.getElementById('pubModalTotalCount').textContent = offers.length;
       document.getElementById('pubModalVisibility').textContent = (draftCampaign.enabled && validCount > 0) ? 'ستظهر فوراً للعملاء في المتجر' : 'ستكون مخفية عن العملاء لعدم وجود عروض صالحة أو لتعطيلها';
 
       openModal('publishModal');
     });
 
     document.getElementById('btnConfirmPublish')?.addEventListener('click', async () => {
+      if (!draftCampaign) return;
       const btn = document.getElementById('btnConfirmPublish');
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر والاعتماد...';
       btn.disabled = true;
@@ -1689,7 +1806,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         const data = await res.json();
         if (data.success) {
-          publishedCampaign = data.campaign;
+          publishedCampaign = data.published;
           closeModal('publishModal');
           updateStatusAndKPIs();
           showToast('تهانينا! تم اعتماد ونشر حملة Pink Friday بنجاح');
@@ -1732,7 +1849,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           },
           body: JSON.stringify({
             action: 'create_year',
-            year: yVal,
+            targetYear: yVal,
             copyFromYear: copySettings ? currentYear : undefined
           })
         });
@@ -1744,10 +1861,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           if (!allYears.includes(yVal)) allYears.push(yVal);
           allYears.sort((a, b) => b - a);
           populateYearSelector();
-          draftCampaign = data.campaign;
-          publishedCampaign = null;
-          syncFormWithDraft();
-          updateStatusAndKPIs();
+          await loadAllData();
           showToast(`تم إنشاء وتفعيل مسودة سنة ${yVal} بنجاح`);
         } else {
           showToast(data.message || 'فشل إنشاء السنة الجديدة', 'error');
@@ -1765,6 +1879,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     let currentPreviewView = 'announcement';
 
     document.getElementById('btnOpenPreview')?.addEventListener('click', () => {
+      if (!draftCampaign) {
+        showToast('يرجى انتظار تحميل بيانات الحملة للبدء في المعاينة', 'error');
+        return;
+      }
       updateDraftFromForm();
       renderPreview();
       openModal('previewModal');
@@ -1793,7 +1911,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     function renderPreview() {
       const container = document.getElementById('previewCanvasContent');
-      if (!container || !draftCampaign) return;
+      if (!container) return;
+
+      if (!draftCampaign) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #b91c1c;">لم يتم تحميل بيانات الحملة بعد</div>';
+        return;
+      }
 
       const visuals = draftCampaign.visuals || {};
       const headline = visuals.headline || 'عروض Pink Friday الحصرية من داندي';
@@ -1802,7 +1925,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const badge = visuals.badgeText || 'Pink Friday';
       const heroImg = visuals.heroImageUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
 
-      const validOffers = (draftCampaign.offers || []).map(o => {
+      const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
+      const validOffers = offers.map(o => {
         const prod = catalogProducts.find(p => String(p.id) === String(o.productId));
         const base = prod ? (parseFloat(prod.price) || 0) : 0;
         const disc = parseFloat(o.discountPercentage) || 0;
