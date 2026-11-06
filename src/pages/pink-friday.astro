@@ -311,9 +311,6 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
                 <article class="pf-card" style="border: 2px solid #fbcfe8;">
                   <div class="pf-card-media">
                     <span class="pf-badge" style="background:#be185d; color:#ffffff;">{col.badgeText}</span>
-                    {col.savings > 0 && (
-                      <span class="pf-discount-chip">وفر {col.savings.toFixed(0)} ج.م</span>
-                    )}
                     <div class="pf-card-img-link">
                       <img
                         src={col.coverImage}
@@ -345,7 +342,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
                       </ul>
                     </div>
 
-                    <div class="pf-card-pricing">
+                    <div class="pf-card-pricing" style="margin-bottom: 16px;">
                       <div class="pf-price-current">
                         <span class="pf-price-val">{col.calculatedPrice.toFixed(0)}</span>
                         <span class="pf-price-cur">ج.م</span>
@@ -354,10 +351,6 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
                         <span class="pf-price-val">{col.totalRegularPrice.toFixed(0)}</span>
                         <span class="pf-price-cur">ج.م</span>
                       </div>
-                    </div>
-
-                    <div class="pf-savings-note">
-                      وفر إجمالي <strong>{col.savings.toFixed(0)} ج.م</strong>
                     </div>
 
                     <div class="pf-card-footer">
