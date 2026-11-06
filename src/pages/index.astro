@@ -51,36 +51,19 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
     </script>
 
     <style is:global>
-      /* ==========================================================================
-         DANDY PINK FRIDAY HOME SHOWCASE BANNER
-         ========================================================================== */
+      /* Temporary Pink Friday Home Banner Styles */
       .pf-home-banner {
-        position: relative;
-        z-index: 5;
-        padding: 32px 0 44px;
-        width: 100%;
-        clear: both;
+        padding: 24px 0 36px;
       }
       .pf-home-banner-card {
-        background: linear-gradient(135deg, #181416 0%, #2a1622 55%, #150f14 100%);
-        border: 1px solid rgba(254, 93, 159, 0.3);
+        background: linear-gradient(135deg, #181416 0%, #2c1a25 50%, #150f13 100%);
+        border: 1px solid rgba(254, 93, 159, 0.35);
         border-radius: 20px;
-        padding: 44px 32px;
+        padding: 42px 32px;
         position: relative;
         overflow: hidden;
         text-align: center;
-        box-shadow: 0 12px 36px rgba(254, 93, 159, 0.12), 0 4px 12px rgba(0, 0, 0, 0.25);
-      }
-      .pf-home-banner-card::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 600px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(254, 93, 159, 0.16) 0%, transparent 70%);
-        pointer-events: none;
+        box-shadow: 0 8px 32px rgba(254, 93, 159, 0.12);
       }
       .pf-home-banner-content {
         position: relative;
@@ -88,74 +71,55 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
         max-width: 680px;
         margin: 0 auto;
       }
-      .pf-home-kicker {
+      .pf-home-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        background: rgba(254, 93, 159, 0.15);
+        border: 1px solid rgba(254, 93, 159, 0.4);
         color: #fe5d9f;
-        font-size: 0.85rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
-        text-transform: uppercase;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 14px;
       }
-      .pf-home-kicker-sparkle {
-        font-size: 0.95rem;
+      .pf-home-pill-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #fe5d9f;
       }
       .pf-home-headline {
-        font-size: clamp(1.45rem, 3.8vw, 2.2rem);
+        font-size: clamp(1.4rem, 3.5vw, 2.1rem);
         color: #ffffff;
         font-weight: 700;
-        margin: 0 0 12px;
-        line-height: 1.35;
-        text-wrap: balance;
+        margin: 0 0 10px;
+        line-height: 1.4;
       }
       .pf-home-subtext {
-        color: #e5d8df;
-        font-size: clamp(0.92rem, 2vw, 1.02rem);
-        margin: 0 auto 26px;
-        line-height: 1.65;
-        max-width: 580px;
-        text-wrap: balance;
-      }
-      .pf-home-cta-wrap {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        color: #ddd0d7;
+        font-size: 0.98rem;
+        margin: 0 0 24px;
+        line-height: 1.6;
       }
       .pf-home-cta-btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 13px 32px;
-        background: linear-gradient(135deg, #fe5d9f 0%, #e64a8b 100%);
+        gap: 8px;
+        padding: 12px 28px;
+        background-color: #fe5d9f;
         color: #ffffff;
         border-radius: 999px;
         text-decoration: none;
         font-weight: 700;
-        font-size: 0.96rem;
-        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease;
-        box-shadow: 0 4px 18px rgba(254, 93, 159, 0.35);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(254, 93, 159, 0.35);
       }
       .pf-home-cta-btn:hover {
+        background-color: #e64a8b;
         transform: translateY(-2px);
-        box-shadow: 0 6px 22px rgba(254, 93, 159, 0.45);
-        color: #ffffff;
-      }
-      @media (max-width: 640px) {
-        .pf-home-banner {
-          padding: 20px 0 28px;
-        }
-        .pf-home-banner-card {
-          padding: 28px 18px;
-          border-radius: 16px;
-        }
-        .pf-home-cta-btn {
-          width: 100%;
-          max-width: 320px;
-          padding: 12px 20px;
-        }
       }
 
       /* ==========================================================================
@@ -1610,28 +1574,22 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
     </section>
 
     {showPfSection && (
-      <section
-        class="pf-home-banner scroll-reveal-up"
-        id="sec-pink-friday-banner"
-        data-studio-section="pinkFriday"
-        data-studio-title="حملة Pink Friday"
-        aria-label="حملة Pink Friday"
-      >
+      <section class="pf-home-banner scroll-reveal-up" id="sec-pink-friday-banner" aria-label="حملة Pink Friday">
         <div class="home-container">
           <div class="pf-home-banner-card">
             <div class="pf-home-banner-content">
-              <div class="pf-home-kicker">
-                <span class="pf-home-kicker-sparkle">✨</span>
-                <span>{publishedPfCampaign?.visuals?.badgeText || "موسم الجمال الحصري — Pink Friday"}</span>
+              <div class="pf-home-pill">
+                <span class="pf-home-pill-dot"></span>
+                <span>Pink Friday Event</span>
               </div>
               <h2 class="pf-home-headline">{publishedPfCampaign?.visuals?.headline || "عروض Pink Friday الحصرية من داندي"}</h2>
               <p class="pf-home-subtext">
-                {publishedPfCampaign?.visuals?.subtitle || "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي. مستحضرات عناية طبيعية وبكجات مخصصة بأسعار حصرية."}
+                {publishedPfCampaign?.visuals?.subtitle || "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."}
               </p>
               <div class="pf-home-cta-wrap">
                 <a href="/pink-friday" class="pf-home-cta-btn">
                   <span>{publishedPfCampaign?.visuals?.ctaText || "اكتشفي عروض Pink Friday"}</span>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
                 </a>
               </div>
             </div>
@@ -2917,22 +2875,7 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
 
       // Reorder and inject sections
       if (Array.isArray(orderArray) && orderArray.length) {
-        let effectiveOrder = [...orderArray];
-        if (!effectiveOrder.includes('pinkFriday')) {
-          const trustIdx = effectiveOrder.indexOf('trust');
-          if (trustIdx !== -1) {
-            effectiveOrder.splice(trustIdx + 1, 0, 'pinkFriday');
-          } else {
-            const offersIdx = effectiveOrder.indexOf('offers');
-            if (offersIdx !== -1) {
-              effectiveOrder.splice(offersIdx, 0, 'pinkFriday');
-            } else {
-              effectiveOrder.push('pinkFriday');
-            }
-          }
-        }
-
-        effectiveOrder.forEach(key => {
+        orderArray.forEach(key => {
           let secEl = wrapper.querySelector(`[data-studio-section="${key}"]`);
           
           // If it's a custom section that does not exist in DOM yet, create and insert it

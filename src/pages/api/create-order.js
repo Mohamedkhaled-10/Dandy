@@ -420,10 +420,6 @@ export async function POST({ request }) {
           effectiveUnitPrice = collection.packagePrice;
         } else if (collection.pricingType === 'percentage' && typeof collection.discountPercentage === 'number' && collection.discountPercentage > 0) {
           effectiveUnitPrice = Math.round(totalBasePrice * (1 - collection.discountPercentage / 100));
-        } else if (typeof collection.packagePrice === 'number' && collection.packagePrice > 0) {
-          effectiveUnitPrice = collection.packagePrice;
-        } else if (typeof collection.discountPercentage === 'number' && collection.discountPercentage > 0) {
-          effectiveUnitPrice = Math.round(totalBasePrice * (1 - collection.discountPercentage / 100));
         }
 
         const lineTotal = effectiveUnitPrice * quantity;

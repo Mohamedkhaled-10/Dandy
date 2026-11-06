@@ -1224,15 +1224,12 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         let collectionHtml = '';
         if (item.isCollection && Array.isArray(item.selectedItems) && item.selectedItems.length > 0) {
           collectionHtml = `
-            <div class="cart-col-breakdown" style="margin-top:8px; padding:8px 12px; background:rgba(254, 93, 159, 0.05); border-radius:8px; font-size:0.78rem; border:1px solid rgba(254, 93, 159, 0.2);">
-              <div style="font-weight:700; color:#fe5d9f; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <span>محتويات الكوليكشن:</span>
-              </div>
-              <ul style="margin:0; padding-right:14px; list-style-type:none; color:#374151; display:flex; flex-direction:column; gap:2px;">
+            <div class="cart-col-breakdown" style="margin-top:6px; padding:6px 10px; background:#fdf2f8; border-radius:6px; font-size:0.75rem; border:1px solid #fbcfe8;">
+              <div style="font-weight:700; color:#be185d; margin-bottom:3px;"><i class="fas fa-boxes" style="margin-left:4px;"></i> محتويات الكوليكشن:</div>
+              <ul style="margin:0; padding-right:16px; list-style-type:circle; color:#374151;">
                 ${item.selectedItems.map(si => {
                   const scentName = si.selectedVariant && (si.selectedVariant.name || si.selectedVariant.id) ? (si.selectedVariant.name || si.selectedVariant.id) : '';
-                  return `<li><span style="color:#fe5d9f; font-weight:700;">•</span> ${si.productName || 'منتج'}${scentName ? ` <span style="color:#e64a8b; font-weight:600;">(الرائحة: ${scentName})</span>` : ''}</li>`;
+                  return `<li>${si.productName || 'منتج'}${scentName ? ` <span style="color:#9d174d; font-weight:600;">(الرائحة: ${scentName})</span>` : ''}</li>`;
                 }).join('')}
               </ul>
             </div>
@@ -1515,8 +1512,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         let revCollectionHtml = '';
         if (item.isCollection && Array.isArray(item.selectedItems) && item.selectedItems.length > 0) {
           revCollectionHtml = `
-            <div style="margin-top:6px; font-size:0.75rem; color:#63575d; line-height:1.45; background:rgba(254, 93, 159, 0.04); padding:4px 8px; border-radius:6px; border:1px solid rgba(254, 93, 159, 0.15);">
-              <span style="font-weight:700; color:#fe5d9f;">محتويات الكوليكشن:</span>
+            <div style="margin-top:4px; font-size:0.73rem; color:#be185d; line-height:1.4;">
+              <span style="font-weight:700;">محتويات الكوليكشن:</span>
               ${item.selectedItems.map(si => {
                 const sName = si.selectedVariant && (si.selectedVariant.name || si.selectedVariant.id) ? (si.selectedVariant.name || si.selectedVariant.id) : '';
                 return `• ${si.productName || 'منتج'}${sName ? ` (${sName})` : ''}`;
