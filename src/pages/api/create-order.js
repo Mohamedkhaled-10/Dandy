@@ -5,6 +5,7 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
 import { getClientIp, getOrderRateLimiter } from '../../utils/rate-limit.js';
+import { verifyTurnstileToken } from '../../utils/turnstile.js';
 import {
   getPublishedPinkFridayCampaign,
   getCampaignStatus,
@@ -21,7 +22,10 @@ function getAdminApp() {
     throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is missing');
   }
 
-  const serviceAccount = typeof saEnv === 'string' ? JSON.parse(saEnv) : saEnv;
+  const serviceAccount = typeof saEnv === 'string' ? JSON.parse(saEnv) : { ...saEnv };
+  if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string' && serviceAccount.private_key.includes('\\n')) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
 
   return initializeApp({
     credential: cert(serviceAccount),
@@ -129,18 +133,6 @@ export async function POST({ request }) {
       console.warn(`[RATE-LIMIT WARNING - FAIL OPEN] Upstash Redis check failed in create-order for IP ${clientIp}. Continuing order execution. Error:`, rateLimitErr?.message || rateLimitErr);
     }
 
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-      console.error('FIREBASE_SERVICE_ACCOUNT not configured in environment.');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'SERVER_CONFIG_ERROR',
-        message: 'إعدادات السيرفر غير مكتملة.'
-      }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
     const body = await request.json().catch(() => ({}));
     const customer = body.customer || {};
     const items = Array.isArray(body.items) ? body.items : [];
@@ -161,12 +153,13 @@ export async function POST({ request }) {
 
     const turnstileResult = await verifyTurnstileToken(turnstileToken, clientIp);
     if (!turnstileResult.success) {
+      const isConfigError = turnstileResult.error === 'SERVER_MISCONFIGURATION';
       return new Response(JSON.stringify({
         success: false,
         error: turnstileResult.error || 'CAPTCHA_FAILED',
         message: turnstileResult.message || 'فشل التحقق الأمني من الكابتشا. يرجى إعادة المحاولة.'
       }), {
-        status: 403,
+        status: isConfigError ? 500 : 403,
         headers: { 'Content-Type': 'application/json' }
       });
     }
@@ -241,6 +234,18 @@ export async function POST({ request }) {
         message: 'سلة المشتريات فارغة'
       }), {
         status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+      console.error('FIREBASE_SERVICE_ACCOUNT not configured in environment.');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'SERVER_CONFIG_ERROR',
+        message: 'إعدادات السيرفر غير مكتملة.'
+      }), {
+        status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
     }
@@ -692,10 +697,12 @@ export async function POST({ request }) {
     });
 
   } catch (error) {
-    console.error('Error in create-order endpoint:', error);
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    console.error(`[CREATE-ORDER ERROR] Request ID: ${requestId} | Name: ${error?.name || 'Error'} | Message: ${error?.message || String(error)}`);
     return new Response(JSON.stringify({
       success: false,
       error: 'ORDER_CREATION_FAILED',
+      requestId,
       message: 'حدث خطأ أثناء معالجة الطلب على السيرفر. يرجى المحاولة مرة أخرى.'
     }), {
       status: 500,
