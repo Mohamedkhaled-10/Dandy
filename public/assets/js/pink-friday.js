@@ -27,17 +27,30 @@
     collections: rawCollections
   };
 
+  function parseDate(dateStr) {
+    if (!dateStr || typeof dateStr !== 'string') return NaN;
+    var s = dateStr.trim();
+    if (!s) return NaN;
+    if (s.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(s)) {
+      return Date.parse(s);
+    }
+    var normalized = s.length === 16 ? s + ':00+02:00' : s + '+02:00';
+    var ts = Date.parse(normalized);
+    if (!isNaN(ts)) return ts;
+    return Date.parse(s);
+  }
+
   function getStatus(now) {
     if (!config.enabled) return 'disabled';
     const currentTime = (now || new Date()).getTime();
 
     if (config.startAt) {
-      const start = Date.parse(config.startAt);
+      const start = parseDate(config.startAt);
       if (!isNaN(start) && currentTime < start) return 'upcoming';
     }
 
     if (config.endAt) {
-      const end = Date.parse(config.endAt);
+      const end = parseDate(config.endAt);
       if (!isNaN(end) && currentTime > end) return 'ended';
     }
 

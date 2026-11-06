@@ -14,8 +14,23 @@ import {
 } from '../utils/pink-friday-server';
 
 const campaign: PinkFridayCampaign = await getPublishedPinkFridayCampaign();
-const status = getCampaignStatus(campaign);
+const realStatus = getCampaignStatus(campaign);
 const allProducts = await getAllProducts();
+
+// State simulation and preview support for QA and visual auditing
+const stateParam = Astro.url.searchParams.get('state');
+const previewParam = Astro.url.searchParams.get('preview');
+
+let status = realStatus;
+const isPreview = previewParam === '1' || previewParam === 'true';
+
+if (stateParam) {
+  if (['disabled', 'upcoming', 'active', 'ended', 'collections', 'offers', 'hybrid'].includes(stateParam)) {
+    status = (stateParam === 'collections' || stateParam === 'offers' || stateParam === 'hybrid') ? 'active' : stateParam as any;
+  }
+} else if (isPreview && status !== 'active') {
+  status = 'active';
+}
 
 interface ValidCampaignItem {
   product: Product;
@@ -28,26 +43,46 @@ interface ValidCampaignItem {
 
 const validCampaignItems: ValidCampaignItem[] = [];
 
-if (status === 'active' && campaign.offers) {
-  for (const offer of campaign.offers) {
-    if (!offer.active) continue;
-    const prod = allProducts.find(p => String(p.id) === String(offer.productId));
-    if (!prod) continue;
+// When simulating 'collections' only, do not populate individual offers
+if (status === 'active' && stateParam !== 'collections') {
+  if (campaign.offers && campaign.offers.length > 0) {
+    for (const offer of campaign.offers) {
+      if (!offer.active) continue;
+      const prod = allProducts.find(p => String(p.id) === String(offer.productId));
+      if (!prod) continue;
 
-    const validation = validateOffer(offer, prod, campaign);
-    if (validation.isValid) {
-      const pricing = calculatePinkFridayPricing(prod, campaign);
-      if (pricing.isEligible) {
-        validCampaignItems.push({
-          product: prod,
-          regularPrice: pricing.regularPrice,
-          campaignPrice: pricing.campaignPrice,
-          discountAmount: pricing.discountAmount,
-          discountPercentage: pricing.discountPercentage,
-          badgeText: offer.badgeText || campaign.visuals?.badgeText || 'Pink Friday'
-        });
+      const validation = validateOffer(offer, prod, campaign);
+      if (validation.isValid) {
+        const pricing = calculatePinkFridayPricing(prod, campaign);
+        if (pricing.isEligible) {
+          validCampaignItems.push({
+            product: prod,
+            regularPrice: pricing.regularPrice,
+            campaignPrice: pricing.campaignPrice,
+            discountAmount: pricing.discountAmount,
+            discountPercentage: pricing.discountPercentage,
+            badgeText: offer.badgeText || campaign.visuals?.badgeText || 'Pink Friday'
+          });
+        }
       }
     }
+  }
+
+  // If testing 'offers' or 'hybrid' and database has 0 offers, mock 3 catalog items for visual QA
+  if ((stateParam === 'offers' || stateParam === 'hybrid') && validCampaignItems.length === 0 && allProducts.length > 0) {
+    allProducts.slice(0, 3).forEach((prod, i) => {
+      const reg = parseFloat(String(prod.price)) || 250;
+      const discPct = 20 + i * 5;
+      const camp = Math.round(reg * (1 - discPct / 100));
+      validCampaignItems.push({
+        product: prod,
+        regularPrice: reg,
+        campaignPrice: camp,
+        discountAmount: reg - camp,
+        discountPercentage: discPct,
+        badgeText: 'خصم خاص'
+      });
+    });
   }
 }
 
@@ -78,75 +113,82 @@ interface ValidCollectionItem {
 
 const validCollections: ValidCollectionItem[] = [];
 
-const rawCampaignCollections = campaign.collections;
-const campaignCollectionsList = Array.isArray(rawCampaignCollections)
-  ? rawCampaignCollections
-  : (rawCampaignCollections && typeof rawCampaignCollections === 'object' ? Object.values(rawCampaignCollections) : []);
+// When simulating 'offers' only, do not populate collections
+if (status === 'active' && stateParam !== 'offers') {
+  const rawCampaignCollections = campaign.collections;
+  const campaignCollectionsList = Array.isArray(rawCampaignCollections)
+    ? rawCampaignCollections
+    : (rawCampaignCollections && typeof rawCampaignCollections === 'object' ? Object.values(rawCampaignCollections) : []);
 
-if (status === 'active' && campaignCollectionsList.length > 0) {
-  for (const col of campaignCollectionsList) {
-    if (!col || col.active === false) continue;
-    const colItems = Array.isArray(col.items)
-      ? col.items
-      : (col.items && typeof col.items === 'object' ? Object.values(col.items) : []);
-    if (colItems.length === 0) continue;
+  if (campaignCollectionsList.length > 0) {
+    for (const col of campaignCollectionsList) {
+      if (!col || col.active === false) continue;
+      const colItems = Array.isArray(col.items)
+        ? col.items
+        : (col.items && typeof col.items === 'object' ? Object.values(col.items) : []);
+      if (colItems.length === 0) continue;
 
-    let totalRegPrice = 0;
-    let isAllAvailable = true;
-    const resolvedItems: ResolvedCollectionItem[] = [];
+      let totalRegPrice = 0;
+      let isAllAvailable = true;
+      const resolvedItems: ResolvedCollectionItem[] = [];
 
-    for (const cItem of colItems) {
-      const prod = allProducts.find(p => String(p.id) === String(cItem.productId));
-      if (!prod || prod.isHidden || prod.isSoldOut) {
-        isAllAvailable = false;
-        break;
+      for (const cItem of colItems) {
+        const prod = allProducts.find(p => String(p.id) === String(cItem.productId));
+        if (!prod || prod.isHidden || prod.isSoldOut) {
+          isAllAvailable = false;
+          break;
+        }
+        const itemBasePrice = parseFloat(String(prod.price)) || 0;
+        totalRegPrice += itemBasePrice;
+
+        // Extract scents / variants if available
+        const rawScents = (prod as any).scents || (prod as any).variants || [];
+        const cleanScents = Array.isArray(rawScents) ? rawScents.map(s => ({
+          id: typeof s === 'object' ? (s.id || s.name) : String(s),
+          name: typeof s === 'object' ? s.name : String(s)
+        })) : [];
+
+        resolvedItems.push({
+          collectionItemId: cItem.collectionItemId,
+          productId: cItem.productId,
+          productName: prod.name,
+          image: prod.image,
+          price: itemBasePrice,
+          scents: cleanScents,
+          defaultVariantId: cItem.defaultVariantId
+        });
       }
-      const itemBasePrice = parseFloat(String(prod.price)) || 0;
-      totalRegPrice += itemBasePrice;
 
-      // Extract scents / variants if available
-      const rawScents = (prod as any).scents || (prod as any).variants || [];
-      const cleanScents = Array.isArray(rawScents) ? rawScents.map(s => ({
-        id: typeof s === 'object' ? (s.id || s.name) : String(s),
-        name: typeof s === 'object' ? s.name : String(s)
-      })) : [];
+      if (!isAllAvailable) continue;
 
-      resolvedItems.push({
-        collectionItemId: cItem.collectionItemId,
-        productId: cItem.productId,
-        productName: prod.name,
-        image: prod.image,
-        price: itemBasePrice,
-        scents: cleanScents,
-        defaultVariantId: cItem.defaultVariantId
+      let calcPrice = totalRegPrice;
+      if (col.pricingType === 'package' && typeof col.packagePrice === 'number' && col.packagePrice > 0) {
+        calcPrice = col.packagePrice;
+      } else if (col.pricingType === 'percentage' && typeof col.discountPercentage === 'number' && col.discountPercentage > 0) {
+        calcPrice = Math.round(totalRegPrice * (1 - col.discountPercentage / 100));
+      } else if (typeof col.packagePrice === 'number' && col.packagePrice > 0) {
+        calcPrice = col.packagePrice;
+      } else if (typeof col.discountPercentage === 'number' && col.discountPercentage > 0) {
+        calcPrice = Math.round(totalRegPrice * (1 - col.discountPercentage / 100));
+      }
+
+      const savings = Math.max(0, totalRegPrice - calcPrice);
+
+      validCollections.push({
+        id: col.id,
+        name: col.name,
+        description: col.description || '',
+        coverImage: col.coverImage || resolvedItems[0]?.image || '',
+        badgeText: col.badgeText || 'كوليكشن داندي',
+        pricingType: col.pricingType,
+        packagePrice: col.packagePrice,
+        discountPercentage: col.discountPercentage,
+        calculatedPrice: calcPrice,
+        totalRegularPrice: totalRegPrice,
+        savings,
+        items: resolvedItems
       });
     }
-
-    if (!isAllAvailable) continue;
-
-    let calcPrice = totalRegPrice;
-    if (col.pricingType === 'package' && typeof col.packagePrice === 'number' && col.packagePrice > 0) {
-      calcPrice = col.packagePrice;
-    } else if (col.pricingType === 'percentage' && typeof col.discountPercentage === 'number' && col.discountPercentage > 0) {
-      calcPrice = Math.round(totalRegPrice * (1 - col.discountPercentage / 100));
-    }
-
-    const savings = Math.max(0, totalRegPrice - calcPrice);
-
-    validCollections.push({
-      id: col.id,
-      name: col.name,
-      description: col.description || '',
-      coverImage: col.coverImage || resolvedItems[0]?.image || '',
-      badgeText: col.badgeText || 'كوليكشن Pink Friday',
-      pricingType: col.pricingType,
-      packagePrice: col.packagePrice,
-      discountPercentage: col.discountPercentage,
-      calculatedPrice: calcPrice,
-      totalRegularPrice: totalRegPrice,
-      savings,
-      items: resolvedItems
-    });
   }
 }
 
@@ -186,60 +228,160 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
   </slot>
 
   <main class="pf-page" id="pink-friday-main" dir="rtl">
+    {isPreview && (
+      <aside class="pf-preview-banner" aria-label="شريط المعاينة">
+        <div class="pf-container pf-preview-inner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>وضع المعاينة الإدارية المباشرة لحملة Pink Friday</span>
+        </div>
+      </aside>
+    )}
+
     <!-- Premium Campaign Hero Section -->
     <section class="pf-hero" aria-label="بانر عروض Pink Friday">
       <div class="pf-hero-backdrop"></div>
       <div class="pf-container pf-hero-content">
-        <div class="pf-pill-tag">
-          <span class="pf-tag-dot"></span>
-          <span>{campaign.visuals?.badgeText || "حملة الجمال الحصرية"}</span>
+        <div class="pf-kicker-tag">
+          <span class="pf-kicker-sparkle" aria-hidden="true">✨</span>
+          <span>{campaign.visuals?.badgeText || "موسم الجمال الحصري — Pink Friday"}</span>
         </div>
-        <h1 class="pf-hero-title">{campaign.visuals?.headline || "Pink Friday"}</h1>
+        <h1 class="pf-hero-title">{campaign.visuals?.headline || "عروض Pink Friday الحصرية"}</h1>
         <p class="pf-hero-subtitle">
-          {campaign.visuals?.subtitle || "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."}
+          {campaign.visuals?.subtitle || "استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي. عناية طبيعية فائقة وتخفيضات موسمية مميزة."}
         </p>
 
         {status === 'active' && (validCampaignItems.length > 0 || validCollections.length > 0) && (
           <div class="pf-hero-actions">
             <a href={validCampaignItems.length > 0 ? "#pink-friday-products" : "#pink-friday-collections"} class="pf-btn pf-btn-primary">
               <span>{campaign.visuals?.ctaText || "اكتشفي العروض"}</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
             </a>
           </div>
         )}
 
         {status === 'upcoming' && (
           <div class="pf-status-badge pf-status-upcoming">
-            <i class="far fa-clock"></i>
-            <span>عروض Pink Friday تنطلق قريبًا جداً</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>عروض Pink Friday تنطلق قريبًا جدًا</span>
           </div>
         )}
 
         {status === 'ended' && (
           <div class="pf-status-badge pf-status-ended">
-            <i class="fas fa-check-circle"></i>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             <span>انتهت عروض Pink Friday لهذا الموسم</span>
           </div>
         )}
 
         {status === 'disabled' && (
           <div class="pf-status-badge pf-status-neutral">
-            <i class="fas fa-info-circle"></i>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             <span>نجهّز لكِ تجربة تسوق استثنائية قريبًا</span>
           </div>
         )}
       </div>
     </section>
 
-    <!-- Products / Status Section -->
-    <section class="pf-section" id="pink-friday-products" aria-label="قائمة منتجات Pink Friday">
+    <!-- Main Content Section -->
+    <section class="pf-section" id="pink-friday-products" aria-label="محتوى عروض Pink Friday">
       <div class="pf-container">
         
-        {status === 'active' && validCampaignItems.length > 0 && (
-          <div>
+        {/* Collections / Bundles Section (Presented first or alone) */}
+        {status === 'active' && validCollections.length > 0 && (
+          <div id="pink-friday-collections" class="pf-collections-group">
             <div class="pf-section-header">
-              <span class="pf-section-pretitle">تشكيلة مختارة</span>
-              <h2 class="pf-section-title">العروض النشطة حالياً</h2>
+              <span class="pf-section-pretitle">مجموعات متميزة وحصرية</span>
+              <h2 class="pf-section-title">كوليكشنز Pink Friday</h2>
+              <div class="pf-divider"></div>
+            </div>
+
+            <div class="pf-products-grid">
+              {validCollections.map((col) => (
+                <article class="pf-card pf-col-card">
+                  <div class="pf-card-media">
+                    <span class="pf-badge">{col.badgeText}</span>
+                    {col.savings > 0 && (
+                      <span class="pf-discount-chip">وفر {col.savings.toFixed(0)} ج.م</span>
+                    )}
+                    <div class="pf-card-img-link">
+                      <img
+                        src={col.coverImage}
+                        alt={col.name}
+                        width="380"
+                        height="380"
+                        loading="lazy"
+                        decoding="async"
+                        onerror="this.onerror=null;this.src='/assets/images/logo.png';"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="pf-card-body">
+                    <h3 class="pf-card-title">
+                      <span>{col.name}</span>
+                    </h3>
+                    <p class="pf-col-desc">
+                      {col.description || `بكج متكامل يحتوي على ${col.items.length} منتجات أصلية من داندي.`}
+                    </p>
+
+                    <!-- Included items preview -->
+                    <div class="pf-col-preview-box">
+                      <div class="pf-col-preview-label">محتويات الكوليكشن ({col.items.length}):</div>
+                      <ul class="pf-col-items-list">
+                        {col.items.map(it => (
+                          <li>
+                            <span class="pf-col-item-bullet">•</span>
+                            <span>{it.productName}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div class="pf-card-pricing">
+                      <div class="pf-price-current">
+                        <span class="pf-price-val">{col.calculatedPrice.toFixed(0)}</span>
+                        <span class="pf-price-cur">ج.م</span>
+                      </div>
+                      {col.totalRegularPrice > col.calculatedPrice && (
+                        <div class="pf-price-orig">
+                          <span class="pf-price-val">{col.totalRegularPrice.toFixed(0)}</span>
+                          <span class="pf-price-cur">ج.م</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {col.savings > 0 && (
+                      <div class="pf-savings-note">
+                        وفّري إجمالي <strong>{col.savings.toFixed(0)} ج.م</strong>
+                      </div>
+                    )}
+
+                    <div class="pf-card-footer">
+                      <button
+                        type="button"
+                        class="pf-btn pf-btn-primary pf-col-btn btn-open-col-modal"
+                        data-col-id={col.id}
+                        data-col-name={col.name}
+                        data-col-price={col.calculatedPrice}
+                        data-col-json={JSON.stringify(col)}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <span>اختيار الروائح وإضافة للسلة</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Individual Products Offers Section */}
+        {status === 'active' && validCampaignItems.length > 0 && (
+          <div class="pf-offers-group">
+            <div class="pf-section-header">
+              <span class="pf-section-pretitle">عروض فردية خاصة</span>
+              <h2 class="pf-section-title">منتجات مميزة في الحملة</h2>
               <div class="pf-divider"></div>
             </div>
 
@@ -259,7 +401,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
                         height="380"
                         loading="lazy"
                         decoding="async"
-                        onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';"
+                        onerror="this.onerror=null;this.src='/assets/images/logo.png';"
                       />
                     </a>
                   </div>
@@ -287,92 +429,8 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
                     <div class="pf-card-footer">
                       <a href={`/product/${product.resolvedSlug}`} class="pf-card-btn">
                         <span>عرض التفاصيل والطلب</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
                       </a>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Collections / Bundles Section */}
-        {status === 'active' && validCollections.length > 0 && (
-          <div id="pink-friday-collections" style="margin-bottom: 50px;">
-            <div class="pf-section-header">
-              <span class="pf-section-pretitle">مجموعات متميزة</span>
-              <h2 class="pf-section-title">الكوليكشنز والعروض المجمعة</h2>
-              <div class="pf-divider"></div>
-            </div>
-
-            <div class="pf-products-grid">
-              {validCollections.map((col) => (
-                <article class="pf-card" style="border: 2px solid #fbcfe8;">
-                  <div class="pf-card-media">
-                    <span class="pf-badge" style="background:#be185d; color:#ffffff;">{col.badgeText}</span>
-                    {col.savings > 0 && (
-                      <span class="pf-discount-chip">وفر {col.savings.toFixed(0)} ج.م</span>
-                    )}
-                    <div class="pf-card-img-link">
-                      <img
-                        src={col.coverImage}
-                        alt={col.name}
-                        width="380"
-                        height="380"
-                        loading="lazy"
-                        decoding="async"
-                        onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="pf-card-body">
-                    <h3 class="pf-card-title">
-                      <span>{col.name}</span>
-                    </h3>
-                    <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 10px 0; line-height: 1.4;">
-                      {col.description || `بكج مميز يحتوي على ${col.items.length} منتجات من داندي.`}
-                    </p>
-
-                    <!-- Included items preview -->
-                    <div style="background: #fdf2f8; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.75rem;">
-                      <div style="font-weight: 700; color: #be185d; margin-bottom: 4px;">مكونات الكوليكشن:</div>
-                      <ul style="margin: 0; padding-right: 16px; color: #374151;">
-                        {col.items.map(it => (
-                          <li>{it.productName}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div class="pf-card-pricing">
-                      <div class="pf-price-current">
-                        <span class="pf-price-val">{col.calculatedPrice.toFixed(0)}</span>
-                        <span class="pf-price-cur">ج.م</span>
-                      </div>
-                      <div class="pf-price-orig">
-                        <span class="pf-price-val">{col.totalRegularPrice.toFixed(0)}</span>
-                        <span class="pf-price-cur">ج.م</span>
-                      </div>
-                    </div>
-
-                    <div class="pf-savings-note">
-                      وفر إجمالي <strong>{col.savings.toFixed(0)} ج.م</strong>
-                    </div>
-
-                    <div class="pf-card-footer">
-                      <button
-                        type="button"
-                        class="pf-card-btn btn-open-col-modal"
-                        data-col-id={col.id}
-                        data-col-name={col.name}
-                        data-col-price={col.calculatedPrice}
-                        data-col-json={JSON.stringify(col)}
-                        style="width: 100%; border: none; background: #be185d; color: #ffffff; cursor: pointer; justify-content: center;"
-                      >
-                        <i class="fas fa-magic" style="margin-left: 6px;"></i>
-                        <span>اختيار الروائح وإضافة للسلة</span>
-                      </button>
                     </div>
                   </div>
                 </article>
@@ -385,7 +443,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         {status === 'active' && validCampaignItems.length === 0 && validCollections.length === 0 && (
           <div class="pf-empty-state">
             <div class="pf-empty-icon">
-              <i class="fas fa-magic"></i>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             </div>
             <h2 class="pf-empty-title">نجهّز لكِ عروض Pink Friday المميزة</h2>
             <p class="pf-empty-desc">
@@ -406,15 +464,18 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         {status === 'upcoming' && (
           <div class="pf-empty-state">
             <div class="pf-empty-icon pf-icon-accent">
-              <i class="fas fa-hourglass-start"></i>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
             <h2 class="pf-empty-title">عروض Pink Friday قادمة قريبًا</h2>
             <p class="pf-empty-desc">
-              ترقبي أقوى تجارب العناية والتألق من داندي. عروض خاصة على منتجاتكِ المفضلة قريبًا جداً.
+              ترقبي أقوى تجارب العناية والتألق من داندي. عروض خاصة وبكجات مخصصة بأسعار حصرية لفترة محدودة.
             </p>
             <div class="pf-empty-actions">
               <a href="/all-products" class="pf-btn pf-btn-secondary">
                 <span>تصفح جميع المنتجات</span>
+              </a>
+              <a href="/special-offers" class="pf-btn pf-btn-outline">
+                <span>عروضنا الحالية</span>
               </a>
             </div>
           </div>
@@ -424,11 +485,11 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         {status === 'ended' && (
           <div class="pf-empty-state">
             <div class="pf-empty-icon pf-icon-muted">
-              <i class="fas fa-gift"></i>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M16 8V6a4 4 0 0 0-8 0v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
             </div>
             <h2 class="pf-empty-title">انتهت عروض Pink Friday</h2>
             <p class="pf-empty-desc">
-              شكراً لتسوقكِ معنا! يمكنكِ متابعة أحدث العروض والمنتجات الطبيعية من خلال أقسام المتجر المختلفة.
+              شكرًا لتسوقكِ معنا! يمكنكِ متابعة أحدث العروض والمنتجات الطبيعية من خلال أقسام المتجر الدائمة.
             </p>
             <div class="pf-empty-actions">
               <a href="/all-products" class="pf-btn pf-btn-secondary">
@@ -445,7 +506,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         {status === 'disabled' && (
           <div class="pf-empty-state">
             <div class="pf-empty-icon">
-              <i class="fas fa-sparkles"></i>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             </div>
             <h2 class="pf-empty-title">الحملة غير متاحة حالياً</h2>
             <p class="pf-empty-desc">
@@ -463,33 +524,33 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     </section>
 
     <!-- Collection Scent Selection Modal -->
-    <div class="pf-modal-backdrop" id="storefrontColModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 2000; padding: 20px;">
-      <div class="pf-modal-dialog" style="background: #ffffff; border-radius: 16px; max-width: 550px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;">
-          <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-magic" style="color: #be185d;"></i>
+    <div class="pf-modal-backdrop" id="storefrontColModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="sfColModalName">
+      <div class="pf-modal-dialog">
+        <div class="pf-modal-header">
+          <h3 class="pf-modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fe5d9f" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             <span id="sfColModalName">تخصيص الروائح للكوليكشن</span>
           </h3>
-          <button type="button" id="btnCloseSfColModal" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #9ca3af;">&times;</button>
+          <button type="button" id="btnCloseSfColModal" class="pf-modal-close" aria-label="إغلاق">&times;</button>
         </div>
 
-        <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 16px; line-height: 1.5;">
+        <p class="pf-modal-subtext">
           اختاري العطر/الرائحة المفضلة لكل منتج داخل الكوليكشن قبل الإضافة للسلة:
         </p>
 
-        <div id="sfColItemsContainer" style="display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding-left: 4px;">
+        <div id="sfColItemsContainer" class="pf-modal-items">
           <!-- Populated dynamically via JS -->
         </div>
 
-        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <span style="font-size: 0.8rem; color: #6b7280;">السعر الإجمالي للبكج:</span>
-            <div style="font-size: 1.25rem; font-weight: 800; color: #be185d;" id="sfColModalTotalPrice">0 ج.م</div>
+        <div class="pf-modal-footer">
+          <div class="pf-modal-total-wrap">
+            <span class="pf-modal-total-label">السعر الإجمالي للبكج:</span>
+            <div class="pf-modal-total-price" id="sfColModalTotalPrice">0 ج.م</div>
           </div>
 
-          <button type="button" class="pf-btn pf-btn-primary" id="btnConfirmAddColToCart" style="background: #be185d; border-color: #be185d;">
+          <button type="button" class="pf-btn pf-btn-primary pf-modal-submit-btn" id="btnConfirmAddColToCart">
             <span>تأكيد وإضافة للسلة</span>
-            <i class="fas fa-shopping-bag" style="margin-right: 6px;"></i>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           </button>
         </div>
       </div>
@@ -520,6 +581,13 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         if (modal) modal.style.display = 'none';
       });
 
+      // Close modal on backdrop click
+      document.getElementById('storefrontColModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'storefrontColModal') {
+          e.target.style.display = 'none';
+        }
+      });
+
       function renderSfColModal() {
         if (!selectedColData) return;
         document.getElementById('sfColModalName').textContent = selectedColData.name;
@@ -531,29 +599,27 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
 
         selectedColData.items.forEach((item, idx) => {
           const div = document.createElement('div');
-          div.style.cssText = 'background:#f9fafb; padding:10px 14px; border-radius:8px; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; gap:10px;';
+          div.className = 'sf-modal-item-row';
 
           const scents = item.scents || [];
           let scentSelectHtml = '';
 
           if (scents.length > 0) {
             scentSelectHtml = `
-              <select class="sf-item-scent-select" data-item-index="${idx}" style="border:1px solid #d1d5db; border-radius:6px; padding:4px 8px; font-size:0.8rem; outline:none; background:#ffffff;">
+              <select class="sf-item-scent-select" data-item-index="${idx}">
                 ${scents.map(s => `<option value="${s.id}" ${String(s.id) === String(item.defaultVariantId) ? 'selected' : ''}>${s.name}</option>`).join('')}
               </select>
             `;
           } else {
-            scentSelectHtml = `<span style="font-size:0.75rem; color:#6b7280;">شامل حسب الصورة</span>`;
+            scentSelectHtml = `<span class="sf-item-fixed-note">شامل حسب التشكيلة</span>`;
           }
 
           div.innerHTML = `
-            <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${item.image}" style="width:36px; height:36px; border-radius:4px; object-fit:cover;">
-              <div>
-                <strong style="font-size:0.82rem; color:#111827; display:block;">${item.productName}</strong>
-              </div>
+            <div class="sf-modal-item-info">
+              <img src="${item.image}" alt="${item.productName}" class="sf-modal-item-img">
+              <strong class="sf-modal-item-name">${item.productName}</strong>
             </div>
-            <div>${scentSelectHtml}</div>
+            <div class="sf-modal-item-scent">${scentSelectHtml}</div>
           `;
 
           container.appendChild(div);
@@ -638,11 +704,27 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     padding: 0 20px;
   }
 
+  /* Preview Ribbon */
+  .pf-preview-banner {
+    background: #181416;
+    color: #fe5d9f;
+    border-bottom: 1px solid rgba(254, 93, 159, 0.4);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .pf-preview-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
   /* Hero Section */
   .pf-hero {
     position: relative;
     padding: 72px 0 64px;
-    background: linear-gradient(135deg, #181416 0%, #291a22 50%, #150f13 100%);
+    background: linear-gradient(135deg, #181416 0%, #291a22 55%, #150f13 100%);
     color: #ffffff;
     text-align: center;
     overflow: hidden;
@@ -651,7 +733,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
   .pf-hero-backdrop {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 30%, rgba(254, 93, 159, 0.18) 0%, transparent 70%);
+    background: radial-gradient(circle at 50% 25%, rgba(254, 93, 159, 0.2) 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -663,46 +745,40 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     align-items: center;
   }
 
-  .pf-pill-tag {
+  .pf-kicker-tag {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(254, 93, 159, 0.14);
-    border: 1px solid rgba(254, 93, 159, 0.35);
     color: #fe5d9f;
-    padding: 6px 16px;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 18px;
-    letter-spacing: 0.3px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
   }
 
-  .pf-tag-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background-color: #fe5d9f;
-    box-shadow: 0 0 8px #fe5d9f;
+  .pf-kicker-sparkle {
+    font-size: 1rem;
   }
 
   .pf-hero-title {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    font-size: clamp(2.3rem, 5.5vw, 3.6rem);
     font-weight: 700;
     color: #ffffff;
     margin: 0 0 14px;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 20px rgba(254, 93, 159, 0.25);
+    line-height: 1.3;
+    text-wrap: balance;
+    text-shadow: 0 2px 24px rgba(254, 93, 159, 0.28);
   }
 
   .pf-hero-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    color: #e0d5db;
+    font-size: clamp(0.98rem, 2.2vw, 1.15rem);
+    color: #e5d8df;
     max-width: 620px;
     margin: 0 0 28px;
-    line-height: 1.7;
+    line-height: 1.65;
     font-weight: 400;
+    text-wrap: balance;
   }
 
   .pf-hero-actions {
@@ -719,23 +795,23 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     gap: 8px;
     padding: 12px 28px;
     border-radius: 999px;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease;
     cursor: pointer;
   }
 
   .pf-btn-primary {
-    background-color: #fe5d9f;
+    background: linear-gradient(135deg, #fe5d9f 0%, #e64a8b 100%);
     color: #ffffff;
-    border: 1px solid #fe5d9f;
-    box-shadow: 0 4px 16px rgba(254, 93, 159, 0.3);
+    border: none;
+    box-shadow: 0 4px 18px rgba(254, 93, 159, 0.35);
   }
   .pf-btn-primary:hover {
-    background-color: #e64a8b;
-    border-color: #e64a8b;
     transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(254, 93, 159, 0.45);
+    color: #ffffff;
   }
 
   .pf-btn-secondary {
@@ -761,7 +837,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 20px;
+    padding: 9px 22px;
     border-radius: 999px;
     font-size: 0.92rem;
     font-weight: 600;
@@ -769,8 +845,8 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
   }
   .pf-status-upcoming {
     background: rgba(254, 93, 159, 0.2);
-    border: 1px solid rgba(254, 93, 159, 0.4);
-    color: #ff9ec4;
+    border: 1px solid rgba(254, 93, 159, 0.45);
+    color: #ffb8d4;
   }
   .pf-status-ended {
     background: rgba(255, 255, 255, 0.1);
@@ -788,9 +864,16 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     padding: 64px 0 88px;
   }
 
+  .pf-collections-group {
+    margin-bottom: 56px;
+  }
+  .pf-offers-group {
+    margin-bottom: 56px;
+  }
+
   .pf-section-header {
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 44px;
   }
 
   .pf-section-pretitle {
@@ -798,7 +881,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     color: #fe5d9f;
     font-weight: 700;
     font-size: 0.85rem;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     margin-bottom: 6px;
     text-transform: uppercase;
   }
@@ -821,23 +904,29 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
   /* Grid */
   .pf-products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
     gap: 28px;
   }
 
   .pf-card {
     background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #f0e6eb;
+    border-radius: 18px;
+    border: 1px solid #efe4eb;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
   }
   .pf-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(254, 93, 159, 0.12);
+  }
+
+  /* Collection Card Specific Polish */
+  .pf-col-card {
+    border: 1px solid rgba(254, 93, 159, 0.35);
+    background: #ffffff;
   }
 
   .pf-card-media {
@@ -858,7 +947,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.35s ease;
   }
   .pf-card:hover .pf-card-img-link img {
     transform: scale(1.04);
@@ -868,9 +957,9 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     position: absolute;
     top: 14px;
     right: 14px;
-    background-color: #1a1618;
+    background: #181416;
     color: #fe5d9f;
-    padding: 5px 12px;
+    padding: 5px 13px;
     border-radius: 999px;
     font-size: 0.78rem;
     font-weight: 700;
@@ -882,14 +971,14 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     position: absolute;
     top: 14px;
     left: 14px;
-    background-color: #fe5d9f;
+    background: linear-gradient(135deg, #fe5d9f 0%, #e64a8b 100%);
     color: #ffffff;
-    padding: 5px 10px;
+    padding: 5px 12px;
     border-radius: 999px;
     font-size: 0.78rem;
     font-weight: 700;
     z-index: 2;
-    box-shadow: 0 2px 8px rgba(254, 93, 159, 0.4);
+    box-shadow: 0 3px 10px rgba(254, 93, 159, 0.4);
   }
 
   .pf-card-body {
@@ -900,18 +989,63 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
   }
 
   .pf-card-title {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    margin: 0 0 14px;
-    line-height: 1.5;
+    margin: 0 0 10px;
+    line-height: 1.45;
   }
-  .pf-card-title a {
+  .pf-card-title a,
+  .pf-card-title span {
     color: #1a1618;
     text-decoration: none;
     transition: color 0.15s ease;
   }
   .pf-card-title a:hover {
     color: #fe5d9f;
+  }
+
+  .pf-col-desc {
+    font-size: 0.84rem;
+    color: #63575d;
+    margin: 0 0 14px;
+    line-height: 1.5;
+  }
+
+  .pf-col-preview-box {
+    background: rgba(254, 93, 159, 0.05);
+    border: 1px solid rgba(254, 93, 159, 0.18);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+
+  .pf-col-preview-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fe5d9f;
+    margin-bottom: 6px;
+  }
+
+  .pf-col-items-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: #3f393d;
+  }
+
+  .pf-col-items-list li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pf-col-item-bullet {
+    color: #fe5d9f;
+    font-weight: 700;
   }
 
   .pf-card-pricing {
@@ -949,8 +1083,9 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
 
   .pf-savings-note {
     font-size: 0.85rem;
-    color: #27ae60;
+    color: #1e824c;
     margin-bottom: 18px;
+    font-weight: 600;
   }
 
   .pf-card-footer {
@@ -963,20 +1098,28 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 10px 16px;
+    padding: 11px 16px;
     background-color: #faf5f8;
     color: #1a1618;
-    border: 1px solid #f0e6eb;
+    border: 1px solid #efe4eb;
     border-radius: 10px;
     text-decoration: none;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 700;
     transition: all 0.2s ease;
   }
   .pf-card-btn:hover {
     background-color: #fe5d9f;
     color: #ffffff;
     border-color: #fe5d9f;
+  }
+
+  .pf-col-btn {
+    width: 100%;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 0.9rem;
+    font-weight: 700;
   }
 
   /* Empty State */
@@ -1000,7 +1143,6 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
     margin: 0 auto 20px;
   }
   .pf-icon-accent {
@@ -1024,6 +1166,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     color: #6d6368;
     line-height: 1.7;
     margin: 0 0 28px;
+    text-wrap: balance;
   }
 
   .pf-empty-actions {
@@ -1033,16 +1176,205 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
     gap: 14px;
   }
 
+  /* Scent Selection Modal */
+  .pf-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(24, 20, 22, 0.68);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 18px;
+  }
+
+  .pf-modal-dialog {
+    background: #ffffff;
+    border-radius: 20px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 26px 24px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(254, 93, 159, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pf-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f2e9ee;
+  }
+
+  .pf-modal-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1a1618;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pf-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #9c9297;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s ease;
+  }
+  .pf-modal-close:hover {
+    color: #1a1618;
+  }
+
+  .pf-modal-subtext {
+    font-size: 0.86rem;
+    color: #63575d;
+    margin: 0 0 16px;
+    line-height: 1.5;
+  }
+
+  .pf-modal-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-left: 4px;
+  }
+
+  :global(.sf-modal-item-row) {
+    background: #fbf9fa;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #f0e6ec;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  :global(.sf-modal-item-info) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  :global(.sf-modal-item-img) {
+    width: 48px;
+    height: 48px;
+    max-width: 48px;
+    max-height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid #efe4eb;
+  }
+
+  :global(.sf-modal-item-name) {
+    font-size: 0.85rem;
+    color: #1a1618;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  :global(.sf-item-scent-select) {
+    border: 1px solid #d4c8cd;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.82rem;
+    outline: none;
+    background: #ffffff;
+    color: #1a1618;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+  }
+  :global(.sf-item-scent-select:focus) {
+    border-color: #fe5d9f;
+  }
+
+  :global(.sf-item-fixed-note) {
+    font-size: 0.78rem;
+    color: #7d7277;
+    background: #f0e9ed;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .pf-modal-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f2e9ee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .pf-modal-total-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pf-modal-total-label {
+    font-size: 0.8rem;
+    color: #63575d;
+  }
+
+  .pf-modal-total-price {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #fe5d9f;
+  }
+
+  .pf-modal-submit-btn {
+    border-radius: 12px;
+    padding: 12px 22px;
+  }
+
   @media (max-width: 640px) {
     .pf-hero {
-      padding: 52px 0 44px;
+      padding: 50px 0 42px;
     }
     .pf-products-grid {
       grid-template-columns: 1fr;
       gap: 20px;
     }
     .pf-empty-state {
-      padding: 40px 20px;
+      padding: 38px 18px;
+    }
+    .pf-modal-dialog {
+      padding: 20px 16px;
+    }
+    :global(.sf-modal-item-row) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    :global(.sf-item-scent-select) {
+      width: 100%;
+    }
+    .pf-modal-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .pf-modal-submit-btn {
+      width: 100%;
     }
   }
 </style>

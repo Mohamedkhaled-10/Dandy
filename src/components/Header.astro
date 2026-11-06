@@ -4,39 +4,43 @@
 import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../utils/pink-friday-server';
 const publishedCampaign = await getPublishedPinkFridayCampaign();
 const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
+
+const rawBadge = publishedCampaign?.visuals?.badgeText?.trim();
+const pfBadgeText = (!rawBadge || rawBadge.toLowerCase().includes('pink friday')) ? 'عروض حصرية' : rawBadge;
 ---
 
-<!-- 0. Temporary Campaign Announcement Bar: Pink Friday (Visible only when published, valid & active) -->
-{showPinkFriday && (
-  <div class="pf-announcement-bar" id="pf-announcement-bar" dir="rtl">
-    <div class="pf-bar-content">
-      <span class="pf-bar-sparkle">✨</span>
-      <span class="pf-bar-text">{publishedCampaign?.visuals?.headline || "Pink Friday من داندي — اكتشفي العروض الخاصة الآن"}</span>
-      <a href="/pink-friday" class="pf-bar-link">
-        <span>{publishedCampaign?.visuals?.ctaText || "عرض المنتجات"}</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>
-      </a>
-    </div>
-  </div>
-)}
-
-<!-- 1. Announcement Bar: Branded Dandy Rose Kiss Treatment -->
+<!-- 0. Unified Top Announcement Bar (Pink Friday Campaign or Standard Free Shipping) -->
 <script is:inline>
   if (window.location.pathname === '/' || window.location.pathname === '') {
     document.documentElement.classList.add('is-homepage');
   }
 </script>
-<div class="announce-bar" id="site-announce-bar">
-  <div class="announce-track">
-    <span>Enjoy Free Shipping on orders above 2000 LE</span>
-    <span>•</span>
-    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
-    <span>•</span>
-    <span>Enjoy Free Shipping on orders above 2000 LE</span>
-    <span>•</span>
-    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
+
+{showPinkFriday ? (
+  <div class="pf-announcement-bar" id="pf-announcement-bar" dir="rtl">
+    <div class="pf-bar-content">
+      <span class="pf-bar-sparkle" aria-hidden="true">✨</span>
+      <span class="pf-bar-text">{publishedCampaign?.visuals?.announcementText || publishedCampaign?.visuals?.headline || "عروض Pink Friday الحصرية الآن من داندي"}</span>
+      <span class="pf-bar-perk" aria-hidden="true">• توصيل مجاني للطلبات فوق 2000 ج.م</span>
+      <a href="/pink-friday" class="pf-bar-link">
+        <span>{publishedCampaign?.visuals?.ctaText || "اكتشفي العروض"}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 19l-7-7 7-7"/></svg>
+      </a>
+    </div>
   </div>
-</div>
+) : (
+  <div class="announce-bar" id="site-announce-bar">
+    <div class="announce-track">
+      <span>Enjoy Free Shipping on orders above 2000 LE</span>
+      <span>•</span>
+      <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
+      <span>•</span>
+      <span>Enjoy Free Shipping on orders above 2000 LE</span>
+      <span>•</span>
+      <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
+    </div>
+  </div>
+)}
 
 <!-- 2. Main Header: Minimal Luxury Composition (Logo Right + Adjacent Nav | Left Utility Group) -->
 <header class="site-header" id="site-header">
@@ -86,7 +90,7 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
         {showPinkFriday && (
           <a href="/pink-friday" class="nav-link badge-link pf-nav-link">
             Pink Friday
-            <span class="nav-badge pf-nav-badge">{publishedCampaign?.visuals?.badgeText || 'عرض'}</span>
+            <span class="nav-badge pf-nav-badge">{pfBadgeText}</span>
           </a>
         )}
         <a href="/track-order" class="nav-link">تتبع طلبك</a>
@@ -300,9 +304,9 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
           <a href="/pink-friday" class="drawer-nav-item highlight-item pf-drawer-item">
             <span class="with-badge">
               Pink Friday
-              <span class="special-tag pf-special-tag">{publishedCampaign?.visuals?.badgeText || 'عرض'}</span>
+              <span class="special-tag pf-special-tag">{pfBadgeText}</span>
             </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
           </a>
         </li>
       )}
@@ -859,6 +863,23 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
   .pf-special-tag {
     background-color: #fe5d9f !important;
     color: #ffffff !important;
+  }
+  .pf-bar-perk {
+    color: #ffd1e3;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  @media (max-width: 640px) {
+    .pf-announcement-bar {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+    }
+    .pf-bar-content {
+      gap: 6px;
+    }
+    .pf-bar-perk {
+      display: none;
+    }
   }
 
   /* ==========================================================================

@@ -150,6 +150,24 @@ export async function getPublishedPinkFridayCampaign(forceFresh = false): Promis
 }
 
 /**
+ * Safely parse a date string respecting Africa/Cairo timezone (+02:00) when offset is omitted.
+ */
+export function parseCampaignDate(dateStr?: string | null, defaultOffset = '+02:00'): number {
+  if (!dateStr || typeof dateStr !== 'string') return NaN;
+  const s = dateStr.trim();
+  if (!s) return NaN;
+  // If string contains explicit timezone indicator ('Z' or '+02:00' or '-05:00')
+  if (s.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(s)) {
+    return Date.parse(s);
+  }
+  // If ISO datetime without timezone, append Africa/Cairo offset (+02:00)
+  const normalized = s.length === 16 ? `${s}:00${defaultOffset}` : `${s}${defaultOffset}`;
+  const ts = Date.parse(normalized);
+  if (!isNaN(ts)) return ts;
+  return Date.parse(s);
+}
+
+/**
  * Calculate the campaign lifecycle status strictly in Africa/Cairo time.
  */
 export function getCampaignStatus(
@@ -165,14 +183,14 @@ export function getCampaignStatus(
   const endAt = campaign.endAt || (campaign as any).endDate;
 
   if (startAt) {
-    const startTs = Date.parse(startAt);
+    const startTs = parseCampaignDate(startAt);
     if (!isNaN(startTs) && currentTs < startTs) {
       return 'upcoming';
     }
   }
 
   if (endAt) {
-    const endTs = Date.parse(endAt);
+    const endTs = parseCampaignDate(endAt);
     if (!isNaN(endTs) && currentTs > endTs) {
       return 'ended';
     }
@@ -297,13 +315,17 @@ export function validateCollection(
 
   let calculatedPrice = 0;
   if (collection.pricingType === 'package') {
-    if (typeof collection.packagePrice !== 'number' || collection.packagePrice <= 0 || isNaN(collection.packagePrice)) {
+    if (typeof collection.packagePrice === 'number' && collection.packagePrice > 0 && !isNaN(collection.packagePrice)) {
+      if (collection.packagePrice >= totalRegularPrice) {
+        return { isValid: false, reason: 'PACKAGE_PRICE_NOT_LOWER' };
+      }
+      calculatedPrice = collection.packagePrice;
+    } else if (typeof collection.discountPercentage === 'number' && collection.discountPercentage > 0 && collection.discountPercentage < 100) {
+      // Graceful fallback if admin specified discountPercentage but left packagePrice blank
+      calculatedPrice = Math.round(totalRegularPrice * (1 - collection.discountPercentage / 100));
+    } else {
       return { isValid: false, reason: 'INVALID_PACKAGE_PRICE' };
     }
-    if (collection.packagePrice >= totalRegularPrice) {
-      return { isValid: false, reason: 'PACKAGE_PRICE_NOT_LOWER' };
-    }
-    calculatedPrice = collection.packagePrice;
   } else if (collection.pricingType === 'percentage') {
     const pct = collection.discountPercentage;
     if (typeof pct !== 'number' || pct <= 0 || pct >= 100 || isNaN(pct)) {
@@ -311,7 +333,14 @@ export function validateCollection(
     }
     calculatedPrice = Math.round(totalRegularPrice * (1 - pct / 100));
   } else {
-    return { isValid: false, reason: 'INVALID_PRICING_TYPE' };
+    // If pricingType is omitted or malformed, detect based on present values
+    if (typeof collection.packagePrice === 'number' && collection.packagePrice > 0 && collection.packagePrice < totalRegularPrice) {
+      calculatedPrice = collection.packagePrice;
+    } else if (typeof collection.discountPercentage === 'number' && collection.discountPercentage > 0 && collection.discountPercentage < 100) {
+      calculatedPrice = Math.round(totalRegularPrice * (1 - collection.discountPercentage / 100));
+    } else {
+      return { isValid: false, reason: 'INVALID_PRICING_TYPE' };
+    }
   }
 
   return {
