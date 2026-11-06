@@ -86,7 +86,7 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
         {showPinkFriday && (
           <a href="/pink-friday" class="nav-link badge-link pf-nav-link">
             Pink Friday
-            <span class="nav-badge pf-nav-badge">{publishedCampaign?.visuals?.badgeText || 'عرض'}</span>
+            <span class="nav-badge pf-nav-badge">{publishedCampaign?.visuals?.badgeText && publishedCampaign?.visuals?.badgeText !== 'Pink Friday' ? publishedCampaign?.visuals?.badgeText : 'عرض'}</span>
           </a>
         )}
         <a href="/track-order" class="nav-link">تتبع طلبك</a>
@@ -744,61 +744,30 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
     });
   }
 
-  // --- Homepage Hero Transparent Navbar Coordination ---
+  // --- Sticky Header Elevation Scroll Handler ---
   function initHeroNavScroll() {
     const header = document.getElementById('site-header');
     if (!header) return;
 
-    const isHomepage = window.location.pathname === '/' || window.location.pathname === '' || document.body.classList.contains('has-homepage-hero');
-    if (!isHomepage) {
-      header.classList.remove('is-hero-nav-active');
-      document.body.classList.remove('has-hero-nav');
-      return;
-    }
-
     let ticking = false;
-    let isHeroActive = true;
-
-    function updateHeroNavState() {
+    function updateHeaderScrollState() {
       const scrollY = window.scrollY || window.pageYOffset || 0;
-      
-      // Exit Hero Mode when scrolled past 65px; Re-enter Hero Mode only when scrolled back near top (<= 5px)
-      if (isHeroActive && scrollY > 65) {
-        isHeroActive = false;
-        if (header.classList.contains('is-hero-nav-active')) {
-          header.classList.remove('is-hero-nav-active');
-          document.body.classList.remove('has-hero-nav');
-        }
-      } else if (!isHeroActive && scrollY <= 5) {
-        isHeroActive = true;
-        if (!header.classList.contains('is-hero-nav-active')) {
-          header.classList.add('is-hero-nav-active');
-          document.body.classList.add('has-hero-nav');
-        }
+      if (scrollY > 15) {
+        header.classList.add('is-scrolled');
+      } else {
+        header.classList.remove('is-scrolled');
       }
       ticking = false;
     }
 
-    function onScroll() {
+    window.addEventListener('scroll', () => {
       if (!ticking) {
-        window.requestAnimationFrame(updateHeroNavState);
+        window.requestAnimationFrame(updateHeaderScrollState);
         ticking = true;
       }
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true });
+    }, { passive: true });
     
-    // Initial run
-    const initialScrollY = window.scrollY || window.pageYOffset || 0;
-    if (initialScrollY > 65) {
-      isHeroActive = false;
-      header.classList.remove('is-hero-nav-active');
-      document.body.classList.remove('has-hero-nav');
-    } else {
-      isHeroActive = true;
-      header.classList.add('is-hero-nav-active');
-      document.body.classList.add('has-hero-nav');
-    }
+    updateHeaderScrollState();
   }
 
   if (document.readyState === 'loading') {
@@ -916,28 +885,28 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
      ========================================================================== */
 
   .site-header {
-    background: #ffffff;
-    border-bottom: 1px solid rgba(44, 40, 40, 0.07);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(44, 40, 40, 0.08);
     position: sticky;
     top: 0;
     z-index: 100;
     height: 64px;
-    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: background-color, border-color;
+    transition: background-color 0.25s ease,
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+    will-change: background-color, border-color, box-shadow;
   }
 
-  /* ==========================================================================
-     HERO NAVBAR STATE: Transparent, Minimal 3-Element Luxury Overlay
-     ========================================================================== */
+  .site-header.is-scrolled {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  }
 
-  html.is-homepage .announce-bar {
+  /* Homepage Announcements Coordination */
+  html.is-homepage .announce-bar,
+  html.is-homepage .pf-announcement-bar {
     display: none !important;
-  }
-
-  html.is-homepage .site-header {
-    margin-bottom: -64px;
   }
 
   .announce-bar {
@@ -947,94 +916,28 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
     will-change: transform, opacity;
   }
 
-  body.has-hero-nav .announce-bar {
-    transform: translate3d(0, -100%, 0);
-    opacity: 0;
-    pointer-events: none;
-    border-bottom: none;
-  }
-
-  .site-header.is-hero-nav-active {
-    background-color: transparent !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: none !important;
-  }
-
-  /* Logo styling during hero state */
-  .site-header.is-hero-nav-active .brand-logo img {
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
-  }
-
-  /* Right Zone Nav links: Hide all EXCEPT "عن داندي" in hero mode */
-  .site-header.is-hero-nav-active .desktop-nav .nav-link:not([href="/about-us"]) {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translate3d(14px, 0, 0);
-  }
-
-  .site-header.is-hero-nav-active .desktop-nav .nav-link[href="/about-us"] {
-    color: #ffffff;
-    font-weight: 600;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    opacity: 1;
-    visibility: visible;
-  }
-  .site-header.is-hero-nav-active .desktop-nav .nav-link[href="/about-us"]::after {
-    background: #ffffff;
-  }
-
-  /* Left Zone Utility Group: Hide Search & Cart, Show ONLY Account */
-  .site-header.is-hero-nav-active #desktop-search-btn {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale3d(0.85, 0.85, 1);
-  }
-
-  .site-header.is-hero-nav-active #header-cart-link {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale3d(0.85, 0.85, 1);
-  }
-
-  .site-header.is-hero-nav-active #header-auth-guest,
-  .site-header.is-hero-nav-active #header-auth-user .header-account-btn,
-  .site-header.is-hero-nav-active #header-auth-user .logout-btn,
-  .site-header.is-hero-nav-active .mobile-menu-btn {
-    color: #ffffff;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  }
-
-  .site-header.is-hero-nav-active .header-utility-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-  }
-
   .header-container {
     width: 100%;
-    max-width: var(--container-max-width, 1240px);
+    max-width: 1440px;
     margin-left: auto;
     margin-right: auto;
-    padding-left: var(--container-px, 24px);
-    padding-right: var(--container-px, 24px);
+    padding-left: clamp(16px, 2.5vw, 32px);
+    padding-right: clamp(16px, 2.5vw, 32px);
     height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 16px;
   }
 
   /* Right Zone (RTL Start: Logo + Primary Nav on Desktop | Mobile: Hamburger Trigger) */
   .header-start {
     display: flex;
     align-items: center;
-    gap: 32px;
+    gap: clamp(14px, 1.8vw, 28px);
     flex: 1;
     justify-content: flex-start;
     min-width: 0;
-    transition: gap 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Unified Minimal Utility Button (Search, Account, Cart, Mobile Menu) */
@@ -1103,33 +1006,27 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
   .desktop-nav {
     display: flex;
     align-items: center;
-    gap: 22px;
+    gap: clamp(8px, 1.1vw, 18px);
     margin: 0;
     padding: 0;
     flex-wrap: nowrap;
-    transition: gap 0.35s ease;
+    min-width: 0;
   }
 
   .nav-link {
     display: inline-flex;
     align-items: center;
-    padding: 6px 0;
+    padding: 6px 3px;
     font-family: var(--font-sans, 'Alexandria', 'Cairo', sans-serif);
-    font-size: var(--text-sm, 0.875rem);
+    font-size: clamp(0.78rem, 0.88vw, 0.85rem);
     font-weight: 500;
     color: var(--color-text-secondary, #44403c);
     text-decoration: none;
     position: relative;
     white-space: nowrap;
-    max-width: 200px;
-    transform: translate3d(0, 0, 0);
     opacity: 1;
     visibility: visible;
-    transition: color 0.25s ease,
-                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                visibility 0.35s ease;
-    will-change: transform, opacity;
+    transition: color 0.2s ease;
   }
   .nav-link::after {
     content: '';
@@ -1155,7 +1052,7 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
   }
 
   .nav-link.badge-link {
-    gap: 6px;
+    gap: 5px;
   }
 
   .nav-badge {
@@ -1179,8 +1076,9 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
   .header-end {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     flex-shrink: 0;
+    min-width: max-content;
     justify-content: flex-end;
   }
 
@@ -1674,33 +1572,58 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
      RESPONSIVE BREAKPOINTS (Mobile Composition & Centered Branding)
      ========================================================================== */
 
-  @media (max-width: 1200px) {
+  @media (max-width: 1280px) {
     .header-container {
-      padding-left: 16px;
-      padding-right: 16px;
-      gap: 16px;
-    }
-    .header-start {
-      gap: 16px;
-    }
-    .desktop-nav {
+      padding-left: 14px;
+      padding-right: 14px;
       gap: 12px;
     }
+    .header-start {
+      gap: 12px;
+    }
+    .desktop-nav {
+      gap: 7px;
+    }
     .nav-link {
-      font-size: 0.8125rem;
+      font-size: 0.78rem;
+      padding: 6px 2px;
+    }
+    .brand-logo img {
+      height: 32px;
     }
   }
 
-  @media (max-width: 990px) {
-    .desktop-nav {
+  @media (max-width: 1120px) {
+    .header-container {
+      padding-left: 10px;
+      padding-right: 10px;
       gap: 8px;
     }
+    .header-start {
+      gap: 8px;
+    }
+    .desktop-nav {
+      gap: 4px;
+    }
     .nav-link {
-      font-size: 0.775rem;
+      font-size: 0.72rem;
+      padding: 4px 1px;
+    }
+    .nav-badge {
+      font-size: 0.58rem;
+      padding: 1px 3px;
+    }
+    .brand-logo img {
+      height: 28px;
+    }
+    .header-utility-btn {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
     }
   }
 
-  @media (max-width: 920px) {
+  @media (max-width: 960px) {
     .header-container {
       position: relative;
       height: 58px;
@@ -1728,24 +1651,12 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
     }
     .header-end {
       flex: 0 0 auto;
-      gap: 4px;
+      gap: 6px;
     }
     
-    /* Standard Scrolled Mobile Navbar: Hide desktop account buttons (handled in drawer) */
-    .site-header:not(.is-hero-nav-active) #header-auth-guest,
-    .site-header:not(.is-hero-nav-active) #header-auth-user {
-      display: none !important;
-    }
-
-    /* Hero Mobile Navbar: Keep Account hidden on mobile in both states to avoid duplicate */
-    .site-header.is-hero-nav-active #header-auth-guest {
-      display: none !important;
-    }
-    .site-header.is-hero-nav-active #header-auth-user {
-      display: none !important;
-    }
-    .site-header.is-hero-nav-active #desktop-search-btn,
-    .site-header.is-hero-nav-active #header-cart-link {
+    /* On mobile, account button is handled cleanly inside the drawer */
+    #header-auth-guest,
+    #header-auth-user {
       display: none !important;
     }
   }

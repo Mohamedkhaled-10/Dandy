@@ -1574,7 +1574,7 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
     </section>
 
     {showPfSection && (
-      <section class="pf-home-banner scroll-reveal-up" id="sec-pink-friday-banner" aria-label="حملة Pink Friday">
+      <section class="pf-home-banner scroll-reveal-up" id="sec-pink-friday-banner" data-studio-section="pink-friday-banner" data-studio-title="عروض Pink Friday" aria-label="حملة Pink Friday">
         <div class="home-container">
           <div class="pf-home-banner-card">
             <div class="pf-home-banner-content">
@@ -2893,6 +2893,18 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
             wrapper.appendChild(secEl);
           }
         });
+      }
+
+      // Guarantee the Pink Friday promotional banner is positioned immediately below the Trust Strip
+      const pfBanner = document.getElementById('sec-pink-friday-banner');
+      const trustStrip = document.getElementById('sec-trust-strip');
+      if (pfBanner && trustStrip && trustStrip.parentNode === wrapper) {
+        trustStrip.insertAdjacentElement('afterend', pfBanner);
+      } else if (pfBanner && !trustStrip) {
+        const heroSec = document.getElementById('hero-editorial-section');
+        if (heroSec && heroSec.parentNode === wrapper) {
+          heroSec.insertAdjacentElement('afterend', pfBanner);
+        }
       }
 
       // Remove any custom section elements that are no longer in customSectionsMap or order
