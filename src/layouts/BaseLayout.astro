@@ -3,6 +3,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import DashboardNav from '../components/DashboardNav.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
 import { getPublishedPinkFridayCampaign } from '../utils/pink-friday-server.ts';
 
 export interface Props {
@@ -71,6 +72,9 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
   <link rel="stylesheet" href="/assets/css/style.css" />
   <link rel="stylesheet" href="/assets/css/layout.css" />
 
+  <!-- Central Meta Pixel & Consent Bridge (Pre-Consent Gated) -->
+  <script is:inline src="/assets/js/meta-pixel.js"></script>
+
   <!-- Firebase Compat SDKs with verified SRI Hashes -->
   <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" integrity="sha384-ajMUFBUFMCyjh8uxJg6bkGcKe9RTolyjwbxB3yES0QQMenP3Oztj/W9vA2SJPcIh" crossorigin="anonymous"></script>
   <script is:inline src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js" integrity="sha384-xD1t9dGSVKobUztxDkv6xUI0H4AnFz0NxwlgDJJ7FDlblG9xxr1Z9iauCZuJYj6p" crossorigin="anonymous"></script>
@@ -128,5 +132,8 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
   <slot />
 
   {showFooter && <Footer />}
+
+  <!-- Cookie Consent Banner for Marketing & Analytics Tracking -->
+  <ConsentBanner />
 </body>
 </html>

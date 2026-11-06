@@ -1,0 +1,260 @@
+---
+// src/components/ConsentBanner.astro
+// User privacy and marketing cookie consent banner for Dandy Cosmetics
+---
+
+<div id="dandy-consent-banner" class="dandy-consent-banner" style="display: none;" dir="rtl" role="dialog" aria-live="polite" aria-label="إشعار الخصوصية وملفات تعريف الارتباط">
+  <div class="consent-container">
+    <div class="consent-content">
+      <div class="consent-icon-box">
+        <i class="fas fa-cookie-bite" aria-hidden="true"></i>
+      </div>
+      <div class="consent-text-wrap">
+        <h4 class="consent-title">الخصوصية وملفات تعريف الارتباط</h4>
+        <p class="consent-desc">
+          نستخدم ملفات تعريف الارتباط وتقنيات التحليلات (بما فيها Meta Pixel) لتخصيص تجربة التصفح وقياس أداء الحملات التسويقية وتحسين خدماتنا. يمكنكِ اختيار قبول التتبع التسويقي أو الاقتصار على الملفات الأساسية فقط. لمزيد من التفاصيل، يرجى مراجعة <a href="/privacy-policy" target="_blank" class="consent-link">سياسة الخصوصية</a>.
+        </p>
+      </div>
+    </div>
+    <div class="consent-actions">
+      <button type="button" id="dandy-consent-accept-btn" class="consent-btn consent-btn-accept">
+        <i class="fas fa-check"></i>
+        <span>قبول التتبع التسويقي</span>
+      </button>
+      <button type="button" id="dandy-consent-reject-btn" class="consent-btn consent-btn-reject">
+        <span>الضرورية فقط (رفض)</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .dandy-consent-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    max-width: 1080px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid var(--border-light, #fbcfe8);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(254, 93, 159, 0.15);
+    z-index: 999999;
+    padding: 20px 24px;
+    animation: consentSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    backdrop-filter: blur(10px);
+    font-family: inherit;
+  }
+
+  @keyframes consentSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .consent-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .consent-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1 1 540px;
+  }
+
+  .consent-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--color-surface-soft, #fdf2f8);
+    color: var(--color-rose-kiss-500, #fe5d9f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(254, 93, 159, 0.25);
+  }
+
+  .consent-text-wrap {
+    flex: 1;
+  }
+
+  .consent-title {
+    margin: 0 0 6px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary, #181416);
+    letter-spacing: -0.01em;
+  }
+
+  .consent-desc {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--color-muted, #4b5563);
+  }
+
+  .consent-link {
+    color: var(--color-rose-kiss-500, #fe5d9f);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .consent-link:hover {
+    opacity: 0.8;
+  }
+
+  .consent-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .consent-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .consent-btn-accept {
+    background: linear-gradient(135deg, #fe5d9f 0%, #db2777 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(254, 93, 159, 0.35);
+  }
+
+  .consent-btn-accept:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(254, 93, 159, 0.45);
+  }
+
+  .consent-btn-reject {
+    background: var(--color-surface-soft, #f3f4f6);
+    color: var(--color-dust-grey-100, #374151);
+    border: 1px solid var(--border-light, #e5e7eb);
+  }
+
+  .consent-btn-reject:hover {
+    background: #e5e7eb;
+    color: #111827;
+  }
+
+  @media (max-width: 768px) {
+    .dandy-consent-banner {
+      bottom: 74px; /* avoid overlaying bottom navigation on mobile */
+      left: 12px;
+      right: 12px;
+      padding: 16px;
+      border-radius: 14px;
+    }
+
+    .consent-container {
+      gap: 16px;
+    }
+
+    .consent-actions {
+      width: 100%;
+    }
+
+    .consent-btn {
+      flex: 1 1 calc(50% - 6px);
+      justify-content: center;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    function initBanner() {
+      var banner = document.getElementById('dandy-consent-banner');
+      if (!banner) return;
+
+      // Do not display on excluded admin/internal pages
+      if (window.DandyMeta && typeof window.DandyMeta.isExcludedRoute === 'function') {
+        if (window.DandyMeta.isExcludedRoute()) {
+          banner.style.display = 'none';
+          return;
+        }
+      }
+
+      var currentConsent = 'unset';
+      if (window.DandyMeta && typeof window.DandyMeta.getConsent === 'function') {
+        currentConsent = window.DandyMeta.getConsent();
+      } else {
+        try {
+          currentConsent = localStorage.getItem('dandy_marketing_consent') || 'unset';
+        } catch(e) {}
+      }
+
+      // If user hasn't made a choice yet, show the banner
+      if (currentConsent === 'unset') {
+        banner.style.display = 'block';
+      } else {
+        banner.style.display = 'none';
+      }
+
+      var acceptBtn = document.getElementById('dandy-consent-accept-btn');
+      var rejectBtn = document.getElementById('dandy-consent-reject-btn');
+
+      if (acceptBtn) {
+        acceptBtn.addEventListener('click', function() {
+          if (window.DandyMeta && typeof window.DandyMeta.setConsent === 'function') {
+            window.DandyMeta.setConsent('granted');
+          } else {
+            try {
+              localStorage.setItem('dandy_marketing_consent', 'granted');
+              localStorage.setItem('dandy_consent_choice', 'all');
+            } catch(e) {}
+          }
+          banner.style.display = 'none';
+        });
+      }
+
+      if (rejectBtn) {
+        rejectBtn.addEventListener('click', function() {
+          if (window.DandyMeta && typeof window.DandyMeta.setConsent === 'function') {
+            window.DandyMeta.setConsent('denied');
+          } else {
+            try {
+              localStorage.setItem('dandy_marketing_consent', 'denied');
+              localStorage.setItem('dandy_consent_choice', 'essential');
+            } catch(e) {}
+          }
+          banner.style.display = 'none';
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBanner);
+    } else {
+      initBanner();
+    }
+  })();
+</script>

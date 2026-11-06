@@ -347,10 +347,7 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
                         <span class="pf-price-val">{col.calculatedPrice.toFixed(0)}</span>
                         <span class="pf-price-cur">ج.م</span>
                       </div>
-                      <div class="pf-price-orig">
-                        <span class="pf-price-val">{col.totalRegularPrice.toFixed(0)}</span>
-                        <span class="pf-price-cur">ج.م</span>
-                      </div>
+                      
                     </div>
 
                     <div class="pf-card-footer">
@@ -601,6 +598,19 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         cart.push(cartItem);
         localStorage.setItem('cart', JSON.stringify(cart));
         localStorage.setItem('dandy_cart', JSON.stringify(cart));
+
+        // Facebook / Meta Pixel AddToCart event tracking for Collections via DandyMeta
+        if (window.DandyMeta && typeof window.DandyMeta.trackAddToCart === 'function') {
+          window.DandyMeta.trackAddToCart(cartItem);
+        } else if (typeof fbq === 'function') {
+          fbq('track', 'AddToCart', {
+            content_name: cartItem.name,
+            content_ids: (cartItem.selectedItems || []).map(function(s) { return s.productId || s.id; }).filter(Boolean),
+            content_type: 'product_group',
+            value: parseFloat(cartItem.price) || 0,
+            currency: 'EGP'
+          });
+        }
 
         const modal = document.getElementById('storefrontColModal');
         if (modal) modal.style.display = 'none';

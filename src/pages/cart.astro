@@ -1431,8 +1431,25 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
     initCustomerCheckoutAddresses();
 
+    var hasFiredInitiateCheckout = false;
+
     window.goToStep = function(step) {
       currentStep = step;
+
+      // Meta Pixel InitiateCheckout Event: Fire ONLY when the user actually starts the checkout process (Step 2: Shipping Details)
+      if (step === 2 && !hasFiredInitiateCheckout && cart && cart.length > 0) {
+        hasFiredInitiateCheckout = true;
+        var cartVal = calculateCartSubtotal();
+        if (window.DandyMeta && typeof window.DandyMeta.trackInitiateCheckout === 'function') {
+          window.DandyMeta.trackInitiateCheckout(cart, cartVal);
+        } else if (typeof fbq === 'function') {
+          fbq('track', 'InitiateCheckout', {
+            value: cartVal,
+            currency: 'EGP',
+            num_items: cart.reduce(function(sum, item) { return sum + (item.quantity ? parseInt(item.quantity) : 1); }, 0)
+          });
+        }
+      }
 
       document.querySelectorAll('.checkout-step-panel').forEach(panel => panel.classList.remove('active'));
       document.querySelectorAll('.stepper-step').forEach((s, idx) => {
@@ -1678,19 +1695,5 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     };
 
     renderStep1CartItems();
-
-    // --- Meta Pixel: InitiateCheckout Event ---
-    if (cart && cart.length > 0) {
-      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-      const cartValue = calculateCartSubtotal();
-      
-      if (typeof fbq === 'function') {
-        fbq('track', 'InitiateCheckout', {
-          value: cartValue,
-          currency: 'EGP',
-          num_items: totalItems
-        });
-      }
-    }
   </script>
 </BaseLayout>
