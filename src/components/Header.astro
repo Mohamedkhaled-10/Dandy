@@ -567,13 +567,6 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
       window.db = firebase.database();
     }
 
-    // Meta Pixel Search Event via DandyMeta (actual search execution, debounced)
-    if (window.DandyMeta && typeof window.DandyMeta.trackSearch === 'function') {
-      window.DandyMeta.trackSearch(query);
-    } else if (typeof fbq === 'function') {
-      fbq('track', 'Search', { search_string: query });
-    }
-
     if (typeof window.db === 'undefined') {
       fetch("https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app/products.json")
       .then(res => res.json())

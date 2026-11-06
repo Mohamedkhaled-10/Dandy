@@ -1577,19 +1577,15 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
       const id = loadedProduct ? loadedProduct.id : null;
       let selectedVariants = [];
 
-      // Facebook / Meta Pixel ViewContent event via central DandyMeta
-      if (loadedProduct) {
-        if (window.DandyMeta && typeof window.DandyMeta.trackViewContent === 'function') {
-          window.DandyMeta.trackViewContent(loadedProduct);
-        } else if (typeof fbq === 'function') {
-          fbq('track', 'ViewContent', {
-            content_name: loadedProduct.name,
-            content_ids: [loadedProduct.id],
-            content_type: 'product',
-            value: parseFloat(loadedProduct.price) || 0,
-            currency: 'EGP'
-          });
-        }
+      // Facebook Pixel ViewContent event
+      if (loadedProduct && typeof fbq === 'function') {
+        fbq('track', 'ViewContent', {
+          content_name: loadedProduct.name,
+          content_ids: [loadedProduct.id],
+          content_type: 'product',
+          value: parseFloat(loadedProduct.price) || 0,
+          currency: 'EGP'
+        });
       }
 
       // Scent Variant Selection Logic
@@ -1678,6 +1674,16 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
             validSelectedVariants.sort((a, b) => String(a.id).localeCompare(String(b.id)));
           }
 
+          if (typeof fbq === 'function') {
+            fbq('track', 'AddToCart', {
+              content_name: loadedProduct.name,
+              content_ids: [loadedProduct.id],
+              content_type: 'product',
+              value: parseFloat(loadedProduct.price) || 0,
+              currency: 'EGP'
+            });
+          }
+
           let cart = JSON.parse(localStorage.getItem('cart')) || [];
           const hasChosenVariants = validSelectedVariants.length > 0;
           const sortedIdsStr = hasChosenVariants ? validSelectedVariants.map(v => v.id).join('_') : '';
@@ -1737,19 +1743,6 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
           }
 
           localStorage.setItem('cart', JSON.stringify(cart));
-
-          // Meta Pixel AddToCart event tracking - fired ONLY after successfully saving to cart
-          if (window.DandyMeta && typeof window.DandyMeta.trackAddToCart === 'function') {
-            window.DandyMeta.trackAddToCart(productItem);
-          } else if (typeof fbq === 'function') {
-            fbq('track', 'AddToCart', {
-              content_name: loadedProduct.name,
-              content_ids: [loadedProduct.id],
-              content_type: 'product',
-              value: (parseFloat(productItem.price) || 0) * qty,
-              currency: 'EGP'
-            });
-          }
           if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
           if (typeof updateCartCount === 'function') updateCartCount();
 

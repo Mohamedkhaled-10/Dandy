@@ -3080,11 +3080,8 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
       }
       localStorage.setItem("cart", JSON.stringify(cart));
 
-      // Facebook / Meta Pixel AddToCart event tracking via DandyMeta (after successful addition)
-      const addedItem = { id, productId: id, name, price, image, quantity: 1 };
-      if (window.DandyMeta && typeof window.DandyMeta.trackAddToCart === 'function') {
-        window.DandyMeta.trackAddToCart(addedItem);
-      } else if (typeof fbq === 'function') {
+      // Facebook Pixel AddToCart event tracking
+      if (typeof fbq === 'function') {
         fbq('track', 'AddToCart', {
           content_name: name,
           content_ids: [id],

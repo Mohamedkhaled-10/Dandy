@@ -599,19 +599,6 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         localStorage.setItem('cart', JSON.stringify(cart));
         localStorage.setItem('dandy_cart', JSON.stringify(cart));
 
-        // Facebook / Meta Pixel AddToCart event tracking for Collections via DandyMeta
-        if (window.DandyMeta && typeof window.DandyMeta.trackAddToCart === 'function') {
-          window.DandyMeta.trackAddToCart(cartItem);
-        } else if (typeof fbq === 'function') {
-          fbq('track', 'AddToCart', {
-            content_name: cartItem.name,
-            content_ids: (cartItem.selectedItems || []).map(function(s) { return s.productId || s.id; }).filter(Boolean),
-            content_type: 'product_group',
-            value: parseFloat(cartItem.price) || 0,
-            currency: 'EGP'
-          });
-        }
-
         const modal = document.getElementById('storefrontColModal');
         if (modal) modal.style.display = 'none';
 

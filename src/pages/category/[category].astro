@@ -835,6 +835,16 @@ const categoryArticle = categoryConfig ? CATEGORY_ARTICLE_MAP[categoryConfig.slu
         var cart = JSON.parse(localStorage.getItem('cart')) || [];
         var productItem = { id: id, productId: id, name: name, price: price, image: image, discount: discount, onSale: onSale };
 
+        if (typeof fbq === 'function') {
+          fbq('track', 'AddToCart', {
+            content_name: name,
+            content_ids: [id],
+            content_type: 'product',
+            value: parseFloat(price) || 0,
+            currency: 'EGP'
+          });
+        }
+
         var existIndex = cart.findIndex(function(item) {
           return (item.productId || item.id) === id && (!item.selectedVariants || item.selectedVariants.length === 0);
         });
@@ -847,19 +857,6 @@ const categoryArticle = categoryConfig ? CATEGORY_ARTICLE_MAP[categoryConfig.slu
         }
 
         localStorage.setItem('cart', JSON.stringify(cart));
-
-        // Facebook / Meta Pixel AddToCart event tracking via DandyMeta (after successful addition)
-        if (window.DandyMeta && typeof window.DandyMeta.trackAddToCart === 'function') {
-          window.DandyMeta.trackAddToCart(productItem);
-        } else if (typeof fbq === 'function') {
-          fbq('track', 'AddToCart', {
-            content_name: name,
-            content_ids: [id],
-            content_type: 'product',
-            value: parseFloat(price) || 0,
-            currency: 'EGP'
-          });
-        }
         if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
         if (typeof updateCartCount === 'function') updateCartCount();
 
