@@ -124,13 +124,99 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         نستخدم اتصالات مشفرة وآمنة (SSL) لحماية تدفق البيانات بين متصفحكِ وخوادمنا، مما يضمن أمان وسلامة تجربة التصفح والطلب.
       </p>
 
-      <h2>4. ملفات تعريف الارتباط (Cookies)</h2>
+      <h2>4. ملفات تعريف الارتباط (Cookies) والتقنيات المشابهة</h2>
       <p>
-        تُستخدم ملفات تعريف الارتباط محلياً لحفظ محتويات سلة التسوق وتفضيلات الجلسة لتوفير تجربة تسوق سلسة وسريعة.
+        تُستخدم ملفات تعريف الارتباط محلياً في متصفحكِ للأغراض التالية:
       </p>
+      <ul>
+        <li><strong>الملفات الضرورية:</strong> لحفظ محتويات سلة التسوق، وحالة تسجيل الدخول، وتفضيلات الجلسة، وضمان عمل بوابات الدفع والشحن بأمان. هذه الملفات أساسية لعمل المتجر ولا يمكن تعطيلها.</li>
+        <li><strong>ملفات التحليلات والتسويق (بما فيها Meta Pixel):</strong> تُستخدم لقياس تفاعل الزوار مع المنتجات والحملات الإعلانية على منصات Meta (Facebook وInstagram) لتحسين المنتجات وتجربة التسوق وتقديم عروض ملائمة.</li>
+      </ul>
+
+      <h2>5. استخدام تقنيات Meta (Pixel & Conversions) وخيارات الموافقة</h2>
+      <p>
+        يستخدم متجر داندي تقنية <strong>Meta Pixel (معرّف: 1678552386587380)</strong> لتقييم كفاءة إعلاناتنا وفهم كيفية تفاعل العملاء مع متجرنا بعد رؤية الإعلانات:
+      </p>
+      <ul>
+        <li><strong>شرط الموافقة المسبقة:</strong> لا يتم تفعيل كود التتبع التسويقي أو إرسال أي أحداث تسويقية إلى خوادم Meta إلا بعد موافقتكِ الصريحة عبر شريط ملفات تعريف الارتباط الظاهر في المتجر.</li>
+        <li><strong>حق الرفض وسحب الموافقة:</strong> يحق لكِ في أي وقت رفض التتبع التسويقي أو سحب موافقتكِ السابقة؛ وفي هذه الحالة يتم إيقاف تشغيل Meta Pixel فوراً مع استمرار كافة وظائف المتجر وعملية الشراء بشكل كامل وطبيعي.</li>
+        <li><strong>إدارة تفضيلاتكِ الآن:</strong> يمكنكِ تغيير خياركِ الحالي في أي لحظة بالضغط على الأزرار أدناه:</li>
+      </ul>
+
+      <div style="margin: 20px 0; padding: 18px 24px; background: var(--color-surface-soft, #fdf2f8); border-radius: 12px; border: 1px solid var(--border-light, #fbcfe8); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+        <div>
+          <strong style="color: var(--color-primary); display: block; margin-bottom: 4px;">حالة موافقة التتبع التسويقي لديكِ:</strong>
+          <span id="current-consent-label" style="font-weight: 700; color: var(--color-rose-kiss-500, #fe5d9f);">جاري التحقق...</span>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button type="button" id="btn-grant-consent" style="padding: 8px 18px; border-radius: 8px; border: none; background: #fe5d9f; color: #fff; font-weight: 700; cursor: pointer; font-family: inherit;">
+            <i class="fas fa-check"></i> تفعيل الموافقة
+          </button>
+          <button type="button" id="btn-revoke-consent" style="padding: 8px 18px; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; color: #374151; font-weight: 700; cursor: pointer; font-family: inherit;">
+            <i class="fas fa-ban"></i> رفض / إلغاء الموافقة
+          </button>
+        </div>
+      </div>
+
+      <script is:inline>
+        (function() {
+          function updateConsentUI() {
+            var label = document.getElementById('current-consent-label');
+            if (!label) return;
+            var current = (window.DandyMeta && typeof window.DandyMeta.getConsent === 'function')
+              ? window.DandyMeta.getConsent()
+              : (localStorage.getItem('dandy_marketing_consent') || 'unset');
+
+            if (current === 'granted') {
+              label.textContent = 'موافق عليها (تتبع تسويقي مفعل)';
+              label.style.color = '#15803d';
+            } else if (current === 'denied') {
+              label.textContent = 'مرفوضة (الملفات الضرورية فقط)';
+              label.style.color = '#b91c1c';
+            } else {
+              label.textContent = 'لم يتم التحديد بعد (التتبع معطّل افتراضياً)';
+              label.style.color = '#d97706';
+            }
+          }
+
+          document.addEventListener('DOMContentLoaded', function() {
+            updateConsentUI();
+            var btnGrant = document.getElementById('btn-grant-consent');
+            var btnRevoke = document.getElementById('btn-revoke-consent');
+
+            if (btnGrant) {
+              btnGrant.addEventListener('click', function() {
+                if (window.DandyMeta && typeof window.DandyMeta.setConsent === 'function') {
+                  window.DandyMeta.setConsent('granted');
+                } else {
+                  localStorage.setItem('dandy_marketing_consent', 'granted');
+                  localStorage.setItem('dandy_consent_choice', 'all');
+                }
+                updateConsentUI();
+                alert('تم تفعيل الموافقة على ملفات التتبع التسويقي بنجاح.');
+              });
+            }
+
+            if (btnRevoke) {
+              btnRevoke.addEventListener('click', function() {
+                if (window.DandyMeta && typeof window.DandyMeta.setConsent === 'function') {
+                  window.DandyMeta.setConsent('denied');
+                } else {
+                  localStorage.setItem('dandy_marketing_consent', 'denied');
+                  localStorage.setItem('dandy_consent_choice', 'essential');
+                }
+                updateConsentUI();
+                alert('تم تعطيل التتبع التسويقي. سيتم الاقتصار على الملفات الأساسية فقط.');
+              });
+            }
+          });
+
+          window.addEventListener('dandy:consent-changed', updateConsentUI);
+        })();
+      </script>
 
       <div class="legal-footer-date">
-        آخر تحديث: سبتمبر 2026
+        آخر تحديث: نوفمبر 2026
       </div>
     </main>
   </div>

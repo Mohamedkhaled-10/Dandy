@@ -582,24 +582,46 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         tableGrandTotal.textContent = totalVal.toFixed(0) + " ج.م";
 
         // =========================================================================
-        // إضافة حدث الشراء (Meta Pixel Purchase Event)
+        // إضافة حدث الشراء (Meta Pixel Purchase Event) عبر DandyMeta
         // =========================================================================
         const transactionId = order.invoiceCode || key;
-        const storageKey = 'meta_pixel_purchase_fired_' + transactionId;
 
-        if (typeof fbq !== 'undefined' && !sessionStorage.getItem(storageKey)) {
-          const contentIds = order.products.map(p => p.id || p.productId || p.name);
+        if (window.DandyMeta && typeof window.DandyMeta.trackPurchase === 'function') {
+          window.DandyMeta.trackPurchase(order);
+        } else if (typeof fbq !== 'undefined') {
+          const storageKey = 'meta_pixel_purchase_fired_' + transactionId;
+          let alreadyFired = false;
+          try {
+            alreadyFired = Boolean(sessionStorage.getItem(storageKey));
+          } catch(e) {}
 
-          fbq('track', 'Purchase', {
-            content_type: 'product',
-            content_ids: contentIds,
-            value: parseFloat(totalVal.toFixed(2)),
-            currency: 'EGP',
-            transaction_id: transactionId
-          });
+          if (!alreadyFired) {
+            let contentIds = [];
+            (order.products || []).forEach(p => {
+              if (p.type === 'collection' || p.isCollection || p.collectionId) {
+                const subItems = Array.isArray(p.items) ? p.items : (Array.isArray(p.selectedItems) ? p.selectedItems : []);
+                subItems.forEach(s => {
+                  if (s.productId || s.id) contentIds.push(s.productId || s.id);
+                });
+              } else {
+                const pid = p.productId || p.id;
+                if (pid) contentIds.push(pid);
+              }
+            });
 
-          sessionStorage.setItem(storageKey, 'true');
-          console.log('✅ Meta Pixel [Purchase] Event fired successfully for:', transactionId);
+            fbq('track', 'Purchase', {
+              content_type: 'product',
+              content_ids: contentIds,
+              value: parseFloat(totalVal.toFixed(2)),
+              currency: 'EGP',
+              transaction_id: transactionId
+            });
+
+            try {
+              sessionStorage.setItem(storageKey, 'true');
+            } catch(e) {}
+            console.log('✅ Meta Pixel [Purchase] Event fired successfully for:', transactionId);
+          }
         }
 
       } else {
