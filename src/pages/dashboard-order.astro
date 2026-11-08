@@ -70,6 +70,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .status-dropdown-admin.st-delivered { color: #1e40af; background: #dbeafe; border-color: #bfdbfe; }
       .status-dropdown-admin.st-cancelled { color: #991b1b; background: #fee2e2; border-color: #fecaca; }
       
+      .notif-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; font-size: 0.74rem; font-weight: 700; white-space: nowrap; }
+      .notif-badge.st-accepted { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+      .notif-badge.st-pending { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+      .notif-badge.st-failed { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+      .notif-badge.st-unknown { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+      .notif-badge.st-skipped { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+      
       .action-badge-btn { padding: 5px 10px; border: 1px solid var(--border-light, #e5e7eb); border-radius: 4px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 5px; font-family: inherit; background: #ffffff; color: var(--color-primary, #374151); }
       .badge-btn-edit:hover { border-color: var(--color-primary, #111827); color: var(--color-primary, #111827); }
       .badge-btn-del { background: #fef2f2; color: #b91c1c; border-color: #fee2e2; margin-right: 4px; }
@@ -214,6 +221,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 <option value="تم التوصيل">نقل إلى تم التوصيل</option>
               </select>
               <button class="btn-utility" onclick="applyBulkAction()"><i class="fas fa-check-double"></i> تطبيق</button>
+              <button class="btn-utility" style="background: #fdf2f8; border-color: #f472b6; color: #be185d;" onclick="triggerEmailDiagnostic()" title="إرسال بريد تجريبي لفحص الاتصال بـ Google Apps Script"><i class="fas fa-paper-plane"></i> ✉️ فحص خادم البريد (Diagnostic)</button>
               <button class="btn-utility export-btn" onclick="exportOrdersToCSV(currentFiltered)"><i class="fas fa-file-excel"></i> 📤 تصدير Excel</button>
             </div>
           </div>
@@ -244,6 +252,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 <th>المحافظة</th>
                 <th>تاريخ الصدور</th>
                 <th>الحالة الإدارية</th>
+                <th>إشعار البريد</th>
                 <th style="text-align: center;">إجراءات</th>
               </tr>
             </thead>
@@ -256,6 +265,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 <td><div class="skeleton-box" style="width:90px;"></div></td>
                 <td><div class="skeleton-box" style="width:110px;"></div></td>
                 <td><div class="skeleton-box" style="width:130px;"></div></td>
+                <td><div class="skeleton-box" style="width:90px;"></div></td>
                 <td><div class="skeleton-box" style="width:100px; margin: 0 auto;"></div></td>
               </tr>
             </tbody>
@@ -290,6 +300,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <h4><i class="fas fa-map-marker-alt"></i> عنوان الشحن</h4>
             <p>المحافظة/المدينة: <strong id="md-coords">...</strong></p>
             <p>تفاصيل العنوان: <span id="md-address">...</span></p>
+          </div>
+          <div class="info-card" id="md-notif-box">
+            <h4><i class="fas fa-envelope-open-text"></i> إشعار البريد الإلكتروني</h4>
+            <p>الحالة: <strong id="md-notif-status">...</strong></p>
+            <p>معرّف الإشعار: <span id="md-notif-id" style="font-family: monospace; font-size: 0.8rem; word-break: break-all;">-</span></p>
+            <button id="md-retry-notif-btn" class="action-badge-btn" style="margin-top: 8px; display: none;" onclick="retryCurrentNotification()">
+              <i class="fas fa-redo"></i> إعادة إرسال الإشعار
+            </button>
           </div>
         </div>
 
@@ -564,7 +582,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
 
       if(currentFiltered.length === 0){
-        ordersListArea.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--color-muted);"><i class="fas fa-search" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i><br>لا توجد طلبات مطابقة للبحث أو التصفية الحالية.</td></tr>';
+        ordersListArea.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--color-muted);"><i class="fas fa-search" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i><br>لا توجد طلبات مطابقة للبحث أو التصفية الحالية.</td></tr>';
         return;
       }
 
@@ -579,6 +597,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if(['تم التوصيل', 'مكتمل'].includes(state)) dropdownClass = 'st-delivered';
         if(state === 'ملغي') dropdownClass = 'st-cancelled';
 
+        const notifStatus = o.latestNotification?.status || ((o.email && o.email !== 'N/A' && o.email.includes('@')) ? 'pending' : 'skipped_no_valid_email');
+        let notifBadge = '';
+        if (notifStatus === 'accepted_by_mailapp') {
+          notifBadge = `<span class="notif-badge st-accepted" title="تم قبول الإرسال عبر Google Apps Script MailApp"><i class="fas fa-check-circle"></i> مرسل</span>`;
+        } else if (notifStatus === 'failed') {
+          notifBadge = `<span class="notif-badge st-failed" title="تعذر الإرسال"><i class="fas fa-exclamation-triangle"></i> تعذر الإرسال</span>`;
+        } else if (notifStatus === 'unknown') {
+          notifBadge = `<span class="notif-badge st-unknown" title="غير مؤكد (مهلة)"><i class="fas fa-question-circle"></i> غير مؤكد</span>`;
+        } else if (notifStatus === 'skipped_no_valid_email') {
+          notifBadge = `<span class="notif-badge st-skipped" title="لا يوجد بريد إلكتروني صالح"><i class="fas fa-minus-circle"></i> بدون بريد</span>`;
+        } else {
+          notifBadge = `<span class="notif-badge st-pending" title="قيد الانتظار"><i class="fas fa-clock"></i> قيد الانتظار</span>`;
+        }
+
         const tr = document.createElement('tr');
         if(isNew) tr.classList.add('row-new-order');
         
@@ -592,7 +624,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <td data-label="المحافظة"><i class="fas fa-map-marker-alt" style="color:var(--color-blush); font-size:0.8rem; margin-left:4px;"></i> ${escapeHtml(o.governorate ?? '-')}</td>
           <td data-label="تاريخ الصدور" style="font-size: 0.85rem; color:var(--color-muted);">${escapeHtml(dateText)}</td>
           <td data-label="الحالة الإدارية">
-            <select class="status-dropdown-admin ${dropdownClass}" data-order-id="${escapeHtml(o.id)}" onchange="changeOrderStatus(this.getAttribute('data-order-id'), this.value)" aria-label="تغيير الحالة">
+            <select class="status-dropdown-admin ${dropdownClass}" data-order-id="${escapeHtml(o.id)}" onchange="changeOrderStatus(this.getAttribute('data-order-id'), this.value, this)" aria-label="تغيير الحالة">
               <option value="جديد" ${state === 'جديد' ? 'selected' : ''}>جديد</option>
               <option value="قيد التجهيز" ${state === 'قيد التجهيز' || state === 'تم التواصل' ? 'selected' : ''}>قيد التجهيز</option>
               <option value="تم الشحن" ${state === 'تم الشحن' || state === 'جاري الشحن' ? 'selected' : ''}>تم الشحن</option>
@@ -600,6 +632,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <option value="ملغي" ${state === 'ملغي' ? 'selected' : ''}>ملغي</option>
             </select>
           </td>
+          <td data-label="إشعار البريد">${notifBadge}</td>
           <td data-label="" style="text-align:center; white-space:nowrap;">
             <button class="action-badge-btn badge-btn-edit" data-order-id="${escapeHtml(o.id)}" onclick="revealOrder(this.getAttribute('data-order-id'))" title="معاينة التفاصيل"><i class="fas fa-eye"></i> معاينة</button>
             <button class="action-badge-btn badge-btn-del" data-order-id="${escapeHtml(o.id)}" onclick="deleteOrder(this.getAttribute('data-order-id'))" title="حذف الطلب" aria-label="حذف"><i class="fas fa-trash-alt"></i></button>
@@ -625,20 +658,121 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const selectedIds = Array.from(document.querySelectorAll('.order-select-cb:checked')).map(cb => cb.value);
       if(selectedIds.length === 0) return alert("الرجاء تحديد طلب واحد على الأقل");
 
-      if(confirm(`هل أنت متأكد من تغيير حالة ${selectedIds.length} طلب إلى "${action}"؟`)) {
-        const updates = {};
-        selectedIds.forEach(id => {
-          updates[`orders/${id}/status`] = action;
-        });
-        try {
-          await db.ref().update(updates);
-          logAdminAction('تم تحديث حالة ' + selectedIds.length + ' طلب إلى: ' + action);
-          if (selectEl) selectEl.value = '';
-          if (selectAllCheckbox) selectAllCheckbox.checked = false;
-        } catch(err) {
-          console.error('Bulk Update Error:', err);
-          alert('حدث خطأ أثناء التحديث الجماعي');
+      if(!confirm(`هل أنت متأكد من تغيير حالة ${selectedIds.length} طلب إلى "${action}"؟`)) {
+        return;
+      }
+
+      try {
+        let idToken = null;
+        if (window.auth && window.auth.currentUser) {
+          idToken = await window.auth.currentUser.getIdToken();
         }
+
+        if (!idToken) {
+          alert('يجب تسجيل الدخول بصلاحيات الإدارة لإجراء التحديث الجماعي.');
+          return;
+        }
+
+        if (selectEl) selectEl.disabled = true;
+
+        const res = await fetch('/api/order-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + idToken
+          },
+          body: JSON.stringify({
+            action: 'BULK_UPDATE_STATUS',
+            orderIds: selectedIds,
+            newStatus: action
+          })
+        });
+
+        if (selectEl) selectEl.disabled = false;
+
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data || !data.success) {
+          const errMsg = data?.message || data?.error || `خطأ في السيرفر (${res.status})`;
+          alert('تعذر إجراء التحديث الجماعي عبر السيرفر: ' + errMsg + '\nتم الإبقاء على الحالات دون أي تغيير.');
+          return;
+        }
+
+        logAdminAction(`تم تحديث حالة ${data.updatedCount} طلب بنجاح عبر السيرفر`);
+        if (selectEl) selectEl.value = '';
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+
+        // Update local models to reflect server verified state
+        if (Array.isArray(data.results)) {
+          data.results.forEach(r => {
+            if (r.success && r.changed) {
+              const obj = rawOrders.find(o => o.id === r.orderId);
+              if (obj) {
+                obj.status = r.status;
+                if (r.notification) obj.latestNotification = r.notification;
+              }
+            }
+          });
+        }
+        renderOrders();
+      } catch(err) {
+        if (selectEl) selectEl.disabled = false;
+        console.error('Bulk Update Error:', err);
+        alert('حدث خطأ في الاتصال بالسيرفر أثناء التحديث الجماعي. لم يتم تعديل أي طلب.');
+      }
+    };
+
+    window.triggerEmailDiagnostic = async function() {
+      const confirmDiag = confirm(
+        "فحص خادم البريد الإلكتروني (Diagnostic Test)\n\n" +
+        "هل ترغب في إرسال بريد تجريبي لفحص اتصال Google Apps Script؟\n" +
+        "• المستلم حصرياً: بريد الإدارة (dandybeauty4@gmail.com)\n" +
+        "• لن يتم تعديل أي طلب، أو خصم مخزون، أو إرسال إشعارات للعملاء.\n" +
+        "• يعمل هذا الفحص حتى مع إيقاف إشعارات العملاء للتأكد من جاهزية النظام."
+      );
+      if (!confirmDiag) return;
+
+      try {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          alert("يجب تسجيل الدخول كمسؤول أولاً.");
+          return;
+        }
+        const idToken = await user.getIdToken();
+
+        const res = await fetch('/api/order-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + idToken
+          },
+          body: JSON.stringify({
+            action: 'DIAGNOSTIC_SEND',
+            testType: 'ORDER_CONFIRMATION'
+          })
+        });
+
+        const data = await res.json().catch(() => null);
+        if (res.ok && data && data.success && data.diagnostic) {
+          alert(
+            "✅ نجح الاختبار التشغيلي للبريد!\n\n" +
+            "• نتيجة الربط: " + data.diagnostic.relayStatus + "\n" +
+            "• المستلم: " + data.diagnostic.recipient + "\n" +
+            "• كود الإشعار: " + data.diagnostic.notificationId + "\n" +
+            "• كوتا الإرسال المتبقية: " + (data.diagnostic.remainingDailyQuota ?? 'غير محدد') + "\n" +
+            "• إشعارات العملاء: " + (data.diagnostic.customerNotificationsActive ? 'مفعلة' : 'معطلة (وضع الأمان)') + "\n\n" +
+            "يرجى مراجعة صندوق الوارد في dandybeauty4@gmail.com للتأكد من وصول الرسالة."
+          );
+        } else {
+          const errMsg = data?.diagnostic?.message || data?.diagnostic?.error || data?.message || data?.error || `خطأ (${res.status})`;
+          alert(
+            "⚠️ فشل الاختبار التشغيلي:\n\n" +
+            errMsg + "\n\n" +
+            "تأكد من نشر Google Apps Script وإعداد المتغيرات GMAIL_RELAY_URL و GMAIL_RELAY_SECRET في Vercel."
+          );
+        }
+      } catch (err) {
+        console.error("Diagnostic error:", err);
+        alert("حدث خطأ أثناء إجراء الفحص التشغيلي: " + err.message);
       }
     };
 
@@ -680,15 +814,75 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     window.exportOrdersToCSV = exportOrdersToCSV;
     window.exportToCSV = () => exportOrdersToCSV(currentFiltered);
 
-    window.changeOrderStatus = async function(id, val){
+    window.changeOrderStatus = async function(id, val, selectElement){
+      const el = selectElement || document.querySelector(`select[data-order-id="${id}"]`);
       const orderObj = rawOrders.find(o => o.id === id);
+      const prevStatus = orderObj ? normalizeStatus(orderObj.status) : 'جديد';
       const invoiceCode = orderObj ? (orderObj.invoiceCode || id) : id;
+
+      const revertDropdown = () => {
+        if (el) {
+          el.value = prevStatus;
+          el.className = 'status-dropdown-admin';
+          if (prevStatus === 'جديد') el.classList.add('st-new');
+          else if (['قيد التجهيز', 'تم التواصل'].includes(prevStatus)) el.classList.add('st-processing');
+          else if (['تم الشحن', 'جاري الشحن'].includes(prevStatus)) el.classList.add('st-shipped');
+          else if (['تم التوصيل', 'مكتمل'].includes(prevStatus)) el.classList.add('st-delivered');
+          else if (prevStatus === 'ملغي') el.classList.add('st-cancelled');
+        }
+      };
+
       try {
-        await db.ref(`orders/${id}`).update({status: val});
-        logAdminAction('تم تغيير حالة الطلب ' + invoiceCode + ' إلى: ' + val);
+        let idToken = null;
+        if (window.auth && window.auth.currentUser) {
+          idToken = await window.auth.currentUser.getIdToken();
+        }
+
+        if (!idToken) {
+          revertDropdown();
+          alert('يجب تسجيل الدخول بصلاحيات الإدارة المعتمدة لتحديث حالة الطلب.');
+          return;
+        }
+
+        if (el) el.disabled = true;
+
+        const res = await fetch('/api/order-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + idToken
+          },
+          body: JSON.stringify({
+            action: 'UPDATE_STATUS',
+            orderId: id,
+            newStatus: val
+          })
+        });
+
+        if (el) el.disabled = false;
+
+        const resData = await res.json().catch(() => null);
+        if (!res.ok || !resData || !resData.success) {
+          revertDropdown();
+          const errMsg = resData?.message || resData?.error || `رمز الاستجابة: ${res.status}`;
+          alert('تعذر تحديث حالة الطلب عبر السيرفر: ' + errMsg + '\nتم استرجاع الحالة السابقة دون تغيير.');
+          return;
+        }
+
+        // Successfully updated via protected server endpoint
+        if (orderObj) {
+          orderObj.status = resData.status;
+          if (resData.notification) {
+            orderObj.latestNotification = resData.notification;
+          }
+        }
+        logAdminAction('تم تغيير حالة الطلب ' + invoiceCode + ' إلى: ' + resData.status + (resData.notification ? ' (تم إشعار البريد)' : ''));
+        renderOrders();
       } catch(err) {
+        if (el) el.disabled = false;
+        revertDropdown();
         console.error('Status Update Error:', err);
-        alert('حدث خطأ أثناء تحديث حالة الطلب.');
+        alert('حدث خطأ في الاتصال بالسيرفر أثناء تحديث حالة الطلب. تم استرجاع الحالة السابقة دون تعديل.');
       }
     };
 
@@ -717,6 +911,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const fullLocation = (o.governorate || '') + (o.city ? '، ' + o.city : '');
       document.getElementById('md-coords').textContent = fullLocation || '-';
       document.getElementById('md-address').textContent = o.address || 'لا يوجد تفاصيل للعنوان';
+
+      // عرض حالة إشعار البريد الإلكتروني وتفعيل زر إعادة المحاولة
+      const notif = o.latestNotification || {};
+      const notifStatus = notif.status || ((o.email && o.email !== 'N/A' && o.email.includes('@')) ? 'pending' : 'skipped_no_valid_email');
+      const statusLabels = {
+        'accepted_by_mailapp': 'تم قبول الإرسال عبر Google Apps Script MailApp ✅',
+        'pending': 'قيد الانتظار ⏳',
+        'failed': 'تعذر الإرسال ❌',
+        'unknown': 'غير مؤكد (انتهت المهلة) ⚠️',
+        'skipped_no_valid_email': 'بدون بريد إلكتروني صالح ℹ️'
+      };
+      const stEl = document.getElementById('md-notif-status');
+      if (stEl) stEl.textContent = statusLabels[notifStatus] || notifStatus;
+      const idEl = document.getElementById('md-notif-id');
+      if (idEl) idEl.textContent = notif.notificationId || (o.id ? `notif_order_${o.id}_confirmation` : '-');
+
+      const btnRetry = document.getElementById('md-retry-notif-btn');
+      if (btnRetry) {
+        btnRetry.setAttribute('data-order-id', o.id);
+        btnRetry.setAttribute('data-notif-id', notif.notificationId || `notif_order_${o.id}_confirmation`);
+        btnRetry.style.display = (notifStatus !== 'accepted_by_mailapp' && o.email && o.email !== 'N/A' && o.email.includes('@')) ? 'inline-flex' : 'none';
+        btnRetry.disabled = false;
+        btnRetry.innerHTML = '<i class="fas fa-redo"></i> إعادة إرسال الإشعار';
+      }
 
       let productsListText = '';
       if (o.products && Object.keys(o.products).length > 0) {
@@ -809,6 +1027,60 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const printHeader = document.getElementById('printHeader');
       if (printHeader) printHeader.style.display = 'block';
       if (detailsModal) detailsModal.classList.add('show');
+    };
+
+    window.retryCurrentNotification = async function() {
+      const btnRetry = document.getElementById('md-retry-notif-btn');
+      if (!btnRetry) return;
+      const orderId = btnRetry.getAttribute('data-order-id');
+      const notificationId = btnRetry.getAttribute('data-notif-id');
+      if (!orderId || !notificationId) return alert('بيانات الإشعار غير مكتملة');
+
+      btnRetry.disabled = true;
+      btnRetry.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+
+      try {
+        let idToken = null;
+        if (window.auth && window.auth.currentUser) {
+          idToken = await window.auth.currentUser.getIdToken();
+        }
+
+        if (!idToken) {
+          alert('يجب تسجيل الدخول بصلاحيات الإدارة أولاً.');
+          btnRetry.disabled = false;
+          btnRetry.innerHTML = '<i class="fas fa-redo"></i> إعادة إرسال الإشعار';
+          return;
+        }
+
+        const res = await fetch('/api/order-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + idToken
+          },
+          body: JSON.stringify({
+            action: 'RETRY_NOTIFICATION',
+            orderId,
+            notificationId
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert('تمت محاولة إعادة الإرسال بنجاح. الحالة: ' + (data.status || 'مقبول'));
+          btnRetry.innerHTML = '<i class="fas fa-check"></i> تمت المحاولة';
+          const stEl = document.getElementById('md-notif-status');
+          if (stEl) stEl.textContent = data.status || 'accepted_by_mailapp';
+        } else {
+          alert('فشلت إعادة الإرسال: ' + (data.message || data.error));
+          btnRetry.disabled = false;
+          btnRetry.innerHTML = '<i class="fas fa-redo"></i> إعادة إرسال الإشعار';
+        }
+      } catch (err) {
+        alert('حدث خطأ بالاتصال أثناء إعادة الإرسال.');
+        btnRetry.disabled = false;
+        btnRetry.innerHTML = '<i class="fas fa-redo"></i> إعادة إرسال الإشعار';
+      }
     };
 
     function hideModal(){
