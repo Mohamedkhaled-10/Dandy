@@ -329,6 +329,39 @@ export async function POST({ request }) {
       });
     }
 
+    // -------------------------------------------------------------------------
+    // ACTION 5: DIAGNOSTIC_SEND_ALL_STATUSES (Batch Test of All 4 Status Templates)
+    // -------------------------------------------------------------------------
+    if (action === 'DIAGNOSTIC_SEND_ALL_STATUSES') {
+      const statusesToTest = ['قيد التجهيز', 'تم الشحن', 'تم التوصيل', 'ملغي'];
+      const results = [];
+      let allSuccess = true;
+
+      for (const st of statusesToTest) {
+        const diagResult = await sendDiagnosticRelayEmail({
+          testType: 'ORDER_STATUS_CHANGED',
+          canonicalStatus: st
+        });
+        if (!diagResult.success) {
+          allSuccess = false;
+        }
+        results.push({
+          status: st,
+          success: diagResult.success,
+          diagnostic: diagResult.diagnostic
+        });
+      }
+
+      return new Response(JSON.stringify({
+        success: allSuccess,
+        count: results.length,
+        results
+      }), {
+        status: allSuccess ? 200 : 502,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     return new Response(JSON.stringify({
       success: false,
       error: 'UNKNOWN_ACTION',

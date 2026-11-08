@@ -1507,5 +1507,226 @@ test('36. Final Verification: sendDiagnosticRelayEmail sends synthetic email wit
   }
 });
 
+// =============================================================================
+// MODERN PREMIUM REDESIGN & STATUS TEMPLATES TEST SUITE (Tests 37 - 42)
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// 37. Date & Time formatting in Africa/Cairo timezone
+// ---------------------------------------------------------------------------
+test('37. formatCairoDateTime accurately formats timestamps in Africa/Cairo timezone in Arabic', async () => {
+  const { formatCairoDateTime } = await import('../src/utils/email-service.ts');
+
+  // Specific ISO timestamp: 2026-11-08T18:30:00.000Z (which is 20:30 in Cairo, UTC+2)
+  const formatted = formatCairoDateTime('2026-11-08T18:30:00.000Z');
+  assert.ok(typeof formatted === 'string');
+  assert.ok(formatted.length > 5);
+  // Must contain year 2026 in Eastern Arabic (٢٠٢٦) or Western digits (2026)
+  assert.ok(formatted.includes('٢٠٢٦') || formatted.includes('2026'));
+  // Must contain month name (نوفمبر)
+  assert.ok(formatted.includes('نوفمبر'));
+});
+
+// ---------------------------------------------------------------------------
+// 38. Plain-text alternatives produce clean, complete text bodies without HTML tags
+// ---------------------------------------------------------------------------
+test('38. Plain-text alternatives produce clean text bodies without HTML tags', async () => {
+  const {
+    generateOrderConfirmationText,
+    generateOrderStatusText
+  } = await import('../src/utils/email-service.ts');
+
+  const sampleOrder = {
+    name: 'منى أحمد',
+    email: 'mona@example.com',
+    governorate: 'Cairo',
+    invoiceCode: 'DNY-998877',
+    subtotal: 499,
+    shippingFee: 85,
+    totalAmount: 584,
+    products: [
+      { name: 'سيروم فيتامين سي', quantity: 1, price: 499, lineTotal: 499 }
+    ]
+  };
+
+  // 1. Order confirmation text
+  const confText = generateOrderConfirmationText(sampleOrder, 'ord_sample');
+  assert.ok(!confText.includes('<table'), 'Must not contain HTML tables');
+  assert.ok(!confText.includes('<div'), 'Must not contain HTML divs');
+  assert.ok(confText.includes('DANDY COSMETICS'));
+  assert.ok(confText.includes('DNY-998877'));
+  assert.ok(confText.includes('سيروم فيتامين سي'));
+  assert.ok(confText.includes('499 ج.م'));
+  assert.ok(confText.includes('85 ج.م'));
+  assert.ok(confText.includes('584 ج.م'));
+  assert.ok(confText.includes('https://wa.me/201038941005'));
+
+  // 2. Status update text
+  const statusText = generateOrderStatusText(sampleOrder, 'ord_sample', 'تم الشحن');
+  assert.ok(!statusText.includes('<table'));
+  assert.ok(!statusText.includes('<div'));
+  assert.ok(statusText.includes('تم الشحن'));
+  assert.ok(statusText.includes('DNY-998877'));
+  assert.ok(statusText.includes('584 ج.م'));
+  assert.ok(statusText.includes('01038941005'));
+});
+
+// ---------------------------------------------------------------------------
+// 39. Status Template: قيد التجهيز (Processing) verification
+// ---------------------------------------------------------------------------
+test('39. Status Template: قيد التجهيز (Processing) renders required subject, badge, and copy', async () => {
+  const { generateOrderStatusEmail } = await import('../src/utils/email-service.ts');
+
+  const order = {
+    name: 'هدى محمود',
+    email: 'hoda@example.com',
+    governorate: 'Giza',
+    city: 'الدقي',
+    invoiceCode: 'DNY-PROC-01',
+    subtotal: 650,
+    shippingFee: 85,
+    totalAmount: 735,
+    products: [
+      { name: 'مجموعة التفتيح الطبيعي', quantity: 1, price: 650, lineTotal: 650 }
+    ]
+  };
+
+  const email = generateOrderStatusEmail(order, 'ord_proc_01', 'قيد التجهيز');
+  assert.ok(email.subject.includes('طلبك قيد التجهيز بعناية في داندي'));
+  assert.ok(email.subject.includes('DNY-PROC-01'));
+  assert.ok(email.htmlBody.includes('قيد التجهيز والتغليف'));
+  assert.ok(email.htmlBody.includes('نعمل حاليًا على تجهيز طلبك بعناية، ونسعى ليصلك بأفضل حالة.'));
+  assert.ok(email.htmlBody.includes('735 ج.م'));
+  assert.ok(email.htmlBody.includes('الدقي'));
+  assert.ok(email.textBody.includes('نعمل حاليًا على تجهيز طلبك بعناية'));
+});
+
+// ---------------------------------------------------------------------------
+// 40. Status Templates: تم الشحن (Shipped) & تم التوصيل (Delivered) verification
+// ---------------------------------------------------------------------------
+test('40. Status Templates: تم الشحن & تم التوصيل render required subject, badge, and copy', async () => {
+  const { generateOrderStatusEmail } = await import('../src/utils/email-service.ts');
+
+  const order = {
+    name: 'رنا مصطفى',
+    email: 'rana@example.com',
+    governorate: 'Alexandria',
+    city: 'سموحة',
+    invoiceCode: 'DNY-SHIP-02',
+    subtotal: 800,
+    shippingFee: 95,
+    totalAmount: 895,
+    products: [
+      { name: 'كريم الليل المرطب', quantity: 2, price: 400, lineTotal: 800 }
+    ]
+  };
+
+  // 1. Shipped
+  const shipEmail = generateOrderStatusEmail(order, 'ord_ship_02', 'تم الشحن');
+  assert.ok(shipEmail.subject.includes('تم شحن طلبك من داندي وهو في طريقه إليكِ!'));
+  assert.ok(shipEmail.subject.includes('DNY-SHIP-02'));
+  assert.ok(shipEmail.htmlBody.includes('تم الشحن وفي الطريق'));
+  assert.ok(shipEmail.htmlBody.includes('طلبك في طريقه إليكِ! تم تسليم شحنتك إلى شركة التوصيل'));
+  assert.ok(shipEmail.htmlBody.includes('895 ج.م'));
+
+  // 2. Delivered
+  const delEmail = generateOrderStatusEmail(order, 'ord_del_02', 'تم التوصيل');
+  assert.ok(delEmail.subject.includes('تم توصيل طلبك بنجاح | DANDY DNY-SHIP-02'));
+  assert.ok(delEmail.htmlBody.includes('تم التوصيل بنجاح'));
+  assert.ok(delEmail.htmlBody.includes('تم تسجيل اكتمال توصيل طلبك. نتمنى أن تستمتعي بتجربتك مع DANDY.'));
+  assert.ok(delEmail.htmlBody.includes('نشكركِ لاختياركِ داندي وثقتكِ الدائمة بمنتجاتنا الطبيعية!'));
+});
+
+// ---------------------------------------------------------------------------
+// 41. Status Template: ملغي (Cancelled) verification
+// ---------------------------------------------------------------------------
+test('41. Status Template: ملغي (Cancelled) renders required subject, badge, and copy', async () => {
+  const { generateOrderStatusEmail } = await import('../src/utils/email-service.ts');
+
+  const order = {
+    name: 'ياسمين علي',
+    email: 'yasmin@example.com',
+    governorate: 'Cairo',
+    invoiceCode: 'DNY-CANC-03',
+    subtotal: 499,
+    shippingFee: 85,
+    totalAmount: 584,
+    products: [
+      { name: 'سيروم فيتامين سي', quantity: 1, price: 499, lineTotal: 499 }
+    ]
+  };
+
+  const cancEmail = generateOrderStatusEmail(order, 'ord_canc_03', 'ملغي');
+  assert.ok(cancEmail.subject.includes('تم إلغاء طلبك من داندي | DNY-CANC-03'));
+  assert.ok(cancEmail.htmlBody.includes('طلب ملغي'));
+  assert.ok(cancEmail.htmlBody.includes('نود إبلاغك بأنه تم إلغاء طلبك. شكرًا لاهتمامك بمنتجات DANDY.'));
+  assert.ok(cancEmail.htmlBody.includes('إجمالي الطلب الملغي:'));
+  assert.ok(cancEmail.htmlBody.includes('584 ج.م'));
+});
+
+// ---------------------------------------------------------------------------
+// 42. Synthetic diagnostic email verifies all 4 statuses with unique IDs & strict recipient
+// ---------------------------------------------------------------------------
+test('42. sendDiagnosticRelayEmail sends synthetic diagnostics for all 4 statuses with unique IDs to owner only', async () => {
+  const { sendDiagnosticRelayEmail, FIXED_DIAGNOSTIC_RECIPIENT } = await import('../src/utils/email-service.ts');
+
+  const origEnv = { ...process.env };
+  const origFetch = globalThis.fetch;
+
+  process.env.GMAIL_NOTIFICATIONS_ENABLED = 'false';
+  process.env.GMAIL_RELAY_URL = 'https://script.google.com/macros/s/AKfycb_status_diag_test/exec';
+  process.env.GMAIL_RELAY_SECRET = 'secret_test_status_diag';
+
+  const dispatchedEnvelopes = [];
+
+  globalThis.fetch = async (url, options) => {
+    const envelope = JSON.parse(options.body);
+    dispatchedEnvelopes.push(envelope);
+    return new Response(JSON.stringify({
+      success: true,
+      status: 'accepted_by_mailapp',
+      notificationId: envelope.notificationId,
+      remainingQuota: 95
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+
+  try {
+    const statuses = ['قيد التجهيز', 'تم الشحن', 'تم التوصيل', 'ملغي'];
+    const notificationIds = new Set();
+
+    for (const status of statuses) {
+      const res = await sendDiagnosticRelayEmail({
+        testType: 'ORDER_STATUS_CHANGED',
+        canonicalStatus: status
+      });
+
+      assert.equal(res.success, true);
+      assert.equal(res.diagnostic.relayStatus, 'accepted_by_mailapp');
+      assert.equal(res.diagnostic.recipient, FIXED_DIAGNOSTIC_RECIPIENT);
+      assert.equal(res.diagnostic.recipient, 'dandybeauty4@gmail.com');
+      assert.equal(res.diagnostic.customerNotificationsActive, false);
+      assert.equal(res.diagnostic.canonicalStatus, status);
+
+      // Verify notification ID is unique
+      assert.ok(!notificationIds.has(res.diagnostic.notificationId), 'Each status must generate a distinct notification ID');
+      notificationIds.add(res.diagnostic.notificationId);
+    }
+
+    assert.equal(dispatchedEnvelopes.length, 4);
+    // Check that each envelope contains isDiagnostic notice instead of broken tracking links
+    dispatchedEnvelopes.forEach(env => {
+      const payload = JSON.parse(env.payloadJson);
+      assert.ok(payload.htmlBody.includes('فحص تشغيلي تجريبي للإدارة'));
+      assert.ok(payload.textBody.includes('فحص تشغيلي تجريبي للإدارة'));
+      assert.equal(payload.recipientEmail, 'dandybeauty4@gmail.com');
+    });
+
+  } finally {
+    process.env = origEnv;
+    globalThis.fetch = origFetch;
+  }
+});
+
+
 
 

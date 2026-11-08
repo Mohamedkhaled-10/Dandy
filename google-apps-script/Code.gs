@@ -297,13 +297,18 @@ function doPost(e) {
 
       // Send Email via MailApp
       try {
-        MailApp.sendEmail({
+        const mailOptions = {
           to: recipientEmail,
           subject: subject,
           htmlBody: htmlBody,
           name: 'DANDY',
           replyTo: 'dandybeauty4@gmail.com'
-        });
+        };
+        if (payload && (payload.textBody || payload.body)) {
+          mailOptions.body = payload.textBody || payload.body;
+        }
+
+        MailApp.sendEmail(mailOptions);
 
         // Transition immediately to 'accepted_by_mailapp'
         const recordValue = JSON.stringify({

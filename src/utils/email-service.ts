@@ -364,15 +364,46 @@ function escapeHtml(str: unknown): string {
 }
 
 /**
+ * Formats order date and time in Africa/Cairo timezone.
+ * Example: ٨ نوفمبر ٢٠٢٦ في ١٠:٢٢ م
+ */
+export function formatCairoDateTime(timestamp?: string | number | Date | null): string {
+  try {
+    const date = timestamp ? new Date(timestamp) : new Date();
+    if (isNaN(date.getTime())) {
+      return new Intl.DateTimeFormat('ar-EG', {
+        timeZone: 'Africa/Cairo',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }).format(new Date());
+    }
+    return new Intl.DateTimeFormat('ar-EG', {
+      timeZone: 'Africa/Cairo',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(date);
+  } catch (e) {
+    return new Date().toLocaleDateString('ar-EG');
+  }
+}
+
+/**
  * Builds HTML table for order products with full support for:
+ * - Product thumbnail images with broken-image protection
  * - Quantities, unit prices, line totals
- * - Collection bundles and included sub-items
+ * - Collection bundles and included sub-items (without double-counting)
  * - Scent / product variants
  * - Discounted original vs promotional pricing
  */
 function buildProductsTableHtml(products: any[]): string {
   const prods = Array.isArray(products) ? products : (products ? Object.values(products) : []);
-  if (prods.length === 0) return '<p style="color:#666;font-size:14px;padding:8px 0;">لا توجد تفاصيل للمنتجات.</p>';
+  if (prods.length === 0) {
+    return '<p style="color:#857979;font-size:14px;padding:12px 0;margin:0;text-align:center;">لا توجد تفاصيل للمنتجات.</p>';
+  }
 
   const rows = prods.map(p => {
     const name = escapeHtml(p.name || 'منتج داندي');
@@ -387,6 +418,18 @@ function buildProductsTableHtml(products: any[]): string {
     const explicitLineTotal = typeof p.lineTotal === 'number' && !isNaN(p.lineTotal) ? p.lineTotal : null;
     const lineTotal = explicitLineTotal !== null && explicitLineTotal > 0 ? explicitLineTotal : (unitPrice * qty);
     
+    // Product image thumbnail
+    const rawImg = p.image || p.coverImage || '';
+    let imgTag = '';
+    if (rawImg && typeof rawImg === 'string' && rawImg.trim()) {
+      const imgUrl = rawImg.startsWith('http') ? rawImg : `https://dandy-ebon.vercel.app${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+      imgTag = `
+        <td style="width:54px;padding:12px 0 12px 10px;vertical-align:top;">
+          <img src="${escapeHtml(imgUrl)}" alt="${name}" width="54" height="54" style="width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #f2ebf0;display:block;" onerror="this.style.display='none';" />
+        </td>
+      `;
+    }
+
     // Variant info
     let variantText = '';
     if (Array.isArray(p.selectedVariants) && p.selectedVariants.length > 0) {
@@ -410,33 +453,38 @@ function buildProductsTableHtml(products: any[]): string {
     let priceDetailsHtml = '';
     const regPrice = Number(p.price) || 0;
     if (regPrice > unitPrice && unitPrice > 0) {
-      priceDetailsHtml = `<div style="font-size:11px;color:#857979;margin-top:2px;"><del>${formatEGP(regPrice)}</del> <span style="color:#d83f82;font-weight:bold;">${formatEGP(unitPrice)} للقطعة</span></div>`;
+      priceDetailsHtml = `<div style="font-size:11px;color:#857979;margin-top:2px;"><del>${formatEGP(regPrice)}</del> <span style="color:#be185d;font-weight:700;">${formatEGP(unitPrice)} للقطعة</span></div>`;
     } else if (qty > 1 && unitPrice > 0) {
       priceDetailsHtml = `<div style="font-size:11px;color:#857979;margin-top:2px;">${formatEGP(unitPrice)} × ${qty}</div>`;
     }
 
     return `
-      <tr style="border-bottom:1px solid #f0e6ed;">
-        <td style="padding:12px 8px;text-align:right;">
-          <div style="font-weight:bold;color:#2b1b2d;font-size:15px;">${name}</div>
-          ${p.badgeText ? `<span style="display:inline-block;background:#fce7f3;color:#be185d;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;margin-top:3px;">${escapeHtml(p.badgeText)}</span>` : ''}
-          ${bundleItemsText ? `<div style="font-size:12px;color:#854d6e;margin-top:3px;">المحتويات: ${bundleItemsText}</div>` : ''}
-          ${variantText ? `<div style="font-size:12px;color:#fe5d9f;margin-top:3px;">الرائحة / النوع: ${escapeHtml(variantText)}</div>` : ''}
+      <tr style="border-bottom:1px solid #f7f0f4;">
+        ${imgTag}
+        <td style="padding:12px 8px;text-align:right;vertical-align:middle;">
+          <div style="font-weight:700;color:#2c2828;font-size:14px;line-height:1.4;">${name}</div>
+          ${p.badgeText ? `<span style="display:inline-block;background:#fdf2f6;color:#95184c;border:1px solid #f9d8e5;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-top:3px;">${escapeHtml(p.badgeText)}</span>` : ''}
+          ${bundleItemsText ? `<div style="font-size:12px;color:#595050;margin-top:3px;line-height:1.3;">المحتويات: ${bundleItemsText}</div>` : ''}
+          ${variantText ? `<div style="font-size:12px;color:#8e0b4a;margin-top:3px;">الرائحة / النوع: ${escapeHtml(variantText)}</div>` : ''}
           ${priceDetailsHtml}
         </td>
-        <td style="padding:12px 8px;text-align:center;color:#555;font-size:14px;vertical-align:middle;">${qty}</td>
-        <td style="padding:12px 8px;text-align:left;font-weight:bold;color:#2b1b2d;font-size:14px;white-space:nowrap;vertical-align:middle;">${formatEGP(lineTotal)}</td>
+        <td style="padding:12px 6px;text-align:center;color:#595050;font-size:13px;vertical-align:middle;white-space:nowrap;">
+          <span style="background:#fcf9fb;border:1px solid #f2ebf0;padding:2px 8px;border-radius:4px;">${qty}</span>
+        </td>
+        <td style="padding:12px 8px;text-align:left;font-weight:700;color:#2c2828;font-size:14px;white-space:nowrap;vertical-align:middle;">
+          ${formatEGP(lineTotal)}
+        </td>
       </tr>
     `;
   }).join('');
 
   return `
-    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:16px 0;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #f0e6ed;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:12px 0 16px 0;background:#ffffff;border-radius:8px;border:1px solid #f2ebf0;overflow:hidden;">
       <thead>
-        <tr style="background:#fdf8fb;border-bottom:2px solid #f4bbd3;color:#854d6e;font-size:13px;">
-          <th style="padding:10px 8px;text-align:right;">المنتج</th>
-          <th style="padding:10px 8px;text-align:center;width:60px;">الكمية</th>
-          <th style="padding:10px 8px;text-align:left;width:100px;">الإجمالي</th>
+        <tr style="background:#fcf9fb;border-bottom:1px solid #ebdbe3;color:#595050;font-size:12px;font-weight:700;">
+          <th colspan="2" style="padding:10px 12px;text-align:right;">المنتج</th>
+          <th style="padding:10px 6px;text-align:center;width:50px;">الكمية</th>
+          <th style="padding:10px 12px;text-align:left;width:95px;">الإجمالي</th>
         </tr>
       </thead>
       <tbody>
@@ -447,85 +495,149 @@ function buildProductsTableHtml(products: any[]): string {
 }
 
 /**
- * Builds base responsive HTML email wrapper with Dandy beauty aesthetic.
+ * Builds the base responsive HTML email wrapper for Modern Premium DANDY aesthetic:
+ * - Fluid table-based structural layout (up to 600px width).
+ * - Soft luxury blush palette, dark charcoal typography, generous whitespace.
+ * - Centered DANDY brand logo with text fallback.
+ * - Responsive mobile styles via inline CSS + progressive enhancement.
  */
 function buildBaseEmailTemplate(params: {
   title: string;
   badgeText: string;
   badgeBg: string;
   badgeColor: string;
-  customerName: string;
+  badgeBorder?: string;
+  customerName?: string;
   invoiceCode: string;
   bodyContentHtml: string;
   orderId: string;
+  trackingUrl?: string;
+  isDiagnostic?: boolean;
 }): string {
-  const invoiceUrl = `https://dandy-ebon.vercel.app/invoice?id=${encodeURIComponent(params.orderId)}`;
-  const trackingUrl = `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(params.invoiceCode)}`;
+  const invoiceCode = params.invoiceCode;
+  const isDiag = Boolean(params.isDiagnostic);
+  const realTrackingUrl = `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+  const trackingUrl = params.trackingUrl || realTrackingUrl;
 
-  return `
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
   <title>${escapeHtml(params.title)}</title>
+  <style type="text/css">
+    body, table, td, p, a, li, blockquote {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table, td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+    img {
+      -ms-interpolation-mode: bicubic;
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+    }
+    @media only screen and (max-width: 600px) {
+      .email-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+      }
+      .mobile-padding {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+      .mobile-cta-btn {
+        display: block !important;
+        width: 100% !important;
+        padding: 14px 20px !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+      }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background-color:#faf6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Alexandria','Cairo',sans-serif;color:#2b1b2d;direction:rtl;text-align:right;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#faf6f8;padding:24px 12px;">
+<body style="margin:0;padding:0;background-color:#faf7f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Alexandria','Cairo',Arial,sans-serif;color:#2c2828;direction:rtl;text-align:right;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#faf7f9;padding:24px 8px;">
     <tr>
       <td align="center">
-        <!-- Main Card Container -->
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(254,93,159,0.08);border:1px solid #fae8f0;">
+        <!-- Main Card Container (Max 600px) -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" class="email-container" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #f0e6ed;box-shadow:0 4px 16px rgba(44,40,40,0.04);">
           
-          <!-- Header Banner -->
+          <!-- Premium Brand Header -->
           <tr>
-            <td style="background:linear-gradient(135deg, #fe5d9f 0%, #d83f82 100%);padding:32px 24px;text-align:center;color:#ffffff;">
-              <h1 style="margin:0;font-size:26px;letter-spacing:1px;font-weight:800;">DANDY COSMETICS</h1>
-              <p style="margin:6px 0 0;font-size:13px;color:#ffe4ef;letter-spacing:0.5px;">جمالك الطبيعي يبدأ من هنا</p>
+            <td align="center" style="padding:28px 20px 18px 20px;background:#ffffff;text-align:center;">
+              <a href="https://dandy-ebon.vercel.app" target="_blank" style="text-decoration:none;display:inline-block;">
+                <img src="https://dandy-ebon.vercel.app/assets/images/logo.png" alt="DANDY Cosmetics" width="124" height="40" style="width:124px;max-width:124px;height:auto;display:block;margin:0 auto;border:0;outline:none;" onerror="this.style.display='none';document.getElementById('brand-text-logo').style.display='block';" />
+                <div id="brand-text-logo" style="display:none;font-family:'Alexandria','Cairo',sans-serif;font-size:20px;font-weight:800;letter-spacing:3px;color:#2c2828;">DANDY</div>
+              </a>
+              <div style="font-size:12px;font-weight:500;letter-spacing:0.8px;color:#857979;margin-top:6px;">جمالكِ الطبيعي يبدأ من هنا</div>
+              <div style="width:36px;height:2px;background:#f4bbd3;margin:12px auto 0 auto;border-radius:2px;"></div>
             </td>
           </tr>
 
-          <!-- Status Bar -->
+          <!-- Status Badge Banner -->
           <tr>
-            <td style="padding:20px 24px 10px;text-align:center;">
-              <span style="display:inline-block;background:${params.badgeBg};color:${params.badgeColor};padding:6px 18px;border-radius:99px;font-size:13px;font-weight:bold;">
+            <td align="center" style="padding:4px 24px 12px 24px;text-align:center;">
+              <span style="display:inline-block;background:${params.badgeBg};color:${params.badgeColor};border:1px solid ${params.badgeBorder || params.badgeBg};padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.3px;">
                 ${escapeHtml(params.badgeText)}
               </span>
-              <div style="margin-top:10px;font-size:14px;color:#777;">
-                رقم الفاتورة: <strong style="color:#2b1b2d;font-size:16px;">${escapeHtml(params.invoiceCode)}</strong>
-              </div>
             </td>
           </tr>
 
-          <!-- Greeting & Main Content -->
+          <!-- Main Body Content -->
           <tr>
-            <td style="padding:10px 24px 20px;">
-              <p style="font-size:16px;color:#2b1b2d;margin:0 0 14px;line-height:1.6;">
+            <td class="mobile-padding" style="padding:10px 24px 20px 24px;font-size:14px;line-height:1.7;color:#2c2828;">
+              <div style="font-size:15px;color:#2c2828;margin-bottom:14px;">
                 أهلاً بكِ <strong>${escapeHtml(params.customerName || 'عميلتنا العزيزة')}</strong> 💕،
-              </p>
+              </div>
               ${params.bodyContentHtml}
             </td>
           </tr>
 
-          <!-- Action CTA Button -->
+          <!-- Primary CTA Button (Real Orders vs Diagnostic Mode) -->
           <tr>
-            <td style="padding:10px 24px 30px;text-align:center;">
-              <a href="${invoiceUrl}" target="_blank" style="display:inline-block;background:#fe5d9f;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:99px;font-weight:bold;font-size:15px;box-shadow:0 4px 14px rgba(254,93,159,0.35);">
-                تتبع مسار طلبك والفاتورة 🔍
-              </a>
-              <div style="margin-top:12px;font-size:12px;color:#888;">
-                أو يمكنكِ متابعة الطلب مباشرة عبر <a href="${trackingUrl}" target="_blank" style="color:#fe5d9f;text-decoration:none;font-weight:bold;">صفحة التتبع</a>.
-              </div>
+            <td class="mobile-padding" style="padding:0 24px 24px 24px;text-align:center;">
+              ${isDiag ? `
+                <div style="padding:12px 16px;background:#fdf2f6;border:1px dashed #f4bbd3;border-radius:8px;text-align:center;font-size:12px;">
+                  <div style="font-weight:700;color:#95184c;margin-bottom:2px;">⚙️ فحص تشغيلي تجريبي للإدارة (Diagnostic Mode)</div>
+                  <div style="color:#595050;line-height:1.4;">هذا البريد مخصص لاختبار دقة الفاتورة والاتصال بقنوات الترحيل. روابط التتبع الحقيقية تُنشأ تلقائياً للطلبات الفعلية للعملاء.</div>
+                </div>
+              ` : `
+                <div style="text-align:center;padding:12px 0 6px 0;">
+                  <a href="${trackingUrl}" target="_blank" class="mobile-cta-btn" style="display:inline-block;background:#2c2828;color:#ffffff;text-decoration:none;padding:13px 36px;border-radius:6px;font-weight:700;font-size:14px;letter-spacing:0.5px;">
+                    تتبع طلبك 🚚
+                  </a>
+                  <div style="margin-top:10px;font-size:11px;color:#857979;line-height:1.5;">
+                    أو يمكنكِ متابعة الشحنة مباشرة عبر الرابط التالي:<br/>
+                    <span dir="ltr" style="word-break:break-all;color:#be185d;">${escapeHtml(trackingUrl)}</span>
+                  </div>
+                </div>
+              `}
             </td>
           </tr>
 
-          <!-- Support & Footer -->
+          <!-- Premium Brand Footer -->
           <tr>
-            <td style="background:#faf2f6;padding:20px 24px;border-top:1px solid #fae8f0;font-size:13px;color:#666;text-align:center;line-height:1.6;">
-              <p style="margin:0 0 6px;">لأي استفسار بخصوص طلبك، يسعدنا تواصلكِ معنا عبر واتساب أو الرد على هذا البريد.</p>
-              <p style="margin:0;font-size:11px;color:#999;">
-                © متجر داندي لمستحضرات التجميل الطبيعية - مصر | DANDY
-              </p>
+            <td style="background:#fcf9fb;border-top:1px solid #f2ebf0;padding:22px 24px;text-align:center;font-size:12px;color:#595050;line-height:1.6;">
+              <div style="font-size:13px;font-weight:800;letter-spacing:2px;color:#2c2828;">DANDY COSMETICS</div>
+              <div style="color:#857979;font-size:11px;margin:3px 0 8px 0;">نشكركِ لاختياركِ داندي وثقتكِ الدائمة بمنتجاتنا الطبيعية</div>
+              <div style="font-size:12px;margin-bottom:10px;">
+                خدمة العملاء (واتساب): <a href="https://wa.me/201038941005" target="_blank" style="color:#be185d;text-decoration:none;font-weight:700;" dir="ltr">01038941005</a>
+                &nbsp;|&nbsp;
+                البريد: <a href="mailto:dandybeauty4@gmail.com" style="color:#be185d;text-decoration:none;" dir="ltr">dandybeauty4@gmail.com</a>
+              </div>
+              <div style="font-size:10px;color:#aea5a5;border-top:1px solid #f2ebf0;padding-top:10px;margin-top:6px;line-height:1.5;">
+                هذه الرسالة إشعار إداري فوري متعلق بمعاملتك لدى متجر داندي لمستحضرات التجميل الطبيعية - مصر.<br/>
+                © 2026 DANDY Cosmetics. جميع الحقوق محفوظة.
+              </div>
             </td>
           </tr>
 
@@ -534,14 +646,119 @@ function buildBaseEmailTemplate(params: {
     </tr>
   </table>
 </body>
-</html>
-  `;
+</html>`;
 }
 
 /**
- * Generates subject and HTML for Order Confirmation.
+ * Plain-text alternative for Order Confirmation.
  */
-export function generateOrderConfirmationEmail(order: any, orderId: string): { subject: string; htmlBody: string } {
+export function generateOrderConfirmationText(order: any, orderId: string, options?: { isDiagnostic?: boolean }): string {
+  const invoiceCode = order?.invoiceCode || orderId;
+  const financials = calculateOrderFinancials(order);
+  const dateStr = formatCairoDateTime(order?.timestamp);
+  const gov = order?.governorate || '';
+  const city = order?.city || '';
+  const address = order?.address || '';
+  const phone = order?.phone || '';
+  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
+  const trackingUrl = `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+
+  const productsList = financials.products.map(p => {
+    const qty = p.quantity || 1;
+    const name = p.name || 'منتج داندي';
+    const total = formatEGP(p.lineTotal);
+    return `• ${name} (الكمية: ${qty}) - ${total}`;
+  }).join('\n');
+
+  return `DANDY COSMETICS - جمالكِ الطبيعي يبدأ من هنا
+==================================================
+تم تأكيد استلام طلبك بنجاح
+
+أهلاً بكِ ${order?.name || 'عميلتنا العزيزة'}،
+شكراً لثقتكِ بمنتجات داندي! تم تسجيل استلام طلبك بنجاح وجارٍ مراجعته وتجهيزه بعناية.
+
+تفاصيل الطلب:
+- رقم الفاتورة: ${invoiceCode}
+- تاريخ الطلب: ${dateStr}
+- حالة الطلب: جديد (مؤكد)
+
+عنوان التوصيل:
+- المحافظة والمدينة: ${gov}${city ? '، ' + city : ''}
+- العنوان بالتفصيل: ${address || 'العنوان المسجل في الطلب'}
+- رقم الهاتف: ${phone || 'غير مسجل'}
+
+المنتجات:
+${productsList || 'لا توجد منتجات'}
+
+الملخص المالي:
+- إجمالي المنتجات: ${formatEGP(financials.subtotal)}
+- مصاريف الشحن: ${financials.isFreeShipping ? 'شحن مجاني' : formatEGP(financials.shippingFee)}
+- المبلغ المطلوب سداده عند الاستلام (COD): ${formatEGP(financials.totalAmount)}
+* الدفع نقداً عند استلام الشحنة.
+
+${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي للإدارة.' : `تتبع مسار طلبك:\n${trackingUrl}`}
+
+خدمة العملاء (واتساب): https://wa.me/201038941005 (01038941005)
+البريد الإلكتروني: dandybeauty4@gmail.com
+© 2026 DANDY Cosmetics - مصر`;
+}
+
+/**
+ * Plain-text alternative for Order Status transitions.
+ */
+export function generateOrderStatusText(order: any, orderId: string, status: CanonicalStatus, options?: { isDiagnostic?: boolean }): string {
+  const invoiceCode = order?.invoiceCode || orderId;
+  const financials = calculateOrderFinancials(order);
+  const dateStr = formatCairoDateTime(order?.timestamp);
+  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
+  const trackingUrl = `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+
+  let statusMsg = '';
+  switch (status) {
+    case 'قيد التجهيز':
+      statusMsg = 'نعمل حاليًا على تجهيز طلبك بعناية، ونسعى ليصلك بأفضل حالة.';
+      break;
+    case 'تم الشحن':
+      statusMsg = 'يسعدنا إبلاغك بأنه تم شحن طلبك، وأصبح في طريقه إليك.';
+      break;
+    case 'تم التوصيل':
+      statusMsg = 'تم تسجيل اكتمال توصيل طلبك. نتمنى أن تستمتعي بتجربتك مع DANDY.';
+      break;
+    case 'ملغي':
+      statusMsg = 'نود إبلاغك بأنه تم إلغاء طلبك. شكرًا لاهتمامك بمنتجات DANDY.';
+      break;
+    default:
+      statusMsg = 'تم تحديث حالة طلبك لدى داندي.';
+  }
+
+  return `DANDY COSMETICS - جمالكِ الطبيعي يبدأ من هنا
+==================================================
+تحديث حالة الطلب: ${status}
+
+أهلاً بكِ ${order?.name || 'عميلتنا العزيزة'}،
+${statusMsg}
+
+ملخص الطلب:
+- رقم الفاتورة: ${invoiceCode}
+- تاريخ الطلب: ${dateStr}
+- الحالة الحالية: ${status}
+- المبلغ المطلوب سداده عند الاستلام (COD): ${formatEGP(financials.totalAmount)}
+
+${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي للإدارة.' : `تتبع مسار طلبك:\n${trackingUrl}`}
+
+خدمة العملاء (واتساب): https://wa.me/201038941005 (01038941005)
+البريد الإلكتروني: dandybeauty4@gmail.com
+© 2026 DANDY Cosmetics - مصر`;
+}
+
+/**
+ * Generates subject, HTML, and plain-text body for Order Confirmation.
+ */
+export function generateOrderConfirmationEmail(
+  order: any,
+  orderId: string,
+  options?: { isDiagnostic?: boolean }
+): { subject: string; htmlBody: string; textBody: string } {
   const invoiceCode = order?.invoiceCode || orderId;
   const subject = `تأكيد طلبك من داندي | رقم الفاتورة ${invoiceCode}`;
 
@@ -550,44 +767,92 @@ export function generateOrderConfirmationEmail(order: any, orderId: string): { s
   const city = order?.city || '';
   const address = order?.address || '';
   const phone = order?.phone || '';
+  const cairoDateStr = formatCairoDateTime(order?.timestamp);
+  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
 
   const bodyContentHtml = `
-    <p style="font-size:14px;color:#444;line-height:1.7;margin:0 0 16px;">
-      شكراً لثقتكِ بمنتجات <strong>داندي</strong>! يسعدنا تأكيد استلام طلبك بنجاح وجارٍ مراجعته وتجهيزه بعناية فائقة ليصلكِ في أسرع وقت.
+    <h1 style="margin:4px 0 10px 0;font-size:20px;font-weight:800;color:#2c2828;line-height:1.4;">تم تأكيد استلام طلبك بنجاح</h1>
+    <p style="font-size:14px;color:#595050;line-height:1.7;margin:0 0 16px;">
+      شكراً لثقتكِ بمنتجات <strong>داندي</strong> الطبيعية! يسعدنا تأكيد استلام طلبك بنجاح وجارٍ مراجعته وتجهيزه بعناية فائقة ليصلكِ في أسرع وقت.
     </p>
 
-    <!-- Shipping Address Summary -->
-    <div style="background:#fcf8fa;border:1px solid #f4bbd3;border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:13px;">
-      <div style="font-weight:bold;color:#854d6e;margin-bottom:6px;">📍 عنوان التوصيل وبيانات التواصل:</div>
-      <div style="color:#333;margin-bottom:2px;">المحافظة والمدينة: <strong>${escapeHtml(gov)}${city ? '، ' + escapeHtml(city) : ''}</strong></div>
-      <div style="color:#333;margin-bottom:2px;">العنوان بالتفصيل: ${escapeHtml(address || 'العنوان المسجل في الطلب')}</div>
-      <div style="color:#333;">رقم الهاتف: <span dir="ltr">${escapeHtml(phone || 'غير مسجل')}</span></div>
-    </div>
+    <!-- Compact Order Summary Card -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fcf9fb;border:1px solid #f2ebf0;border-radius:10px;margin-bottom:18px;">
+      <tr>
+        <td style="padding:14px 16px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;">
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">رقم الفاتورة:</td>
+              <td style="padding:3px 0;font-weight:700;color:#2c2828;text-align:left;" dir="ltr">
+                <span style="background:#ffffff;border:1px solid #ebdbe3;padding:2px 8px;border-radius:4px;">${escapeHtml(invoiceCode)}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">تاريخ الطلب:</td>
+              <td style="padding:3px 0;font-weight:600;color:#595050;text-align:left;">${cairoDateStr}</td>
+            </tr>
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">حالة الطلب:</td>
+              <td style="padding:3px 0;text-align:left;">
+                <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">جديد (مؤكد)</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">العميل:</td>
+              <td style="padding:3px 0;font-weight:600;color:#2c2828;text-align:left;">${escapeHtml(order?.name || 'عميل داندي')}</td>
+            </tr>
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">وجهة التوصيل:</td>
+              <td style="padding:3px 0;font-weight:600;color:#595050;text-align:left;">${escapeHtml(gov)}${city ? '، ' + escapeHtml(city) : ''}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
 
-    <!-- Products -->
-    <div style="font-weight:bold;color:#2b1b2d;font-size:15px;margin-bottom:8px;">📦 تفاصيل المنتجات في طلبك:</div>
+    <!-- Products Section -->
+    <div style="font-weight:700;color:#2c2828;font-size:14px;margin-bottom:6px;">📦 تفاصيل المنتجات في طلبك:</div>
     ${buildProductsTableHtml(financials.products)}
 
-    <!-- Financial Breakdown -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;font-size:14px;border-top:1px solid #f0e6ed;padding-top:10px;">
+    <!-- Distinct Financial Summary Card -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;background:#fcf9fb;border:1px solid #f2ebf0;border-radius:10px;padding:14px;">
       <tr>
-        <td style="padding:6px 0;color:#666;">إجمالي المنتجات:</td>
-        <td style="padding:6px 0;text-align:left;font-weight:bold;color:#2b1b2d;">${formatEGP(financials.subtotal)}</td>
+        <td style="padding:4px 0;color:#595050;font-size:13px;text-align:right;">إجمالي المنتجات:</td>
+        <td style="padding:4px 0;color:#2c2828;font-size:14px;font-weight:700;text-align:left;">${formatEGP(financials.subtotal)}</td>
       </tr>
       <tr>
-        <td style="padding:6px 0;color:#666;">مصاريف الشحن${gov ? ` (${escapeHtml(gov)})` : ''}:</td>
-        <td style="padding:6px 0;text-align:left;font-weight:bold;color:#2b1b2d;">
+        <td style="padding:4px 0;color:#595050;font-size:13px;text-align:right;">مصاريف الشحن${gov ? ` (${escapeHtml(gov)})` : ''}:</td>
+        <td style="padding:4px 0;color:#2c2828;font-size:14px;font-weight:700;text-align:left;">
           ${financials.isFreeShipping 
-            ? '<span style="color:#166534;background:#dcfce7;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:bold;">شحن مجاني 🎉</span>' 
+            ? '<span style="color:#166534;background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">شحن مجاني 🎉</span>' 
             : formatEGP(financials.shippingFee)}
         </td>
       </tr>
-      <tr style="border-top:2px solid #f4bbd3;">
-        <td style="padding:10px 0;font-weight:bold;font-size:15px;color:#2b1b2d;">
-          المبلغ المطلوب سداده عند الاستلام:
-          <div style="font-size:11px;color:#888;font-weight:normal;margin-top:2px;">الدفع نقداً عند استلام الشحنة (COD)</div>
+      <tr>
+        <td colspan="2" style="padding:8px 0 0 0;">
+          <div style="border-top:1px solid #ebdbe3;margin-bottom:8px;"></div>
         </td>
-        <td style="padding:10px 0;text-align:left;font-weight:bold;font-size:18px;color:#fe5d9f;">${formatEGP(financials.totalAmount)}</td>
+      </tr>
+      <tr>
+        <td style="padding:2px 0;color:#2c2828;font-size:14px;font-weight:800;text-align:right;">
+          المبلغ المطلوب سداده عند الاستلام:
+          <div style="font-size:11px;color:#857979;font-weight:400;margin-top:2px;">الدفع نقداً عند استلام الشحنة (COD)</div>
+        </td>
+        <td style="padding:2px 0;color:#be185d;font-size:19px;font-weight:900;text-align:left;white-space:nowrap;">
+          ${formatEGP(financials.totalAmount)}
+        </td>
+      </tr>
+    </table>
+
+    <!-- Delivery Details -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;background:#ffffff;border:1px solid #f2ebf0;border-radius:10px;">
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;">
+          <div style="font-weight:700;color:#2c2828;margin-bottom:8px;">📍 بيانات الشحن والتوصيل:</div>
+          <div style="color:#595050;margin-bottom:3px;">المحافظة والمدينة: <strong style="color:#2c2828;">${escapeHtml(gov)}${city ? '، ' + escapeHtml(city) : ''}</strong></div>
+          <div style="color:#595050;margin-bottom:3px;">العنوان بالتفصيل: ${escapeHtml(address || 'العنوان المسجل في الطلب')}</div>
+          <div style="color:#595050;">رقم الهاتف: <span dir="ltr" style="font-weight:600;color:#2c2828;">${escapeHtml(phone || 'غير مسجل')}</span></div>
+        </td>
       </tr>
     </table>
   `;
@@ -595,120 +860,167 @@ export function generateOrderConfirmationEmail(order: any, orderId: string): { s
   const htmlBody = buildBaseEmailTemplate({
     title: subject,
     badgeText: 'تم تأكيد استلام الطلب',
-    badgeBg: '#dcfce7',
-    badgeColor: '#166534',
+    badgeBg: '#fdf2f6',
+    badgeColor: '#95184c',
+    badgeBorder: '#f9d8e5',
     customerName: order?.name,
     invoiceCode,
     bodyContentHtml,
-    orderId
+    orderId,
+    isDiagnostic: isDiag
   });
 
-  return { subject, htmlBody };
+  const textBody = generateOrderConfirmationText(order, orderId, { isDiagnostic: isDiag });
+
+  return { subject, htmlBody, textBody };
 }
 
 /**
- * Generates subject and HTML for Order Status transitions.
+ * Generates subject, HTML, and plain-text body for Order Status transitions.
+ * Shorter and more focused than the initial confirmation email.
  */
 export function generateOrderStatusEmail(
   order: any,
   orderId: string,
-  newStatus: CanonicalStatus
-): { subject: string; htmlBody: string } {
+  newStatus: CanonicalStatus,
+  options?: { isDiagnostic?: boolean }
+): { subject: string; htmlBody: string; textBody: string } {
   const invoiceCode = order?.invoiceCode || orderId;
   const gov = order?.governorate || '';
+  const city = order?.city || '';
+  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
+  const financials = calculateOrderFinancials(order);
+  const cairoDateStr = formatCairoDateTime(order?.timestamp);
 
   let subject = '';
   let badgeText = '';
   let badgeBg = '';
   let badgeColor = '';
+  let badgeBorder = '';
+  let heroTitle = '';
   let statusMessage = '';
+  let noteMessage = '';
 
   switch (newStatus) {
     case 'قيد التجهيز':
       subject = `طلبك قيد التجهيز بعناية في داندي | رقم الفاتورة ${invoiceCode}`;
-      badgeText = 'قيد التجهيز';
-      badgeBg = '#ffedd5';
-      badgeColor = '#9a3412';
-      statusMessage = `
-        <p style="font-size:15px;color:#2b1b2d;line-height:1.7;margin:0 0 16px;">
-          يسعدنا إخباركِ أن طلبك <strong>قيد التجهيز والتغليف</strong> الآن بعناية خاصة داخل مختبرات داندي، استعداداً لتسليمه لمندوب الشحن في أقرب وقت.
-        </p>
-      `;
+      badgeText = 'قيد التجهيز والتغليف';
+      badgeBg = '#fff7ed';
+      badgeColor = '#c2410c';
+      badgeBorder = '#ffedd5';
+      heroTitle = 'طلبك قيد التجهيز بعناية';
+      statusMessage = 'نعمل حاليًا على تجهيز طلبك بعناية، ونسعى ليصلك بأفضل حالة.';
+      noteMessage = 'نقوم بمراجعة وتغليف منتجاتك الطبيعية بعناية تمهيداً لتسليمها لشركة الشحن والتوصيل.';
       break;
 
     case 'تم الشحن':
       subject = `تم شحن طلبك من داندي وهو في طريقه إليكِ! | ${invoiceCode}`;
       badgeText = 'تم الشحن وفي الطريق';
-      badgeBg = '#fef9c3';
-      badgeColor = '#854d6e';
-      statusMessage = `
-        <p style="font-size:15px;color:#2b1b2d;line-height:1.7;margin:0 0 16px;">
-          بشرى سارة! تم تسليم طلبك لشركة الشحن وهو <strong>في طريقه إلى عنوانك المسجل في ${escapeHtml(gov || 'مصر')}</strong> 🚚.
-          سيقوم مندوب التوصيل بالاتصال بكِ قريباً لتنسيق موعد الاستلام.
-        </p>
-      `;
+      badgeBg = '#f0fdf4';
+      badgeColor = '#15803d';
+      badgeBorder = '#bbf7d0';
+      heroTitle = 'طلبك في طريقه إليكِ';
+      statusMessage = 'طلبك في طريقه إليكِ! تم تسليم شحنتك إلى شركة التوصيل وهو في طريقه إلى عنوانك المسجل.';
+      noteMessage = `شحنتك في طريقها إلى عنوانك المسجل في ${escapeHtml(gov || 'مصر')}. سيقوم مندوب التوصيل بالتواصل معكِ لتنسيق موعد الاستلام.`;
       break;
 
     case 'تم التوصيل':
-      subject = `تم توصيل طلبك بنجاح! نتمنى لكِ تجربة مميزة مع داندي | ${invoiceCode}`;
+      subject = `تم توصيل طلبك بنجاح | DANDY ${invoiceCode}`;
       badgeText = 'تم التوصيل بنجاح';
-      badgeBg = '#dbeafe';
-      badgeColor = '#1e40af';
-      statusMessage = `
-        <p style="font-size:15px;color:#2b1b2d;line-height:1.7;margin:0 0 16px;">
-          تم تسليم طلبك بنجاح ✨. شكراً لاختياركِ <strong>داندي</strong> وثقتكِ الدائمة بمنتجاتنا الطبيعية! نتمنى أن تنال إعجابكِ وتمنحكِ النتيجة المرجوة.
-        </p>
-        <p style="font-size:14px;color:#666;line-height:1.6;margin:0 0 16px;">
-          نسعد دائماً بمشاركتكِ رأيكِ وتقييمكِ لتجربتكِ مع المنتجات على موقعنا أو عبر صفحاتنا الرسمية!
-        </p>
-      `;
+      badgeBg = '#eff6ff';
+      badgeColor = '#1d4ed8';
+      badgeBorder = '#bfdbfe';
+      heroTitle = 'تم تسليم طلبك بنجاح';
+      statusMessage = 'تم تسجيل اكتمال توصيل طلبك. نتمنى أن تستمتعي بتجربتك مع DANDY.';
+      noteMessage = 'نشكركِ لاختياركِ داندي وثقتكِ الدائمة بمنتجاتنا الطبيعية! نسعد دائماً برأيكِ وتقييمكِ لتجربتكِ.';
       break;
 
     case 'ملغي':
       subject = `تم إلغاء طلبك من داندي | ${invoiceCode}`;
       badgeText = 'طلب ملغي';
-      badgeBg = '#fee2e2';
-      badgeColor = '#991b1b';
-      statusMessage = `
-        <p style="font-size:15px;color:#2b1b2d;line-height:1.7;margin:0 0 16px;">
-          نود إعلامكِ بأنه تم تحديث حالة طلبك ذي الرقم <strong>${escapeHtml(invoiceCode)}</strong> إلى <strong>ملغي</strong> بناءً على رغبتكِ أو لتعذر التواصل.
-        </p>
-        <p style="font-size:14px;color:#666;line-height:1.6;margin:0 0 16px;">
-          إذا كان هذا الإلغاء قد تم عن طريق الخطأ وترغبين في إعادة تفعيل الطلب، نرجو منكِ التواصل معنا مباشرة وسنكون سعداء بخدمتكِ.
-        </p>
-      `;
+      badgeBg = '#fef2f2';
+      badgeColor = '#b91c1c';
+      badgeBorder = '#fecaca';
+      heroTitle = 'تم إلغاء طلبك';
+      statusMessage = 'نود إبلاغك بأنه تم إلغاء طلبك. شكرًا لاهتمامك بمنتجات DANDY.';
+      noteMessage = 'إذا كان هذا الإلغاء قد تم عن طريق الخطأ وترغبين في إعادة تفعيل الطلب، نرجو منكِ التواصل معنا عبر واتساب وسنكون سعداء بخدمتكِ.';
       break;
 
     case 'جديد':
     default:
-      return generateOrderConfirmationEmail(order, orderId);
+      return generateOrderConfirmationEmail(order, orderId, { isDiagnostic: isDiag });
   }
 
-  const financials = calculateOrderFinancials(order);
+  // Build compact products list for status email
+  const compactProductsHtml = financials.products.map(p => {
+    const qty = p.quantity || 1;
+    const name = escapeHtml(p.name || 'منتج داندي');
+    let varInfo = '';
+    if (p.variantName) {
+      varInfo = `<span style="font-size:11px;color:#8e0b4a;"> (${escapeHtml(p.variantName)})</span>`;
+    }
+    return `
+      <div style="padding:4px 0;display:flex;justify-content:space-between;color:#595050;font-size:13px;border-bottom:1px solid #f7f0f4;">
+        <span>• ${name}${varInfo} × ${qty}</span>
+        <strong style="color:#2c2828;">${formatEGP(p.lineTotal)}</strong>
+      </div>
+    `;
+  }).join('');
 
   const bodyContentHtml = `
-    ${statusMessage}
-    <div style="font-weight:bold;color:#2b1b2d;font-size:15px;margin-bottom:8px;">📦 ملخص المنتجات في الطلب:</div>
-    ${buildProductsTableHtml(financials.products)}
-    
-    <!-- Financial Breakdown -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;font-size:14px;border-top:1px solid #f0e6ed;padding-top:10px;">
+    <h1 style="margin:4px 0 10px 0;font-size:20px;font-weight:800;color:#2c2828;line-height:1.4;">${escapeHtml(heroTitle)}</h1>
+    <p style="font-size:15px;color:#2c2828;line-height:1.7;margin:0 0 12px;font-weight:600;">
+      ${escapeHtml(statusMessage)}
+    </p>
+    <p style="font-size:13px;color:#595050;line-height:1.6;margin:0 0 16px;">
+      ${noteMessage}
+    </p>
+
+    <!-- Compact Order Summary Card -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fcf9fb;border:1px solid #f2ebf0;border-radius:10px;margin-bottom:14px;">
       <tr>
-        <td style="padding:4px 0;color:#666;">إجمالي المنتجات:</td>
-        <td style="padding:4px 0;text-align:left;font-weight:bold;color:#2b1b2d;">${formatEGP(financials.subtotal)}</td>
-      </tr>
-      <tr>
-        <td style="padding:4px 0;color:#666;">مصاريف الشحن${gov ? ` (${escapeHtml(gov)})` : ''}:</td>
-        <td style="padding:4px 0;text-align:left;font-weight:bold;color:#2b1b2d;">
-          ${financials.isFreeShipping ? '<span style="color:#166534;background:#dcfce7;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;">شحن مجاني 🎉</span>' : formatEGP(financials.shippingFee)}
-        </td>
-      </tr>
-      <tr style="border-top:1px solid #f0e6ed;">
-        <td style="padding:8px 0;font-weight:bold;font-size:15px;color:#2b1b2d;">
-          المبلغ المطلوب سداده عند الاستلام (COD):
-        </td>
-        <td style="padding:8px 0;text-align:left;font-weight:bold;font-size:17px;color:#fe5d9f;">
-          ${formatEGP(financials.totalAmount)}
+        <td style="padding:14px 16px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;">
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">رقم الفاتورة:</td>
+              <td style="padding:3px 0;font-weight:700;color:#2c2828;text-align:left;" dir="ltr">
+                <span style="background:#ffffff;border:1px solid #ebdbe3;padding:2px 8px;border-radius:4px;">${escapeHtml(invoiceCode)}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">تاريخ الطلب:</td>
+              <td style="padding:3px 0;font-weight:600;color:#595050;text-align:left;">${cairoDateStr}</td>
+            </tr>
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">الحالة الحالية:</td>
+              <td style="padding:3px 0;text-align:left;">
+                <span style="background:${badgeBg};color:${badgeColor};border:1px solid ${badgeBorder};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">${escapeHtml(newStatus)}</span>
+              </td>
+            </tr>
+            ${gov ? `
+            <tr>
+              <td style="padding:3px 0;color:#857979;text-align:right;">وجهة التوصيل:</td>
+              <td style="padding:3px 0;font-weight:600;color:#595050;text-align:left;">${escapeHtml(gov)}${city ? '، ' + escapeHtml(city) : ''}</td>
+            </tr>
+            ` : ''}
+          </table>
+
+          <div style="border-top:1px solid #ebdbe3;margin:10px 0 8px 0;"></div>
+          <div style="font-size:12px;font-weight:700;color:#2c2828;margin-bottom:4px;">ملخص المنتجات:</div>
+          ${compactProductsHtml || '<div style="color:#857979;font-size:12px;">لا توجد تفاصيل للمنتجات</div>'}
+
+          <div style="border-top:1px solid #ebdbe3;margin:8px 0;padding-top:8px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-weight:800;color:#2c2828;font-size:13px;text-align:right;">
+                  ${newStatus === 'ملغي' ? 'إجمالي الطلب الملغي:' : 'المبلغ المطلوب سداده عند الاستلام (COD):'}
+                </td>
+                <td style="font-weight:900;color:#be185d;font-size:16px;text-align:left;">
+                  ${formatEGP(financials.totalAmount)}
+                </td>
+              </tr>
+            </table>
+          </div>
         </td>
       </tr>
     </table>
@@ -719,13 +1031,17 @@ export function generateOrderStatusEmail(
     badgeText,
     badgeBg,
     badgeColor,
+    badgeBorder,
     customerName: order?.name,
     invoiceCode,
     bodyContentHtml,
-    orderId
+    orderId,
+    isDiagnostic: isDiag
   });
 
-  return { subject, htmlBody };
+  const textBody = generateOrderStatusText(order, orderId, newStatus, { isDiagnostic: isDiag });
+
+  return { subject, htmlBody, textBody };
 }
 
 /**
@@ -736,6 +1052,7 @@ export async function dispatchToAppsScriptRelay(params: {
   recipientEmail: string;
   subject: string;
   htmlBody: string;
+  textBody?: string;
   eventType: NotificationEventType;
   orderId: string;
   invoiceCode: string;
@@ -761,6 +1078,7 @@ export async function dispatchToAppsScriptRelay(params: {
     recipientEmail,
     subject,
     htmlBody,
+    textBody,
     eventType,
     orderId,
     invoiceCode,
@@ -814,7 +1132,7 @@ export async function dispatchToAppsScriptRelay(params: {
   const timestamp = Date.now();
   const nonce = 'dny_' + timestamp + '_' + crypto.randomBytes(8).toString('hex');
 
-  const payload = {
+  const payload: any = {
     recipientEmail: recipientEmail.trim(),
     subject: subject.trim(),
     htmlBody,
@@ -822,6 +1140,9 @@ export async function dispatchToAppsScriptRelay(params: {
     orderId,
     invoiceCode
   };
+  if (textBody) {
+    payload.textBody = textBody;
+  }
 
   const payloadJson = canonicalizeJson(payload);
   const signingMessage = `${timestamp}:${nonce}:${notificationId}:${payloadJson}`;
@@ -983,9 +1304,11 @@ export async function sendOrderNotification(params: {
   }
 
   // 4. Generate email content
-  const { subject, htmlBody } = (eventType === 'ORDER_STATUS_CHANGED' && targetStatus !== 'جديد')
+  const emailContent = (eventType === 'ORDER_STATUS_CHANGED' && targetStatus !== 'جديد')
     ? generateOrderStatusEmail(order, orderId, targetStatus)
     : generateOrderConfirmationEmail(order, orderId);
+
+  const { subject, htmlBody, textBody } = emailContent;
 
   // 5. Initial outbox record creation
   const nowIso = new Date().toISOString();
@@ -1027,6 +1350,7 @@ export async function sendOrderNotification(params: {
     recipientEmail: canonicalEmail,
     subject,
     htmlBody,
+    textBody,
     eventType,
     orderId,
     invoiceCode
@@ -1107,7 +1431,15 @@ export async function sendDiagnosticRelayEmail(options: {
   const testType = options.testType === 'ORDER_STATUS_CHANGED' ? 'ORDER_STATUS_CHANGED' : 'ORDER_CONFIRMATION';
   const targetStatus = options.canonicalStatus ? normalizeOrderStatus(options.canonicalStatus) : 'تم الشحن';
   const timestamp = Date.now();
-  const notificationId = `notif_diag_${timestamp}`;
+  const statusSlug = testType === 'ORDER_STATUS_CHANGED'
+    ? (targetStatus === 'قيد التجهيز' ? 'processing'
+      : targetStatus === 'تم الشحن' ? 'shipped'
+      : targetStatus === 'تم التوصيل' ? 'delivered'
+      : targetStatus === 'ملغي' ? 'cancelled'
+      : 'status')
+    : 'confirmation';
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+  const notificationId = `notif_diag_${statusSlug}_${timestamp}_${randomSuffix}`;
   const recipient = FIXED_DIAGNOSTIC_RECIPIENT;
 
   // Synthetic order payload strictly for template rendering in diagnostic test
@@ -1139,12 +1471,12 @@ export async function sendDiagnosticRelayEmail(options: {
     ]
   };
 
-  let emailContent: { subject: string; htmlBody: string };
+  let emailContent: { subject: string; htmlBody: string; textBody: string };
   if (testType === 'ORDER_STATUS_CHANGED') {
-    emailContent = generateOrderStatusEmail(syntheticOrder, `diag_${timestamp}`, targetStatus);
+    emailContent = generateOrderStatusEmail(syntheticOrder, `diag_${timestamp}`, targetStatus, { isDiagnostic: true });
     emailContent.subject = `[فحص تشغيلي - DIAGNOSTIC] ${emailContent.subject}`;
   } else {
-    emailContent = generateOrderConfirmationEmail(syntheticOrder, `diag_${timestamp}`);
+    emailContent = generateOrderConfirmationEmail(syntheticOrder, `diag_${timestamp}`, { isDiagnostic: true });
     emailContent.subject = `[فحص تشغيلي - DIAGNOSTIC] ${emailContent.subject}`;
   }
 
@@ -1153,6 +1485,7 @@ export async function sendDiagnosticRelayEmail(options: {
     recipientEmail: recipient,
     subject: emailContent.subject,
     htmlBody: emailContent.htmlBody,
+    textBody: emailContent.textBody,
     eventType: testType,
     orderId: `diag_${timestamp}`,
     invoiceCode: syntheticOrder.invoiceCode,

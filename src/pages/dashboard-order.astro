@@ -722,14 +722,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     window.triggerEmailDiagnostic = async function() {
-      const confirmDiag = confirm(
+      const choice = prompt(
         "فحص خادم البريد الإلكتروني (Diagnostic Test)\n\n" +
-        "هل ترغب في إرسال بريد تجريبي لفحص اتصال Google Apps Script؟\n" +
-        "• المستلم حصرياً: بريد الإدارة (dandybeauty4@gmail.com)\n" +
-        "• لن يتم تعديل أي طلب، أو خصم مخزون، أو إرسال إشعارات للعملاء.\n" +
-        "• يعمل هذا الفحص حتى مع إيقاف إشعارات العملاء للتأكد من جاهزية النظام."
+        "اختر رقم القالب المراد إرساله لبريد الإدارة حصرياً (dandybeauty4@gmail.com):\n" +
+        "1. تأكيد الطلب والفاتورة (ORDER_CONFIRMATION)\n" +
+        "2. قيد التجهيز (Processing)\n" +
+        "3. تم الشحن (Shipped)\n" +
+        "4. تم التوصيل (Delivered)\n" +
+        "5. ملغي (Cancelled)\n" +
+        "6. فحص جميع قوالب الحالات الـ 4 دفعة واحدة (All 4 Statuses Batch)\n\n" +
+        "أدخل الرقم (1 - 6):",
+        "1"
       );
-      if (!confirmDiag) return;
+      if (!choice) return;
+
+      let reqPayload = {};
+      if (choice.trim() === '1') {
+        reqPayload = { action: 'DIAGNOSTIC_SEND', testType: 'ORDER_CONFIRMATION' };
+      } else if (choice.trim() === '2') {
+        reqPayload = { action: 'DIAGNOSTIC_SEND', testType: 'ORDER_STATUS_CHANGED', canonicalStatus: 'قيد التجهيز' };
+      } else if (choice.trim() === '3') {
+        reqPayload = { action: 'DIAGNOSTIC_SEND', testType: 'ORDER_STATUS_CHANGED', canonicalStatus: 'تم الشحن' };
+      } else if (choice.trim() === '4') {
+        reqPayload = { action: 'DIAGNOSTIC_SEND', testType: 'ORDER_STATUS_CHANGED', canonicalStatus: 'تم التوصيل' };
+      } else if (choice.trim() === '5') {
+        reqPayload = { action: 'DIAGNOSTIC_SEND', testType: 'ORDER_STATUS_CHANGED', canonicalStatus: 'ملغي' };
+      } else if (choice.trim() === '6') {
+        reqPayload = { action: 'DIAGNOSTIC_SEND_ALL_STATUSES' };
+      } else {
+        alert("اختيار غير صالح. يرجى اختيار رقم بين 1 و 6.");
+        return;
+      }
 
       try {
         const user = firebase.auth().currentUser;
@@ -745,16 +768,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + idToken
           },
-          body: JSON.stringify({
-            action: 'DIAGNOSTIC_SEND',
-            testType: 'ORDER_CONFIRMATION'
-          })
+          body: JSON.stringify(reqPayload)
         });
 
         const data = await res.json().catch(() => null);
+
+        if (reqPayload.action === 'DIAGNOSTIC_SEND_ALL_STATUSES') {
+          if (res.ok && data && data.success) {
+            alert(
+              "✅ نجح فحص جميع قوالب الحالات الـ 4 بنجاح!\n\n" +
+              "• عدد الرسائل المرسلة: " + data.count + "\n" +
+              "• المستلم: dandybeauty4@gmail.com\n" +
+              "• الحالات: قيد التجهيز، تم الشحن، تم التوصيل، ملغي\n\n" +
+              "يرجى مراجعة صندوق الوارد في Gmail للتأكد من وصول كافة الرسائل."
+            );
+          } else {
+            alert("⚠️ فشل فحص بعض أو كل القوالب: " + (data?.message || 'خطأ في الترحيل'));
+          }
+          return;
+        }
+
         if (res.ok && data && data.success && data.diagnostic) {
           alert(
             "✅ نجح الاختبار التشغيلي للبريد!\n\n" +
+            "• نوع القالب: " + (data.diagnostic.canonicalStatus || data.diagnostic.testType) + "\n" +
             "• نتيجة الربط: " + data.diagnostic.relayStatus + "\n" +
             "• المستلم: " + data.diagnostic.recipient + "\n" +
             "• كود الإشعار: " + data.diagnostic.notificationId + "\n" +
