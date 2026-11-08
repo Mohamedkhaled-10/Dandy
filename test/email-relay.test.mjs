@@ -1149,5 +1149,363 @@ test('27. Invalid JSON payload after successful signature verification returns 4
   assert.equal(parsed, null, 'Malformed JSON must fail JSON.parse and result in INVALID_PAYLOAD_JSON rejection');
 });
 
+// =============================================================================
+// FINANCIAL ACCURACY & INVOICE INTEGRITY TEST SUITE (Tests 28 - 36)
+// =============================================================================
+
+// ---------------------------------------------------------------------------
+// 28. Financial Test 1: One product priced at 499 EGP, quantity 1
+// ---------------------------------------------------------------------------
+test('28. Financial Test: One product priced at 499 EGP, quantity 1 produces 499 subtotal, 85 Cairo shipping, 584 total', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  const order = {
+    name: 'عميل القاهرة',
+    email: 'cairo.customer@example.com',
+    governorate: 'Cairo',
+    city: 'المعادي',
+    address: 'شارع النصر',
+    invoiceCode: 'DNY-499001',
+    products: [
+      {
+        id: 'serum-vit-c',
+        name: 'سيروم فيتامين سي للتفتيح والنضارة',
+        quantity: 1,
+        price: 499,
+        effectiveUnitPrice: 499,
+        lineTotal: 499
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(order);
+  assert.equal(fin.calculatedSubtotal, 499);
+  assert.equal(fin.subtotal, 499);
+  assert.equal(fin.shippingFee, 85);
+  assert.equal(fin.totalAmount, 584);
+  assert.equal(fin.isFreeShipping, false);
+
+  const email = generateOrderConfirmationEmail(order, 'ord_499');
+  assert.ok(email.htmlBody.includes('499 ج.م'), 'Must display 499 ج.م for line item & subtotal');
+  assert.ok(email.htmlBody.includes('85 ج.م'), 'Must display 85 ج.م for Cairo shipping');
+  assert.ok(email.htmlBody.includes('584 ج.م'), 'Must display 584 ج.م total amount due on delivery');
+  assert.ok(!email.htmlBody.includes('شحن مجاني 🎉'), 'Must not display free shipping for 499 EGP Cairo order');
+});
+
+// ---------------------------------------------------------------------------
+// 29. Financial Test 2: Two products with different prices and quantities
+// ---------------------------------------------------------------------------
+test('29. Financial Test: Two products with different prices and quantities', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  // Product A: 150 EGP × 2 = 300 EGP
+  // Product B: 250 EGP × 1 = 250 EGP
+  // Expected Subtotal: 550 EGP
+  // Governorate: Alexandria (الإسكندرية) -> 85 EGP shipping
+  // Total Amount: 635 EGP
+  const order = {
+    name: 'عميلة الإسكندرية',
+    governorate: 'Alexandria',
+    products: [
+      {
+        id: 'cream-1',
+        name: 'كريم بديل الليزر',
+        quantity: 2,
+        price: 150,
+        effectiveUnitPrice: 150,
+        lineTotal: 300
+      },
+      {
+        id: 'scrub-1',
+        name: 'سكراب القهوة الطبيعي',
+        quantity: 1,
+        price: 250,
+        effectiveUnitPrice: 250,
+        lineTotal: 250
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(order);
+  assert.equal(fin.calculatedSubtotal, 550);
+  assert.equal(fin.subtotal, 550);
+  assert.equal(fin.shippingFee, 85);
+  assert.equal(fin.totalAmount, 635);
+
+  const email = generateOrderConfirmationEmail(order, 'ord_multi');
+  assert.ok(email.htmlBody.includes('300 ج.م'), 'Must display line total 300 ج.م');
+  assert.ok(email.htmlBody.includes('250 ج.م'), 'Must display line total 250 ج.م');
+  assert.ok(email.htmlBody.includes('550 ج.م'), 'Must display subtotal 550 ج.م');
+  assert.ok(email.htmlBody.includes('635 ج.م'), 'Must display total 635 ج.م');
+});
+
+// ---------------------------------------------------------------------------
+// 30. Financial Test 3: Collection / Bundle with effective package price
+// ---------------------------------------------------------------------------
+test('30. Financial Test: Collection/bundle with effective package price', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  // Bundle package price: 450 EGP (contains 3 sub-items), quantity 1
+  const order = {
+    name: 'عميلة الكوليكشن',
+    governorate: 'Gharbia', // 70 EGP
+    products: [
+      {
+        id: 'pink-friday-trio-bundle',
+        name: 'كوليكشن العناية الفائقة الثلاثي',
+        isCollection: true,
+        badgeText: 'كوليكشن Pink Friday',
+        price: 450,
+        effectiveUnitPrice: 450,
+        lineTotal: 450,
+        quantity: 1,
+        items: [
+          { name: 'غسول رغوي مفتح' },
+          { name: 'سيروم نياسيناميد' },
+          { name: 'كريم ترطيب مكثف' }
+        ]
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(order);
+  assert.equal(fin.subtotal, 450);
+  assert.equal(fin.shippingFee, 70); // Gharbia rate
+  assert.equal(fin.totalAmount, 520);
+
+  const email = generateOrderConfirmationEmail(order, 'ord_bundle');
+  assert.ok(email.htmlBody.includes('كوليكشن العناية الفائقة الثلاثي'));
+  assert.ok(email.htmlBody.includes('غسول رغوي مفتح + سيروم نياسيناميد + كريم ترطيب مكثف'), 'Bundle sub-items must be listed');
+  assert.ok(email.htmlBody.includes('450 ج.م'));
+  assert.ok(email.htmlBody.includes('70 ج.م'));
+  assert.ok(email.htmlBody.includes('520 ج.م'));
+});
+
+// ---------------------------------------------------------------------------
+// 31. Financial Test 4: Discounted product with original vs effective price
+// ---------------------------------------------------------------------------
+test('31. Financial Test: Discounted product with original vs effective price', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  const order = {
+    name: 'عميلة العرض',
+    governorate: 'القاهرة',
+    products: [
+      {
+        id: 'serum-discounted',
+        name: 'سيروم الهيالورونيك المركز',
+        price: 600, // Regular original price
+        effectiveUnitPrice: 499, // Discounted promotional price
+        lineTotal: 499,
+        quantity: 1
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(order);
+  assert.equal(fin.subtotal, 499);
+  assert.equal(fin.shippingFee, 85);
+  assert.equal(fin.totalAmount, 584);
+
+  const email = generateOrderConfirmationEmail(order, 'ord_disc');
+  assert.ok(email.htmlBody.includes('del>600 ج.م'), 'Must display original strikethrough price 600 ج.م');
+  assert.ok(email.htmlBody.includes('499 ج.م للقطعة'), 'Must display promotional unit price 499 ج.م');
+  assert.ok(email.htmlBody.includes('584 ج.م'));
+});
+
+// ---------------------------------------------------------------------------
+// 32. Financial Test 5: Free shipping qualification (> 2000 EGP rule)
+// ---------------------------------------------------------------------------
+test('32. Financial Test: Free shipping for order that qualifies under existing rule (> 2000 EGP)', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  // Subtotal 2100 EGP (> 2000 EGP threshold) -> Shipping 0 EGP (Free)
+  const order = {
+    name: 'عميل النخبة',
+    governorate: 'Aswan', // Normal rate is 120, but qualifies for free shipping
+    products: [
+      {
+        name: 'مجموعة العناية الكاملة VIP',
+        price: 2100,
+        effectiveUnitPrice: 2100,
+        lineTotal: 2100,
+        quantity: 1
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(order);
+  assert.equal(fin.subtotal, 2100);
+  assert.equal(fin.shippingFee, 0);
+  assert.equal(fin.totalAmount, 2100);
+  assert.equal(fin.isFreeShipping, true);
+
+  const email = generateOrderConfirmationEmail(order, 'ord_vip');
+  assert.ok(email.htmlBody.includes('شحن مجاني 🎉'), 'Must display free shipping badge for > 2000 EGP');
+  assert.ok(email.htmlBody.includes('2,100 ج.م'));
+});
+
+// ---------------------------------------------------------------------------
+// 33. Financial Test 6: Paid shipping for order that does not qualify (<= 2000 EGP)
+// ---------------------------------------------------------------------------
+test('33. Financial Test: Paid shipping for order that does not qualify (<= 2000 EGP)', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  // Subtotal 1999 EGP (<= 2000 threshold) in Cairo -> Shipping 85 EGP, Total 2084 EGP
+  const order = {
+    name: 'عميل القاهرة',
+    governorate: 'Cairo',
+    products: [
+      {
+        name: 'باقة العناية المتكاملة',
+        price: 1999,
+        effectiveUnitPrice: 1999,
+        lineTotal: 1999,
+        quantity: 1
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(order);
+  assert.equal(fin.subtotal, 1999);
+  assert.equal(fin.shippingFee, 85);
+  assert.equal(fin.totalAmount, 2084);
+  assert.equal(fin.isFreeShipping, false);
+
+  const email = generateOrderConfirmationEmail(order, 'ord_cairo_paid');
+  assert.ok(!email.htmlBody.includes('شحن مجاني 🎉'), 'Must NOT display free shipping for 1999 EGP');
+  assert.ok(email.htmlBody.includes('85 ج.م'), 'Must display 85 ج.م shipping');
+  assert.ok(email.htmlBody.includes('2,084 ج.م'), 'Must display 2,084 ج.م total');
+});
+
+// ---------------------------------------------------------------------------
+// 34. Financial Test 7: Missing or invalid financial field (safe fallback)
+// ---------------------------------------------------------------------------
+test('34. Financial Test: Missing or invalid financial field safely falls back to line-item calculation', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  // subtotal, shippingFee, and totalAmount are omitted completely
+  const orderWithMissingFinancials = {
+    name: 'طلب بحقول ناقصة',
+    governorate: 'Cairo',
+    products: [
+      {
+        name: 'سيروم فيتامين سي',
+        price: 499,
+        quantity: 1
+        // lineTotal is also omitted
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(orderWithMissingFinancials);
+  assert.equal(fin.calculatedSubtotal, 499);
+  assert.equal(fin.subtotal, 499, 'Must fall back to calculated line items instead of 0');
+  assert.equal(fin.shippingFee, 85, 'Must calculate Cairo shipping (85 EGP)');
+  assert.equal(fin.totalAmount, 584, 'Must calculate subtotal + shipping (584 EGP)');
+
+  const email = generateOrderConfirmationEmail(orderWithMissingFinancials, 'ord_missing');
+  assert.ok(email.htmlBody.includes('499 ج.م'), 'Must display calculated 499 ج.م subtotal');
+  assert.ok(email.htmlBody.includes('85 ج.م'), 'Must display calculated 85 ج.م shipping');
+  assert.ok(email.htmlBody.includes('584 ج.م'), 'Must display calculated 584 ج.م total');
+  assert.ok(!email.htmlBody.includes('NaN'), 'Must never render NaN');
+  assert.ok(!email.htmlBody.includes('undefined'), 'Must never render undefined');
+});
+
+// ---------------------------------------------------------------------------
+// 35. Financial Test 8: Zero subtotal with nonzero line items (safe recalculation)
+// ---------------------------------------------------------------------------
+test('35. Financial Test: Zero subtotal with nonzero line items safely recalculated without defaulting to 0', async () => {
+  const { calculateOrderFinancials, generateOrderConfirmationEmail } = await import('../src/utils/email-service.ts');
+
+  // Order explicitly has subtotal: 0 and totalAmount: 0, but valid 499 EGP line item exists
+  const orderWithZeroSubtotal = {
+    name: 'طلب بسعر صفر خاطئ',
+    governorate: 'Cairo',
+    subtotal: 0, // Inadvertently set to 0
+    totalAmount: 0, // Inadvertently set to 0
+    products: [
+      {
+        name: 'سيروم فيتامين سي',
+        price: 499,
+        quantity: 1,
+        lineTotal: 499
+      }
+    ]
+  };
+
+  const fin = calculateOrderFinancials(orderWithZeroSubtotal);
+  assert.equal(fin.subtotal, 499, 'Safe fallback must recalculate 499 EGP and NOT default to 0 EGP');
+  assert.equal(fin.shippingFee, 85);
+  assert.equal(fin.totalAmount, 584);
+
+  const email = generateOrderConfirmationEmail(orderWithZeroSubtotal, 'ord_zero_fix');
+  assert.ok(email.htmlBody.includes('499 ج.م'), 'Must display 499 ج.م subtotal');
+  assert.ok(email.htmlBody.includes('85 ج.م'), 'Must display 85 ج.م shipping');
+  assert.ok(email.htmlBody.includes('584 ج.م'), 'Must display 584 ج.م total');
+});
+
+// ---------------------------------------------------------------------------
+// 36. Final Verification: Synthetic diagnostic email to owner verifies exact Cairo financials
+// ---------------------------------------------------------------------------
+test('36. Final Verification: sendDiagnosticRelayEmail sends synthetic email with exact Cairo financials (499 + 85 = 584)', async () => {
+  const { sendDiagnosticRelayEmail, FIXED_DIAGNOSTIC_RECIPIENT } = await import('../src/utils/email-service.ts');
+
+  const origEnv = { ...process.env };
+  const origFetch = globalThis.fetch;
+
+  process.env.GMAIL_NOTIFICATIONS_ENABLED = 'false';
+  process.env.GMAIL_RELAY_URL = 'https://script.google.com/macros/s/AKfycb_final_verif/exec';
+  process.env.GMAIL_RELAY_SECRET = 'secret_test_final_verif';
+
+  let capturedEnvelope = null;
+
+  globalThis.fetch = async (url, options) => {
+    capturedEnvelope = JSON.parse(options.body);
+    return new Response(JSON.stringify({
+      success: true,
+      status: 'accepted_by_mailapp',
+      notificationId: capturedEnvelope.notificationId,
+      remainingQuota: 90
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+
+  try {
+    const result = await sendDiagnosticRelayEmail({ testType: 'ORDER_CONFIRMATION' });
+
+    assert.equal(result.success, true);
+    assert.equal(result.diagnostic.relayStatus, 'accepted_by_mailapp');
+    assert.equal(result.diagnostic.recipient, FIXED_DIAGNOSTIC_RECIPIENT);
+    assert.equal(result.diagnostic.recipient, 'dandybeauty4@gmail.com');
+    assert.equal(result.diagnostic.customerNotificationsActive, false, 'Must keep GMAIL_NOTIFICATIONS_ENABLED=false');
+
+    // Inspect the generated payloadJson and rendered HTML
+    assert.ok(capturedEnvelope);
+    const payload = JSON.parse(capturedEnvelope.payloadJson);
+    const html = payload.htmlBody;
+
+    // 1. Product row total matches subtotal: 499 EGP
+    assert.ok(html.includes('499 ج.م'), 'Product row and subtotal must contain 499 ج.م');
+
+    // 2. Cairo shipping is 85 EGP (NOT free)
+    assert.ok(html.includes('85 ج.م'), 'Shipping must contain 85 ج.م');
+    assert.ok(!html.includes('شحن مجاني 🎉'), 'Must NOT display free shipping for 499 EGP Cairo order');
+
+    // 3. Grand total / amount due on delivery is 584 EGP
+    assert.ok(html.includes('584 ج.م'), 'Total amount due on delivery must be 584 ج.م');
+
+    // 4. Cash on delivery clearly noted (does not imply online payment)
+    assert.ok(html.includes('الدفع نقداً عند استلام الشحنة (COD)'));
+
+    // 5. No financial field is blank
+    assert.ok(!html.includes('NaN'), 'No field can be NaN');
+    assert.ok(!html.includes('undefined'), 'No field can be undefined');
+    assert.ok(!html.includes('null'), 'No field can be null');
+  } finally {
+    process.env = origEnv;
+    globalThis.fetch = origFetch;
+  }
+});
+
 
 
