@@ -240,7 +240,11 @@ html.menu-open nav.bottom-nav {
   opacity: 0 !important;
   pointer-events: none !important;
 }
-
+body.menu-open .whatsapp-widget,
+html.menu-open .whatsapp-widget {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 .menubar .close-menu {
   font-size: 1.5rem; color: var(--color-blush); background: none; border: none; cursor: pointer; margin-bottom: 20px;
 }
@@ -342,7 +346,48 @@ footer .copyright a { text-decoration: underline; color: inherit; }
   height: 20px;
 }
 
-
+/* Floating WhatsApp Widget - Cleanly positioned inside viewport, clearly separated from edges */
+.whatsapp-widget {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  left: auto !important;
+  display: flex;
+  align-items: center;
+  z-index: 990 !important;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  transform: none !important;
+}
+@media (max-width: 767px) {
+  .whatsapp-widget {
+    bottom: calc(60px + 16px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 16px !important;
+  }
+}
+.whatsapp-widget.open {
+  transform: none !important;
+}
+.whatsapp-handle {
+  display: none !important;
+}
+.whatsapp-float {
+  width: 50px;
+  height: 50px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  position: relative;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+}
+.whatsapp-float:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.4);
+}
 
 
 

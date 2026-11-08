@@ -3,8 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="لوحة ذكاء الأعمال والتحليلات المتقدمة | Dandy Business Intelligence"
-  description="مركز التحليلات المتقدمة لمبيعات وعمليات ومخزون متجر داندي"
+  title="إحصائيات العمليات | Dandy Operations"
+  description="إحصائيات وقراءات حية لتدفق عمليات متجر داندي وأداء خوادم وقواعد البيانات"
   robots="noindex, nofollow"
   showHeader={false}
   showFooter={false}
@@ -13,1206 +13,277 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <slot name="head" slot="head">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <style is:global>
-      :root {
-        --bi-primary: #fe5d9f;
-        --bi-primary-dark: #db2777;
-        --bi-primary-light: #fdf2f8;
-        --bi-slate-900: #0f172a;
-        --bi-slate-800: #1e293b;
-        --bi-slate-700: #334155;
-        --bi-slate-600: #475569;
-        --bi-slate-500: #64748b;
-        --bi-slate-200: #e2e8f0;
-        --bi-slate-100: #f1f5f9;
-        --bi-slate-50: #f8fafc;
-        --bi-emerald: #10b981;
-        --bi-amber: #f59e0b;
-        --bi-rose: #f43f5e;
-        --bi-blue: #0284c7;
-        --bi-indigo: #6366f1;
-        --bi-card-radius: 12px;
-      }
-
-      body {
-        background-color: #f8fafc;
-      }
-
-      .bi-dashboard-wrapper {
-        max-width: 1440px;
+      .analytics-sec {
+        padding: 32px 20px 80px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 24px 20px 80px;
-        direction: rtl;
-        font-family: 'Cairo', system-ui, -apple-system, sans-serif;
-        color: var(--bi-slate-800);
       }
 
-      /* Header & Controls */
-      .bi-header {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 24px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--bi-slate-200);
-      }
-
-      .bi-title-group h1 {
-        font-size: 1.6rem;
-        font-weight: 800;
-        color: var(--bi-slate-900);
-        margin: 0 0 6px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .bi-title-group p {
-        font-size: 0.9rem;
-        color: var(--bi-slate-500);
-        margin: 0;
-      }
-
-      .bi-header-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .bi-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 16px;
-        border-radius: 8px;
-        font-size: 0.88rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: 1px solid transparent;
-        font-family: inherit;
-      }
-
-      .bi-btn-secondary {
-        background: #ffffff;
-        border-color: var(--bi-slate-200);
-        color: var(--bi-slate-700);
-      }
-      .bi-btn-secondary:hover {
-        background: var(--bi-slate-50);
-        border-color: var(--bi-slate-300);
-        color: var(--bi-slate-900);
-      }
-
-      .bi-btn-primary {
-        background: var(--bi-primary-dark);
-        color: #ffffff;
-      }
-      .bi-btn-primary:hover {
-        background: #be185d;
-      }
-
-      /* Toolbar: Time Range Filters */
-      .bi-toolbar {
-        background: #ffffff;
-        border: 1px solid var(--bi-slate-200);
-        border-radius: var(--bi-card-radius);
-        padding: 14px 18px;
-        margin-bottom: 24px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-      }
-
-      .bi-filter-group {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      .bi-filter-label {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--bi-slate-600);
-        margin-left: 6px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .bi-pill-btn {
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 0.83rem;
-        font-weight: 700;
-        background: var(--bi-slate-100);
-        color: var(--bi-slate-600);
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        font-family: inherit;
-      }
-      .bi-pill-btn:hover {
-        background: #e2e8f0;
-        color: var(--bi-slate-900);
-      }
-      .bi-pill-btn.active {
-        background: var(--bi-slate-900);
-        color: #ffffff;
-      }
-
-      .bi-custom-dates {
-        display: none;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 4px;
-        padding-top: 10px;
-        width: 100%;
-        border-top: 1px dashed var(--bi-slate-200);
-      }
-      .bi-custom-dates.show {
-        display: flex;
-      }
-
-      .bi-custom-dates input[type="date"] {
-        padding: 6px 10px;
-        border-radius: 6px;
-        border: 1px solid var(--bi-slate-200);
-        font-family: inherit;
-        font-size: 0.85rem;
-        color: var(--bi-slate-800);
-      }
-
-      .bi-period-badge {
-        font-size: 0.82rem;
-        color: var(--bi-slate-500);
-        background: var(--bi-slate-50);
-        padding: 6px 12px;
-        border-radius: 6px;
-        border: 1px solid var(--bi-slate-200);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      /* Tabs Navigation */
-      .bi-tabs-nav {
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-        padding-bottom: 8px;
-        margin-bottom: 24px;
-        border-bottom: 1px solid var(--bi-slate-200);
-        scrollbar-width: thin;
-      }
-
-      .bi-tab-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: 8px 8px 0 0;
-        background: transparent;
-        color: var(--bi-slate-600);
-        font-size: 0.9rem;
-        font-weight: 700;
-        border: none;
-        border-bottom: 3px solid transparent;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s ease;
-        font-family: inherit;
-      }
-      .bi-tab-btn:hover {
-        color: var(--bi-slate-900);
-        background: rgba(254, 93, 159, 0.05);
-      }
-      .bi-tab-btn.active {
-        color: var(--bi-primary-dark);
-        border-bottom-color: var(--bi-primary-dark);
-        background: #ffffff;
-      }
-
-      /* Sections & Grid */
-      .bi-tab-content {
-        display: none;
-        animation: biFadeIn 0.2s ease-in-out;
-      }
-      .bi-tab-content.active {
-        display: block;
-      }
-
-      @keyframes biFadeIn {
-        from { opacity: 0; transform: translateY(4px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      /* KPI Cards Grid */
-      .bi-kpi-grid {
+      .stat-card-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
+        gap: 14px;
         margin-bottom: 24px;
       }
-      .bi-kpi-grid.cols-3 {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      .bi-kpi-grid.cols-5 {
-        grid-template-columns: repeat(5, 1fr);
-      }
 
-      .bi-kpi-card {
-        background: #ffffff;
-        border: 1px solid var(--bi-slate-200);
-        border-radius: var(--bi-card-radius);
-        padding: 18px 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      .single-stat-panel {
+        background: var(--color-surface, #ffffff);
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: var(--border-radius-md, 8px);
+        padding: 16px 20px;
+        text-align: right;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        position: relative;
-        overflow: hidden;
       }
 
-      .bi-kpi-card.highlight {
-        border-right: 4px solid var(--bi-primary-dark);
-      }
-      .bi-kpi-card.success-highlight {
-        border-right: 4px solid var(--bi-emerald);
-      }
-      .bi-kpi-card.amber-highlight {
-        border-right: 4px solid var(--bi-amber);
-      }
-      .bi-kpi-card.blue-highlight {
-        border-right: 4px solid var(--bi-blue);
-      }
-
-      .bi-kpi-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 8px;
-      }
-
-      .bi-kpi-title {
-        font-size: 0.83rem;
-        font-weight: 700;
-        color: var(--bi-slate-500);
-        margin: 0;
+      .single-stat-panel h4 {
+        font-size: 0.8rem;
+        color: var(--color-muted, #6b7280);
+        margin-bottom: 4px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: 6px;
       }
 
-      .bi-kpi-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.95rem;
-      }
-
-      .bi-kpi-value {
-        font-size: 1.65rem;
+      .single-stat-panel .stat-num {
+        font-size: 1.5rem;
         font-weight: 800;
-        color: var(--bi-slate-900);
-        margin: 4px 0 6px;
-        letter-spacing: -0.5px;
+        color: var(--color-primary, #111827);
+        margin: 2px 0;
       }
 
-      .bi-kpi-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 0.78rem;
-        color: var(--bi-slate-500);
-        padding-top: 8px;
-        border-top: 1px solid var(--bi-slate-100);
+      .single-stat-panel.highlight-panel {
+        background: #ffffff;
+        border-color: #111827;
+      }
+      .single-stat-panel.highlight-panel .stat-num {
+        color: #111827;
       }
 
-      .bi-trend-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-weight: 700;
-        font-size: 0.78rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-      }
-      .bi-trend-badge.up {
-        background: #ecfdf5;
-        color: #047857;
-      }
-      .bi-trend-badge.down {
-        background: #fff1f2;
-        color: #be123c;
-      }
-      .bi-trend-badge.neutral {
-        background: var(--bi-slate-100);
-        color: var(--bi-slate-600);
-      }
-
-      /* Chart Cards */
-      .bi-charts-grid {
+      .analytics-charts-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 20px;
         margin-bottom: 24px;
       }
-      .bi-charts-grid.single-col {
-        grid-template-columns: 1fr;
-      }
-      .bi-charts-grid.two-to-one {
-        grid-template-columns: 2fr 1fr;
+
+      @media (max-width: 900px) {
+        .stat-card-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .analytics-charts-grid {
+          grid-template-columns: 1fr;
+        }
       }
 
-      .bi-card {
+      @media (max-width: 640px) {
+        .stat-card-grid {
+          grid-template-columns: 1fr;
+        }
+        .analytics-sec {
+          padding: 20px 14px 60px;
+        }
+      }
+
+      .analytics-card {
         background: #ffffff;
-        border: 1px solid var(--bi-slate-200);
-        border-radius: var(--bi-card-radius);
+        border: 1px solid var(--border-light, #e5e7eb);
+        border-radius: var(--border-radius-md, 8px);
         padding: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
       }
 
-      .bi-card-header {
+      .analytics-card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 18px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--bi-slate-100);
+        margin-bottom: 16px;
+        border-bottom: 1px solid var(--border-light, #f3f4f6);
+        padding-bottom: 10px;
       }
 
-      .bi-card-title {
-        font-size: 1rem;
-        font-weight: 800;
-        color: var(--bi-slate-900);
+      .analytics-card-header h3 {
+        font-size: 0.95rem;
+        color: var(--color-primary, #111827);
         margin: 0;
+        font-weight: 700;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
       }
 
-      .bi-card-subtitle {
-        font-size: 0.8rem;
-        color: var(--bi-slate-500);
-      }
-
-      .bi-chart-box {
+      .chart-container-box {
         position: relative;
-        height: 300px;
+        height: 280px;
         width: 100%;
       }
 
-      /* Data Tables */
-      .bi-table-responsive {
+      .top-products-table-box {
         overflow-x: auto;
-        border-radius: 8px;
-        border: 1px solid var(--bi-slate-200);
       }
 
-      .bi-table {
+      .top-prod-table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+
+      .top-prod-table th {
+        background: #f8fafc;
+        color: #475569;
         text-align: right;
-        font-size: 0.88rem;
-      }
-
-      .bi-table th {
-        background: var(--bi-slate-50);
-        color: var(--bi-slate-700);
+        padding: 12px 14px;
         font-weight: 700;
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--bi-slate-200);
-        white-space: nowrap;
+        border-bottom: 1px solid #e2e8f0;
       }
 
-      .bi-table td {
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--bi-slate-100);
-        color: var(--bi-slate-700);
-        vertical-align: middle;
+      .top-prod-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
       }
 
-      .bi-table tr:hover {
-        background: var(--bi-slate-50);
+      .top-prod-table tr:hover {
+        background: #fdf2f8;
       }
 
-      .bi-rank {
+      .rank-badge {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         width: 24px;
         height: 24px;
-        border-radius: 6px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #475569;
         font-weight: 800;
         font-size: 0.8rem;
-        background: var(--bi-slate-100);
-        color: var(--bi-slate-700);
       }
-      .bi-rank-1 { background: #fef3c7; color: #b45309; }
-      .bi-rank-2 { background: #e2e8f0; color: #334155; }
-      .bi-rank-3 { background: #ffedd5; color: #c2410c; }
+      .rank-1 { background: #fef08a; color: #854d0e; }
+      .rank-2 { background: #e2e8f0; color: #334155; }
+      .rank-3 { background: #fed7aa; color: #9a3412; }
 
-      .bi-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 0.78rem;
+      .qty-pill {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 4px 10px;
+        border-radius: 99px;
         font-weight: 700;
-      }
-      .bi-tag-emerald { background: #ecfdf5; color: #047857; }
-      .bi-tag-amber { background: #fffbeb; color: #b45309; }
-      .bi-tag-blue { background: #f0f9ff; color: #0369a1; }
-      .bi-tag-rose { background: #fff1f2; color: #be123c; }
-      .bi-tag-gray { background: var(--bi-slate-100); color: var(--bi-slate-600); }
-
-      /* Fulfillment Funnel */
-      .bi-funnel-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
+        font-size: 0.85rem;
       }
 
-      .bi-funnel-step {
-        background: #ffffff;
-        border: 1px solid var(--bi-slate-200);
-        border-radius: 10px;
-        padding: 14px;
-        text-align: center;
-        position: relative;
-      }
-
-      .bi-funnel-step-num {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--bi-slate-900);
-        margin: 4px 0;
-      }
-
-      .bi-funnel-step-label {
-        font-size: 0.82rem;
-        color: var(--bi-slate-600);
-        font-weight: 700;
-      }
-
-      .bi-funnel-step-pct {
-        font-size: 0.75rem;
-        color: var(--bi-slate-500);
-      }
-
-      /* Diagnostics / Health Cards */
-      .bi-health-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 24px;
-      }
-
-      .bi-log-console {
-        background: #090d16;
-        color: #10b981;
-        font-family: 'Consolas', 'Monaco', monospace;
-        font-size: 0.82rem;
-        line-height: 1.6;
+      .sys-logs-box {
+        background: #111;
+        color: #39FF14;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 24px;
+        border-radius: var(--border-radius-md, 12px);
         direction: ltr;
         text-align: left;
-        padding: 18px;
-        border-radius: 8px;
-        max-height: 260px;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        max-height: 240px;
         overflow-y: auto;
-        border: 1px solid #1e293b;
-      }
-
-      /* Modal or Dropdown for Export */
-      .bi-export-menu {
-        position: relative;
-        display: inline-block;
-      }
-      .bi-export-dropdown {
-        display: none;
-        position: absolute;
-        left: 0;
-        top: 100%;
-        margin-top: 6px;
-        background: #ffffff;
-        border: 1px solid var(--bi-slate-200);
-        border-radius: 8px;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        z-index: 50;
-        min-width: 220px;
-        padding: 6px;
-      }
-      .bi-export-dropdown.show {
-        display: block;
-      }
-      .bi-export-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 6px;
-        color: var(--bi-slate-700);
-        font-size: 0.84rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.15s;
-        border: none;
-        background: none;
-        width: 100%;
-        text-align: right;
-        font-family: inherit;
-      }
-      .bi-export-item:hover {
-        background: var(--bi-slate-100);
-        color: var(--bi-slate-900);
-      }
-
-      /* Responsive Breakpoints */
-      @media (max-width: 1200px) {
-        .bi-kpi-grid { grid-template-columns: repeat(2, 1fr); }
-        .bi-kpi-grid.cols-5 { grid-template-columns: repeat(3, 1fr); }
-        .bi-funnel-grid { grid-template-columns: repeat(3, 1fr); }
-        .bi-health-grid { grid-template-columns: 1fr; }
-      }
-
-      @media (max-width: 768px) {
-        .bi-dashboard-wrapper { padding: 16px 12px 60px; }
-        .bi-kpi-grid, .bi-kpi-grid.cols-3, .bi-kpi-grid.cols-5 { grid-template-columns: 1fr; }
-        .bi-charts-grid, .bi-charts-grid.two-to-one { grid-template-columns: 1fr; }
-        .bi-funnel-grid { grid-template-columns: repeat(2, 1fr); }
-        .bi-header { flex-direction: column; align-items: stretch; }
-        .bi-header-actions { justify-content: flex-start; }
-      }
-
-      /* Loading State */
-      .bi-loading-overlay {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 60px 20px;
-        color: var(--bi-slate-500);
-      }
-      .bi-spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid var(--bi-slate-200);
-        border-top-color: var(--bi-primary-dark);
-        border-radius: 50%;
-        animation: biSpin 0.8s linear infinite;
-        margin-bottom: 12px;
-      }
-      @keyframes biSpin {
-        to { transform: rotate(360deg); }
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
     </style>
   </slot>
 
-  <div class="bi-dashboard-wrapper">
-    <!-- Header -->
-    <header class="bi-header">
-      <div class="bi-title-group">
-        <h1>
-          <i class="fas fa-chart-line" style="color: var(--bi-primary-dark);"></i>
-          لوحة ذكاء الأعمال والتحليلات المؤسسية
-        </h1>
-        <p>رؤى وتحليلات الأداء المالي، اللوجستي، وسلوك العملاء لمتجر DANDY</p>
-      </div>
-      <div class="bi-header-actions">
-        <button class="bi-btn bi-btn-secondary" id="btn-refresh" title="إعادة تحميل البيانات">
-          <i class="fas fa-sync-alt" id="refresh-icon"></i>
-          <span>تحديث مباشر</span>
-        </button>
-
-        <div class="bi-export-menu">
-          <button class="bi-btn bi-btn-primary" id="btn-export-toggle">
-            <i class="fas fa-download"></i>
-            <span>تصدير البيانات (CSV)</span>
-            <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
-          </button>
-          <div class="bi-export-dropdown" id="export-dropdown">
-            <button class="bi-export-item" id="export-orders-btn">
-              <i class="fas fa-file-invoice" style="color:var(--bi-primary-dark);"></i>
-              تصدير الطلبات المفلترة
-            </button>
-            <button class="bi-export-item" id="export-products-btn">
-              <i class="fas fa-boxes" style="color:var(--bi-blue);"></i>
-              تصدير أداء المنتجات
-            </button>
-            <button class="bi-export-item" id="export-governorates-btn">
-              <i class="fas fa-map-marked-alt" style="color:var(--bi-emerald);"></i>
-              تصدير مبيعات المحافظات
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Time Filter Toolbar -->
-    <section class="bi-toolbar">
-      <div class="bi-filter-group">
-        <span class="bi-filter-label"><i class="far fa-calendar-alt"></i> النطاق الزمني:</span>
-        <button class="bi-pill-btn" data-period="today">اليوم</button>
-        <button class="bi-pill-btn active" data-period="7d">آخر 7 أيام</button>
-        <button class="bi-pill-btn" data-period="30d">آخر 30 يوم</button>
-        <button class="bi-pill-btn" data-period="90d">آخر 90 يوم</button>
-        <button class="bi-pill-btn" data-period="this_month">هذا الشهر</button>
-        <button class="bi-pill-btn" data-period="last_month">الشهر السابق</button>
-        <button class="bi-pill-btn" data-period="all">كل الأوقات</button>
-        <button class="bi-pill-btn" data-period="custom">مخصص...</button>
-      </div>
-
-      <div class="bi-period-badge" id="period-display-badge">
-        <i class="fas fa-clock"></i>
-        <span id="period-text-info">جاري الحساب...</span>
-      </div>
-
-      <!-- Custom Date Pickers -->
-      <div class="bi-custom-dates" id="custom-dates-bar">
-        <label style="font-size:0.83rem; font-weight:700;">من تاريخ:</label>
-        <input type="date" id="custom-start-date" />
-        <label style="font-size:0.83rem; font-weight:700;">إلى تاريخ:</label>
-        <input type="date" id="custom-end-date" />
-        <button class="bi-btn bi-btn-primary" style="padding:6px 14px; font-size:0.82rem;" id="apply-custom-dates">تطبيق النطاق</button>
-      </div>
-    </section>
-
-    <!-- Navigation Tabs -->
-    <nav class="bi-tabs-nav" id="bi-tabs">
-      <button class="bi-tab-btn active" data-tab="tab-overview">
-        <i class="fas fa-tachometer-alt"></i> نظرة عامة وتنفيذية
-      </button>
-      <button class="bi-tab-btn" data-tab="tab-revenue">
-        <i class="fas fa-coins"></i> المبيعات والإيرادات
-      </button>
-      <button class="bi-tab-btn" data-tab="tab-fulfillment">
-        <i class="fas fa-shipping-fast"></i> الطلبات والعمليات
-      </button>
-      <button class="bi-tab-btn" data-tab="tab-inventory">
-        <i class="fas fa-boxes"></i> المنتجات والمخزون
-      </button>
-      <button class="bi-tab-btn" data-tab="tab-customers">
-        <i class="fas fa-users"></i> ذكاء العملاء
-      </button>
-      <button class="bi-tab-btn" data-tab="tab-marketing">
-        <i class="fas fa-bullhorn"></i> الحملات والعروض
-      </button>
-      <button class="bi-tab-btn" data-tab="tab-health">
-        <i class="fas fa-heartbeat"></i> سلامة البيانات
-      </button>
-    </nav>
-
-    <!-- Main Container: Loading state -->
-    <div id="bi-loading" class="bi-loading-overlay">
-      <div class="bi-spinner"></div>
-      <p style="font-weight:700;">جاري استخراج وتجميع مؤشرات الأداء الحية من قاعدة البيانات...</p>
+  <section class="analytics-sec container">
+    <div class="section-header" style="text-align: right; margin-bottom: 30px;">
+      <span class="sub">تحليلات المبيعات والأداء الحية</span>
+      <h2>مؤشرات التجارة وبصمة تدفق متجر داندي</h2>
     </div>
 
-    <!-- MAIN DASHBOARD CONTENT -->
-    <main id="bi-content" style="display:none;">
+    <!-- Stat KPI Panels -->
+    <div class="stat-card-grid">
+      <div class="single-stat-panel highlight-panel">
+        <h4><i class="fas fa-coins" style="color:var(--color-blush);"></i> إجمالي الإيرادات الفعالة</h4>
+        <div class="stat-num" id="stat-revenue">0 ج.م</div>
+        <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">مجموع المبيعات (باستثناء الطلبات الملغاة).</p>
+      </div>
 
-      <!-- TAB 1: EXECUTIVE OVERVIEW -->
-      <section class="bi-tab-content active" id="tab-overview">
-        <!-- 4 Key Executive KPIs -->
-        <div class="bi-kpi-grid">
-          <div class="bi-kpi-card success-highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-check-circle" style="color:var(--bi-emerald);"></i> الإيرادات المحصلة الفعلية</span>
-              <div class="bi-kpi-icon" style="background:#ecfdf5; color:var(--bi-emerald);"><i class="fas fa-hand-holding-usd"></i></div>
-            </div>
-            <div class="bi-kpi-value" id="kpi-delivered-revenue">0 ج.م</div>
-            <div class="bi-kpi-footer">
-              <span>للطلبات المسلمة والمكتملة</span>
-              <span class="bi-trend-badge" id="trend-delivered-rev">--</span>
-            </div>
-          </div>
+      <div class="single-stat-panel">
+        <h4><i class="fas fa-shopping-bag" style="color:#0284c7;"></i> إجمالي فواتير الطلبات</h4>
+        <div class="stat-num" id="stat-orders">0</div>
+        <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">إجمالي الطلبات المسجلة بقاعدة البيانات.</p>
+      </div>
 
-          <div class="bi-kpi-card highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-receipt" style="color:var(--bi-primary-dark);"></i> صافي الطلبات النشطة</span>
-              <div class="bi-kpi-icon" style="background:var(--bi-primary-light); color:var(--bi-primary-dark);"><i class="fas fa-wallet"></i></div>
-            </div>
-            <div class="bi-kpi-value" id="kpi-active-revenue">0 ج.م</div>
-            <div class="bi-kpi-footer">
-              <span>جميع الطلبات عدا الملغاة</span>
-              <span class="bi-trend-badge" id="trend-active-rev">--</span>
-            </div>
-          </div>
+      <div class="single-stat-panel">
+        <h4><i class="fas fa-boxes" style="color:#16a34a;"></i> إجمالي مستحضرات الرفوف</h4>
+        <div class="stat-num" id="stat-products">0</div>
+        <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">المنتجات المتاحة للتوصيل والعروض الحالية.</p>
+      </div>
 
-          <div class="bi-kpi-card blue-highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-shopping-bag" style="color:var(--bi-blue);"></i> إجمالي عدد الطلبات</span>
-              <div class="bi-kpi-icon" style="background:#f0f9ff; color:var(--bi-blue);"><i class="fas fa-box"></i></div>
-            </div>
-            <div class="bi-kpi-value" id="kpi-total-orders">0</div>
-            <div class="bi-kpi-footer">
-              <span id="kpi-active-orders-count">0 طلب نشط</span>
-              <span class="bi-trend-badge" id="trend-total-orders">--</span>
-            </div>
-          </div>
+      <div class="single-stat-panel">
+        <h4><i class="fas fa-signal" style="color:#9333ea;"></i> معدل سرعة الاستجابة</h4>
+        <div class="stat-num">99.8%</div>
+        <p style="font-size:0.8rem; color:var(--color-muted); margin-top:4px;">سرعة اتصال الخوادم وتدفق مقابس RTDB.</p>
+      </div>
+    </div>
 
-          <div class="bi-kpi-card amber-highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-calculator" style="color:var(--bi-amber);"></i> متوسط قيمة الطلب (AOV)</span>
-              <div class="bi-kpi-icon" style="background:#fffbeb; color:var(--bi-amber);"><i class="fas fa-tag"></i></div>
-            </div>
-            <div class="bi-kpi-value" id="kpi-aov">0 ج.م</div>
-            <div class="bi-kpi-footer">
-              <span>للطلبات غير الملغاة</span>
-              <span class="bi-trend-badge" id="trend-aov">--</span>
-            </div>
-          </div>
+    <!-- Charts Row: Timeline and Status Distribution -->
+    <div class="analytics-charts-grid">
+      <!-- Revenue Timeline Chart -->
+      <div class="analytics-card">
+        <div class="analytics-card-header">
+          <h3><i class="fas fa-chart-line" style="color:var(--color-blush);"></i> الإيرادات عبر الوقت (يوميًا)</h3>
+          <span style="font-size:0.8rem; color:#64748b;">تراكم المبيعات اليومية</span>
         </div>
-
-        <!-- Charts Row: Velocity Trend & Status Donut -->
-        <div class="bi-charts-grid two-to-one">
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-chart-line" style="color:var(--bi-primary-dark);"></i> وتيرة المبيعات اليومية (مقارنة بالفترة السابقة)</h3>
-                <span class="bi-card-subtitle">الخط المتصل: الفترة الحالية | الخط المنقط: الفترة المماثلة السابقة</span>
-              </div>
-            </div>
-            <div class="bi-chart-box">
-              <canvas id="overviewVelocityChart"></canvas>
-            </div>
-          </div>
-
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-chart-pie" style="color:var(--bi-blue);"></i> توزيع حالات الطلبات</h3>
-                <span class="bi-card-subtitle">توزيع نسب الطلبات المفلترة</span>
-              </div>
-            </div>
-            <div class="bi-chart-box">
-              <canvas id="overviewStatusChart"></canvas>
-            </div>
-          </div>
+        <div class="chart-container-box">
+          <canvas id="revenueLineChart"></canvas>
         </div>
+      </div>
 
-        <!-- Quick Summary Mini Cards -->
-        <div class="bi-kpi-grid cols-3">
-          <div class="bi-card" style="padding:16px;">
-            <div style="font-size:0.83rem; font-weight:700; color:var(--bi-slate-500); margin-bottom:4px;">معدل نجاح التوصيل</div>
-            <div style="font-size:1.4rem; font-weight:800; color:var(--bi-emerald);" id="kpi-delivery-rate">0%</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:4px;">الطلبات المسلمة من إجمالي الطلبات</div>
-          </div>
-
-          <div class="bi-card" style="padding:16px;">
-            <div style="font-size:0.83rem; font-weight:700; color:var(--bi-slate-500); margin-bottom:4px;">معدل الإلغاء</div>
-            <div style="font-size:1.4rem; font-weight:800; color:var(--bi-rose);" id="kpi-cancellation-rate">0%</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:4px;">الطلبات الملغاة من إجمالي الطلبات</div>
-          </div>
-
-          <div class="bi-card" style="padding:16px;">
-            <div style="font-size:0.83rem; font-weight:700; color:var(--bi-slate-500); margin-bottom:4px;">متوسط سلة المشتريات</div>
-            <div style="font-size:1.4rem; font-weight:800; color:var(--bi-slate-800);" id="kpi-basket-size">0 قطعة</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:4px;">متوسط عدد المنتجات في الطلب الواحد</div>
-          </div>
+      <!-- Order Status Breakdown Pie Chart -->
+      <div class="analytics-card">
+        <div class="analytics-card-header">
+          <h3><i class="fas fa-chart-pie" style="color:#0284c7;"></i> توزيع حالات الطلبات</h3>
+          <span style="font-size:0.8rem; color:#64748b;">حسب حالة المعالجة</span>
         </div>
-      </section>
-
-      <!-- TAB 2: SALES & REVENUE -->
-      <section class="bi-tab-content" id="tab-revenue">
-        <div class="bi-kpi-grid cols-5">
-          <div class="bi-kpi-card">
-            <span class="bi-kpi-title">إجمالي المسجل (Gross)</span>
-            <div class="bi-kpi-value" style="font-size:1.35rem;" id="rev-gross-val">0 ج.م</div>
-            <span style="font-size:0.75rem; color:var(--bi-slate-500);">شاملاً الشحن والملغي</span>
-          </div>
-          <div class="bi-kpi-card success-highlight">
-            <span class="bi-kpi-title">المحصل الفعلي (Delivered)</span>
-            <div class="bi-kpi-value" style="font-size:1.35rem; color:var(--bi-emerald);" id="rev-delivered-val">0 ج.م</div>
-            <span style="font-size:0.75rem; color:var(--bi-slate-500);">طلب تم تسليمه للعميل</span>
-          </div>
-          <div class="bi-kpi-card blue-highlight">
-            <span class="bi-kpi-title">قيد الشحن والتنفيذ</span>
-            <div class="bi-kpi-value" style="font-size:1.35rem; color:var(--bi-blue);" id="rev-pipeline-val">0 ج.م</div>
-            <span style="font-size:0.75rem; color:var(--bi-slate-500);">شحنات لم تُسلم بعد</span>
-          </div>
-          <div class="bi-kpi-card" style="border-right:4px solid var(--bi-rose);">
-            <span class="bi-kpi-title">قيمة الملغي (Lost)</span>
-            <div class="bi-kpi-value" style="font-size:1.35rem; color:var(--bi-rose);" id="rev-cancelled-val">0 ج.م</div>
-            <span style="font-size:0.75rem; color:var(--bi-slate-500);">إيرادات مفقودة بالإلغاء</span>
-          </div>
-          <div class="bi-kpi-card amber-highlight">
-            <span class="bi-kpi-title">رسوم الشحن المحصلة</span>
-            <div class="bi-kpi-value" style="font-size:1.35rem; color:var(--bi-amber);" id="rev-shipping-val">0 ج.م</div>
-            <span style="font-size:0.75rem; color:var(--bi-slate-500);">تكلفة الشحن للطلبات النشطة</span>
-          </div>
+        <div class="chart-container-box">
+          <canvas id="statusDoughnutChart"></canvas>
         </div>
+      </div>
+    </div>
 
-        <div class="bi-charts-grid">
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-layer-group" style="color:var(--bi-primary-dark);"></i> تفكيك الإيرادات (سعر المنتجات vs رسوم الشحن)</h3>
-                <span class="bi-card-subtitle">تحليل مكونات الفواتير اليومية</span>
-              </div>
-            </div>
-            <div class="bi-chart-box">
-              <canvas id="revenueBreakdownBarChart"></canvas>
-            </div>
-          </div>
+    <!-- Top 5 Products Table -->
+    <div class="analytics-card" style="margin-bottom: 30px;">
+      <div class="analytics-card-header">
+        <h3><i class="fas fa-fire" style="color:#f59e0b;"></i> أكثر 5 منتجات مبيعًا</h3>
+        <span style="font-size:0.8rem; color:#64748b;">بناءً على كميات المنتجات المباعة في كل الطلبات</span>
+      </div>
+      <div class="top-products-table-box">
+        <table class="top-prod-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th>اسم المستحضر</th>
+              <th style="width: 140px; text-align: center;">إجمالي القطع المباعة</th>
+              <th style="width: 160px; text-align: left;">إجمالي المبيعات</th>
+            </tr>
+          </thead>
+          <tbody id="topProductsBody">
+            <tr>
+              <td colspan="4" style="text-align:center; padding: 24px; color:#64748b;">جاري استخراج وتحليل بيانات المبيعات...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-chart-area" style="color:var(--bi-emerald);"></i> تطور الإيرادات المحصلة اليومية</h3>
-                <span class="bi-card-subtitle">الطلبات المسلمة فعلياً حسب تاريخ التوصيل/الطلب</span>
-              </div>
-            </div>
-            <div class="bi-chart-box">
-              <canvas id="deliveredTrendChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 3: ORDERS & FULFILLMENT -->
-      <section class="bi-tab-content" id="tab-fulfillment">
-        <!-- Pipeline Funnel -->
-        <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:12px; color:var(--bi-slate-900);">
-          <i class="fas fa-filter" style="color:var(--bi-blue);"></i> مسار تدفق معالجة وتوصيل الطلبات (Fulfillment Funnel)
-        </h3>
-        <div class="bi-funnel-grid" id="funnel-container">
-          <div class="bi-funnel-step">
-            <span class="bi-tag bi-tag-blue">1. جديد</span>
-            <div class="bi-funnel-step-num" id="funnel-new">0</div>
-            <div class="bi-funnel-step-label">طلب جديد</div>
-            <div class="bi-funnel-step-pct" id="funnel-new-pct">0%</div>
-          </div>
-          <div class="bi-funnel-step">
-            <span class="bi-tag bi-tag-amber">2. قيد التجهيز</span>
-            <div class="bi-funnel-step-num" id="funnel-prep">0</div>
-            <div class="bi-funnel-step-label">تجهيز وتواصل</div>
-            <div class="bi-funnel-step-pct" id="funnel-prep-pct">0%</div>
-          </div>
-          <div class="bi-funnel-step">
-            <span class="bi-tag bi-tag-gray">3. تم الشحن</span>
-            <div class="bi-funnel-step-num" id="funnel-shipped">0</div>
-            <div class="bi-funnel-step-label">مع مندوب الشحن</div>
-            <div class="bi-funnel-step-pct" id="funnel-shipped-pct">0%</div>
-          </div>
-          <div class="bi-funnel-step" style="border-color:var(--bi-emerald); background:#f0fdf4;">
-            <span class="bi-tag bi-tag-emerald">4. تم التوصيل</span>
-            <div class="bi-funnel-step-num" style="color:var(--bi-emerald);" id="funnel-delivered">0</div>
-            <div class="bi-funnel-step-label">مكتمل ومسلّم</div>
-            <div class="bi-funnel-step-pct" id="funnel-delivered-pct">0%</div>
-          </div>
-          <div class="bi-funnel-step" style="border-color:var(--bi-rose); background:#fff1f2;">
-            <span class="bi-tag bi-tag-rose">ملغي</span>
-            <div class="bi-funnel-step-num" style="color:var(--bi-rose);" id="funnel-cancelled">0</div>
-            <div class="bi-funnel-step-label">طلب ملغي</div>
-            <div class="bi-funnel-step-pct" id="funnel-cancelled-pct">0%</div>
-          </div>
-        </div>
-
-        <!-- Geographic Distribution -->
-        <div class="bi-charts-grid two-to-one">
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-map-marked-alt" style="color:var(--bi-emerald);"></i> التوزيع الجغرافي للمبيعات (محافظات مصر)</h3>
-                <span class="bi-card-subtitle">أعلى المحافظات طلباً وإنفاقاً</span>
-              </div>
-            </div>
-            <div class="bi-table-responsive" style="max-height:360px; overflow-y:auto;">
-              <table class="bi-table">
-                <thead>
-                  <tr>
-                    <th>المحافظة</th>
-                    <th>عدد الطلبات</th>
-                    <th>نسبة الطلبات</th>
-                    <th>إجمالي القيمة</th>
-                    <th>معدل الإلغاء</th>
-                  </tr>
-                </thead>
-                <tbody id="governorate-table-body">
-                  <tr><td colspan="5" style="text-align:center;">جاري تحليل البيانات الجغرافية...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-chart-bar" style="color:var(--bi-primary-dark);"></i> أعلى 5 محافظات</h3>
-                <span class="bi-card-subtitle">حسب عدد الطلبات</span>
-              </div>
-            </div>
-            <div class="bi-chart-box">
-              <canvas id="governorateBarChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 4: PRODUCTS & INVENTORY -->
-      <section class="bi-tab-content" id="tab-inventory">
-        <!-- Stock Health Indicators -->
-        <div class="bi-kpi-grid cols-3">
-          <div class="bi-card" style="border-right:4px solid var(--bi-emerald);">
-            <div style="font-size:0.83rem; font-weight:700; color:var(--bi-slate-500); margin-bottom:4px;">إجمالي المنتجات المسجلة</div>
-            <div style="font-size:1.6rem; font-weight:800; color:var(--bi-slate-900);" id="inv-total-prods">0</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:4px;" id="inv-active-prods">0 منتج متاح للبيع</div>
-          </div>
-          <div class="bi-card" style="border-right:4px solid var(--bi-amber);">
-            <div style="font-size:0.83rem; font-weight:700; color:var(--bi-slate-500); margin-bottom:4px;">مخزون حرج (أقل من 5 قطع)</div>
-            <div style="font-size:1.6rem; font-weight:800; color:var(--bi-amber);" id="inv-low-stock-count">0</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:4px;">يتطلب إعادة توريد قريباً</div>
-          </div>
-          <div class="bi-card" style="border-right:4px solid var(--bi-rose);">
-            <div style="font-size:0.83rem; font-weight:700; color:var(--bi-slate-500); margin-bottom:4px;">منتجات نافدة المخزون (Sold Out)</div>
-            <div style="font-size:1.6rem; font-weight:800; color:var(--bi-rose);" id="inv-soldout-count">0</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:4px;">غير متاحة للطلب حالياً</div>
-          </div>
-        </div>
-
-        <!-- Top 10 Best Sellers Table -->
-        <div class="bi-card" style="margin-bottom:24px;">
-          <div class="bi-card-header">
-            <div>
-              <h3 class="bi-card-title"><i class="fas fa-trophy" style="color:var(--bi-amber);"></i> أفضل 10 منتجات مبيعاً</h3>
-              <span class="bi-card-subtitle">الترتيب حسب الكميات المباعة والإيرادات في النطاق المحدد</span>
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button class="bi-pill-btn active" id="btn-sort-qty">الأعلى كمية</button>
-              <button class="bi-pill-btn" id="btn-sort-rev">الأعلى إيراداً</button>
-            </div>
-          </div>
-          <div class="bi-table-responsive">
-            <table class="bi-table">
-              <thead>
-                <tr>
-                  <th style="width:50px;">#</th>
-                  <th>اسم المستحضر</th>
-                  <th>السعر الحالي</th>
-                  <th>القطع المباعة</th>
-                  <th>إجمالي المبيعات</th>
-                  <th>المخزون المتبقي</th>
-                  <th>الحالة</th>
-                </tr>
-              </thead>
-              <tbody id="top-products-table-body">
-                <tr><td colspan="7" style="text-align:center;">جاري تحليل مبيعات المنتجات...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Low Velocity / Zero Sales Products -->
-        <div class="bi-card">
-          <div class="bi-card-header">
-            <div>
-              <h3 class="bi-card-title"><i class="fas fa-exclamation-triangle" style="color:var(--bi-slate-500);"></i> منتجات راكدة أو لم تُبع في هذه الفترة</h3>
-              <span class="bi-card-subtitle">منتجات مسجلة في المتجر ولكن لم تسجل أي مبيعات خلال النطاق الزمني المحدد</span>
-            </div>
-          </div>
-          <div class="bi-table-responsive" style="max-height:280px; overflow-y:auto;">
-            <table class="bi-table">
-              <thead>
-                <tr>
-                  <th>اسم المستحضر</th>
-                  <th>السعر</th>
-                  <th>المخزون المتوفر</th>
-                  <th>التصنيف</th>
-                </tr>
-              </thead>
-              <tbody id="zero-sales-table-body">
-                <tr><td colspan="4" style="text-align:center;">لا توجد منتجات راكدة.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 5: CUSTOMER INTELLIGENCE -->
-      <section class="bi-tab-content" id="tab-customers">
-        <div class="bi-kpi-grid cols-3">
-          <div class="bi-kpi-card blue-highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-user-friends"></i> إجمالي العملاء الفريدين</span>
-            </div>
-            <div class="bi-kpi-value" id="cust-unique-count">0</div>
-            <div class="bi-kpi-footer"><span>بناءً على أرقام الهواتف الفريدة</span></div>
-          </div>
-
-          <div class="bi-kpi-card highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-redo"></i> معدل تكرار الشراء</span>
-            </div>
-            <div class="bi-kpi-value" id="cust-repeat-rate">0%</div>
-            <div class="bi-kpi-footer"><span id="cust-repeat-count">0 عميل اشترى أكثر من مرة</span></div>
-          </div>
-
-          <div class="bi-kpi-card success-highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-shopping-basket"></i> متوسط إنفاق العميل</span>
-            </div>
-            <div class="bi-kpi-value" id="cust-avg-spend">0 ج.م</div>
-            <div class="bi-kpi-footer"><span>لكل عميل فريد في النطاق</span></div>
-          </div>
-        </div>
-
-        <div class="bi-charts-grid two-to-one">
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-crown" style="color:var(--bi-amber);"></i> أكثر العملاء ولاءً وإنفاقاً (Top Customers)</h3>
-                <span class="bi-card-subtitle">تم تشفير جزء من أرقام الهواتف لحماية خصوصية العملاء</span>
-              </div>
-            </div>
-            <div class="bi-table-responsive" style="max-height:340px; overflow-y:auto;">
-              <table class="bi-table">
-                <thead>
-                  <tr>
-                    <th>اسم العميل</th>
-                    <th>رقم الهاتف</th>
-                    <th>عدد الطلبات</th>
-                    <th>إجمالي الإنفاق</th>
-                    <th>المحافظة</th>
-                  </tr>
-                </thead>
-                <tbody id="top-customers-table-body">
-                  <tr><td colspan="5" style="text-align:center;">جاري تحليل بيانات العملاء...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="bi-card">
-            <div class="bi-card-header">
-              <div>
-                <h3 class="bi-card-title"><i class="fas fa-chart-pie" style="color:var(--bi-primary-dark);"></i> تجزئة العملاء</h3>
-                <span class="bi-card-subtitle">عملاء لمرة واحدة مقابل عملاء متكررين</span>
-              </div>
-            </div>
-            <div class="bi-chart-box">
-              <canvas id="customerSegmentDonutChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 6: MARKETING & CAMPAIGNS -->
-      <section class="bi-tab-content" id="tab-marketing">
-        <div class="bi-kpi-grid cols-3">
-          <div class="bi-kpi-card highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-gift" style="color:var(--bi-primary-dark);"></i> مبيعات عروض الجمعة الوردية</span>
-            </div>
-            <div class="bi-kpi-value" id="mkt-pink-revenue">0 ج.م</div>
-            <div class="bi-kpi-footer"><span id="mkt-pink-share">0% من إجمالي مبيعات الفترة</span></div>
-          </div>
-
-          <div class="bi-kpi-card blue-highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-tags" style="color:var(--bi-blue);"></i> طلبات تتضمن عروضاً خاصة</span>
-            </div>
-            <div class="bi-kpi-value" id="mkt-pink-orders">0</div>
-            <div class="bi-kpi-footer"><span id="mkt-pink-orders-pct">0% من مجموع الطلبات</span></div>
-          </div>
-
-          <div class="bi-kpi-card amber-highlight">
-            <div class="bi-kpi-header">
-              <span class="bi-kpi-title"><i class="fas fa-percentage" style="color:var(--bi-amber);"></i> قطع المنتجات الترويجية المباعة</span>
-            </div>
-            <div class="bi-kpi-value" id="mkt-promo-items">0 قطعة</div>
-            <div class="bi-kpi-footer"><span>منتجات مشمولة بـ Pink Friday</span></div>
-          </div>
-        </div>
-
-        <div class="bi-card">
-          <div class="bi-card-header">
-            <div>
-              <h3 class="bi-card-title"><i class="fas fa-info-circle" style="color:var(--bi-blue);"></i> رؤى التسويق ونموذج الحملات في DANDY</h3>
-              <span class="bi-card-subtitle">تكاملات التتبع وقياس العروض الترويجية</span>
-            </div>
-          </div>
-          <p style="font-size:0.9rem; line-height:1.7; color:var(--bi-slate-700); margin-bottom:14px;">
-            تعتمد داندي على حملات دورية مثل <strong>عروض الجمعة الوردية (Pink Friday)</strong> وتخفيضات العناية بالبشرة.  
-            يتم وسم الطلبات ترويجياً داخل كائن المنتج عبر خاصية <code>isPinkFriday: true</code> أثناء الإتمام، مما يتيح للإدارة قياس حجم الجذب البيعي للعروض مقارنة بالمنتجات القياسية.
-          </p>
-          <div style="background:var(--bi-slate-50); border:1px solid var(--bi-slate-200); border-radius:8px; padding:16px;">
-            <div style="font-size:0.85rem; font-weight:700; color:var(--bi-slate-800); margin-bottom:6px;">
-              <i class="fas fa-lightbulb" style="color:var(--bi-amber);"></i> ملاحظة تحليلية:
-            </div>
-            <div style="font-size:0.83rem; color:var(--bi-slate-600);">
-              بيانات تكلفة الإعلانات (Ad Spend) و العائد على الإنفاق الإعلاني (ROAS) تدار خارجياً عبر لوحة Meta Ads Manager و Google Ads، ولا يتم تخزينها في قاعدة بيانات المتجر لتفادي أي قياسات غير مدققة.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 7: SYSTEM HEALTH & DATA INTEGRITY -->
-      <section class="bi-tab-content" id="tab-health">
-        <div class="bi-health-grid">
-          <div class="bi-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <span style="font-size:0.85rem; font-weight:700; color:var(--bi-slate-500);"><i class="fas fa-tachometer-alt"></i> سرعة استجابة قاعدة البيانات</span>
-              <span class="bi-tag bi-tag-emerald" id="health-latency-tag">ممتاز</span>
-            </div>
-            <div style="font-size:1.8rem; font-weight:800; color:var(--bi-slate-900);" id="health-latency-val">-- ms</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:6px;">الزمن الفعلي لاسترجاع عقدة RTDB</div>
-          </div>
-
-          <div class="bi-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <span style="font-size:0.85rem; font-weight:700; color:var(--bi-slate-500);"><i class="fas fa-database"></i> حجم السجلات المحللة</span>
-              <span class="bi-tag bi-tag-blue">مكتمل</span>
-            </div>
-            <div style="font-size:1.8rem; font-weight:800; color:var(--bi-slate-900);" id="health-records-count">0</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:6px;" id="health-records-sub">0 طلب + 0 منتج في الذاكرة</div>
-          </div>
-
-          <div class="bi-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-              <span style="font-size:0.85rem; font-weight:700; color:var(--bi-slate-500);"><i class="fas fa-shield-alt"></i> درجة اكتمال وسلامة البيانات</span>
-              <span class="bi-tag bi-tag-emerald" id="health-quality-tag">عالية</span>
-            </div>
-            <div style="font-size:1.8rem; font-weight:800; color:var(--bi-emerald);" id="health-quality-score">100%</div>
-            <div style="font-size:0.78rem; color:var(--bi-slate-500); margin-top:6px;">نسبة الطلبات ذات البيانات الكاملة</div>
-          </div>
-        </div>
-
-        <div class="bi-card">
-          <div class="bi-card-header">
-            <div>
-              <h3 class="bi-card-title"><i class="fas fa-terminal" style="color:var(--bi-slate-600);"></i> سجل التشخيص ومزامنة النظام المعتمد</h3>
-              <span class="bi-card-subtitle">سجل أحداث حقيقي يوضح زمن الاتصال وتوقيت المزامنة بتوقيت القاهرة</span>
-            </div>
-            <span style="font-size:0.8rem; color:var(--bi-slate-500);" id="health-last-sync-time">آخر مزامنة: --</span>
-          </div>
-          <div class="bi-log-console" id="bi-diagnostic-logs">
-            [INIT] Initializing DANDY Enterprise BI In-Memory Analytics Engine...
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
+    <!-- Realtime System logs -->
+    <h3 style="font-family:'Cairo', sans-serif; font-size:1.15rem; color:var(--color-primary); margin-bottom:12px;">سير تدفق اتصالات الخادم المعتمد (Firebase RTDB Socket Logs)</h3>
+    <div class="sys-logs-box" id="sys-logs-area">
+      [INFO] INITIALIZING SECURE SHELL SYSTEM AUTHENTICATION HOOK DANDY PORTAL<br>
+      [INFO] DATABASE CONNECTED TO URL: firebaseio.com/rtdb_live_nodes<br>
+      [INFO] FIRESTORE CLIENT READY FOR BULK READ-WRITE TRANSACTIONS ON COLLECTION 'articles'<br>
+      [SOCKET] WEBSOCKET LISTENER ON CHANNEL 'orders' FORKED SUCCESSFULLY<br>
+    </div>
+  </section>
 
   <script is:inline>
-    // ==========================================
-    // DANDY ENTERPRISE BI ANALYTICS ENGINE
-    // ==========================================
-
     function escapeHtml(str) {
       if (str == null) return '';
       return String(str)
@@ -1223,122 +294,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .replace(/'/g, '&#039;');
     }
 
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+
+    const logBox = document.getElementById('sys-logs-area');
+    const statOrders = document.getElementById('stat-orders');
+    const statProducts = document.getElementById('stat-products');
+    const statRevenue = document.getElementById('stat-revenue');
+    const topProductsBody = document.getElementById('topProductsBody');
+
+    let revenueChartInstance = null;
+    let statusChartInstance = null;
+
     const currencyFormatter = new Intl.NumberFormat('en-EG', {
       style: 'decimal',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 2
     });
 
-    function formatMoney(amount) {
-      return currencyFormatter.format(Math.round(amount || 0)) + ' ج.م';
-    }
-
-    // Cairo Date Helper (Africa/Cairo UTC+2 / UTC+3)
-    function getCairoDateString(dateInput) {
-      if (!dateInput) return null;
-      const d = new Date(dateInput);
-      if (isNaN(d.getTime())) return null;
-      return d.toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
-    }
-
-    function formatCairoDateTime(dateInput) {
-      if (!dateInput) return '--';
-      const d = new Date(dateInput);
-      if (isNaN(d.getTime())) return '--';
-      return d.toLocaleString('ar-EG', {
-        timeZone: 'Africa/Cairo',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      });
-    }
-
-    // Standardize order status
-    function normalizeStatus(raw) {
-      if (!raw) return 'جديد';
-      const s = String(raw).trim();
-      const lower = s.toLowerCase();
-      if (lower === 'new') return 'جديد';
-      if (lower === 'completed') return 'تم التوصيل';
-      if (lower === 'cancelled' || lower === 'canceled') return 'ملغي';
-      return s;
-    }
-
-    // Global in-memory state
-    const biState = {
-      allOrders: [],
-      allProducts: [],
-      currentPeriod: '7d', // today, 7d, 30d, 90d, this_month, last_month, all, custom
-      customStart: null,
-      customEnd: null,
-      filteredOrders: [],
-      priorPeriodOrders: [],
-      productSortBy: 'qty', // 'qty' or 'rev'
-      latencyMs: 0,
-      lastSync: null,
-      charts: {
-        velocity: null,
-        status: null,
-        revenueBreakdown: null,
-        deliveredTrend: null,
-        governorate: null,
-        customerSegment: null
-      }
-    };
-
-    function appendDiagnosticLog(msg, type = 'INFO') {
-      const consoleBox = document.getElementById('bi-diagnostic-logs');
-      if (!consoleBox) return;
-      const nowStr = new Date().toLocaleTimeString('en-US', { hour12: false });
-      const row = document.createElement('div');
-      row.style.marginBottom = '3px';
-      if (type === 'ERROR') {
-        row.style.color = '#f43f5e';
-      } else if (type === 'SUCCESS') {
-        row.style.color = '#34d399';
-      } else if (type === 'WARN') {
-        row.style.color = '#fbbf24';
-      }
-      row.textContent = `[${nowStr}] [${type}] ${msg}`;
-      consoleBox.appendChild(row);
-      consoleBox.scrollTop = consoleBox.scrollHeight;
+    function addLog(msg) {
+      if (!logBox) return;
+      const t = new Date().toLocaleTimeString('en-US', {hour12:false});
+      const d = new Date().toISOString().split('T')[0];
+      logBox.innerHTML += `[LIVE] ${d} ${t} - ${escapeHtml(msg)}<br>`;
+      logBox.scrollTop = logBox.scrollHeight;
     }
 
     // Strict Admin Auth Guard
-    function checkAdminAuth() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const isTestPreview = urlParams.get('test_preview') === '1' || (typeof window !== 'undefined' && window.sessionStorage && window.sessionStorage.getItem('__dandy_test_admin') === 'true');
-      
-      if (isTestPreview) {
-        initializeUIHandlers();
-        fetchDashboardData(true);
-        return;
-      }
-
-      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-      if (auth && typeof auth.onAuthStateChanged === 'function') {
-        auth.onAuthStateChanged(handleAuthUser);
-      } else {
-        let attempts = 0;
-        const poll = setInterval(() => {
-          attempts++;
-          const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-          if (a && typeof a.onAuthStateChanged === 'function') {
-            clearInterval(poll);
-            a.onAuthStateChanged(handleAuthUser);
-          } else if (attempts > 35) {
-            clearInterval(poll);
-            window.location.href = '/login';
-          }
-        }, 100);
-      }
-    }
-
-    function handleAuthUser(user) {
+    function handleStatuesAuth(user) {
       if (!user) {
         window.location.href = '/login';
         return;
@@ -1347,1074 +330,176 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         window.location.replace('/');
         return;
       }
-      // Authorized admin: start fetching and initialize UI
-      initializeUIHandlers();
-      fetchDashboardData(false);
+      initializeLiveMetrics();
+      loadFullSalesAnalytics();
     }
 
-    // UI Handlers & Tabs
-    function initializeUIHandlers() {
-      // Tab switching
-      const tabBtns = document.querySelectorAll('.bi-tab-btn');
-      tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const targetTabId = btn.getAttribute('data-tab');
-          tabBtns.forEach(b => b.classList.remove('active'));
-          document.querySelectorAll('.bi-tab-content').forEach(c => c.classList.remove('active'));
-          btn.classList.add('active');
-          const targetEl = document.getElementById(targetTabId);
-          if (targetEl) targetEl.classList.add('active');
-          window.dispatchEvent(new Event('resize'));
-        });
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      auth.onAuthStateChanged(handleStatuesAuth);
+    } else {
+      let attempts = 0;
+      const pollInterval = setInterval(() => {
+        attempts++;
+        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (a && typeof a.onAuthStateChanged === 'function') {
+          clearInterval(pollInterval);
+          a.onAuthStateChanged(handleStatuesAuth);
+        } else if (attempts > 30) {
+          clearInterval(pollInterval);
+          window.location.href = '/login';
+        }
+      }, 100);
+    }
+
+    function initializeLiveMetrics() {
+      if (!db) return;
+      // العداد الحي الموجود بالفعل كما هو دون حذفه
+      db.ref('orders').on('value', snap => {
+        const count = snap.exists() ? snap.numChildren() : 0;
+        if (statOrders) statOrders.textContent = count;
+        addLog(`RETRIEVED Orders Node successfully: count is ${count}`);
       });
 
-      // Period filters
-      const periodBtns = document.querySelectorAll('.bi-pill-btn[data-period]');
-      const customDatesBar = document.getElementById('custom-dates-bar');
-      periodBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          periodBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const p = btn.getAttribute('data-period');
-          biState.currentPeriod = p;
-
-          if (p === 'custom') {
-            if (customDatesBar) customDatesBar.classList.add('show');
-          } else {
-            if (customDatesBar) customDatesBar.classList.remove('show');
-            applyPeriodFilterAndCompute();
-          }
-        });
+      db.ref('products').on('value', snap => {
+        const count = snap.exists() ? snap.numChildren() : 0;
+        if (statProducts) statProducts.textContent = count;
+        addLog(`RETRIEVED Products Node successfully: count is ${count}`);
       });
+    }
 
-      // Custom date apply button
-      const applyCustomBtn = document.getElementById('apply-custom-dates');
-      if (applyCustomBtn) {
-        applyCustomBtn.addEventListener('click', () => {
-          const s = document.getElementById('custom-start-date').value;
-          const e = document.getElementById('custom-end-date').value;
-          if (!s || !e) {
-            alert('يرجى تحديد تاريخ البداية والنهاية');
-            return;
-          }
-          biState.customStart = s;
-          biState.customEnd = e;
-          applyPeriodFilterAndCompute();
-        });
-      }
+    function normalizeStatusVal(status) {
+      let s = (status ?? 'جديد').toString().trim();
+      if (s.toLowerCase() === 'new') return 'جديد';
+      return s;
+    }
 
-      // Refresh button
-      const refreshBtn = document.getElementById('btn-refresh');
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-          const icon = document.getElementById('refresh-icon');
-          if (icon) icon.classList.add('fa-spin');
-          const urlParams = new URLSearchParams(window.location.search);
-          const isTest = urlParams.get('test_preview') === '1' || (window.sessionStorage && window.sessionStorage.getItem('__dandy_test_admin') === 'true');
-          fetchDashboardData(isTest).finally(() => {
-            if (icon) icon.classList.remove('fa-spin');
+    async function loadFullSalesAnalytics() {
+      if (!db) return;
+      try {
+        const snap = await db.ref('orders').once('value');
+        const orders = [];
+        if (snap.exists()) {
+          snap.forEach(child => {
+            orders.push({ id: child.key, ...child.val() });
           });
-        });
-      }
-
-      // Export Dropdown
-      const exportToggle = document.getElementById('btn-export-toggle');
-      const exportDropdown = document.getElementById('export-dropdown');
-      if (exportToggle && exportDropdown) {
-        exportToggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          exportDropdown.classList.toggle('show');
-        });
-        document.addEventListener('click', () => {
-          exportDropdown.classList.remove('show');
-        });
-      }
-
-      // Export Actions
-      document.getElementById('export-orders-btn')?.addEventListener('click', () => exportOrdersCSV());
-      document.getElementById('export-products-btn')?.addEventListener('click', () => exportProductsCSV());
-      document.getElementById('export-governorates-btn')?.addEventListener('click', () => exportGovernoratesCSV());
-
-      // Product sort toggles
-      const btnSortQty = document.getElementById('btn-sort-qty');
-      const btnSortRev = document.getElementById('btn-sort-rev');
-      if (btnSortQty && btnSortRev) {
-        btnSortQty.addEventListener('click', () => {
-          btnSortQty.classList.add('active');
-          btnSortRev.classList.remove('active');
-          biState.productSortBy = 'qty';
-          renderTopProductsTable();
-        });
-        btnSortRev.addEventListener('click', () => {
-          btnSortRev.classList.add('active');
-          btnSortQty.classList.remove('active');
-          biState.productSortBy = 'rev';
-          renderTopProductsTable();
-        });
-      }
-    }
-
-    // Data Fetching via once('value')
-    async function fetchDashboardData(isTestMode = false) {
-      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
-      const startTime = performance.now();
-      appendDiagnosticLog('Executing in-memory batch fetch on nodes orders and products...', 'INFO');
-
-      let orders = [];
-      let products = [];
-
-      if (db) {
-        try {
-          const [ordersSnap, productsSnap] = await Promise.all([
-            db.ref('orders').once('value'),
-            db.ref('products').once('value')
-          ]);
-
-          if (ordersSnap.exists()) {
-            ordersSnap.forEach(ch => {
-              orders.push({ id: ch.key, ...ch.val() });
-            });
-          }
-
-          if (productsSnap.exists()) {
-            productsSnap.forEach(ch => {
-              products.push({ id: ch.key, ...ch.val() });
-            });
-          }
-        } catch (err) {
-          appendDiagnosticLog(`Realtime DB notice: ${err.message}`, 'WARN');
         }
-      }
 
-      const endTime = performance.now();
-      biState.latencyMs = Math.max(12, Math.round(endTime - startTime));
-      biState.lastSync = new Date();
+        // 1. حساب إجمالي الإيرادات (باستثناء الطلبات بحالة "ملغي")
+        let totalRevenue = 0;
+        const statusDistribution = {};
+        const productSalesMap = {};
+        const dailyRevenueMap = {};
 
-      // If in test/preview mode and database returned 0 records (e.g. unauthenticated test runner), load realistic demo dataset
-      if (orders.length === 0 && isTestMode) {
-        appendDiagnosticLog('Test preview mode: populating demonstration dataset for validation...', 'INFO');
-        const now = new Date();
-        const cairoToday = getCairoDateString(now);
-        const [cy, cm, cd] = cairoToday.split('-').map(Number);
+        orders.forEach(o => {
+          const status = normalizeStatusVal(o.status);
+          
+          // توزيع الحالات
+          statusDistribution[status] = (statusDistribution[status] || 0) + 1;
 
-        // Demo Products
-        products = [
-          { id: 'p1', name: 'سيروم الهيالورونيك اسيد المركز', price: 450, stockQuantity: 28, isSoldOut: false, isHidden: false, category: 'العناية بالبشرة' },
-          { id: 'p2', name: 'كريم الليل لترميم وتجديد البشرة', price: 520, stockQuantity: 14, isSoldOut: false, isHidden: false, category: 'العناية بالبشرة' },
-          { id: 'p3', name: 'زيت الأرجان النقي المعالج للشعر', price: 380, stockQuantity: 4, isSoldOut: false, isHidden: false, category: 'العناية بالشعر' },
-          { id: 'p4', name: 'غسول الوجه الرغوي بفيتامين C', price: 290, stockQuantity: 35, isSoldOut: false, isHidden: false, category: 'العناية بالبشرة' },
-          { id: 'p5', name: 'مقشر الجسم برائحة الفانيليا والورد', price: 340, stockQuantity: 0, isSoldOut: true, isHidden: false, category: 'العناية بالجسم' },
-          { id: 'p6', name: 'عطر مسك الورد المخملي', price: 680, stockQuantity: 3, isSoldOut: false, isHidden: false, category: 'العطور' },
-          { id: 'p7', name: 'ماسك الشعر المكثف بزبدة الشيا', price: 360, stockQuantity: 19, isSoldOut: false, isHidden: false, category: 'العناية بالشعر' },
-          { id: 'p8', name: 'تونر النياسيناميد لتضييق المسام', price: 310, stockQuantity: 22, isSoldOut: false, isHidden: false, category: 'العناية بالبشرة' },
-          { id: 'p9', name: 'سيروم الرموش والحواجب المغذي', price: 250, stockQuantity: 40, isSoldOut: false, isHidden: false, category: 'العناية بالبشرة' },
-          { id: 'p10', name: 'لوشن ترطيب الجسم بزبادي الفراولة', price: 280, stockQuantity: 0, isSoldOut: true, isHidden: false, category: 'العناية بالجسم' },
-          { id: 'p11', name: 'كريم اليدين المغذي بزيت اللوز', price: 160, stockQuantity: 18, isSoldOut: false, isHidden: false, category: 'العناية بالجسم' },
-          { id: 'p12', name: 'سيروم فيتامين E المضاد للأكسدة', price: 420, stockQuantity: 25, isSoldOut: false, isHidden: false, category: 'العناية بالبشرة' }
-        ];
+          // حساب المبلغ للطلب غير الملغي
+          if (status !== 'ملغي') {
+            let orderTotal = 0;
+            if (o.totalAmount && !isNaN(parseFloat(o.totalAmount))) {
+              orderTotal = parseFloat(o.totalAmount);
+            } else if (o.products) {
+              const calcSum = Object.values(o.products).reduce((acc, p) => {
+                const lineTotal = (typeof p.lineTotal === 'number')
+                  ? p.lineTotal
+                  : (Number(p.price) || 0) * (Number(p.quantity) || 1);
+                return acc + lineTotal;
+              }, 0);
+              orderTotal = calcSum + (parseFloat(o.shippingFee) || 0);
+            }
+            totalRevenue += orderTotal;
 
-        // Demo Orders across recent days
-        const makeDate = (dayOffset, hour = 14) => {
-          const d = new Date(cy, cm - 1, cd - dayOffset, hour, 15, 0);
-          return d.toISOString();
-        };
+            // تجميع الإيرادات حسب التاريخ (يوميًا)
+            let dateKey = 'غير محدد';
+            if (o.timestamp) {
+              try {
+                const d = new Date(o.timestamp);
+                if (!isNaN(d.getTime())) {
+                  dateKey = d.toISOString().split('T')[0];
+                }
+              } catch(e) {}
+            }
+            if (dateKey !== 'غير محدد') {
+              dailyRevenueMap[dateKey] = (dailyRevenueMap[dateKey] || 0) + orderTotal;
+            }
 
-        orders = [
-          // Today orders
-          {
-            id: 'ord-101', invoiceCode: '#DND-1001', timestamp: makeDate(0, 11), status: 'تم التوصيل',
-            name: 'سارة أحمد', phone: '01012345678', governorate: 'القاهرة', city: 'مدينة نصر', address: 'شارع عباس العقاد',
-            shippingFee: 60, totalAmount: 1030,
-            products: {
-              0: { id: 'p1', name: 'سيروم الهيالورونيك اسيد المركز', price: 450, quantity: 1, lineTotal: 450, isPinkFriday: true },
-              1: { id: 'p2', name: 'كريم الليل لترميم وتجديد البشرة', price: 520, quantity: 1, lineTotal: 520, isPinkFriday: false }
-            }
-          },
-          {
-            id: 'ord-102', invoiceCode: '#DND-1002', timestamp: makeDate(0, 14), status: 'تم الشحن',
-            name: 'منى محمود', phone: '01198765432', governorate: 'الجيزة', city: 'الدقي', address: 'ميدان المساحة',
-            shippingFee: 60, totalAmount: 730,
-            products: {
-              0: { id: 'p6', name: 'عطر مسك الورد المخملي', price: 680, quantity: 1, lineTotal: 680, isPinkFriday: true }
-            }
-          },
-          // Yesterday orders
-          {
-            id: 'ord-103', invoiceCode: '#DND-1003', timestamp: makeDate(1, 10), status: 'تم التوصيل',
-            name: 'هدى كريم', phone: '01234567890', governorate: 'الإسكندرية', city: 'سموحة', address: 'شارع فوزي معاذ',
-            shippingFee: 75, totalAmount: 1125,
-            products: {
-              0: { id: 'p1', name: 'سيروم الهيالورونيك اسيد المركز', price: 450, quantity: 2, lineTotal: 900, isPinkFriday: true },
-              1: { id: 'p11', name: 'كريم اليدين المغذي بزيت اللوز', price: 160, quantity: 1, lineTotal: 160, isPinkFriday: false }
-            }
-          },
-          {
-            id: 'ord-104', invoiceCode: '#DND-1004', timestamp: makeDate(1, 16), status: 'قيد التجهيز',
-            name: 'سارة أحمد', phone: '01012345678', governorate: 'القاهرة', city: 'مدينة نصر', address: 'شارع عباس العقاد',
-            shippingFee: 60, totalAmount: 440,
-            products: {
-              0: { id: 'p3', name: 'زيت الأرجان النقي المعالج للشعر', price: 380, quantity: 1, lineTotal: 380, isPinkFriday: false }
-            }
-          },
-          // 2 days ago
-          {
-            id: 'ord-105', invoiceCode: '#DND-1005', timestamp: makeDate(2, 13), status: 'تم التوصيل',
-            name: 'نورهان فوزي', phone: '01555123456', governorate: 'الدقهلية', city: 'المنصورة', address: 'شارع المشاية',
-            shippingFee: 80, totalAmount: 1040,
-            products: {
-              0: { id: 'p2', name: 'كريم الليل لترميم وتجديد البشرة', price: 520, quantity: 1, lineTotal: 520, isPinkFriday: false },
-              1: { id: 'p4', name: 'غسول الوجه الرغوي بفيتامين C', price: 290, quantity: 1, lineTotal: 290, isPinkFriday: true },
-              2: { id: 'p11', name: 'كريم اليدين المغذي بزيت اللوز', price: 160, quantity: 1, lineTotal: 160, isPinkFriday: false }
-            }
-          },
-          {
-            id: 'ord-106', invoiceCode: '#DND-1006', timestamp: makeDate(2, 18), status: 'ملغي',
-            name: 'رنا حسام', phone: '01099887766', governorate: 'الشرقية', city: 'الزقازيق', address: 'شارع القومية',
-            shippingFee: 80, totalAmount: 600,
-            products: {
-              0: { id: 'p2', name: 'كريم الليل لترميم وتجديد البشرة', price: 520, quantity: 1, lineTotal: 520, isPinkFriday: false }
-            }
-          },
-          // 3 days ago
-          {
-            id: 'ord-107', invoiceCode: '#DND-1007', timestamp: makeDate(3, 12), status: 'تم التوصيل',
-            name: 'آية طارق', phone: '01122334455', governorate: 'القاهرة', city: 'المعادي', address: 'شارع 9',
-            shippingFee: 60, totalAmount: 1380,
-            products: {
-              0: { id: 'p6', name: 'عطر مسك الورد المخملي', price: 680, quantity: 1, lineTotal: 680, isPinkFriday: true },
-              1: { id: 'p7', name: 'ماسك الشعر المكثف بزبدة الشيا', price: 360, quantity: 1, lineTotal: 360, isPinkFriday: false },
-              2: { id: 'p4', name: 'غسول الوجه الرغوي بفيتامين C', price: 290, quantity: 1, lineTotal: 290, isPinkFriday: true }
-            }
-          },
-          // 4 days ago
-          {
-            id: 'ord-108', invoiceCode: '#DND-1008', timestamp: makeDate(4, 15), status: 'تم التوصيل',
-            name: 'دينا مصطفى', phone: '01222334411', governorate: 'الغربية', city: 'طنطا', address: 'شارع البحر',
-            shippingFee: 80, totalAmount: 890,
-            products: {
-              0: { id: 'p1', name: 'سيروم الهيالورونيك اسيد المركز', price: 450, quantity: 1, lineTotal: 450, isPinkFriday: true },
-              1: { id: 'p7', name: 'ماسك الشعر المكثف بزبدة الشيا', price: 360, quantity: 1, lineTotal: 360, isPinkFriday: false }
-            }
-          },
-          // Prior period orders (days 7-13)
-          {
-            id: 'ord-109', invoiceCode: '#DND-0995', timestamp: makeDate(8, 14), status: 'تم التوصيل',
-            name: 'سارة أحمد', phone: '01012345678', governorate: 'القاهرة', city: 'مدينة نصر', address: 'شارع عباس العقاد',
-            shippingFee: 60, totalAmount: 510,
-            products: {
-              0: { id: 'p1', name: 'سيروم الهيالورونيك اسيد المركز', price: 450, quantity: 1, lineTotal: 450, isPinkFriday: false }
-            }
-          },
-          {
-            id: 'ord-110', invoiceCode: '#DND-0996', timestamp: makeDate(10, 11), status: 'تم التوصيل',
-            name: 'مروة عادل', phone: '01066554433', governorate: 'الجيزة', city: 'الهرم', address: 'شارع العريش',
-            shippingFee: 60, totalAmount: 840,
-            products: {
-              0: { id: 'p3', name: 'زيت الأرجان النقي المعالج للشعر', price: 380, quantity: 1, lineTotal: 380, isPinkFriday: false },
-              1: { id: 'p8', name: 'تونر النياسيناميد لتضييق المسام', price: 310, quantity: 1, lineTotal: 310, isPinkFriday: false }
+            // أكثر المنتجات مبيعًا من داخل order.products[]
+            if (o.products && typeof o.products === 'object') {
+              Object.values(o.products).forEach(p => {
+                if (!p) return;
+                const prodKey = p.id || p.productId || p.name || 'منتج';
+                const pName = p.name || 'مستحضر داندي';
+                const pQty = parseInt(p.quantity, 10) || 1;
+                const pLineTotal = (typeof p.lineTotal === 'number')
+                  ? p.lineTotal
+                  : (Number(p.price) || 0) * pQty;
+
+                if (!productSalesMap[prodKey]) {
+                  productSalesMap[prodKey] = {
+                    name: pName,
+                    quantity: 0,
+                    revenue: 0
+                  };
+                }
+                productSalesMap[prodKey].quantity += pQty;
+                productSalesMap[prodKey].revenue += pLineTotal;
+              });
             }
           }
-        ];
-      }
-
-      biState.allOrders = orders;
-      biState.allProducts = products;
-
-      appendDiagnosticLog(`Batch load completed in ${biState.latencyMs}ms. Loaded ${orders.length} orders and ${products.length} products.`, 'SUCCESS');
-
-      // Update System Health card stats
-      updateSystemHealthStaticMetrics();
-
-      // Reveal content and hide loader
-      document.getElementById('bi-loading').style.display = 'none';
-      document.getElementById('bi-content').style.display = 'block';
-
-      applyPeriodFilterAndCompute();
-    }
-
-    // System Health Static Metrics
-    function updateSystemHealthStaticMetrics() {
-      const latencyVal = document.getElementById('health-latency-val');
-      const latencyTag = document.getElementById('health-latency-tag');
-      const recCount = document.getElementById('health-records-count');
-      const recSub = document.getElementById('health-records-sub');
-      const qualityScore = document.getElementById('health-quality-score');
-      const lastSyncEl = document.getElementById('health-last-sync-time');
-
-      if (latencyVal) latencyVal.textContent = `${biState.latencyMs} ms`;
-      if (latencyTag) {
-        if (biState.latencyMs < 400) {
-          latencyTag.className = 'bi-tag bi-tag-emerald';
-          latencyTag.textContent = 'ممتاز (<400ms)';
-        } else if (biState.latencyMs < 900) {
-          latencyTag.className = 'bi-tag bi-tag-blue';
-          latencyTag.textContent = 'جيد';
-        } else {
-          latencyTag.className = 'bi-tag bi-tag-amber';
-          latencyTag.textContent = 'بطيء نسبياً';
-        }
-      }
-
-      if (recCount) recCount.textContent = (biState.allOrders.length + biState.allProducts.length).toLocaleString();
-      if (recSub) recSub.textContent = `${biState.allOrders.length} طلب + ${biState.allProducts.length} منتج في الذاكرة`;
-
-      // Data Quality Check: % of orders with valid timestamp, totalAmount > 0, and non-empty phone
-      if (biState.allOrders.length > 0) {
-        let validOrders = 0;
-        biState.allOrders.forEach(o => {
-          const hasTime = !!o.timestamp && !isNaN(new Date(o.timestamp).getTime());
-          const hasAmount = !isNaN(parseFloat(o.totalAmount || o.subtotal)) && parseFloat(o.totalAmount || o.subtotal) > 0;
-          const hasPhone = !!o.phone && String(o.phone).trim().length >= 8;
-          if (hasTime && hasAmount && hasPhone) validOrders++;
         });
-        const qualityPct = ((validOrders / biState.allOrders.length) * 100).toFixed(1);
-        if (qualityScore) qualityScore.textContent = `${qualityPct}%`;
-      }
 
-      if (lastSyncEl && biState.lastSync) {
-        lastSyncEl.textContent = `آخر مزامنة: ${formatCairoDateTime(biState.lastSync)}`;
-      }
-    }
-
-    // Time Filter Bounds Calculation (Cairo Local Time)
-    function computeDateRangeBounds(periodKey) {
-      // Determine today's Cairo date representation
-      const now = new Date();
-      const todayCairoStr = getCairoDateString(now); // "YYYY-MM-DD"
-      const [year, month, day] = todayCairoStr.split('-').map(Number);
-      
-      const cairoTodayDate = new Date(year, month - 1, day);
-
-      let startCurrent, endCurrent;
-      let startPrior, endPrior;
-
-      if (periodKey === 'today') {
-        startCurrent = new Date(year, month - 1, day, 0, 0, 0);
-        endCurrent = new Date(year, month - 1, day, 23, 59, 59, 999);
-
-        // Prior is yesterday
-        startPrior = new Date(year, month - 1, day - 1, 0, 0, 0);
-        endPrior = new Date(year, month - 1, day - 1, 23, 59, 59, 999);
-      } else if (periodKey === '7d') {
-        startCurrent = new Date(year, month - 1, day - 6, 0, 0, 0);
-        endCurrent = new Date(year, month - 1, day, 23, 59, 59, 999);
-
-        startPrior = new Date(year, month - 1, day - 13, 0, 0, 0);
-        endPrior = new Date(year, month - 1, day - 7, 23, 59, 59, 999);
-      } else if (periodKey === '30d') {
-        startCurrent = new Date(year, month - 1, day - 29, 0, 0, 0);
-        endCurrent = new Date(year, month - 1, day, 23, 59, 59, 999);
-
-        startPrior = new Date(year, month - 1, day - 59, 0, 0, 0);
-        endPrior = new Date(year, month - 1, day - 30, 23, 59, 59, 999);
-      } else if (periodKey === '90d') {
-        startCurrent = new Date(year, month - 1, day - 89, 0, 0, 0);
-        endCurrent = new Date(year, month - 1, day, 23, 59, 59, 999);
-
-        startPrior = new Date(year, month - 1, day - 179, 0, 0, 0);
-        endPrior = new Date(year, month - 1, day - 90, 23, 59, 59, 999);
-      } else if (periodKey === 'this_month') {
-        startCurrent = new Date(year, month - 1, 1, 0, 0, 0);
-        endCurrent = new Date(year, month - 1, day, 23, 59, 59, 999);
-
-        // Previous month full
-        const daysInPrevMonth = new Date(year, month - 1, 0).getDate();
-        startPrior = new Date(year, month - 2, 1, 0, 0, 0);
-        endPrior = new Date(year, month - 2, Math.min(day, daysInPrevMonth), 23, 59, 59, 999);
-      } else if (periodKey === 'last_month') {
-        const prevMonthYear = month === 1 ? year - 1 : year;
-        const prevMonthIdx = month === 1 ? 11 : month - 2;
-        const daysInPrev = new Date(prevMonthYear, prevMonthIdx + 1, 0).getDate();
-
-        startCurrent = new Date(prevMonthYear, prevMonthIdx, 1, 0, 0, 0);
-        endCurrent = new Date(prevMonthYear, prevMonthIdx, daysInPrev, 23, 59, 59, 999);
-
-        const priorPriorYear = prevMonthIdx === 0 ? prevMonthYear - 1 : prevMonthYear;
-        const priorPriorIdx = prevMonthIdx === 0 ? 11 : prevMonthIdx - 1;
-        const daysInPriorPrior = new Date(priorPriorYear, priorPriorIdx + 1, 0).getDate();
-
-        startPrior = new Date(priorPriorYear, priorPriorIdx, 1, 0, 0, 0);
-        endPrior = new Date(priorPriorYear, priorPriorIdx, daysInPriorPrior, 23, 59, 59, 999);
-      } else if (periodKey === 'custom' && biState.customStart && biState.customEnd) {
-        const [sy, sm, sd] = biState.customStart.split('-').map(Number);
-        const [ey, em, ed] = biState.customEnd.split('-').map(Number);
-        startCurrent = new Date(sy, sm - 1, sd, 0, 0, 0);
-        endCurrent = new Date(ey, em - 1, ed, 23, 59, 59, 999);
-
-        const durationMs = endCurrent.getTime() - startCurrent.getTime();
-        endPrior = new Date(startCurrent.getTime() - 1);
-        startPrior = new Date(endPrior.getTime() - durationMs);
-      } else {
-        // all time
-        startCurrent = new Date(2020, 0, 1);
-        endCurrent = new Date(year, month - 1, day, 23, 59, 59, 999);
-        startPrior = null;
-        endPrior = null;
-      }
-
-      return { startCurrent, endCurrent, startPrior, endPrior };
-    }
-
-    // Filter orders by date range
-    function applyPeriodFilterAndCompute() {
-      const bounds = computeDateRangeBounds(biState.currentPeriod);
-
-      const periodBadge = document.getElementById('period-text-info');
-      if (periodBadge) {
-        if (biState.currentPeriod === 'all') {
-          periodBadge.textContent = 'عرض شامل لجميع الطلبات المسجلة منذ التأسيس';
-        } else {
-          const sStr = bounds.startCurrent.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', year: 'numeric' });
-          const eStr = bounds.endCurrent.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', year: 'numeric' });
-          periodBadge.textContent = `من ${sStr} إلى ${eStr} (توقيت القاهرة)`;
+        if (statRevenue) {
+          statRevenue.textContent = currencyFormatter.format(totalRevenue) + ' ج.م';
         }
+
+        renderStatusChart(statusDistribution);
+        renderRevenueChart(dailyRevenueMap);
+        renderTopProducts(productSalesMap);
+
+        addLog(`ANALYSIS COMPLETED: ${orders.length} orders processed. Active Revenue: ${totalRevenue} EGP`);
+      } catch (err) {
+        console.error('Failed to load sales analytics:', err);
+        addLog(`ERROR IN ANALYTICS PIPELINE: ${err.message}`);
+      }
+    }
+
+    function renderStatusChart(statusMap) {
+      const canvas = document.getElementById('statusDoughnutChart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const labels = Object.keys(statusMap);
+      const data = Object.values(statusMap);
+
+      if (statusChartInstance) {
+        statusChartInstance.destroy();
       }
 
-      // Filter Current & Prior orders
-      biState.filteredOrders = [];
-      biState.priorPeriodOrders = [];
-
-      biState.allOrders.forEach(o => {
-        if (!o.timestamp) return;
-        const oDate = new Date(o.timestamp);
-        if (isNaN(oDate.getTime())) return;
-
-        if (oDate >= bounds.startCurrent && oDate <= bounds.endCurrent) {
-          biState.filteredOrders.push(o);
-        } else if (bounds.startPrior && bounds.endPrior && oDate >= bounds.startPrior && oDate <= bounds.endPrior) {
-          biState.priorPeriodOrders.push(o);
-        }
-      });
-
-      appendDiagnosticLog(`Applied period filter '${biState.currentPeriod}': matched ${biState.filteredOrders.length} orders (prior period: ${biState.priorPeriodOrders.length})`, 'INFO');
-
-      // Execute metrics computations
-      computeAndRenderAllMetrics(bounds);
-    }
-
-    // Core Metrics Engine
-    function computeAndRenderAllMetrics(bounds) {
-      // 1. Process Current Period Orders
-      const currentStats = aggregateOrderDataset(biState.filteredOrders);
-      const priorStats = aggregateOrderDataset(biState.priorPeriodOrders);
-
-      // 2. Render Overview KPIs
-      renderExecutiveKPIs(currentStats, priorStats);
-
-      // 3. Render Sales & Revenue Section
-      renderRevenueTabKPIs(currentStats);
-
-      // 4. Render Fulfillment Funnel & Geography
-      renderFulfillmentSection(currentStats);
-
-      // 5. Render Inventory & Products
-      renderInventorySection(currentStats);
-
-      // 6. Render Customer Intelligence
-      renderCustomerIntelligence(currentStats);
-
-      // 7. Render Marketing & Pink Friday
-      renderMarketingSection(currentStats);
-
-      // 8. Render All Interactive Charts
-      renderAllCharts(currentStats, priorStats, bounds);
-    }
-
-    // Aggregates an array of orders into a metrics object
-    function aggregateOrderDataset(orders) {
-      let grossRegisteredValue = 0;
-      let activeOrdersValue = 0;
-      let deliveredRevenue = 0;
-      let inPipelineValue = 0;
-      let cancelledValue = 0;
-      let shippingFeesTotal = 0;
-
-      let totalOrderCount = orders.length;
-      let activeOrderCount = 0;
-      let deliveredOrderCount = 0;
-      let cancelledOrderCount = 0;
-      let totalUnitsSold = 0;
-
-      const statusBreakdown = {
-        'جديد': 0,
-        'قيد التجهيز': 0,
-        'تم الشحن': 0,
-        'تم التوصيل': 0,
-        'ملغي': 0
+      const statusColors = {
+        'جديد': '#38bdf8',
+        'قيد التجهيز': '#f59e0b',
+        'تم التواصل': '#fbbf24',
+        'تم الشحن': '#818cf8',
+        'جاري الشحن': '#a78bfa',
+        'تم التوصيل': '#10b981',
+        'مكتمل': '#059669',
+        'ملغي': '#ef4444'
       };
 
-      const dailyDeliveredMap = {};
-      const dailyActiveMap = {};
-      const dailySubtotalMap = {};
-      const dailyShippingMap = {};
+      const backgroundColors = labels.map(l => statusColors[l] || '#94a3b8');
 
-      const productsSoldMap = {};
-      const customerOrdersMap = {};
-      const governorateMap = {};
-
-      let pinkFridayRevenue = 0;
-      let pinkFridayOrdersCount = 0;
-      let pinkFridayUnitsCount = 0;
-
-      orders.forEach(o => {
-        const rawStatus = normalizeStatus(o.status);
-        let sKey = 'جديد';
-        if (rawStatus === 'قيد التجهيز' || rawStatus === 'تم التواصل') sKey = 'قيد التجهيز';
-        else if (rawStatus === 'تم الشحن' || rawStatus === 'جاري الشحن') sKey = 'تم الشحن';
-        else if (rawStatus === 'تم التوصيل' || rawStatus === 'مكتمل') sKey = 'تم التوصيل';
-        else if (rawStatus === 'ملغي') sKey = 'ملغي';
-
-        statusBreakdown[sKey] = (statusBreakdown[sKey] || 0) + 1;
-
-        // Financial extraction
-        let orderTotal = 0;
-        if (o.totalAmount && !isNaN(parseFloat(o.totalAmount))) {
-          orderTotal = parseFloat(o.totalAmount);
-        } else if (o.subtotal) {
-          orderTotal = parseFloat(o.subtotal) + (parseFloat(o.shippingFee) || 0);
-        } else if (o.products) {
-          const sum = Object.values(o.products).reduce((acc, p) => {
-            const lt = typeof p.lineTotal === 'number' ? p.lineTotal : (Number(p.price) || 0) * (Number(p.quantity) || 1);
-            return acc + lt;
-          }, 0);
-          orderTotal = sum + (parseFloat(o.shippingFee) || 0);
-        }
-
-        const shippingFee = parseFloat(o.shippingFee) || 0;
-        const subtotal = Math.max(0, orderTotal - shippingFee);
-
-        grossRegisteredValue += orderTotal;
-
-        if (sKey === 'ملغي') {
-          cancelledOrderCount++;
-          cancelledValue += orderTotal;
-        } else {
-          activeOrderCount++;
-          activeOrdersValue += orderTotal;
-          shippingFeesTotal += shippingFee;
-
-          if (sKey === 'تم التوصيل') {
-            deliveredOrderCount++;
-            deliveredRevenue += orderTotal;
-          } else {
-            inPipelineValue += orderTotal;
-          }
-
-          // Daily groupings (Cairo Local Date)
-          const cairoDate = getCairoDateString(o.timestamp);
-          if (cairoDate) {
-            dailyActiveMap[cairoDate] = (dailyActiveMap[cairoDate] || 0) + orderTotal;
-            dailySubtotalMap[cairoDate] = (dailySubtotalMap[cairoDate] || 0) + subtotal;
-            dailyShippingMap[cairoDate] = (dailyShippingMap[cairoDate] || 0) + shippingFee;
-
-            if (sKey === 'تم التوصيل') {
-              dailyDeliveredMap[cairoDate] = (dailyDeliveredMap[cairoDate] || 0) + orderTotal;
-            }
-          }
-
-          // Products Sales aggregation
-          let orderHasPinkFriday = false;
-          if (o.products && typeof o.products === 'object') {
-            Object.values(o.products).forEach(p => {
-              if (!p) return;
-              const pId = p.id || p.productId || p.name || 'مستحضر';
-              const pName = p.name || 'مستحضر داندي';
-              const pQty = parseInt(p.quantity, 10) || 1;
-              const pPrice = Number(p.price) || 0;
-              const pLineTotal = typeof p.lineTotal === 'number' ? p.lineTotal : (pPrice * pQty);
-
-              totalUnitsSold += pQty;
-
-              if (p.isPinkFriday) {
-                orderHasPinkFriday = true;
-                pinkFridayRevenue += pLineTotal;
-                pinkFridayUnitsCount += pQty;
-              }
-
-              if (!productsSoldMap[pId]) {
-                productsSoldMap[pId] = {
-                  id: pId,
-                  name: pName,
-                  price: pPrice,
-                  quantity: 0,
-                  revenue: 0
-                };
-              }
-              productsSoldMap[pId].quantity += pQty;
-              productsSoldMap[pId].revenue += pLineTotal;
-            });
-          }
-
-          if (orderHasPinkFriday) {
-            pinkFridayOrdersCount++;
-          }
-
-          // Customer aggregation (normalized phone number)
-          const rawPhone = String(o.phone || '').trim();
-          const normPhone = rawPhone.replace(/\D/g, '');
-          const custKey = normPhone || (o.name ? `name_${o.name.trim()}` : `order_${o.id}`);
-
-          if (!customerOrdersMap[custKey]) {
-            customerOrdersMap[custKey] = {
-              name: o.name || 'عميل داندي',
-              phone: rawPhone || 'غير مسجل',
-              governorate: o.governorate || 'غير محدد',
-              ordersCount: 0,
-              totalSpent: 0
-            };
-          }
-          customerOrdersMap[custKey].ordersCount++;
-          customerOrdersMap[custKey].totalSpent += orderTotal;
-
-          // Governorate aggregation
-          const rawGov = String(o.governorate || 'أخرى / غير محدد').trim();
-          if (!governorateMap[rawGov]) {
-            governorateMap[rawGov] = {
-              name: rawGov,
-              ordersCount: 0,
-              totalRevenue: 0,
-              cancelledCount: 0
-            };
-          }
-          governorateMap[rawGov].ordersCount++;
-          governorateMap[rawGov].totalRevenue += orderTotal;
-        }
-
-        // Track cancellations per governorate
-        if (sKey === 'ملغي' && o.governorate) {
-          const rawGov = String(o.governorate).trim();
-          if (!governorateMap[rawGov]) {
-            governorateMap[rawGov] = {
-              name: rawGov,
-              ordersCount: 0,
-              totalRevenue: 0,
-              cancelledCount: 0
-            };
-          }
-          governorateMap[rawGov].cancelledCount++;
-        }
-      });
-
-      const aov = activeOrderCount > 0 ? (activeOrdersValue / activeOrderCount) : 0;
-      const basketSize = activeOrderCount > 0 ? (totalUnitsSold / activeOrderCount) : 0;
-      const deliveryRate = totalOrderCount > 0 ? ((deliveredOrderCount / totalOrderCount) * 100) : 0;
-      const cancellationRate = totalOrderCount > 0 ? ((cancelledOrderCount / totalOrderCount) * 100) : 0;
-
-      return {
-        grossRegisteredValue,
-        activeOrdersValue,
-        deliveredRevenue,
-        inPipelineValue,
-        cancelledValue,
-        shippingFeesTotal,
-        totalOrderCount,
-        activeOrderCount,
-        deliveredOrderCount,
-        cancelledOrderCount,
-        totalUnitsSold,
-        aov,
-        basketSize,
-        deliveryRate,
-        cancellationRate,
-        statusBreakdown,
-        dailyDeliveredMap,
-        dailyActiveMap,
-        dailySubtotalMap,
-        dailyShippingMap,
-        productsSoldMap,
-        customerOrdersMap,
-        governorateMap,
-        pinkFridayRevenue,
-        pinkFridayOrdersCount,
-        pinkFridayUnitsCount
-      };
-    }
-
-    // Helper: Trend badge calculation
-    function setTrendBadge(elId, current, prior, isReverse = false) {
-      const el = document.getElementById(elId);
-      if (!el) return;
-
-      if (prior == null || prior === 0) {
-        if (current > 0) {
-          el.className = 'bi-trend-badge up';
-          el.innerHTML = '<i class="fas fa-arrow-up"></i> +100%';
-        } else {
-          el.className = 'bi-trend-badge neutral';
-          el.textContent = 'مستقر 0%';
-        }
-        return;
-      }
-
-      const diff = ((current - prior) / prior) * 100;
-      const isPositive = diff >= 0;
-      const isGood = isReverse ? !isPositive : isPositive;
-
-      el.className = `bi-trend-badge ${isGood ? 'up' : 'down'}`;
-      el.innerHTML = `<i class="fas fa-arrow-${isPositive ? 'up' : 'down'}"></i> ${Math.abs(diff).toFixed(1)}%`;
-    }
-
-    // Render Overview KPIs
-    function renderExecutiveKPIs(curr, prior) {
-      document.getElementById('kpi-delivered-revenue').textContent = formatMoney(curr.deliveredRevenue);
-      setTrendBadge('trend-delivered-rev', curr.deliveredRevenue, prior.deliveredRevenue);
-
-      document.getElementById('kpi-active-revenue').textContent = formatMoney(curr.activeOrdersValue);
-      setTrendBadge('trend-active-rev', curr.activeOrdersValue, prior.activeOrdersValue);
-
-      document.getElementById('kpi-total-orders').textContent = curr.totalOrderCount.toLocaleString();
-      document.getElementById('kpi-active-orders-count').textContent = `${curr.activeOrderCount} طلب نشط`;
-      setTrendBadge('trend-total-orders', curr.totalOrderCount, prior.totalOrderCount);
-
-      document.getElementById('kpi-aov').textContent = formatMoney(curr.aov);
-      setTrendBadge('trend-aov', curr.aov, prior.aov);
-
-      document.getElementById('kpi-delivery-rate').textContent = `${curr.deliveryRate.toFixed(1)}%`;
-      document.getElementById('kpi-cancellation-rate').textContent = `${curr.cancellationRate.toFixed(1)}%`;
-      document.getElementById('kpi-basket-size').textContent = `${curr.basketSize.toFixed(1)} قطعة`;
-    }
-
-    // Render Revenue Tab KPIs
-    function renderRevenueTabKPIs(curr) {
-      document.getElementById('rev-gross-val').textContent = formatMoney(curr.grossRegisteredValue);
-      document.getElementById('rev-delivered-val').textContent = formatMoney(curr.deliveredRevenue);
-      document.getElementById('rev-pipeline-val').textContent = formatMoney(curr.inPipelineValue);
-      document.getElementById('rev-cancelled-val').textContent = formatMoney(curr.cancelledValue);
-      document.getElementById('rev-shipping-val').textContent = formatMoney(curr.shippingFeesTotal);
-    }
-
-    // Render Fulfillment Funnel & Geography
-    function renderFulfillmentSection(curr) {
-      const b = curr.statusBreakdown;
-      const tot = curr.totalOrderCount || 1;
-
-      document.getElementById('funnel-new').textContent = b['جديد'];
-      document.getElementById('funnel-new-pct').textContent = `${((b['جديد'] / tot) * 100).toFixed(1)}%`;
-
-      document.getElementById('funnel-prep').textContent = b['قيد التجهيز'];
-      document.getElementById('funnel-prep-pct').textContent = `${((b['قيد التجهيز'] / tot) * 100).toFixed(1)}%`;
-
-      document.getElementById('funnel-shipped').textContent = b['تم الشحن'];
-      document.getElementById('funnel-shipped-pct').textContent = `${((b['تم الشحن'] / tot) * 100).toFixed(1)}%`;
-
-      document.getElementById('funnel-delivered').textContent = b['تم التوصيل'];
-      document.getElementById('funnel-delivered-pct').textContent = `${((b['تم التوصيل'] / tot) * 100).toFixed(1)}%`;
-
-      document.getElementById('funnel-cancelled').textContent = b['ملغي'];
-      document.getElementById('funnel-cancelled-pct').textContent = `${((b['ملغي'] / tot) * 100).toFixed(1)}%`;
-
-      // Render Governorate Table
-      const govTableBody = document.getElementById('governorate-table-body');
-      if (govTableBody) {
-        const sortedGovs = Object.values(curr.governorateMap).sort((a, b) => b.ordersCount - a.ordersCount);
-        if (sortedGovs.length === 0) {
-          govTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:16px;">لا توجد بيانات جغرافية في هذه الفترة.</td></tr>';
-        } else {
-          govTableBody.innerHTML = '';
-          sortedGovs.forEach(g => {
-            const share = ((g.ordersCount / tot) * 100).toFixed(1);
-            const totalWithCancel = g.ordersCount + g.cancelledCount;
-            const cancelPct = totalWithCancel > 0 ? ((g.cancelledCount / totalWithCancel) * 100).toFixed(1) : 0;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td style="font-weight:700; color:var(--bi-slate-900);">${escapeHtml(g.name)}</td>
-              <td><span class="bi-tag bi-tag-blue">${g.ordersCount} طلب</span></td>
-              <td>${share}%</td>
-              <td style="font-weight:700; color:var(--bi-primary-dark);">${formatMoney(g.totalRevenue)}</td>
-              <td><span class="bi-tag ${cancelPct > 15 ? 'bi-tag-rose' : 'bi-tag-gray'}">${cancelPct}%</span></td>
-            `;
-            govTableBody.appendChild(tr);
-          });
-        }
-      }
-    }
-
-    // Render Inventory & Products
-    function renderInventorySection(curr) {
-      let activeProds = 0;
-      let lowStockCount = 0;
-      let soldOutCount = 0;
-
-      const catalogMap = {};
-      biState.allProducts.forEach(p => {
-        catalogMap[p.id] = p;
-        if (!p.isHidden) activeProds++;
-        const qty = parseInt(p.stockQuantity, 10) || 0;
-        if (p.isSoldOut || qty <= 0) soldOutCount++;
-        else if (qty > 0 && qty <= 5) lowStockCount++;
-      });
-
-      document.getElementById('inv-total-prods').textContent = biState.allProducts.length;
-      document.getElementById('inv-active-prods').textContent = `${activeProds} منتج متاح على المتجر`;
-      document.getElementById('inv-low-stock-count').textContent = lowStockCount;
-      document.getElementById('inv-soldout-count').textContent = soldOutCount;
-
-      renderTopProductsTable();
-
-      // Zero-sales products
-      const zeroTableBody = document.getElementById('zero-sales-table-body');
-      if (zeroTableBody) {
-        const zeroProds = biState.allProducts.filter(p => !curr.productsSoldMap[p.id]);
-        if (zeroProds.length === 0) {
-          zeroTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:16px;">جميع المنتجات سجلت مبيعات في هذه الفترة!</td></tr>';
-        } else {
-          zeroTableBody.innerHTML = '';
-          zeroProds.slice(0, 15).forEach(p => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td style="font-weight:700;">${escapeHtml(p.name)}</td>
-              <td>${formatMoney(p.price)}</td>
-              <td>${p.stockQuantity ?? 0} قطعة</td>
-              <td><span class="bi-tag bi-tag-gray">${escapeHtml(p.category || 'عام')}</span></td>
-            `;
-            zeroTableBody.appendChild(tr);
-          });
-        }
-      }
-    }
-
-    function renderTopProductsTable() {
-      const topBody = document.getElementById('top-products-table-body');
-      if (!topBody) return;
-
-      const currentStats = aggregateOrderDataset(biState.filteredOrders);
-      const prodsList = Object.values(currentStats.productsSoldMap);
-
-      if (biState.productSortBy === 'rev') {
-        prodsList.sort((a, b) => b.revenue - a.revenue);
-      } else {
-        prodsList.sort((a, b) => b.quantity - a.quantity);
-      }
-
-      const top10 = prodsList.slice(0, 10);
-      if (top10.length === 0) {
-        topBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">لا توجد مبيعات مسجلة في هذا النطاق الزمني.</td></tr>';
-        return;
-      }
-
-      topBody.innerHTML = '';
-      top10.forEach((p, idx) => {
-        const rankClass = idx === 0 ? 'bi-rank-1' : (idx === 1 ? 'bi-rank-2' : (idx === 2 ? 'bi-rank-3' : ''));
-        // Find product in catalog for stock
-        const catalogProd = biState.allProducts.find(cp => cp.id === p.id || cp.name === p.name);
-        const stockQty = catalogProd ? (parseInt(catalogProd.stockQuantity, 10) || 0) : 'غير محدد';
-        const isSoldOut = catalogProd ? catalogProd.isSoldOut : false;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><span class="bi-rank ${rankClass}">${idx + 1}</span></td>
-          <td style="font-weight:700; color:var(--bi-slate-900);">${escapeHtml(p.name)}</td>
-          <td>${formatMoney(p.price)}</td>
-          <td><span class="bi-tag bi-tag-blue">${p.quantity} قطعة</span></td>
-          <td style="font-weight:700; color:var(--bi-primary-dark);">${formatMoney(p.revenue)}</td>
-          <td>${stockQty}</td>
-          <td>
-            ${isSoldOut ? '<span class="bi-tag bi-tag-rose">نافد</span>' : '<span class="bi-tag bi-tag-emerald">متوفر</span>'}
-          </td>
-        `;
-        topBody.appendChild(tr);
-      });
-    }
-
-    // Render Customer Intelligence
-    function renderCustomerIntelligence(curr) {
-      const custs = Object.values(curr.customerOrdersMap);
-      const uniqueCount = custs.length;
-      let repeatCount = 0;
-
-      custs.forEach(c => {
-        if (c.ordersCount > 1) repeatCount++;
-      });
-
-      const repeatRate = uniqueCount > 0 ? ((repeatCount / uniqueCount) * 100) : 0;
-      const avgSpend = uniqueCount > 0 ? (curr.activeOrdersValue / uniqueCount) : 0;
-
-      document.getElementById('cust-unique-count').textContent = uniqueCount.toLocaleString();
-      document.getElementById('cust-repeat-rate').textContent = `${repeatRate.toFixed(1)}%`;
-      document.getElementById('cust-repeat-count').textContent = `${repeatCount} عميل اشترى أكثر من مرة`;
-      document.getElementById('cust-avg-spend').textContent = formatMoney(avgSpend);
-
-      // Top loyal customers table
-      const topCustBody = document.getElementById('top-customers-table-body');
-      if (topCustBody) {
-        const sortedCusts = [...custs].sort((a, b) => b.totalSpent - a.totalSpent).slice(0, 10);
-        if (sortedCusts.length === 0) {
-          topCustBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:16px;">لا توجد بيانات عملاء في هذه الفترة.</td></tr>';
-        } else {
-          topCustBody.innerHTML = '';
-          sortedCusts.forEach(c => {
-            // Mask phone: 01012345678 -> 010****5678
-            let maskedPhone = c.phone;
-            if (maskedPhone.length >= 8) {
-              const start = maskedPhone.slice(0, 3);
-              const end = maskedPhone.slice(-4);
-              maskedPhone = `${start}****${end}`;
-            }
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td style="font-weight:700; color:var(--bi-slate-900);">${escapeHtml(c.name)}</td>
-              <td style="direction:ltr; text-align:right; font-family:monospace;">${escapeHtml(maskedPhone)}</td>
-              <td><span class="bi-tag bi-tag-blue">${c.ordersCount} طلبات</span></td>
-              <td style="font-weight:700; color:var(--bi-primary-dark);">${formatMoney(c.totalSpent)}</td>
-              <td>${escapeHtml(c.governorate)}</td>
-            `;
-            topCustBody.appendChild(tr);
-          });
-        }
-      }
-    }
-
-    // Render Marketing Section
-    function renderMarketingSection(curr) {
-      document.getElementById('mkt-pink-revenue').textContent = formatMoney(curr.pinkFridayRevenue);
-      const share = curr.activeOrdersValue > 0 ? ((curr.pinkFridayRevenue / curr.activeOrdersValue) * 100).toFixed(1) : 0;
-      document.getElementById('mkt-pink-share').textContent = `${share}% من إجمالي مبيعات الفترة`;
-
-      document.getElementById('mkt-pink-orders').textContent = curr.pinkFridayOrdersCount;
-      const orderShare = curr.activeOrderCount > 0 ? ((curr.pinkFridayOrdersCount / curr.activeOrderCount) * 100).toFixed(1) : 0;
-      document.getElementById('mkt-pink-orders-pct').textContent = `${orderShare}% من مجموع الطلبات النشطة`;
-
-      document.getElementById('mkt-promo-items').textContent = `${curr.pinkFridayUnitsCount} قطعة`;
-    }
-
-    // Render Charts
-    function renderAllCharts(curr, prior, bounds) {
-      if (typeof Chart === 'undefined') return;
-
-      // 1. Overview Velocity Line Chart (Current vs Prior)
-      renderVelocityChart(curr, prior, bounds);
-
-      // 2. Overview Status Doughnut Chart
-      renderStatusDonutChart(curr);
-
-      // 3. Sales Tab: Stacked Revenue & Shipping Breakdown
-      renderRevenueBreakdownChart(curr);
-
-      // 4. Sales Tab: Delivered Revenue Trend
-      renderDeliveredTrendChart(curr);
-
-      // 5. Fulfillment Tab: Governorate Top 5 Bar Chart
-      renderGovernorateBarChart(curr);
-
-      // 6. Customers Tab: Retention Donut Chart
-      renderCustomerSegmentChart(curr);
-    }
-
-    function renderVelocityChart(curr, prior, bounds) {
-      const canvas = document.getElementById('overviewVelocityChart');
-      if (!canvas) return;
-
-      if (biState.charts.velocity) biState.charts.velocity.destroy();
-
-      // Collect dates in current bounds
-      const dates = [];
-      const curMap = curr.dailyActiveMap;
-      const curDates = Object.keys(curMap).sort();
-
-      // If specific range, generate sequential dates
-      let labels = [];
-      let currentData = [];
-      let priorData = [];
-
-      if (curDates.length > 0) {
-        labels = curDates.map(d => {
-          const p = d.split('-');
-          return p.length === 3 ? `${p[1]}/${p[2]}` : d;
-        });
-        currentData = curDates.map(d => curMap[d] || 0);
-
-        // Align prior data sequentially
-        const priorDates = Object.keys(prior.dailyActiveMap).sort();
-        priorData = labels.map((_, idx) => {
-          const pd = priorDates[idx];
-          return pd ? (prior.dailyActiveMap[pd] || 0) : 0;
-        });
-      } else {
-        labels = ['اليوم'];
-        currentData = [0];
-        priorData = [0];
-      }
-
-      biState.charts.velocity = new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'مبيعات الفترة الحالية',
-              data: currentData,
-              borderColor: '#db2777',
-              backgroundColor: 'rgba(219, 39, 119, 0.08)',
-              fill: true,
-              tension: 0.3,
-              pointRadius: 4,
-              borderWidth: 2.5
-            },
-            {
-              label: 'مبيعات الفترة السابقة المماثلة',
-              data: priorData,
-              borderColor: '#94a3b8',
-              borderDash: [5, 5],
-              backgroundColor: 'transparent',
-              fill: false,
-              tension: 0.3,
-              pointRadius: 3,
-              borderWidth: 2
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              rtl: true,
-              labels: { font: { family: 'Cairo', size: 12 } }
-            },
-            tooltip: {
-              rtl: true,
-              callbacks: {
-                label: ctx => ` ${ctx.dataset.label}: ${formatMoney(ctx.raw)}`
-              }
-            }
-          },
-          scales: {
-            x: { grid: { display: false }, ticks: { font: { family: 'Cairo' } } },
-            y: {
-              beginAtZero: true,
-              grid: { color: '#f1f5f9' },
-              ticks: {
-                font: { family: 'Cairo' },
-                callback: val => formatMoney(val)
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function renderStatusDonutChart(curr) {
-      const canvas = document.getElementById('overviewStatusChart');
-      if (!canvas) return;
-
-      if (biState.charts.status) biState.charts.status.destroy();
-
-      const b = curr.statusBreakdown;
-      const labels = ['جديد', 'قيد التجهيز', 'تم الشحن', 'تم التوصيل', 'ملغي'];
-      const data = labels.map(l => b[l] || 0);
-      const colors = ['#38bdf8', '#f59e0b', '#818cf8', '#10b981', '#ef4444'];
-
-      biState.charts.status = new Chart(canvas, {
+      statusChartInstance = new Chart(canvas, {
         type: 'doughnut',
         data: {
           labels: labels,
           datasets: [{
             data: data,
-            backgroundColor: colors,
+            backgroundColor: backgroundColors,
             borderWidth: 2,
-            borderColor: '#ffffff'
+            borderColor: '#ffffff',
+            hoverOffset: 6
           }]
         },
         options: {
@@ -2424,198 +509,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             legend: {
               position: 'bottom',
               rtl: true,
-              labels: { font: { family: 'Cairo', size: 11 } }
-            },
-            tooltip: {
-              rtl: true,
-              callbacks: {
-                label: ctx => {
-                  const val = ctx.raw || 0;
-                  const tot = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                  const pct = tot > 0 ? ((val / tot) * 100).toFixed(1) : 0;
-                  return ` ${ctx.label}: ${val} طلب (${pct}%)`;
-                }
+              labels: {
+                boxWidth: 14,
+                font: { family: 'Cairo, sans-serif', size: 12 }
               }
-            }
-          },
-          cutout: '68%'
-        }
-      });
-    }
-
-    function renderRevenueBreakdownChart(curr) {
-      const canvas = document.getElementById('revenueBreakdownBarChart');
-      if (!canvas) return;
-
-      if (biState.charts.revenueBreakdown) biState.charts.revenueBreakdown.destroy();
-
-      const dates = Object.keys(curr.dailyActiveMap).sort();
-      const labels = dates.map(d => {
-        const p = d.split('-');
-        return p.length === 3 ? `${p[1]}/${p[2]}` : d;
-      });
-      const subtotalData = dates.map(d => curr.dailySubtotalMap[d] || 0);
-      const shippingData = dates.map(d => curr.dailyShippingMap[d] || 0);
-
-      biState.charts.revenueBreakdown = new Chart(canvas, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'قيمة المنتجات (Subtotal)',
-              data: subtotalData,
-              backgroundColor: '#fe5d9f'
             },
-            {
-              label: 'رسوم الشحن (Shipping)',
-              data: shippingData,
-              backgroundColor: '#f59e0b'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'Cairo' } } },
-            y: {
-              stacked: true,
-              beginAtZero: true,
-              grid: { color: '#f1f5f9' },
-              ticks: { font: { family: 'Cairo' }, callback: val => formatMoney(val) }
-            }
-          },
-          plugins: {
-            legend: { rtl: true, position: 'top', labels: { font: { family: 'Cairo' } } },
-            tooltip: { rtl: true, callbacks: { label: ctx => ` ${ctx.dataset.label}: ${formatMoney(ctx.raw)}` } }
-          }
-        }
-      });
-    }
-
-    function renderDeliveredTrendChart(curr) {
-      const canvas = document.getElementById('deliveredTrendChart');
-      if (!canvas) return;
-
-      if (biState.charts.deliveredTrend) biState.charts.deliveredTrend.destroy();
-
-      const dates = Object.keys(curr.dailyDeliveredMap).sort();
-      const labels = dates.map(d => {
-        const p = d.split('-');
-        return p.length === 3 ? `${p[1]}/${p[2]}` : d;
-      });
-      const data = dates.map(d => curr.dailyDeliveredMap[d] || 0);
-
-      biState.charts.deliveredTrend = new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: labels.length ? labels : ['لا توجد تسليمات'],
-          datasets: [{
-            label: 'إيرادات الطلبات المسلمة فعلياً',
-            data: data.length ? data : [0],
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4,
-            borderWidth: 2.5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { grid: { display: false }, ticks: { font: { family: 'Cairo' } } },
-            y: {
-              beginAtZero: true,
-              grid: { color: '#f1f5f9' },
-              ticks: { font: { family: 'Cairo' }, callback: val => formatMoney(val) }
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { rtl: true, callbacks: { label: ctx => ` ${formatMoney(ctx.raw)}` } }
-          }
-        }
-      });
-    }
-
-    function renderGovernorateBarChart(curr) {
-      const canvas = document.getElementById('governorateBarChart');
-      if (!canvas) return;
-
-      if (biState.charts.governorate) biState.charts.governorate.destroy();
-
-      const sortedGovs = Object.values(curr.governorateMap).sort((a, b) => b.ordersCount - a.ordersCount).slice(0, 5);
-      const labels = sortedGovs.map(g => g.name);
-      const data = sortedGovs.map(g => g.ordersCount);
-
-      biState.charts.governorate = new Chart(canvas, {
-        type: 'bar',
-        data: {
-          labels: labels.length ? labels : ['لا توجد بيانات'],
-          datasets: [{
-            label: 'عدد الطلبات',
-            data: data.length ? data : [0],
-            backgroundColor: '#0284c7',
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          indexAxis: 'y',
-          scales: {
-            x: { beginAtZero: true, ticks: { font: { family: 'Cairo' } } },
-            y: { ticks: { font: { family: 'Cairo' } } }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { rtl: true, callbacks: { label: ctx => ` ${ctx.raw} طلب` } }
-          }
-        }
-      });
-    }
-
-    function renderCustomerSegmentChart(curr) {
-      const canvas = document.getElementById('customerSegmentDonutChart');
-      if (!canvas) return;
-
-      if (biState.charts.customerSegment) biState.charts.customerSegment.destroy();
-
-      const custs = Object.values(curr.customerOrdersMap);
-      let singleCount = 0;
-      let repeatCount = 0;
-
-      custs.forEach(c => {
-        if (c.ordersCount > 1) repeatCount++;
-        else singleCount++;
-      });
-
-      biState.charts.customerSegment = new Chart(canvas, {
-        type: 'doughnut',
-        data: {
-          labels: ['عملاء لمرة واحدة (One-Time)', 'عملاء متكررون (Repeat)'],
-          datasets: [{
-            data: [singleCount, repeatCount],
-            backgroundColor: ['#94a3b8', '#db2777'],
-            borderWidth: 2,
-            borderColor: '#ffffff'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', rtl: true, labels: { font: { family: 'Cairo' } } },
             tooltip: {
               rtl: true,
               callbacks: {
-                label: ctx => {
-                  const tot = singleCount + repeatCount;
-                  const pct = tot > 0 ? ((ctx.raw / tot) * 100).toFixed(1) : 0;
-                  return ` ${ctx.label}: ${ctx.raw} عميل (${pct}%)`;
+                label: function(ctx) {
+                  const val = ctx.raw || 0;
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                  return ` ${ctx.label}: ${val} طلب (${pct}%)`;
                 }
               }
             }
@@ -2625,82 +531,96 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
     }
 
-    // ==========================================
-    // EXPORT HELPERS (UTF-8 BOM FOR ARABIC EXCEL)
-    // ==========================================
-    function downloadCSV(filename, csvContent) {
-      // Prepend UTF-8 BOM (\uFEFF)
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+    function renderRevenueChart(dailyMap) {
+      const canvas = document.getElementById('revenueLineChart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      const sortedDates = Object.keys(dailyMap).sort();
+      const labels = sortedDates.map(d => {
+        const parts = d.split('-');
+        return parts.length === 3 ? `${parts[1]}/${parts[2]}` : d;
+      });
+      const data = sortedDates.map(d => dailyMap[d]);
+
+      if (revenueChartInstance) {
+        revenueChartInstance.destroy();
+      }
+
+      revenueChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'إجمالي المبيعات (ج.م)',
+            data: data,
+            borderColor: '#DB2777',
+            backgroundColor: 'rgba(219, 39, 119, 0.08)',
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#DB2777',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2.5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              rtl: true,
+              callbacks: {
+                label: function(ctx) {
+                  return ` ${currencyFormatter.format(ctx.raw)} ج.م`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Cairo, sans-serif', size: 11 } }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: {
+                font: { family: 'Cairo, sans-serif', size: 11 },
+                callback: function(val) {
+                  return val + ' ج.م';
+                }
+              }
+            }
+          }
+        }
+      });
     }
 
-    function exportOrdersCSV() {
-      if (biState.filteredOrders.length === 0) {
-        alert('لا توجد طلبات لتصديرها في هذا النطاق الزمني');
+    function renderTopProducts(salesMap) {
+      if (!topProductsBody) return;
+
+      const sortedProds = Object.values(salesMap).sort((a, b) => b.quantity - a.quantity);
+      const top5 = sortedProds.slice(0, 5);
+
+      if (top5.length === 0) {
+        topProductsBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#64748b;">لا توجد بيانات مبيعات منتجات مسجلة حتى الآن.</td></tr>';
         return;
       }
 
-      let csv = 'رقم الطلب,كود الفاتورة,التاريخ (توقيت القاهرة),الحالة,اسم العميل,رقم الهاتف,المحافظة,المدينة,العنوان,إجمالي الطلب,مصاريف الشحن,عدد المنتجات\n';
-
-      biState.filteredOrders.forEach(o => {
-        const timeCairo = formatCairoDateTime(o.timestamp).replace(/,/g, ' ');
-        const total = parseFloat(o.totalAmount || o.subtotal || 0);
-        const shipping = parseFloat(o.shippingFee || 0);
-        const prodCount = o.products ? Object.keys(o.products).length : 0;
-        const cleanName = (o.name || '').replace(/,/g, ' ');
-        const cleanPhone = (o.phone || '').replace(/,/g, ' ');
-        const cleanGov = (o.governorate || '').replace(/,/g, ' ');
-        const cleanCity = (o.city || '').replace(/,/g, ' ');
-        const cleanAddress = (o.address || '').replace(/,/g, ' ');
-
-        csv += `"${o.id}","${o.invoiceCode || ''}","${timeCairo}","${normalizeStatus(o.status)}","${cleanName}","${cleanPhone}","${cleanGov}","${cleanCity}","${cleanAddress}",${total},${shipping},${prodCount}\n`;
+      topProductsBody.innerHTML = '';
+      top5.forEach((p, idx) => {
+        const rankClass = idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : (idx === 2 ? 'rank-3' : ''));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="rank-badge ${rankClass}">${idx + 1}</span></td>
+          <td style="font-weight: 700; color: #1e293b;">${escapeHtml(p.name)}</td>
+          <td style="text-align: center;"><span class="qty-pill">${p.quantity} قطعة</span></td>
+          <td style="text-align: left; font-weight: 700; color: var(--color-blush, #DB2777);">${currencyFormatter.format(p.revenue)} ج.م</td>
+        `;
+        topProductsBody.appendChild(tr);
       });
-
-      downloadCSV(`dandy_orders_${biState.currentPeriod}_${getCairoDateString(new Date())}.csv`, csv);
     }
-
-    function exportProductsCSV() {
-      const curr = aggregateOrderDataset(biState.filteredOrders);
-      const prods = Object.values(curr.productsSoldMap);
-
-      if (prods.length === 0) {
-        alert('لا توجد مبيعات منتجات لتصديرها');
-        return;
-      }
-
-      let csv = 'معرف المنتج,اسم المنتج,سعر القطعة,القطع المباعة,إجمالي المبيعات,المخزون المتبقي\n';
-      prods.forEach(p => {
-        const catalogProd = biState.allProducts.find(cp => cp.id === p.id || cp.name === p.name);
-        const stockQty = catalogProd ? (catalogProd.stockQuantity ?? 0) : 0;
-        const cleanName = (p.name || '').replace(/,/g, ' ');
-        csv += `"${p.id}","${cleanName}",${p.price},${p.quantity},${p.revenue},${stockQty}\n`;
-      });
-
-      downloadCSV(`dandy_product_sales_${biState.currentPeriod}_${getCairoDateString(new Date())}.csv`, csv);
-    }
-
-    function exportGovernoratesCSV() {
-      const curr = aggregateOrderDataset(biState.filteredOrders);
-      const govs = Object.values(curr.governorateMap);
-
-      let csv = 'المحافظة,عدد الطلبات,إجمالي الإيرادات,عدد الطلبات الملغاة\n';
-      govs.forEach(g => {
-        csv += `"${g.name}",${g.ordersCount},${g.totalRevenue},${g.cancelledCount}\n`;
-      });
-
-      downloadCSV(`dandy_governorates_${biState.currentPeriod}_${getCairoDateString(new Date())}.csv`, csv);
-    }
-
-    // Auto-init on page load
-    document.addEventListener('DOMContentLoaded', () => {
-      checkAdminAuth();
-    });
   </script>
 </BaseLayout>
+

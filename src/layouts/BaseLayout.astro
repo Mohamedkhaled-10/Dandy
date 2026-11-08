@@ -132,13 +132,12 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
   <slot />
 
   <dandy-bab-widget
-    knowledge-src="/assets/bab/data/knowledge.json">
+    knowledge-src="../../public/assets/bab/data/knowledge.json">
   </dandy-bab-widget>
 
   <script
-    is:inline
     type="module"
-    src="/assets/bab/widget/bab-widget.js">
+    src="../../public/assets/bab/widget/bab-widget.js">
   </script>
 
   {showFooter && <Footer />}
