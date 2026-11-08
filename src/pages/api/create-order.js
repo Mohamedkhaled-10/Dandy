@@ -11,7 +11,6 @@ import {
   getCampaignStatus,
   calculatePinkFridayPricing
 } from '../../utils/pink-friday-server.ts';
-import { sendOrderNotification } from '../../utils/email-service.ts';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -675,41 +674,13 @@ export async function POST({ request }) {
     // إرسال Webhook (Make.com) من متغير البيئة MAKE_WEBHOOK_URL
     const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
     if (makeWebhookUrl) {
-      // عزل وتعطيل إرسال إيميل الفاتورة عبر Make/Brevo في حال تفعيل إشعارات Gmail الجديدة
-      // لمنع إرسال فاتورتين متكررتين لنفس الطلب، مع الحفاظ الكامل على باقي أتمتات Make كالأرشفة والتسجيل
-      const isGmailEnabled = process.env.GMAIL_NOTIFICATIONS_ENABLED === 'true';
-      const isMakeEmailExplicitlyDisabled = process.env.DISABLE_MAKE_INVOICE_EMAIL === 'true';
-      const shouldSuppressMakeInvoiceEmail = isGmailEnabled || isMakeEmailExplicitlyDisabled;
-
-      const makePayload = {
-        ...orderData,
-        // Migration and email isolation flags for Make scenario routers / filters:
-        sendEmailInvoice: !shouldSuppressMakeInvoiceEmail,
-        skipEmailNotification: shouldSuppressMakeInvoiceEmail,
-        disableBrevoEmail: shouldSuppressMakeInvoiceEmail,
-        emailProvider: isGmailEnabled ? 'GMAIL_RELAY' : (shouldSuppressMakeInvoiceEmail ? 'NONE' : 'BREVO')
-      };
-
       fetch(makeWebhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(makePayload)
+        body: JSON.stringify(orderData)
       }).catch(whErr => {
         console.error('Make webhook sending failed:', whErr);
       });
-    }
-
-    // إرسال إشعار تأكيد الطلب للعميل عبر Google Apps Script Mail Relay (غير متزامن وغير حاجب)
-    try {
-      sendOrderNotification({
-        order: orderData,
-        orderId,
-        eventType: 'ORDER_CONFIRMATION'
-      }).catch(mailErr => {
-        console.error('Order confirmation email failed (non-blocking):', mailErr);
-      });
-    } catch (e) {
-      console.error('Error initiating order confirmation email:', e);
     }
 
     return new Response(JSON.stringify({
