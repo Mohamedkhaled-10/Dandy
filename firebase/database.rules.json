@@ -95,6 +95,19 @@
     "_archive": {
       ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
       ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+    },
+    "privateOrderAccess": {
+      ".read": false,
+      ".write": false
+    },
+    "privateInvoiceAccess": {
+      ".read": false,
+      ".write": false
+    },
+    "notifications_outbox": {
+      ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com'",
+      ".indexOn": ["orderId", "timestamp"]
     }
   }
 }

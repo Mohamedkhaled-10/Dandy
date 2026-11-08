@@ -9,6 +9,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 >
   <slot name="head" slot="head">
     <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
 
     <style is:global>
       .invoice-section {
@@ -295,6 +296,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div style="margin-top: 10px;">
               <span class="invoice-badge-status status-new" id="statusBadge">قيد المراجعة</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Customer Spam Folder Notice -->
+        <div class="customer-spam-notice" style="background: #faf7f8; border: 1px solid #f0e2ea; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px;">
+          <div style="color: var(--color-rose-kiss-500, #fe5d9f); font-size: 1.25rem; margin-top: 2px;">
+            <i class="fas fa-envelope-open-text"></i>
+          </div>
+          <div style="font-size: 0.88rem; line-height: 1.6; color: #555;">
+            <strong style="color: var(--color-primary); display: block; margin-bottom: 4px; font-size: 0.92rem;">تنبيه بخصوص تحديثات طلبك</strong>
+            قد تصل رسائل تأكيد الطلب وتحديثات الشحن من DANDY إلى مجلد الرسائل غير المرغوب فيها (Spam) في Gmail.
+            إذا وجدت رسالة متوقعة من عنواننا الرسمي <code style="direction: ltr; display: inline-block; background: #fff; padding: 1px 6px; border-radius: 4px; border: 1px solid #ebdbe3; color: var(--color-primary); font-size: 0.82rem;">dandybeauty4@gmail.com</code>، وبعد التأكد من عنوان المرسل، يمكنك اختيار «ليست رسالة غير مرغوب فيها» (Not spam)، ليسهل عليك العثور على تحديثات طلبك القادمة في صندوق الوارد.
           </div>
         </div>
 
@@ -645,7 +658,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       `;
     }
 
-    if (idParam) {
+    // Support secure one-click direct access via URL fragment (#access={token})
+    let hashToken = null;
+    const currentHash = window.location.hash ? window.location.hash.substring(1) : '';
+    if (currentHash) {
+      if (currentHash.includes('=')) {
+        const hashParams = new URLSearchParams(currentHash);
+        hashToken = hashParams.get('access') || hashParams.get('token');
+      } else if (currentHash.length >= 32) {
+        hashToken = currentHash;
+      }
+    }
+
+    if (hashToken) {
+      // Immediately strip the token from URL history to prevent exposure in referrers or shared links
+      try {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (e) {}
+
+      fetch('/api/public-invoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ access: hashToken })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success && data.order) {
+          drawOrder(data.order, data.order.orderId || data.order.invoiceCode);
+        } else {
+          orderError();
+        }
+      })
+      .catch(err => {
+        console.error('Invoice token resolution error:', err);
+        orderError();
+      });
+    } else if (idParam) {
       const ref = db.ref('orders/' + idParam);
       ref.on('value', snap => {
         if(snap.exists()) drawOrder(snap.val(), idParam);

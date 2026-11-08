@@ -13,6 +13,7 @@ import {
   sendDiagnosticRelayEmail,
   FIXED_DIAGNOSTIC_RECIPIENT
 } from '../../utils/email-service.ts';
+import { getOrCreateInvoiceToken } from '../../utils/invoice-token.ts';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -284,13 +285,17 @@ export async function POST({ request }) {
         }), { status: 404, headers: { 'Content-Type': 'application/json' } });
       }
 
+      // Fetch or generate secure private invoice access token
+      const invoiceAccessToken = await getOrCreateInvoiceToken(orderId, db);
+
       // Retry send using the SAME notification ID (enforces Apps Script idempotency)
       const retryResult = await sendOrderNotification({
         order: orderData,
         orderId,
         eventType: notifData.eventType || 'ORDER_STATUS_CHANGED',
         newStatus: notifData.orderStatus || orderData.status,
-        retryNotificationId: notificationId
+        retryNotificationId: notificationId,
+        invoiceAccessToken
       });
 
       return new Response(JSON.stringify({
@@ -299,6 +304,94 @@ export async function POST({ request }) {
         status: retryResult.status,
         message: retryResult.message || 'Retry attempted',
         result: retryResult
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // -------------------------------------------------------------------------
+    // ACTION 3.5: SEND_CURRENT_STATUS_NOTIFICATION (For historical or manual updates)
+    // -------------------------------------------------------------------------
+    if (action === 'SEND_CURRENT_STATUS_NOTIFICATION') {
+      const { orderId } = body;
+      if (!orderId || typeof orderId !== 'string') {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'MISSING_ORDER_ID',
+          message: 'Order ID is required'
+        }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      const orderRef = db.ref(`orders/${orderId}`);
+      const orderSnap = await orderRef.once('value');
+      const orderData = orderSnap.val();
+
+      if (!orderData) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'ORDER_NOT_FOUND',
+          message: `Order ${orderId} not found`
+        }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      const rawEmail = orderData.email;
+      if (!isValidEmail(rawEmail)) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'NO_VALID_EMAIL',
+          message: 'لا يوجد بريد إلكتروني صالح مسجل لهذا الطلب'
+        }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      const currentCanonicalStatus = normalizeOrderStatus(orderData.status);
+      const isInitialStatus = (currentCanonicalStatus === 'جديد');
+      const eventType = isInitialStatus ? 'ORDER_CONFIRMATION' : 'ORDER_STATUS_CHANGED';
+
+      const statusSlug = currentCanonicalStatus === 'قيد التجهيز' ? 'processing'
+        : currentCanonicalStatus === 'تم الشحن' ? 'shipped'
+        : currentCanonicalStatus === 'تم التوصيل' ? 'delivered'
+        : currentCanonicalStatus === 'ملغي' ? 'cancelled'
+        : 'new';
+
+      const notificationId = isInitialStatus
+        ? `notif_order_${orderId}_confirmation`
+        : `notif_order_${orderId}_status_${statusSlug}`;
+
+      // Check if notification already accepted by MailApp to prevent duplicate sending
+      const notifRef = db.ref(`notifications_outbox/${notificationId}`);
+      const notifSnap = await notifRef.once('value');
+      const existingNotif = notifSnap.val();
+
+      if (existingNotif && existingNotif.status === 'accepted_by_mailapp') {
+        return new Response(JSON.stringify({
+          success: true,
+          status: 'accepted_by_mailapp',
+          notificationId,
+          deduplicated: true,
+          message: 'تم إرسال وقبول إشعار هذه الحالة مسبقاً بنجاح عبر MailApp (تم منع التكرار)',
+          notification: existingNotif
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      // Generate or retrieve secure private invoice access token
+      const invoiceAccessToken = await getOrCreateInvoiceToken(orderId, db);
+
+      // Dispatch notification
+      const sendResult = await sendOrderNotification({
+        order: { ...orderData, status: currentCanonicalStatus },
+        orderId,
+        eventType,
+        newStatus: currentCanonicalStatus,
+        retryNotificationId: notificationId,
+        invoiceAccessToken
+      });
+
+      return new Response(JSON.stringify({
+        success: sendResult.success,
+        orderId,
+        currentStatus: currentCanonicalStatus,
+        notificationId,
+        status: sendResult.status,
+        message: sendResult.message || 'تم إرسال إشعار الحالة الحالية للعميل بنجاح',
+        notification: sendResult
       }), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
 

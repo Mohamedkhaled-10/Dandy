@@ -1727,6 +1727,279 @@ test('42. sendDiagnosticRelayEmail sends synthetic diagnostics for all 4 statuse
   }
 });
 
+// ---------------------------------------------------------------------------
+// 43. Secure Invoice Token Generation and SHA-256 Hashing
+// ---------------------------------------------------------------------------
+test('43. generateSecureInvoiceToken generates 256-bit base64url token and hashInvoiceToken produces sha256 hex', async () => {
+  const {
+    generateSecureInvoiceToken,
+    hashInvoiceToken,
+    isValidInvoiceTokenFormat
+  } = await import('../src/utils/invoice-token.ts');
+
+  const token1 = generateSecureInvoiceToken();
+  const token2 = generateSecureInvoiceToken();
+
+  assert.equal(typeof token1, 'string');
+  assert.ok(token1.length >= 43 && token1.length <= 44, 'Token length must be 43-44 base64url chars');
+  assert.notEqual(token1, token2, 'Generated tokens must be cryptographically random and unique');
+  assert.equal(isValidInvoiceTokenFormat(token1), true);
+  assert.equal(isValidInvoiceTokenFormat(token2), true);
+
+  const hash1 = hashInvoiceToken(token1);
+  const hash2 = hashInvoiceToken(token2);
+
+  assert.equal(typeof hash1, 'string');
+  assert.equal(hash1.length, 64, 'SHA-256 hash must be 64-char lowercase hex');
+  assert.match(hash1, /^[0-9a-f]{64}$/);
+  assert.notEqual(hash1, hash2);
+
+  // Deterministic verify
+  const expectedHash = crypto.createHash('sha256').update(token1, 'utf8').digest('hex');
+  assert.equal(hash1, expectedHash);
+});
+
+// ---------------------------------------------------------------------------
+// 44. isValidInvoiceTokenFormat Validation Rules
+// ---------------------------------------------------------------------------
+test('44. isValidInvoiceTokenFormat accepts valid base64url tokens and rejects malformed inputs', async () => {
+  const { isValidInvoiceTokenFormat } = await import('../src/utils/invoice-token.ts');
+
+  const validToken = crypto.randomBytes(32).toString('base64url');
+  assert.equal(isValidInvoiceTokenFormat(validToken), true);
+
+  // Rejections
+  assert.equal(isValidInvoiceTokenFormat(''), false);
+  assert.equal(isValidInvoiceTokenFormat(null), false);
+  assert.equal(isValidInvoiceTokenFormat(undefined), false);
+  assert.equal(isValidInvoiceTokenFormat(123), false);
+  assert.equal(isValidInvoiceTokenFormat('short_token'), false);
+  assert.equal(isValidInvoiceTokenFormat('a'.repeat(20)), false);
+  assert.equal(isValidInvoiceTokenFormat('a'.repeat(100)), false);
+  assert.equal(isValidInvoiceTokenFormat(validToken + '+/='), false, 'Standard base64 chars +/= should be rejected');
+  assert.equal(isValidInvoiceTokenFormat('   ' + validToken), false);
+});
+
+// ---------------------------------------------------------------------------
+// 45. Email Templates Render Direct #access={token} Link When Token Provided
+// ---------------------------------------------------------------------------
+test('45. Email templates render direct #access={token} link when invoiceAccessToken is provided', async () => {
+  const {
+    generateOrderConfirmationEmail,
+    generateOrderStatusEmail
+  } = await import('../src/utils/email-service.ts');
+
+  const testToken = 'abc123def456_test_token_base64url_string_789';
+  const order = {
+    name: 'مريم علي',
+    email: 'mariam@example.com',
+    phone: '01123456789',
+    invoiceCode: 'DNY-TOK-01',
+    governorate: 'Cairo',
+    city: 'مدينة نصر',
+    address: 'شارع عباس العقاد',
+    subtotal: 499,
+    shippingFee: 85,
+    totalAmount: 584,
+    products: [{ name: 'كريم بديل الليزر', quantity: 1, price: 499, lineTotal: 499 }]
+  };
+
+  // Confirmation HTML & Text with token
+  const conf = generateOrderConfirmationEmail(order, 'ord_tok_01', testToken);
+  assert.ok(conf.htmlBody.includes(`https://dandy-ebon.vercel.app/invoice#access=${testToken}`));
+  assert.ok(conf.textBody.includes(`https://dandy-ebon.vercel.app/invoice#access=${testToken}`));
+
+  // Confirmation without token falls back to invoiceCode in track-order link
+  const confNoTok = generateOrderConfirmationEmail(order, 'ord_tok_01', null);
+  assert.ok(confNoTok.htmlBody.includes('https://dandy-ebon.vercel.app/track-order?code=DNY-TOK-01'));
+
+  // Status HTML & Text with token
+  const ship = generateOrderStatusEmail(order, 'ord_tok_01', 'تم الشحن', testToken);
+  assert.ok(ship.htmlBody.includes(`https://dandy-ebon.vercel.app/invoice#access=${testToken}`));
+  assert.ok(ship.textBody.includes(`https://dandy-ebon.vercel.app/invoice#access=${testToken}`));
+});
+
+// ---------------------------------------------------------------------------
+// 46. Primary CTA Button Copy in Transactional Emails
+// ---------------------------------------------------------------------------
+test('46. Primary CTA button copy is updated to "عرض فاتورتك وتتبع طلبك 🚚" with proper descriptive text', async () => {
+  const { generateOrderConfirmationEmail, generateOrderStatusEmail } = await import('../src/utils/email-service.ts');
+
+  const testToken = 'secure_token_sample_abc123';
+  const order = {
+    name: 'سارة',
+    email: 'sara@example.com',
+    invoiceCode: 'DNY-CTA-01',
+    totalAmount: 499,
+    products: [{ name: 'منتج', quantity: 1, price: 499, lineTotal: 499 }]
+  };
+
+  const conf = generateOrderConfirmationEmail(order, 'ord_cta_01', testToken);
+  assert.ok(conf.htmlBody.includes('عرض فاتورتك وتتبع طلبك 🚚'));
+  assert.ok(conf.htmlBody.includes('أو يمكنكِ فتح الفاتورة ومتابعة الشحنة مباشرة عبر الرابط التالي:'));
+
+  const status = generateOrderStatusEmail(order, 'ord_cta_01', 'قيد التجهيز', testToken);
+  assert.ok(status.htmlBody.includes('عرض فاتورتك وتتبع طلبك 🚚'));
+  assert.ok(status.htmlBody.includes('أو يمكنكِ فتح الفاتورة ومتابعة الشحنة مباشرة عبر الرابط التالي:'));
+});
+
+// ---------------------------------------------------------------------------
+// 47. Delivered Status Email is Strictly Transactional (Promotional Language Removed)
+// ---------------------------------------------------------------------------
+test('47. Delivered status email is strictly transactional with promotional language removed', async () => {
+  const { generateOrderStatusEmail } = await import('../src/utils/email-service.ts');
+
+  const order = {
+    name: 'هدى',
+    email: 'hoda@example.com',
+    invoiceCode: 'DNY-DEL-01',
+    totalAmount: 499,
+    products: [{ name: 'منتج', quantity: 1, price: 499, lineTotal: 499 }]
+  };
+
+  const del = generateOrderStatusEmail(order, 'ord_del_01', 'تم التوصيل');
+  // Transactional copy present
+  assert.ok(del.htmlBody.includes('تم تسليم طلبك بنجاح'));
+  assert.ok(del.htmlBody.includes('يسعدنا دائماً تقديم أفضل خدمة لكِ'));
+  assert.ok(del.htmlBody.includes('تم تسجيل اكتمال توصيل طلبك'));
+  // Promotional/marketing upsell absent
+  assert.ok(!del.htmlBody.includes('كود خصم'));
+  assert.ok(!del.htmlBody.includes('عروض حصرية'));
+  assert.ok(!del.htmlBody.includes('اشتري الآن'));
+  assert.ok(!del.htmlBody.includes('تخفيضات'));
+});
+
+// ---------------------------------------------------------------------------
+// 48. resolvePublicInvoiceByToken Whitelists Fields and Sanitizes Internal Data
+// ---------------------------------------------------------------------------
+test('48. resolvePublicInvoiceByToken returns strict customer invoice fields without internal secrets', async () => {
+  const { hashInvoiceToken, resolvePublicInvoiceByToken } = await import('../src/utils/invoice-token.ts');
+
+  const rawToken = 'test_token_for_resolution_32bytes_entropy_123';
+  const tokenHash = hashInvoiceToken(rawToken);
+
+  const mockDb = {
+    data: {
+      privateInvoiceAccess: {
+        [tokenHash]: {
+          orderId: 'order_test_999',
+          tokenHash,
+          status: 'active',
+          createdAt: new Date().toISOString()
+        }
+      },
+      orders: {
+        'order_test_999': {
+          invoiceCode: 'DNY-SEC-999',
+          name: 'نور أحمد',
+          phone: '01099998888',
+          email: 'nour@example.com',
+          governorate: 'Cairo',
+          city: 'الزمالك',
+          address: 'شارع 26 يوليو',
+          subtotal: 499,
+          shippingFee: 85,
+          totalAmount: 584,
+          status: 'تم الشحن',
+          timestamp: 1700000000000,
+          products: [{ name: 'سيروم', quantity: 1, price: 499, lineTotal: 499 }],
+          internalNotes: 'Admin private note',
+          adminSecretKey: 'should_never_leak',
+          notifications_outbox: { some: 'secret' }
+        }
+      }
+    },
+    ref(path) {
+      return {
+        async once() {
+          const parts = path.split('/');
+          let val = mockDb.data;
+          for (const p of parts) {
+            val = val ? val[p] : undefined;
+          }
+          return {
+            exists: () => val !== undefined,
+            val: () => val
+          };
+        }
+      };
+    }
+  };
+
+  const invoice = await resolvePublicInvoiceByToken(rawToken, mockDb);
+  assert.ok(invoice, 'Must resolve valid invoice');
+  assert.equal(invoice.orderId, 'order_test_999');
+  assert.equal(invoice.order.invoiceCode, 'DNY-SEC-999');
+  assert.equal(invoice.order.name, 'نور أحمد');
+  assert.equal(invoice.order.phone, '01099998888');
+  assert.equal(invoice.order.email, 'nour@example.com');
+  assert.equal(invoice.order.status, 'تم الشحن');
+  assert.equal(invoice.order.subtotal, 499);
+  assert.equal(invoice.order.shippingFee, 85);
+  assert.equal(invoice.order.totalAmount, 584);
+  assert.equal(invoice.order.products.length, 1);
+
+  // Assert internal fields were sanitized
+  assert.equal(invoice.order.internalNotes, undefined);
+  assert.equal(invoice.order.adminSecretKey, undefined);
+  assert.equal(invoice.order.notifications_outbox, undefined);
+
+  // Invalid token returns null
+  const invalidResult = await resolvePublicInvoiceByToken('invalid_token', mockDb);
+  assert.equal(invalidResult, null);
+});
+
+// ---------------------------------------------------------------------------
+// 49. invoice.astro Contains Spam Notice, no-referrer Meta, and Hash Extraction
+// ---------------------------------------------------------------------------
+test('49. invoice.astro contains customer spam notice, no-referrer meta tag, and hash token extraction', async () => {
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+
+  const invoiceContent = await fs.readFile(path.resolve('src/pages/invoice.astro'), 'utf8');
+
+  // Verify no-referrer meta
+  assert.ok(invoiceContent.includes('<meta name="referrer" content="no-referrer" />'));
+
+  // Verify Spam notice heading and copy
+  assert.ok(invoiceContent.includes('تنبيه بخصوص تحديثات طلبك'));
+  assert.ok(invoiceContent.includes('قد تصل رسائل تأكيد الطلب وتحديثات الشحن من DANDY إلى مجلد الرسائل غير المرغوب فيها (Spam) في Gmail.'));
+  assert.ok(invoiceContent.includes('إذا وجدت رسالة متوقعة من عنواننا الرسمي'));
+  assert.ok(invoiceContent.includes('dandybeauty4@gmail.com'));
+  assert.ok(invoiceContent.includes('«ليست رسالة غير مرغوب فيها» (Not spam)'));
+
+  // Verify Hash extraction & replaceState
+  assert.ok(invoiceContent.includes('window.location.hash'));
+  assert.ok(invoiceContent.includes('history.replaceState'));
+  assert.ok(invoiceContent.includes("fetch('/api/public-invoice'"));
+});
+
+// ---------------------------------------------------------------------------
+// 50. dashboard-order.astro Defines drawOrdersTable, renderOrders Alias, and Isolates Errors
+// ---------------------------------------------------------------------------
+test('50. dashboard-order.astro defines drawOrdersTable, alias renderOrders, and isolates server commit from UI errors', async () => {
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+
+  const dashContent = await fs.readFile(path.resolve('src/pages/dashboard-order.astro'), 'utf8');
+
+  // Verify drawOrdersTable definition and alias
+  assert.ok(dashContent.includes('function drawOrdersTable()'));
+  assert.ok(dashContent.includes('window.renderOrders = drawOrdersTable;'));
+  assert.ok(dashContent.includes('const renderOrders = drawOrdersTable;'));
+
+  // Verify sendCurrentStatusNotification exists
+  assert.ok(dashContent.includes('window.sendCurrentStatusNotification'));
+  assert.ok(dashContent.includes('SEND_CURRENT_STATUS_NOTIFICATION'));
+
+  // Verify historical orders badge is 'لم يُرسل سابقاً'
+  assert.ok(dashContent.includes('لم يُرسل سابقاً'));
+
+  // Verify changeOrderStatus has serverCommitted flag protection
+  assert.ok(dashContent.includes('let serverCommitted = false;'));
+});
+
+
 
 
 

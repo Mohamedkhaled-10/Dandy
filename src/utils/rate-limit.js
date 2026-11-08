@@ -79,6 +79,27 @@ export function getAdminAuthRateLimiter() {
   });
 }
 
+// 6. استعلام فواتير العملاء العامة: 60 استعلاماً في 10 دقائق لكل IP
+export function getInvoiceRateLimiter() {
+  const redis = getRedis();
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, '600 s'),
+    prefix: 'ratelimit:public-invoice',
+  });
+}
+
+export function getGeneralRateLimiter() {
+  const redis = getRedis();
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, '600 s'),
+    prefix: 'ratelimit:general',
+  });
+}
+
 // ذاكرة مؤقتة للحظر والإغلاق المؤقت (In-Memory Fallback)
 const memoryAdminAttempts = new Map();
 

@@ -12,6 +12,7 @@ import {
   calculatePinkFridayPricing
 } from '../../utils/pink-friday-server.ts';
 import { sendOrderNotification } from '../../utils/email-service.ts';
+import { getOrCreateInvoiceToken } from '../../utils/invoice-token.ts';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -699,17 +700,25 @@ export async function POST({ request }) {
       });
     }
 
-    // إرسال إشعار تأكيد الطلب للعميل عبر Google Apps Script Mail Relay (غير متزامن وغير حاجب)
+    // 1. توليد رمز الوصول الآمن للفاتورة وحفظه في العقد الخاصة
+    let invoiceAccessToken = null;
     try {
-      sendOrderNotification({
+      invoiceAccessToken = await getOrCreateInvoiceToken(orderId, adminDb);
+    } catch (tokenErr) {
+      console.error('[CreateOrder] Failed generating private invoice access token:', tokenErr);
+    }
+
+    // 2. إرسال إشعار تأكيد الطلب للعميل عبر Google Apps Script Mail Relay (متزامن وبمهلة محددة مع عزل أخطاء البريد)
+    let emailResult = null;
+    try {
+      emailResult = await sendOrderNotification({
         order: orderData,
         orderId,
-        eventType: 'ORDER_CONFIRMATION'
-      }).catch(mailErr => {
-        console.error('Order confirmation email failed (non-blocking):', mailErr);
+        eventType: 'ORDER_CONFIRMATION',
+        invoiceAccessToken
       });
-    } catch (e) {
-      console.error('Error initiating order confirmation email:', e);
+    } catch (mailErr) {
+      console.error('[CreateOrder] Order confirmation email dispatch failed (resilient):', mailErr);
     }
 
     return new Response(JSON.stringify({

@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
+import { getOrCreateInvoiceToken } from './invoice-token.ts';
 
 export type NotificationStatus =
   | 'accepted_by_mailapp'
@@ -512,12 +513,15 @@ function buildBaseEmailTemplate(params: {
   bodyContentHtml: string;
   orderId: string;
   trackingUrl?: string;
+  invoiceAccessToken?: string;
   isDiagnostic?: boolean;
 }): string {
   const invoiceCode = params.invoiceCode;
   const isDiag = Boolean(params.isDiagnostic);
-  const realTrackingUrl = `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
-  const trackingUrl = params.trackingUrl || realTrackingUrl;
+  const directInvoiceUrl = params.invoiceAccessToken
+    ? `https://dandy-ebon.vercel.app/invoice#access=${encodeURIComponent(params.invoiceAccessToken)}`
+    : `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+  const trackingUrl = params.trackingUrl || directInvoiceUrl;
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="ar" dir="rtl">
@@ -608,15 +612,15 @@ function buildBaseEmailTemplate(params: {
               ${isDiag ? `
                 <div style="padding:12px 16px;background:#fdf2f6;border:1px dashed #f4bbd3;border-radius:8px;text-align:center;font-size:12px;">
                   <div style="font-weight:700;color:#95184c;margin-bottom:2px;">⚙️ فحص تشغيلي تجريبي للإدارة (Diagnostic Mode)</div>
-                  <div style="color:#595050;line-height:1.4;">هذا البريد مخصص لاختبار دقة الفاتورة والاتصال بقنوات الترحيل. روابط التتبع الحقيقية تُنشأ تلقائياً للطلبات الفعلية للعملاء.</div>
+                  <div style="color:#595050;line-height:1.4;">هذا البريد مخصص لاختبار دقة الفاتورة والاتصال بقنوات الترحيل. روابط الوصول الآمن للفاتورة تُنشأ تلقائياً للطلبات الفعلية للعملاء.</div>
                 </div>
               ` : `
                 <div style="text-align:center;padding:12px 0 6px 0;">
                   <a href="${trackingUrl}" target="_blank" class="mobile-cta-btn" style="display:inline-block;background:#2c2828;color:#ffffff;text-decoration:none;padding:13px 36px;border-radius:6px;font-weight:700;font-size:14px;letter-spacing:0.5px;">
-                    تتبع طلبك 🚚
+                    عرض فاتورتك وتتبع طلبك 🚚
                   </a>
                   <div style="margin-top:10px;font-size:11px;color:#857979;line-height:1.5;">
-                    أو يمكنكِ متابعة الشحنة مباشرة عبر الرابط التالي:<br/>
+                    أو يمكنكِ فتح الفاتورة ومتابعة الشحنة مباشرة عبر الرابط التالي:<br/>
                     <span dir="ltr" style="word-break:break-all;color:#be185d;">${escapeHtml(trackingUrl)}</span>
                   </div>
                 </div>
@@ -652,7 +656,12 @@ function buildBaseEmailTemplate(params: {
 /**
  * Plain-text alternative for Order Confirmation.
  */
-export function generateOrderConfirmationText(order: any, orderId: string, options?: { isDiagnostic?: boolean }): string {
+export function generateOrderConfirmationText(
+  order: any,
+  orderId: string,
+  options?: { isDiagnostic?: boolean; invoiceAccessToken?: string } | string
+): string {
+  const invoiceAccessToken = typeof options === 'string' ? options : options?.invoiceAccessToken;
   const invoiceCode = order?.invoiceCode || orderId;
   const financials = calculateOrderFinancials(order);
   const dateStr = formatCairoDateTime(order?.timestamp);
@@ -660,8 +669,11 @@ export function generateOrderConfirmationText(order: any, orderId: string, optio
   const city = order?.city || '';
   const address = order?.address || '';
   const phone = order?.phone || '';
-  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
-  const trackingUrl = `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+  const isDiag = typeof options === 'object' && options?.isDiagnostic ? true : Boolean(orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
+  const directInvoiceUrl = invoiceAccessToken
+    ? `https://dandy-ebon.vercel.app/invoice#access=${encodeURIComponent(invoiceAccessToken)}`
+    : `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+  const trackingUrl = directInvoiceUrl;
 
   const productsList = financials.products.map(p => {
     const qty = p.quantity || 1;
@@ -696,7 +708,7 @@ ${productsList || 'لا توجد منتجات'}
 - المبلغ المطلوب سداده عند الاستلام (COD): ${formatEGP(financials.totalAmount)}
 * الدفع نقداً عند استلام الشحنة.
 
-${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي للإدارة.' : `تتبع مسار طلبك:\n${trackingUrl}`}
+${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي للإدارة.' : `عرض فاتورتك وتتبع طلبك:\n${trackingUrl}`}
 
 خدمة العملاء (واتساب): https://wa.me/201038941005 (01038941005)
 البريد الإلكتروني: dandybeauty4@gmail.com
@@ -706,12 +718,21 @@ ${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي �
 /**
  * Plain-text alternative for Order Status transitions.
  */
-export function generateOrderStatusText(order: any, orderId: string, status: CanonicalStatus, options?: { isDiagnostic?: boolean }): string {
+export function generateOrderStatusText(
+  order: any,
+  orderId: string,
+  status: CanonicalStatus,
+  options?: { isDiagnostic?: boolean; invoiceAccessToken?: string } | string
+): string {
+  const invoiceAccessToken = typeof options === 'string' ? options : options?.invoiceAccessToken;
   const invoiceCode = order?.invoiceCode || orderId;
   const financials = calculateOrderFinancials(order);
   const dateStr = formatCairoDateTime(order?.timestamp);
-  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
-  const trackingUrl = `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+  const isDiag = typeof options === 'object' && options?.isDiagnostic ? true : Boolean(orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
+  const directInvoiceUrl = invoiceAccessToken
+    ? `https://dandy-ebon.vercel.app/invoice#access=${encodeURIComponent(invoiceAccessToken)}`
+    : `https://dandy-ebon.vercel.app/track-order?code=${encodeURIComponent(invoiceCode)}`;
+  const trackingUrl = directInvoiceUrl;
 
   let statusMsg = '';
   switch (status) {
@@ -744,7 +765,7 @@ ${statusMsg}
 - الحالة الحالية: ${status}
 - المبلغ المطلوب سداده عند الاستلام (COD): ${formatEGP(financials.totalAmount)}
 
-${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي للإدارة.' : `تتبع مسار طلبك:\n${trackingUrl}`}
+${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي للإدارة.' : `عرض فاتورتك وتتبع طلبك:\n${trackingUrl}`}
 
 خدمة العملاء (واتساب): https://wa.me/201038941005 (01038941005)
 البريد الإلكتروني: dandybeauty4@gmail.com
@@ -757,8 +778,9 @@ ${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي �
 export function generateOrderConfirmationEmail(
   order: any,
   orderId: string,
-  options?: { isDiagnostic?: boolean }
+  options?: { isDiagnostic?: boolean; invoiceAccessToken?: string } | string
 ): { subject: string; htmlBody: string; textBody: string } {
+  const invoiceAccessToken = typeof options === 'string' ? options : options?.invoiceAccessToken;
   const invoiceCode = order?.invoiceCode || orderId;
   const subject = `تأكيد طلبك من داندي | رقم الفاتورة ${invoiceCode}`;
 
@@ -768,7 +790,7 @@ export function generateOrderConfirmationEmail(
   const address = order?.address || '';
   const phone = order?.phone || '';
   const cairoDateStr = formatCairoDateTime(order?.timestamp);
-  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
+  const isDiag = typeof options === 'object' && options?.isDiagnostic ? true : Boolean(orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
 
   const bodyContentHtml = `
     <h1 style="margin:4px 0 10px 0;font-size:20px;font-weight:800;color:#2c2828;line-height:1.4;">تم تأكيد استلام طلبك بنجاح</h1>
@@ -867,10 +889,14 @@ export function generateOrderConfirmationEmail(
     invoiceCode,
     bodyContentHtml,
     orderId,
+    invoiceAccessToken,
     isDiagnostic: isDiag
   });
 
-  const textBody = generateOrderConfirmationText(order, orderId, { isDiagnostic: isDiag });
+  const textBody = generateOrderConfirmationText(order, orderId, {
+    isDiagnostic: isDiag,
+    invoiceAccessToken
+  });
 
   return { subject, htmlBody, textBody };
 }
@@ -883,12 +909,13 @@ export function generateOrderStatusEmail(
   order: any,
   orderId: string,
   newStatus: CanonicalStatus,
-  options?: { isDiagnostic?: boolean }
+  options?: { isDiagnostic?: boolean; invoiceAccessToken?: string } | string
 ): { subject: string; htmlBody: string; textBody: string } {
+  const invoiceAccessToken = typeof options === 'string' ? options : options?.invoiceAccessToken;
   const invoiceCode = order?.invoiceCode || orderId;
   const gov = order?.governorate || '';
   const city = order?.city || '';
-  const isDiag = Boolean(options?.isDiagnostic || orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
+  const isDiag = typeof options === 'object' && options?.isDiagnostic ? true : Boolean(orderId.startsWith('diag_') || invoiceCode.startsWith('DIAG-'));
   const financials = calculateOrderFinancials(order);
   const cairoDateStr = formatCairoDateTime(order?.timestamp);
 
@@ -932,7 +959,7 @@ export function generateOrderStatusEmail(
       badgeBorder = '#bfdbfe';
       heroTitle = 'تم تسليم طلبك بنجاح';
       statusMessage = 'تم تسجيل اكتمال توصيل طلبك. نتمنى أن تستمتعي بتجربتك مع DANDY.';
-      noteMessage = 'نشكركِ لاختياركِ داندي وثقتكِ الدائمة بمنتجاتنا الطبيعية! نسعد دائماً برأيكِ وتقييمكِ لتجربتكِ.';
+      noteMessage = 'نشكركِ لاختياركِ داندي وثقتكِ الدائمة بمنتجاتنا الطبيعية! يسعدنا دائماً تقديم أفضل خدمة لكِ.';
       break;
 
     case 'ملغي':
@@ -948,7 +975,10 @@ export function generateOrderStatusEmail(
 
     case 'جديد':
     default:
-      return generateOrderConfirmationEmail(order, orderId, { isDiagnostic: isDiag });
+      return generateOrderConfirmationEmail(order, orderId, {
+        isDiagnostic: isDiag,
+        invoiceAccessToken: options?.invoiceAccessToken
+      });
   }
 
   // Build compact products list for status email
@@ -1036,10 +1066,14 @@ export function generateOrderStatusEmail(
     invoiceCode,
     bodyContentHtml,
     orderId,
+    invoiceAccessToken,
     isDiagnostic: isDiag
   });
 
-  const textBody = generateOrderStatusText(order, orderId, newStatus, { isDiagnostic: isDiag });
+  const textBody = generateOrderStatusText(order, orderId, newStatus, {
+    isDiagnostic: isDiag,
+    invoiceAccessToken
+  });
 
   return { subject, htmlBody, textBody };
 }
@@ -1240,6 +1274,7 @@ export async function sendOrderNotification(params: {
   newStatus?: unknown;
   oldStatus?: unknown;
   retryNotificationId?: string;
+  invoiceAccessToken?: string;
 }): Promise<{
   success: boolean;
   status: NotificationStatus;
@@ -1284,6 +1319,16 @@ export async function sendOrderNotification(params: {
 
   const adminDb = getAdminDb();
 
+  // Retrieve or generate secure invoice access token if not explicitly provided and not diagnostic
+  let invoiceAccessToken = params.invoiceAccessToken;
+  if (!invoiceAccessToken && adminDb && orderId && !orderId.startsWith('diag_')) {
+    try {
+      invoiceAccessToken = await getOrCreateInvoiceToken(orderId, adminDb);
+    } catch (tokenErr) {
+      console.warn(`[EmailService] Could not resolve invoice access token for order ${orderId}:`, tokenErr);
+    }
+  }
+
   // 3. Check existing outbox record to prevent double-send
   if (adminDb) {
     try {
@@ -1305,8 +1350,8 @@ export async function sendOrderNotification(params: {
 
   // 4. Generate email content
   const emailContent = (eventType === 'ORDER_STATUS_CHANGED' && targetStatus !== 'جديد')
-    ? generateOrderStatusEmail(order, orderId, targetStatus)
-    : generateOrderConfirmationEmail(order, orderId);
+    ? generateOrderStatusEmail(order, orderId, targetStatus, { invoiceAccessToken })
+    : generateOrderConfirmationEmail(order, orderId, { invoiceAccessToken });
 
   const { subject, htmlBody, textBody } = emailContent;
 

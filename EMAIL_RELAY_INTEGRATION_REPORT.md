@@ -194,6 +194,7 @@ The comprehensive test suite (`test/email-relay.test.mjs`) contains **42 passing
 | **Storefront & Database Isolation** | 11 - 14, 20 | Zero client-side fallback writes, Make.com isolation, canonical status mapping | ✅ 100% Passed |
 | **Financial Calculations & Fallbacks** | 28 - 36 | 1-item, 2-items, bundles, discounts, free vs paid shipping, missing/zero field recovery, synthetic diagnostic | ✅ 100% Passed |
 | **Modern Premium Redesign & Status Templates** | 37 - 42 | Cairo timezone formatting, plain-text generators, processing/shipped/delivered/cancelled templates, batch diagnostics | ✅ 100% Passed |
+| **Reliability, Security & Direct Access (Phase 13)** | 43 - 50 | 256-bit access tokens, SHA-256 hash lookup, #access fragment resolution, Spam notice, drawOrdersTable stability | ✅ 100% Passed |
 
 ---
 
@@ -210,3 +211,73 @@ The comprehensive test suite (`test/email-relay.test.mjs`) contains **42 passing
    - `6`: Test All 4 Status Templates in sequence (`DIAGNOSTIC_SEND_ALL_STATUSES`)
 4. Check your Gmail inbox (`dandybeauty4@gmail.com`) to inspect the delivered email layout and financial details.
 5. Customer notifications remain safely paused (`GMAIL_NOTIFICATIONS_ENABLED=false`) until you explicitly enable them in Vercel.
+
+---
+
+## 8. Phase 13: Reliability, Security, Customer Experience & Deliverability Upgrade
+
+### 8.1. Root Causes & Technical Diagnoses
+
+1. **Unawaited Serverless Promise in Checkout (`create-order.js`)**:
+   - *Problem*: In Vercel serverless environments, returning an HTTP Response immediately causes the container to freeze or terminate the Node.js event loop. The original checkout code called `sendOrderNotification(...).catch(...)` without awaiting it. As a result, outbound HTTP fetch requests to Google Apps Script Mail Relay were routinely aborted before the TCP handshake or response completed.
+   - *Fix*: The notification promise is now awaited with a bounded timeout (`Promise.race` capped at 4.5 seconds) within a dedicated `try/catch` block. This guarantees that Vercel keeps the lambda container warm until relay dispatch completes, while ensuring that even a complete mail relay failure never blocks checkout or delays order creation.
+
+2. **Dashboard Status Update Crash (`dashboard-order.astro`)**:
+   - *Problem*: The table render function in `dashboard-order.astro` is named `drawOrdersTable()`. However, `changeOrderStatus` and `applyBulkAction` invoked `renderOrders()`. This threw an uncaught `ReferenceError: renderOrders is not defined` inside the browser event handler, instantly jumping to the outer `catch` block which displayed a false rollback alert ("حدث خطأ... تم استرجاع الحالة") even though the server had already committed the status update to Firebase RTDB!
+   - *Fix*: Replaced all calls with `drawOrdersTable()`, added global and local aliases `window.renderOrders = drawOrdersTable; const renderOrders = drawOrdersTable;`, and added a `serverCommitted` guard so that any client-side DOM rendering exceptions can never revert the dropdown or trigger false server error alerts.
+
+3. **Historical Orders & Fabricated Notification IDs**:
+   - *Problem*: Orders created before email relay tracking was activated had no record in `notifications_outbox`. The UI showed a misleading `pending` badge and fabricated synthetic IDs like `notif_order_${orderId}_confirmation`. Clicking "إعادة إرسال" passed this synthetic ID to `action: 'RETRY_NOTIFICATION'`, which failed with `404 NOTIFICATION_NOT_FOUND` because no outbox entry existed.
+   - *Fix*: Historical orders with an email address now display a clear `لم يُرسل سابقاً` badge (`st-none`). Added a dedicated server action `SEND_CURRENT_STATUS_NOTIFICATION` protected by Firebase Admin authentication. In the modal, admins can now click **«إرسال إشعار بالحالة الحالية»** to dispatch a fresh, tracked notification for the order's current status without corrupting order timestamps or triggering Make/Telegram webhooks.
+
+### 8.2. Cryptographic Token Architecture & Direct Invoice Access
+
+- **256-bit Entropy Token**: Created using `crypto.randomBytes(32).toString('base64url')` (43-44 base64url characters, ~256 bits of cryptographic entropy).
+- **One-Way SHA-256 Hashing**: The raw token is hashed (`hashInvoiceToken`), and only the hash is used as the key in `privateInvoiceAccess/${tokenHash}`.
+- **Strict Database Security Rules**:
+  ```json
+  "privateOrderAccess": {
+    ".read": false,
+    ".write": false
+  },
+  "privateInvoiceAccess": {
+    ".read": false,
+    ".write": false
+  },
+  "notifications_outbox": {
+    ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
+    ".write": "auth != null && auth.token.email == 'admin@dandy.com'",
+    ".indexOn": ["orderId", "timestamp"]
+  }
+  ```
+  Neither authenticated customers nor unauthenticated guests can read or query these nodes through the client SDK. Only server-side Firebase Admin SDK can access them.
+- **URL Fragment Delivery (`#access={token}`)**:
+  - Direct invoice URLs in customer emails point to `https://dandy-ebon.vercel.app/invoice#access={token}`.
+  - Fragments are strictly client-side: they are never transmitted to origin servers in HTTP request headers or HTTP referrers.
+  - On page load, `invoice.astro` extracts the token, immediately clears the fragment from the browser URL via `history.replaceState(null, '', window.location.pathname + window.location.search)` (preventing leakage if the user copies the address bar), and performs a read-only `POST /api/public-invoice`.
+- **Field Whitelisting**: `resolvePublicInvoiceByToken` strips internal notes, admin credentials, outbox logs, and returns strictly sanitized customer invoice fields.
+- **Fail-Open Rate Limiting**: The `/api/public-invoice` endpoint enforces IP rate limiting via Upstash Redis (60 requests / 10 minutes per IP) with graceful fail-open resilience.
+
+### 8.3. Customer Experience & Spam Awareness Notice
+
+On the customer invoice page (`invoice.astro`), immediately below the order confirmation header, a discreet and reassuring notice is rendered:
+> **تنبيه بخصوص تحديثات طلبك**  
+> قد تصل رسائل تأكيد الطلب وتحديثات الشحن من DANDY إلى مجلد الرسائل غير المرغوب فيها (Spam) في Gmail. إذا وجدت رسالة متوقعة من عنواننا الرسمي `dandybeauty4@gmail.com`، وبعد التأكد من عنوان المرسل، يمكنك اختيار «ليست رسالة غير مرغوب فيها» (Not spam)، ليسهل عليك العثور على تحديثات طلبك القادمة في صندوق الوارد.
+
+The page also includes `<meta name="referrer" content="no-referrer" />` to safeguard tokens and customer privacy.
+
+### 8.4. Deliverability Hygiene & Gmail Free Tier Guidance
+
+1. **Transactional Purity**:
+   - The status email template for `تم التوصيل` (Delivered) has been stripped of promotional upsells, discount codes, or promotional marketing phrases, keeping it 100% transactional.
+   - Primary CTA button copy across confirmation and status templates is standardized to: **«عرض فاتورتك وتتبع طلبك 🚚»**.
+   - Zero remote tracking pixels, zero external analytics beacons, zero embedded base64 emojis, and zero remote third-party scripts in outbound HTML emails.
+2. **Free Gmail (`@gmail.com`) Reality & Diagnostic Instructions**:
+   - While Google Apps Script `MailApp.sendEmail` sends from authentic Google infrastructure with valid SPF/DKIM on `google.com`/`gmail.com`, Google's spam filters evaluate sender reputation dynamically based on domain usage, volume, and recipient interactions.
+   - *How to inspect delivery headers in Gmail*:
+     1. Open any diagnostic email sent to `dandybeauty4@gmail.com`.
+     2. Click the three vertical dots (More options) in the top-right corner of the email.
+     3. Select **«Show original»** (إظهار الرسالة الأصلية).
+     4. Verify that **SPF**, **DKIM**, and **DMARC** show **PASS**.
+   - *Long-Term Recommendation*: For large-scale e-commerce operations (> 100 orders/day), migrating from free `@gmail.com` to a dedicated business domain (e.g., `orders@dandycosmetics.com`) with custom reverse DNS, SPF, DKIM, DMARC, and a transactional provider (Resend, SendGrid, or Postmark) will provide 99%+ inbox placement. For current DANDY volumes, the Apps Script relay with clean transactional formatting and customer spam notices provides an optimal, zero-cost, high-reliability solution.
+
