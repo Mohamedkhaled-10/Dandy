@@ -764,10 +764,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           );
         } else {
           const errMsg = data?.diagnostic?.message || data?.diagnostic?.error || data?.message || data?.error || `خطأ (${res.status})`;
+          let safeDetails = '';
+          const sd = data?.diagnostic?.safeDiagnostic;
+          const snd = data?.diagnostic?.senderDiagnostic;
+          if (sd || snd) {
+            safeDetails = '\n\n📊 الفحص التشخيصي الآمن (Safe Diagnostics):';
+            if (snd) {
+              safeDetails += `\n• جهة الإرسال (Vercel): حجم البايتات=${snd.signingMessageUtf8ByteLength} | المفتاح=${snd.secretConfigured ? 'مضبوط' : 'مفقود'}`;
+            }
+            if (sd) {
+              safeDetails += `\n• خادم Apps Script: تنسيق التوقيع=${sd.receivedSignatureFormatValid ? 'صحيح (64 hex)' : 'غير صالح'} | حجم البايتات=${sd.signingMessageUtf8ByteLength} | المفتاح=${sd.secretConfigured ? 'مضبوط' : 'مفقود'} | Payload=${sd.payloadJsonPresent ? 'موجود' : 'مفقود'}`;
+            }
+          }
           alert(
             "⚠️ فشل الاختبار التشغيلي:\n\n" +
-            errMsg + "\n\n" +
-            "تأكد من نشر Google Apps Script وإعداد المتغيرات GMAIL_RELAY_URL و GMAIL_RELAY_SECRET في Vercel."
+            errMsg + safeDetails + "\n\n" +
+            "تأكد من تحديث نشر Google Apps Script إلى أحدث إصدار وتطابق GMAIL_RELAY_SECRET في Vercel مع DANDY_RELAY_SECRET في Apps Script."
           );
         }
       } catch (err) {

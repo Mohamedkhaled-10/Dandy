@@ -124,32 +124,73 @@ Keep this secret handy—you will enter it into both Google Apps Script and Verc
    - Click **Allow** (سماح).
 6. View the Execution Log at the bottom. You should see:
    ```
+   ✅ DANDY Mail Relay Version: 2.0.0-exact-byte-hmac
    ✅ DANDY Mail Relay Authorization Status: OK
    📬 MailApp Remaining Daily Quota: 100 emails
    🔑 DANDY_RELAY_SECRET Configured: YES
+   🧪 Cryptographic HMAC Parity: PERFECT MATCH
    ```
 
 ---
 
-### Step 7: Deploy as Web App
+### Step 7: Deploy as Web App (or Update Existing Deployment)
 
+#### If updating an existing deployment (RECOMMENDED):
+Do **NOT** create a new deployment (which changes the URL). Instead, update the existing one:
+1. In the top-right, click **Deploy** (نشر) → **Manage deployments** (إدارة عمليات النشر).
+2. Select your active Web App deployment from the list on the left.
+3. Click the **Pencil icon (Edit / تعديل)** in the top right of the modal.
+4. Under **Version** (الإصدار), click the dropdown and choose **New version** (إصدار جديد).
+5. Add description: `v2.0.0 - Exact-Byte HMAC Protocol`.
+6. Ensure **Who has access** is set to **Anyone** (`ANYONE_ANONYMOUS`).
+7. Click **Deploy** (نشر).
+8. The existing `/exec` URL remains unchanged and now executes version `2.0.0-exact-byte-hmac`.
+
+#### If creating a brand new deployment:
 1. In the top-right corner, click **Deploy** (نشر) → **New deployment** (نشر جديد).
 2. In the modal, click the gear icon (⚙️ Select type) next to "Select type" and choose **Web app** (تطبيق ويب).
 3. Fill in the deployment configuration:
-   - **Description:** `Production Mail Relay v1.1`
+   - **Description:** `Production Mail Relay v2.0.0`
    - **Execute as:** `Me (dandybeauty4@gmail.com)` — *(Crucial: must execute as the owner account so it sends as DANDY and uses the owner's quota)*
    - **Who has access:** `Anyone` (الجميع) — *(Maps to `webapp.access: "ANYONE_ANONYMOUS"` in `appsscript.json`).*  
-     ⚠️ **CRITICAL DISTINCTION:** Select **"Anyone"** (`ANYONE_ANONYMOUS`), **DO NOT** select "Anyone with a Google account" (`ANYONE`).  
-     - `ANYONE_ANONYMOUS`: Allows server-to-server HTTP POST calls from Vercel without requiring an interactive Google account login.
-     - `ANYONE`: Requires an interactive browser session with a Google login cookie; serverless backend calls from Node.js/Vercel will fail with a redirect to Google Accounts.
+     ⚠️ **CRITICAL DISTINCTION:** Select **"Anyone"** (`ANYONE_ANONYMOUS`), **DO NOT** select "Anyone with a Google account" (`ANYONE`).
 4. Click **Deploy**.
 5. Copy the generated **Web App URL** (ends in `/exec`).  
    Example:
    `https://script.google.com/macros/s/AKfycb.../exec`
+   Update `GMAIL_RELAY_URL` in Vercel Environment Variables with this URL if it changed.
 
 ---
 
-## 4. Anonymous / Unauthenticated Invocation Verification & Security
+### Step 8: Verify Deployed Version in Browser
+Open your Web App URL directly in any browser:
+`https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec`
+
+You will see:
+```json
+{
+  "service": "DANDY Google Apps Script Mail Relay",
+  "version": "2.0.0-exact-byte-hmac",
+  "protocol": "exact-payload-string-hmac-sha256",
+  "status": "ACTIVE",
+  "owner": "dandybeauty4@gmail.com",
+  "authScope": "https://www.googleapis.com/auth/script.send_mail"
+}
+```
+If `version` does not show `2.0.0-exact-byte-hmac`, the Web App deployment has not yet been updated to the new code version!
+
+---
+
+## 4. Exact-Byte HMAC Protocol Architecture
+
+The Exact-Byte protocol solves cross-runtime cryptographic mismatches between Node.js and Google Apps Script by avoiding independent JSON canonicalization:
+
+1. **Deterministic Single Serialization:** Vercel serializes the notification payload exactly once into `payloadJson`.
+2. **Exact Message Construction:** The signing message is formed on both ends as:
+   `${timestamp}:${nonce}:${notificationId}:${payloadJson}`
+3. **UTF-8 Charset Binding:** Apps Script uses `Utilities.computeHmacSha256Signature(signingMessage, sharedSecret, Utilities.Charset.UTF_8)` to ensure Arabic and multi-byte characters are hashed with exact UTF-8 byte semantics.
+4. **Late Parsing:** Apps Script verifies the signature over the transmitted `payloadJson` string first. Only upon cryptographic confirmation is `payloadJson` parsed into an object.
+5. **Safe Cryptographic Diagnostics:** If an invalid signature occurs, safe metrics (character lengths, UTF-8 byte lengths, format flags) are returned without exposing secrets or customer content.
 
 Because Vercel serverless APIs call this endpoint server-to-server without an interactive Google session, the Web App must be deployed with:
 - **Execute as:** `Me (dandybeauty4@gmail.com)`

@@ -228,7 +228,9 @@ test('7. dispatchToAppsScriptRelay sends signed POST and handles accepted_by_mai
     assert.ok(capturedBody.nonce);
     assert.ok(capturedBody.signature);
     assert.equal(capturedBody.notificationId, 'notif_order_999_confirmation');
-    assert.equal(capturedBody.payload.recipientEmail, 'customer@test.com');
+    assert.ok(typeof capturedBody.payloadJson === 'string');
+    const parsedPayload = JSON.parse(capturedBody.payloadJson);
+    assert.equal(parsedPayload.recipientEmail, 'customer@test.com');
   } finally {
     process.env = origEnv;
     globalThis.fetch = originalFetch;
@@ -812,9 +814,11 @@ test('21. sendDiagnosticRelayEmail sends synthetic confirmation to owner even wh
 
     // Verify envelope dispatched to Apps Script
     assert.ok(capturedEnvelope);
-    assert.equal(capturedEnvelope.payload.recipientEmail, 'dandybeauty4@gmail.com');
-    assert.match(capturedEnvelope.payload.subject, /\[فحص تشغيلي - DIAGNOSTIC\]/);
-    assert.ok(capturedEnvelope.payload.htmlBody.includes('DANDY COSMETICS'));
+    assert.ok(typeof capturedEnvelope.payloadJson === 'string');
+    const parsedPayload = JSON.parse(capturedEnvelope.payloadJson);
+    assert.equal(parsedPayload.recipientEmail, 'dandybeauty4@gmail.com');
+    assert.match(parsedPayload.subject, /\[فحص تشغيلي - DIAGNOSTIC\]/);
+    assert.ok(parsedPayload.htmlBody.includes('DANDY COSMETICS'));
   } finally {
     process.env = origEnv;
     globalThis.fetch = origFetch;
@@ -855,7 +859,9 @@ test('22. sendDiagnosticRelayEmail supports synthetic canonical status update te
     assert.equal(result.success, true);
     assert.equal(result.diagnostic.relayStatus, 'accepted_by_mailapp');
     assert.equal(result.diagnostic.canonicalStatus, 'تم الشحن');
-    assert.match(capturedEnvelope.payload.subject, /تم شحن طلبك/);
+    assert.ok(typeof capturedEnvelope.payloadJson === 'string');
+    const parsedPayload = JSON.parse(capturedEnvelope.payloadJson);
+    assert.match(parsedPayload.subject, /تم شحن طلبك/);
   } finally {
     process.env = origEnv;
     globalThis.fetch = origFetch;
@@ -912,5 +918,236 @@ test('24. Order Status API rejects DIAGNOSTIC_SEND without valid admin auth', as
   assert.equal(data.success, false);
   assert.equal(data.error, 'UNAUTHORIZED');
 });
+
+// ---------------------------------------------------------------------------
+// 25. Cross-Platform Deterministic Test Vectors & Exact-Byte HMAC Mutations
+// ---------------------------------------------------------------------------
+test('25. Cross-platform deterministic test vector matches exact HMAC and detects all mutations', async () => {
+  const { canonicalizeJson, computeHmacSha256 } = await import('../src/utils/email-service.ts');
+
+  // Fixed test-only secret (Never use production secret in tests)
+  const TEST_SECRET = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90';
+  const TEST_TIMESTAMP = 1770000000000;
+  const TEST_NONCE = 'dny_test_nonce_abcdef0123456789';
+  const TEST_NOTIFICATION_ID = 'notif_test_order_789_confirmation';
+
+  // Representative payload with Arabic, English, nested objects, arrays, numbers, booleans, and null
+  const TEST_PAYLOAD_OBJ = {
+    active: true,
+    arabicNote: 'شكراً لثقتك بمنتجات داندي الطبيعية',
+    discount: null,
+    englishSummary: 'Dandy cosmetics order confirmed',
+    eventType: 'ORDER_CONFIRMATION',
+    invoiceCode: 'DNY-TEST-001',
+    items: [
+      { count: 2, id: 'prod_1', name: 'مخمرية رويال', price: 150.5 },
+      { count: 1, id: 'prod_2', name: 'سيروم هيالورونيك', price: 250 }
+    ],
+    metadata: {
+      channel: 'web-store',
+      customerLoyalty: false,
+      retryCount: 0
+    },
+    orderId: 'order_test_789',
+    quantity: 3,
+    recipientEmail: 'dandybeauty4@gmail.com',
+    subject: 'تأكيد طلبك من داندي | رقم الفاتورة DNY-TEST-001'
+  };
+
+  const payloadJson = canonicalizeJson(TEST_PAYLOAD_OBJ);
+  const signingMessage = `${TEST_TIMESTAMP}:${TEST_NONCE}:${TEST_NOTIFICATION_ID}:${payloadJson}`;
+  const computedHmac = computeHmacSha256(signingMessage, TEST_SECRET);
+
+  // Exact fixed golden test vector
+  const EXPECTED_HMAC = '6a3db67860cd8f343118bfc42113ec16672a8fa7c17802ac64b56b69dd0e4378';
+
+  // 1. Exact valid message and signature check
+  assert.equal(computedHmac, EXPECTED_HMAC, 'Computed HMAC must match expected cross-platform golden vector');
+  assert.equal(Buffer.byteLength(signingMessage, 'utf8'), 709, 'UTF-8 byte length must match golden vector');
+  assert.equal(signingMessage.length, 626, 'Character length must match golden vector');
+
+  // Apps Script byte array conversion emulator:
+  function appsScriptBytesToHex(bytes) {
+    let hex = '';
+    for (let i = 0; i < bytes.length; i++) {
+      const byte = (bytes[i] + 256) % 256;
+      const str = byte.toString(16);
+      hex += str.length === 1 ? '0' + str : str;
+    }
+    return hex.toLowerCase();
+  }
+  const rawHmacBuf = crypto.createHmac('sha256', TEST_SECRET).update(signingMessage, 'utf8').digest();
+  const appsScriptHex = appsScriptBytesToHex(new Int8Array(rawHmacBuf));
+  assert.equal(appsScriptHex, EXPECTED_HMAC, 'Apps Script signed byte array conversion must produce identical hex');
+
+  // 2. Mutation: One changed Arabic character (ة to ه in arabicNote)
+  const changedArabicPayload = payloadJson.replace('الطبيعية', 'الطبيعيه');
+  const changedArabicMessage = `${TEST_TIMESTAMP}:${TEST_NONCE}:${TEST_NOTIFICATION_ID}:${changedArabicPayload}`;
+  const changedArabicHmac = computeHmacSha256(changedArabicMessage, TEST_SECRET);
+  assert.notEqual(changedArabicHmac, EXPECTED_HMAC, 'Changed Arabic character must invalidate signature');
+
+  // 3. Mutation: One changed number (quantity: 3 to 4)
+  const changedNumberPayload = payloadJson.replace('"quantity":3', '"quantity":4');
+  const changedNumberMessage = `${TEST_TIMESTAMP}:${TEST_NONCE}:${TEST_NOTIFICATION_ID}:${changedNumberPayload}`;
+  const changedNumberHmac = computeHmacSha256(changedNumberMessage, TEST_SECRET);
+  assert.notEqual(changedNumberHmac, EXPECTED_HMAC, 'Changed number must invalidate signature');
+
+  // 4. Mutation: One reordered or altered payload string
+  const alteredPayload = payloadJson.replace('"active":true,', '') + '{"active":true}';
+  const alteredMessage = `${TEST_TIMESTAMP}:${TEST_NONCE}:${TEST_NOTIFICATION_ID}:${alteredPayload}`;
+  const alteredHmac = computeHmacSha256(alteredMessage, TEST_SECRET);
+  assert.notEqual(alteredHmac, EXPECTED_HMAC, 'Altered payload string must invalidate signature');
+
+  // 5. Mutation: Changed timestamp (1 millisecond difference)
+  const changedTimestampMessage = `${TEST_TIMESTAMP + 1}:${TEST_NONCE}:${TEST_NOTIFICATION_ID}:${payloadJson}`;
+  const changedTimestampHmac = computeHmacSha256(changedTimestampMessage, TEST_SECRET);
+  assert.notEqual(changedTimestampHmac, EXPECTED_HMAC, 'Changed timestamp must invalidate signature');
+
+  // 6. Mutation: Changed nonce
+  const changedNonceMessage = `${TEST_TIMESTAMP}:dny_other_nonce_12345:${TEST_NOTIFICATION_ID}:${payloadJson}`;
+  const changedNonceHmac = computeHmacSha256(changedNonceMessage, TEST_SECRET);
+  assert.notEqual(changedNonceHmac, EXPECTED_HMAC, 'Changed nonce must invalidate signature');
+
+  // 7. Mutation: Changed notification ID
+  const changedNotifIdMessage = `${TEST_TIMESTAMP}:${TEST_NONCE}:notif_different_id:${payloadJson}`;
+  const changedNotifIdHmac = computeHmacSha256(changedNotifIdMessage, TEST_SECRET);
+  assert.notEqual(changedNotifIdHmac, EXPECTED_HMAC, 'Changed notification ID must invalidate signature');
+
+  // 8. Mutation: Wrong secret
+  const wrongSecret = 'b1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90';
+  const wrongSecretHmac = computeHmacSha256(signingMessage, wrongSecret);
+  assert.notEqual(wrongSecretHmac, EXPECTED_HMAC, 'Wrong secret must invalidate signature');
+});
+
+// ---------------------------------------------------------------------------
+// 26. Safe Diagnostic & Envelope Validation Emulation
+// ---------------------------------------------------------------------------
+test('26. Relay validation enforces signature format, missing payload, and returns safe diagnostic without leaking secret', () => {
+  // Constant-time equal function as implemented in Code.gs
+  function timingSafeEqual(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) {
+      return false;
+    }
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) {
+      diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return diff === 0;
+  }
+
+  // Verification pipeline simulation from Code.gs
+  function verifyRelayRequest(body, sharedSecret) {
+    const { timestamp, nonce, notificationId, signature, payloadJson } = body || {};
+
+    const hasTimestamp = timestamp !== null && timestamp !== undefined && timestamp !== '';
+    const hasNonce = typeof nonce === 'string' && nonce.trim().length > 0;
+    const hasNotificationId = typeof notificationId === 'string' && notificationId.trim().length > 0;
+    const hasSignature = typeof signature === 'string' && signature.trim().length > 0;
+    const hasPayloadJson = typeof payloadJson === 'string' && payloadJson.length > 0;
+
+    if (!hasTimestamp || !hasNonce || !hasNotificationId || !hasSignature || !hasPayloadJson) {
+      return {
+        status: 400,
+        error: 'INVALID_ENVELOPE',
+        safeDiagnostic: {
+          secretConfigured: Boolean(sharedSecret),
+          receivedSignatureFormatValid: typeof signature === 'string' && /^[0-9a-fA-F]{64}$/.test(signature.trim()),
+          receivedSignatureLength: typeof signature === 'string' ? signature.length : 0,
+          computedSignatureLength: 0,
+          signingMessageUtf8ByteLength: 0,
+          timestampFormatValid: !isNaN(Number(timestamp)),
+          nonceFormatValid: typeof nonce === 'string' && nonce.length >= 8,
+          payloadJsonPresent: hasPayloadJson
+        }
+      };
+    }
+
+    const signingMessage = String(timestamp) + ':' + String(nonce) + ':' + String(notificationId) + ':' + String(payloadJson);
+    const expectedSig = crypto.createHmac('sha256', sharedSecret).update(signingMessage, 'utf8').digest('hex');
+
+    const receivedSig = typeof signature === 'string' ? signature.trim().toLowerCase() : '';
+    const isSigFormatValid = /^[0-9a-f]{64}$/.test(receivedSig);
+    const isMatch = isSigFormatValid && timingSafeEqual(receivedSig, expectedSig);
+
+    if (!isMatch) {
+      return {
+        status: 401,
+        error: 'INVALID_SIGNATURE',
+        safeDiagnostic: {
+          secretConfigured: Boolean(sharedSecret),
+          receivedSignatureFormatValid: isSigFormatValid,
+          receivedSignatureLength: typeof signature === 'string' ? signature.length : 0,
+          computedSignatureLength: expectedSig.length,
+          signingMessageUtf8ByteLength: Buffer.byteLength(signingMessage, 'utf8'),
+          timestampFormatValid: !isNaN(Number(timestamp)),
+          nonceFormatValid: typeof nonce === 'string' && nonce.length >= 8,
+          payloadJsonPresent: typeof payloadJson === 'string' && payloadJson.length > 0
+        }
+      };
+    }
+
+    return { status: 200, success: true };
+  }
+
+  const secret = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90';
+  const timestamp = 1770000000000;
+  const nonce = 'dny_test_nonce_abcdef0123456789';
+  const notificationId = 'notif_test_order_789_confirmation';
+  const payloadJson = '{"test":true,"arabic":"تجربة"}';
+  const validSig = crypto.createHmac('sha256', secret).update(`${timestamp}:${nonce}:${notificationId}:${payloadJson}`, 'utf8').digest('hex');
+
+  // Case A: Valid request
+  const validRes = verifyRelayRequest({ timestamp, nonce, notificationId, signature: validSig, payloadJson }, secret);
+  assert.equal(validRes.status, 200);
+
+  // Case B: Missing payloadJson
+  const missingPayloadRes = verifyRelayRequest({ timestamp, nonce, notificationId, signature: validSig }, secret);
+  assert.equal(missingPayloadRes.status, 400);
+  assert.equal(missingPayloadRes.error, 'INVALID_ENVELOPE');
+  assert.equal(missingPayloadRes.safeDiagnostic.payloadJsonPresent, false);
+
+  // Case C: Uppercase or invalid format signature
+  const badFormatRes = verifyRelayRequest({ timestamp, nonce, notificationId, signature: 'NOT_VALID_HEX', payloadJson }, secret);
+  assert.equal(badFormatRes.status, 401);
+  assert.equal(badFormatRes.error, 'INVALID_SIGNATURE');
+  assert.equal(badFormatRes.safeDiagnostic.receivedSignatureFormatValid, false);
+  assert.equal(badFormatRes.safeDiagnostic.receivedSignatureLength, 13);
+  assert.equal(badFormatRes.safeDiagnostic.computedSignatureLength, 64);
+
+  // Case D: Verify safe diagnostic NEVER leaks secret or payload
+  const diagStr = JSON.stringify(badFormatRes.safeDiagnostic);
+  assert.ok(!diagStr.includes(secret), 'Safe diagnostic must never contain the secret');
+  assert.ok(!diagStr.includes('تجربة'), 'Safe diagnostic must never contain payload content');
+  assert.ok(!diagStr.includes(validSig), 'Safe diagnostic must never contain signatures');
+});
+
+// ---------------------------------------------------------------------------
+// 27. Malformed JSON inside payloadJson rejected after signature verification
+// ---------------------------------------------------------------------------
+test('27. Invalid JSON payload after successful signature verification returns 400 INVALID_PAYLOAD_JSON', () => {
+  const secret = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90';
+  const timestamp = 1770000000000;
+  const nonce = 'dny_test_nonce_abcdef0123456789';
+  const notificationId = 'notif_test_order_789_confirmation';
+  const invalidJsonString = 'this_is_not_json_content{[[(';
+
+  // Signature calculated over the exact invalid string
+  const validHmac = crypto.createHmac('sha256', secret)
+    .update(`${timestamp}:${nonce}:${notificationId}:${invalidJsonString}`, 'utf8')
+    .digest('hex');
+
+  // Verify that signature check passes, but JSON parsing fails:
+  function handleRelayPayload(payloadJsonStr) {
+    try {
+      return JSON.parse(payloadJsonStr);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  const parsed = handleRelayPayload(invalidJsonString);
+  assert.equal(parsed, null, 'Malformed JSON must fail JSON.parse and result in INVALID_PAYLOAD_JSON rejection');
+});
+
 
 

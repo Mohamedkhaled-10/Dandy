@@ -445,6 +445,13 @@ export async function dispatchToAppsScriptRelay(params: {
   error?: string;
   remainingQuota?: number;
   deduplicated?: boolean;
+  safeDiagnostic?: any;
+  senderDiagnostic?: {
+    secretConfigured: boolean;
+    signingMessageUtf8ByteLength: number;
+    signatureLength: number;
+    payloadJsonLength: number;
+  };
 }> {
   const {
     notificationId,
@@ -500,7 +507,7 @@ export async function dispatchToAppsScriptRelay(params: {
     };
   }
 
-  // 3. Build signed envelope
+  // 3. Exact-Byte HMAC Protocol: Serialize payload exactly once as payloadJson string
   const timestamp = Date.now();
   const nonce = 'dny_' + timestamp + '_' + crypto.randomBytes(8).toString('hex');
 
@@ -513,16 +520,23 @@ export async function dispatchToAppsScriptRelay(params: {
     invoiceCode
   };
 
-  const canonicalPayload = canonicalizeJson(payload);
-  const canonicalMessage = `${timestamp}:${nonce}:${notificationId}:${canonicalPayload}`;
-  const signature = computeHmacSha256(canonicalMessage, relaySecret);
+  const payloadJson = canonicalizeJson(payload);
+  const signingMessage = `${timestamp}:${nonce}:${notificationId}:${payloadJson}`;
+  const signature = computeHmacSha256(signingMessage, relaySecret);
+
+  const senderDiagnostic = {
+    secretConfigured: Boolean(relaySecret),
+    signingMessageUtf8ByteLength: Buffer.byteLength(signingMessage, 'utf8'),
+    signatureLength: signature.length,
+    payloadJsonLength: payloadJson.length
+  };
 
   const envelope = {
     timestamp,
     nonce,
     notificationId,
-    signature,
-    payload
+    payloadJson,
+    signature
   };
 
   // 4. Send HTTPS POST with explicit timeout
@@ -549,7 +563,9 @@ export async function dispatchToAppsScriptRelay(params: {
         status: 'accepted_by_mailapp',
         message: result.message || 'Accepted by MailApp',
         remainingQuota: result.remainingQuota,
-        deduplicated: Boolean(result.deduplicated)
+        deduplicated: Boolean(result.deduplicated),
+        safeDiagnostic: result?.safeDiagnostic,
+        senderDiagnostic
       };
     }
 
@@ -561,7 +577,9 @@ export async function dispatchToAppsScriptRelay(params: {
       success: false,
       status: 'failed',
       error: errCode,
-      message: errMsg
+      message: errMsg,
+      safeDiagnostic: result?.safeDiagnostic,
+      senderDiagnostic
     };
 
   } catch (err: any) {
@@ -774,6 +792,13 @@ export async function sendDiagnosticRelayEmail(options: {
     customerNotificationsActive: boolean;
     message: string;
     error?: string;
+    safeDiagnostic?: any;
+    senderDiagnostic?: {
+      secretConfigured: boolean;
+      signingMessageUtf8ByteLength: number;
+      signatureLength: number;
+      payloadJsonLength: number;
+    };
   };
 }> {
   const testType = options.testType === 'ORDER_STATUS_CHANGED' ? 'ORDER_STATUS_CHANGED' : 'ORDER_CONFIRMATION';
@@ -839,7 +864,9 @@ export async function sendDiagnosticRelayEmail(options: {
       timestamp,
       customerNotificationsActive: process.env.GMAIL_NOTIFICATIONS_ENABLED === 'true',
       message: dispatchResult.message || (dispatchResult.success ? 'Diagnostic email successfully accepted by MailApp' : 'Diagnostic dispatch failed'),
-      error: dispatchResult.error
+      error: dispatchResult.error,
+      safeDiagnostic: dispatchResult.safeDiagnostic,
+      senderDiagnostic: dispatchResult.senderDiagnostic
     }
   };
 }
