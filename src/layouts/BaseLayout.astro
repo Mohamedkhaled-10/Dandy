@@ -128,8 +128,17 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
 <body data-astro-layout="true">
   {showHeader && <Header />}
   {showDashboardNav && <DashboardNav />}
-  
+
   <slot />
+
+  <dandy-bab-widget
+    knowledge-src="../../public/assets/bab/data/knowledge.json">
+  </dandy-bab-widget>
+
+  <script
+    type="module"
+    src="../../public/assets/bab/widget/bab-widget.js">
+  </script>
 
   {showFooter && <Footer />}
 
