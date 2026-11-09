@@ -361,12 +361,12 @@ test('11. Gmail Relay and Telegram operate independently via Promise.allSettled'
 // 12. Low stock (<= 3) and Out of stock (0) message formatting
 test('12. Low stock and Out of Stock message formatting', () => {
   const lowMsg = formatLowStockMessage({ productName: 'غسول الوجه العشبي', remainingQty: 2 });
-  assert.match(lowMsg, /تنبيه مخزون منخفض/);
+  assert.match(lowMsg, /تنبيه:?\s*مخزون منخفض/);
   assert.match(lowMsg, /غسول الوجه العشبي/);
   assert.match(lowMsg, /2/);
 
   const soldOutMsg = formatLowStockMessage({ productName: 'كريم الليل المرطب', remainingQty: 0 });
-  assert.match(soldOutMsg, /نفاد مخزون منتج بالكامل/);
+  assert.match(soldOutMsg, /المنتج نفد من المخزون|نفاد مخزون/);
   assert.match(soldOutMsg, /كريم الليل المرطب/);
   assert.match(soldOutMsg, /نفد بالكامل/);
 });
@@ -517,4 +517,362 @@ test('16. Dashboard DOM Integrity: Diagnostic modal is placed BEFORE script and 
     'Script must define and use dynamic getFirebaseAuth() to avoid stale auth references'
   );
 });
+
+// =========================================================================
+// PHASE 8: DANDY PREMIUM TELEGRAM REDESIGN VALIDATION SUITE (Tests 17 - 28)
+// =========================================================================
+
+// 17. Standard single order message layout & identity
+test('17. Premium UI: Standard order message contains DANDY branding, header, and structure', () => {
+  const order = {
+    name: 'سارة خالد',
+    phone: '01012345678',
+    governorate: 'Cairo',
+    city: 'المعادي',
+    invoiceCode: 'DNY-10245',
+    subtotal: 500,
+    shippingFee: 84,
+    totalAmount: 584,
+    products: [{ name: 'سيروم الهيالورونيك', quantity: 1, lineTotal: 500 }]
+  };
+
+  const msg = formatOrderMessage(order, 'order-123');
+
+  assert.match(msg, /🖤 <b>DANDY STORE<\/b>/);
+  assert.match(msg, /<code>ORDER MANAGEMENT SYSTEM<\/code>/);
+  assert.match(msg, /🔔 <b>تم استلام طلب جديد!<\/b>/);
+  assert.match(msg, /🧾 <b>رقم الفاتورة:<\/b> <code>DNY-10245<\/code>/);
+  assert.match(msg, /💰 <b>إجمالي الطلب:<\/b> <b>584 EGP<\/b>/);
+  assert.match(msg, /👤 <b>بيانات العميل<\/b>/);
+  assert.match(msg, /• <b>الاسم:<\/b> سارة خالد/);
+  assert.match(msg, /• <b>الهاتف:<\/b> <code>01012345678<\/code>/);
+  assert.match(msg, /• <b>المحافظة:<\/b> Cairo/);
+  assert.match(msg, /• <b>المدينة\/المركز:<\/b> المعادي/);
+  assert.match(msg, /🛍 <b>المنتجات المطلوبة<\/b>/);
+  assert.match(msg, /1\. <b>سيروم الهيالورونيك<\/b> × 1 — <b>500 EGP<\/b>/);
+  assert.match(msg, /💵 <b>ملخص الحساب<\/b>/);
+  assert.match(msg, /• <b>قيمة المنتجات:<\/b> 500 EGP/);
+  assert.match(msg, /• <b>تكلفة الشحن:<\/b> 84 EGP/);
+  assert.match(msg, /• <b>الإجمالي النهائي:<\/b> <b>584 EGP<\/b>/);
+  assert.match(msg, /🕒 <b>وقت الطلب:<\/b>/);
+});
+
+// 18. Multi-product order formatting
+test('18. Premium UI: Multiple products in order are clearly enumerated', () => {
+  const order = {
+    name: 'نورهان سعيد',
+    phone: '01234567890',
+    governorate: 'Giza',
+    city: 'الدقي',
+    invoiceCode: 'DNY-30491',
+    subtotal: 850,
+    shippingFee: 85,
+    totalAmount: 935,
+    products: [
+      { name: 'شامبو الأرجان المغربي', quantity: 2, lineTotal: 400 },
+      { name: 'بلسم الترطيب العميق', quantity: 1, lineTotal: 250, variantName: 'حجم 300 مل' },
+      { name: 'سيروم الحماية الحرارية', quantity: 1, lineTotal: 200 }
+    ]
+  };
+
+  const msg = formatOrderMessage(order);
+
+  assert.match(msg, /1\. <b>شامبو الأرجان المغربي<\/b> × 2 — <b>400 EGP<\/b>/);
+  assert.match(msg, /2\. <b>بلسم الترطيب العميق<\/b> \(حجم 300 مل\) × 1 — <b>250 EGP<\/b>/);
+  assert.match(msg, /3\. <b>سيروم الحماية الحرارية<\/b> × 1 — <b>200 EGP<\/b>/);
+});
+
+// 19. Collection bundle order formatting with nested items
+test('19. Premium UI: Collection bundles display bundle name, badge, and nested items', () => {
+  const order = {
+    name: 'ريم العبد',
+    phone: '01598765432',
+    governorate: 'Alexandria',
+    city: 'سموحة',
+    invoiceCode: 'DNY-90214',
+    subtotal: 750,
+    shippingFee: 85,
+    totalAmount: 835,
+    products: [
+      {
+        type: 'collection',
+        isCollection: true,
+        name: 'كوليكشن الإشراقة الملكية',
+        badgeText: 'عرض العناية المتكاملة',
+        quantity: 1,
+        lineTotal: 750,
+        items: [
+          { productName: 'غسول فيتامين سي', variantName: '150 مل' },
+          { productName: 'كريم الليل المجدد' },
+          { productName: 'سيروم التفتيح المركز' }
+        ]
+      }
+    ]
+  };
+
+  const msg = formatOrderMessage(order);
+
+  assert.match(msg, /✨ <b>كوليكشن الإشراقة الملكية<\/b> \[عرض العناية المتكاملة\] × 1 — <b>750 EGP<\/b>/);
+  assert.match(msg, /└ <i>غسول فيتامين سي \(150 مل\)<\/i>/);
+  assert.match(msg, /└ <i>كريم الليل المجدد<\/i>/);
+  assert.match(msg, /└ <i>سيروم التفتيح المركز<\/i>/);
+});
+
+// 20. Pink Friday campaign discount transparency
+test('20. Premium UI: Pink Friday offers show campaign badge and discount transparency', () => {
+  const order = {
+    name: 'منى يوسف',
+    phone: '01011223344',
+    governorate: 'Cairo',
+    city: 'مدينة نصر',
+    invoiceCode: 'DNY-88991',
+    subtotal: 620,
+    discount: 80,
+    shippingFee: 85,
+    totalAmount: 705,
+    products: [
+      {
+        name: 'مجموعة العناية بالشعر',
+        quantity: 1,
+        lineTotal: 620,
+        isPinkFriday: true
+      }
+    ]
+  };
+
+  const msg = formatOrderMessage(order);
+
+  assert.match(msg, /\[Pink Friday\]/);
+  assert.match(msg, /• <b>قيمة المنتجات:<\/b> 620 EGP/);
+  assert.match(msg, /• <b>الخصم:<\/b> 80 EGP/);
+});
+
+// 21. Free shipping vs paid shipping formatting
+test('21. Premium UI: Shipping fee shows free shipping banner when 0, or amount when paid', () => {
+  const freeShippingOrder = {
+    name: 'أحمد فؤاد',
+    phone: '01122334455',
+    governorate: 'Cairo',
+    city: 'التجمع',
+    invoiceCode: 'DNY-FREE',
+    subtotal: 2200,
+    shippingFee: 0,
+    totalAmount: 2200,
+    products: [{ name: 'باقة المنتجات الشاملة', quantity: 1, lineTotal: 2200 }]
+  };
+
+  const paidShippingOrder = {
+    name: 'أحمد فؤاد',
+    phone: '01122334455',
+    governorate: 'Gharbia',
+    city: 'طنطا',
+    invoiceCode: 'DNY-PAID',
+    subtotal: 400,
+    shippingFee: 70,
+    totalAmount: 470,
+    products: [{ name: 'كريم اليدين', quantity: 1, lineTotal: 400 }]
+  };
+
+  const msgFree = formatOrderMessage(freeShippingOrder);
+  const msgPaid = formatOrderMessage(paidShippingOrder);
+
+  assert.match(msgFree, /• <b>تكلفة الشحن:<\/b> مجاني \(عرض الشحن المجاني\)/);
+  assert.match(msgPaid, /• <b>تكلفة الشحن:<\/b> 70 EGP/);
+});
+
+// 22. HTML safety: Customer data with &, <, >, ", '
+test('22. Premium UI: Customer data with HTML special characters is safely escaped', () => {
+  const maliciousCustomerOrder = {
+    name: 'مريم & سارة <script>alert(1)</script>',
+    phone: '01012345678',
+    governorate: 'Cairo "North"',
+    city: "حي الزهور 'الشرقي'",
+    invoiceCode: 'DNY-SAFE-01',
+    subtotal: 300,
+    shippingFee: 85,
+    totalAmount: 385,
+    products: [{ name: 'زيت طبيعي', quantity: 1, lineTotal: 300 }]
+  };
+
+  const msg = formatOrderMessage(maliciousCustomerOrder);
+
+  assert.equal(msg.includes('<script>'), false, 'Raw script tag must not exist in output');
+  assert.match(msg, /مريم &amp; سارة &lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  assert.match(msg, /Cairo &quot;North&quot;/);
+  assert.match(msg, /حي الزهور &#039;الشرقي&#039;/);
+});
+
+// 23. HTML safety: Product names with special characters
+test('23. Premium UI: Product and variant names with HTML special characters are safely escaped', () => {
+  const specialProductOrder = {
+    name: 'عميل تجريبي',
+    phone: '01012345678',
+    governorate: 'Cairo',
+    city: 'المعادي',
+    invoiceCode: 'DNY-PROD-SAFE',
+    subtotal: 500,
+    shippingFee: 85,
+    totalAmount: 585,
+    products: [
+      {
+        name: 'كريم اليدين <Gold & Rose> "Premium"',
+        variantName: "عطر 'الياسمين' & 'الفل'",
+        quantity: 1,
+        lineTotal: 500
+      }
+    ]
+  };
+
+  const msg = formatOrderMessage(specialProductOrder);
+
+  assert.match(msg, /كريم اليدين &lt;Gold &amp; Rose&gt; &quot;Premium&quot;/);
+  assert.match(msg, /عطر &#039;الياسمين&#039; &amp; &#039;الفل&#039;/);
+});
+
+// 24. Low stock alert message formatting
+test('24. Premium UI: Low stock alert conforms to DANDY inventory alert theme', () => {
+  const lowStock = formatLowStockMessage({ productName: 'سيروم النياسيناميد 10%', remainingQty: 3 });
+
+  assert.match(lowStock, /⚠️ <b>DANDY INVENTORY ALERT<\/b>/);
+  assert.match(lowStock, /<code>STOCK MONITORING SYSTEM<\/code>/);
+  assert.match(lowStock, /<b>تنبيه: مخزون منخفض<\/b>/);
+  assert.match(lowStock, /📦 <b>المنتج:<\/b> <b>سيروم النياسيناميد 10%<\/b>/);
+  assert.match(lowStock, /📉 <b>الكمية المتبقية:<\/b> <b>3 قطع فقط<\/b>/);
+  assert.match(lowStock, /🕒 <b>وقت التنبيه:<\/b>/);
+});
+
+// 25. Out of stock alert message formatting
+test('25. Premium UI: Out of stock alert conforms to DANDY out-of-stock theme', () => {
+  const outOfStock = formatLowStockMessage({ productName: 'غسول الشاي الأخضر', remainingQty: 0 });
+
+  assert.match(outOfStock, /🚨 <b>PRODUCT OUT OF STOCK<\/b>/);
+  assert.match(outOfStock, /<code>STOCK MONITORING SYSTEM<\/code>/);
+  assert.match(outOfStock, /<b>المنتج نفد من المخزون<\/b>/);
+  assert.match(outOfStock, /📦 <b>المنتج:<\/b> <b>غسول الشاي الأخضر<\/b>/);
+  assert.match(outOfStock, /📉 <b>الحالة:<\/b> <b>نفد بالكامل \(0 قطع متبقية\)<\/b>/);
+  assert.match(outOfStock, /🕒 <b>وقت التنبيه:<\/b>/);
+});
+
+// 26. Inline Keyboard markup URLs and structure validation
+test('26. Premium UI: Order & Stock notifications include valid Telegram Inline Keyboard URLs', async () => {
+  let capturedOrderPayload = null;
+  let capturedStockPayload = null;
+
+  const restore = createMockFetch(async (url, options) => {
+    const body = JSON.parse(options.body);
+    if (body.text.includes('ORDER MANAGEMENT SYSTEM')) {
+      capturedOrderPayload = body;
+    } else if (body.text.includes('STOCK MONITORING SYSTEM')) {
+      capturedStockPayload = body;
+    }
+    return new Response(JSON.stringify({ ok: true, result: { message_id: 123 } }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  });
+
+  try {
+    // Dispatch Order
+    await sendTelegramNotification({
+      tokenOverride: 'mock_token',
+      chatIdsOverride: ['-1002345678901'],
+      order: {
+        name: 'أميرة حسن',
+        phone: '01012345678',
+        governorate: 'Cairo',
+        city: 'الزمالك',
+        invoiceCode: 'DNY-TEST-KB',
+        subtotal: 500,
+        shippingFee: 85,
+        totalAmount: 585,
+        products: [{ name: 'منتج تجريبي', quantity: 1, lineTotal: 500 }]
+      }
+    });
+
+    // Dispatch Stock Alert
+    await sendTelegramNotification({
+      tokenOverride: 'mock_token',
+      chatIdsOverride: ['-1002345678901'],
+      lowStockAlert: true,
+      productName: 'غسول تجريبي',
+      remainingQty: 2
+    });
+
+    // Validate Order Keyboard
+    assert.ok(capturedOrderPayload?.reply_markup?.inline_keyboard, 'Order payload must include reply_markup.inline_keyboard');
+    const orderButtons = capturedOrderPayload.reply_markup.inline_keyboard[0];
+    assert.equal(orderButtons[0].text, '📋 فتح الطلب في الداشبورد');
+    assert.equal(orderButtons[0].url, 'https://dandy-ebon.vercel.app/dashboard-order');
+    assert.equal(orderButtons[1].text, '🏠 لوحة التحكم');
+    assert.equal(orderButtons[1].url, 'https://dandy-ebon.vercel.app/dashboard');
+
+    // Validate Stock Keyboard
+    assert.ok(capturedStockPayload?.reply_markup?.inline_keyboard, 'Stock payload must include reply_markup.inline_keyboard');
+    const stockButtons = capturedStockPayload.reply_markup.inline_keyboard[0];
+    assert.equal(stockButtons[0].text, '📦 إدارة المنتجات والمخزون');
+    assert.equal(stockButtons[0].url, 'https://dandy-ebon.vercel.app/dashboard-product');
+  } finally {
+    restore();
+  }
+});
+
+// 27. Security & Privacy: Never leak customer email, tokens, or private address
+test('27. Premium UI Security: Strictly prevents leaking customer email or internal tokens', () => {
+  const sensitiveOrder = {
+    name: 'هدى مصطفى',
+    email: 'hoda.mustafa.private@gmail.com',
+    phone: '01099887766',
+    governorate: 'Alexandria',
+    city: 'محرم بك',
+    address: 'شارع 15 متفرع من شارع بورسعيد شقة 4 عمارة النصر',
+    invoiceCode: 'DNY-SECURE',
+    invoiceAccessToken: 'private_invoice_token_SECRET_123',
+    internalSecret: 'INTERNAL_API_SECRET_XYZ',
+    subtotal: 600,
+    shippingFee: 85,
+    totalAmount: 685,
+    products: [{ name: 'مجموعة التبييض', quantity: 1, lineTotal: 600 }]
+  };
+
+  const formattedMsg = formatOrderMessage(sensitiveOrder);
+
+  assert.equal(formattedMsg.includes('hoda.mustafa.private@gmail.com'), false, 'Email must NOT be present');
+  assert.equal(formattedMsg.includes('private_invoice_token_SECRET_123'), false, 'Invoice access token must NOT be present');
+  assert.equal(formattedMsg.includes('INTERNAL_API_SECRET_XYZ'), false, 'Internal secrets must NOT be present');
+  assert.equal(formattedMsg.includes('شارع 15 متفرع من شارع بورسعيد'), false, 'Detailed residence address must NOT be present');
+  assert.match(formattedMsg, /محرم بك/);
+  assert.match(formattedMsg, /Alexandria/);
+});
+
+// 28. Message length safety: Truncates large cart gracefully under Telegram 4096 character limit
+test('28. Premium UI Resilience: Very large order gracefully summarizes without exceeding Telegram limits', () => {
+  const manyProducts = [];
+  for (let i = 1; i <= 25; i++) {
+    manyProducts.push({
+      name: `منتج تجميلي طبيعي رقم ${i} بتركيبة الزيوت العشبية والخلاصات الطبيعية المركزة`,
+      quantity: 2,
+      lineTotal: 300,
+      variantName: `تركيبة رقم ${i} برائحة اللافندر والخزامى البرية`
+    });
+  }
+
+  const hugeOrder = {
+    name: 'صالون التجميل الملكي',
+    phone: '01000000000',
+    governorate: 'Cairo',
+    city: 'المعادي',
+    invoiceCode: 'DNY-HUGE-CART',
+    subtotal: 7500,
+    shippingFee: 0,
+    totalAmount: 7500,
+    products: manyProducts
+  };
+
+  const msg = formatOrderMessage(hugeOrder);
+
+  // Must not exceed Telegram 4096 character limit
+  assert.ok(msg.length < 3500, `Message length (${msg.length}) must be well below Telegram 4096 char limit`);
+  assert.match(msg, /وتفاصيل 13 منتجات إضافية متاحة في لوحة التحكم/);
+});
+
 

@@ -1,8 +1,19 @@
 // src/utils/telegram.js
 // Centralized, hardened Telegram notification and diagnostics service for Dandy Cosmetics
+// Design Theme: DANDY Minimal Luxury / Premium Arabic Beauty Store
+
+/**
+ * Standard URLs for supervisor interactive Telegram actions
+ */
+export const TELEGRAM_ACTION_URLS = {
+  DASHBOARD_ORDER: 'https://dandy-ebon.vercel.app/dashboard-order',
+  DASHBOARD_MAIN: 'https://dandy-ebon.vercel.app/dashboard',
+  DASHBOARD_PRODUCT: 'https://dandy-ebon.vercel.app/dashboard-product'
+};
 
 /**
  * Escapes special HTML characters to prevent Telegram HTML parse errors and injection.
+ * Escapes &, <, >, ", and '.
  * @param {string|number|null|undefined} str
  * @returns {string}
  */
@@ -12,7 +23,8 @@ export function escapeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /**
@@ -42,62 +54,122 @@ export function parseChatIds(raw) {
 export function isValidChatId(id) {
   if (!id || typeof id !== 'string') return false;
   const trimmed = id.trim();
-  // Valid numeric chat id (may be negative, including -100...) or valid channel handle @name
   return /^-?\d{5,20}$/.test(trimmed) || /^@[a-zA-Z0-9_]{4,32}$/.test(trimmed);
 }
 
 /**
- * Formats a new order into secure, operational HTML.
+ * Formats a new order into a premium, operational HTML notification.
  * Strictly avoids customer email, invoice access tokens, or sensitive credentials.
+ * Includes Collection bundle breakdown and financial transparency.
+ *
  * @param {object} order
  * @param {string} [orderId]
  * @returns {string}
  */
 export function formatOrderMessage(order, orderId = null) {
   if (!order) {
-    return `🔔 <b>إشعار جديد من متجر داندي</b>\n${escapeHtml(JSON.stringify({ orderId }))}`;
+    return `🖤 <b>DANDY STORE</b>\n<code>ORDER MANAGEMENT SYSTEM</code>\n────────────────\n🔔 <b>إشعار جديد من متجر داندي</b>\n${escapeHtml(JSON.stringify({ orderId }))}`;
   }
 
   const dateText = order.timestamp
     ? new Date(order.timestamp).toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' })
     : new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' });
 
-  let productsText = '';
-  if (Array.isArray(order.products) && order.products.length > 0) {
-    productsText = '\n🛍 <b>المنتجات المطلوبة:</b>\n' + order.products.map((p, idx) => {
+  const invoiceCodeText = order.invoiceCode || orderId || '-';
+  const totalAmountVal = order.totalAmount !== undefined ? order.totalAmount : '-';
+  const totalFormatted = typeof totalAmountVal === 'number' ? `${totalAmountVal} EGP` : `${totalAmountVal}`;
+
+  // Customer Information (Operational only - no email, no secrets, no full private address)
+  const customerName = escapeHtml(order.name || '-');
+  const customerPhone = escapeHtml(order.phone || '-');
+  const gov = escapeHtml(order.governorate || '-');
+  const city = escapeHtml(order.city || '-');
+
+  // Products formatting with Collection Bundle support
+  const maxDisplayedProducts = 12;
+  const rawProducts = Array.isArray(order.products) ? order.products : [];
+  const productsToDisplay = rawProducts.slice(0, maxDisplayedProducts);
+  const productsLines = [];
+
+  for (let idx = 0; idx < productsToDisplay.length; idx++) {
+    const p = productsToDisplay[idx];
+    const qty = p.quantity || 1;
+    const isCollection = Boolean(p.type === 'collection' || p.isCollection || p.collectionId);
+
+    if (isCollection) {
+      const colPrice = p.lineTotal !== undefined
+        ? `${p.lineTotal} EGP`
+        : (p.price ? `${p.price * qty} EGP` : '');
+      const badge = p.badgeText ? ` [${escapeHtml(p.badgeText)}]` : '';
+      let colLine = `${idx + 1}. ✨ <b>${escapeHtml(p.name || 'كوليكشن')}</b>${badge} × ${qty}${colPrice ? ` — <b>${escapeHtml(colPrice)}</b>` : ''}`;
+
+      // Show nested items inside collection if present
+      if (Array.isArray(p.items) && p.items.length > 0) {
+        const nestedItems = p.items.map(it => {
+          const itVariant = it.variantName ? ` (${escapeHtml(it.variantName)})` : '';
+          return `   └ <i>${escapeHtml(it.productName || it.name || 'عنصر')}${itVariant}</i>`;
+        }).join('\n');
+        colLine += '\n' + nestedItems;
+      }
+      productsLines.push(colLine);
+    } else {
       const variantPart = p.variantName ? ` (${escapeHtml(p.variantName)})` : '';
-      const qty = p.quantity || 1;
-      const linePrice = p.lineTotal ? `${p.lineTotal} ج.م` : (p.price ? `${p.price * qty} ج.م` : '');
-      return `  ${idx + 1}. <b>${escapeHtml(p.name || 'منتج')}</b>${variantPart} × ${qty}${linePrice ? ` — [${linePrice}]` : ''}`;
-    }).join('\n');
+      const linePrice = p.lineTotal !== undefined
+        ? `${p.lineTotal} EGP`
+        : (p.price ? `${p.price * qty} EGP` : (p.effectiveUnitPrice ? `${p.effectiveUnitPrice * qty} EGP` : ''));
+      const pfBadge = p.isPinkFriday ? ' [Pink Friday]' : '';
+      const pLine = `${idx + 1}. <b>${escapeHtml(p.name || 'منتج')}</b>${variantPart}${pfBadge} × ${qty}${linePrice ? ` — <b>${escapeHtml(linePrice)}</b>` : ''}`;
+      productsLines.push(pLine);
+    }
   }
 
-  const subtotalText = order.subtotal !== undefined ? `${order.subtotal} ج.م` : '-';
-  const shippingText = order.shippingFee === 0 ? 'مجاني' : (order.shippingFee !== undefined ? `${order.shippingFee} ج.م` : '-');
-  const totalText = order.totalAmount !== undefined ? `${order.totalAmount} ج.م` : '-';
-  const invoiceCodeText = order.invoiceCode || orderId || '-';
+  if (rawProducts.length > maxDisplayedProducts) {
+    productsLines.push(`• <i>... وتفاصيل ${rawProducts.length - maxDisplayedProducts} منتجات إضافية متاحة في لوحة التحكم</i>`);
+  }
 
-  // Include city/governorate and operational address safely without leaking private credentials
-  const locationText = [order.governorate, order.city].filter(Boolean).map(escapeHtml).join(' — ') || '-';
-  const addressLine = order.address ? `\n📍 <b>العنوان:</b> ${escapeHtml(order.address)}` : '';
+  const productsSection = productsLines.length > 0
+    ? '\n' + productsLines.join('\n')
+    : '\n• <i>لا توجد منتجات مسجلة</i>';
 
-  return `🔔 <b>طلب جديد في متجر داندي!</b>
+  // Financial Summary
+  const subtotalText = order.subtotal !== undefined ? `${order.subtotal} EGP` : '-';
+  const shippingText = order.shippingFee === 0
+    ? 'مجاني (عرض الشحن المجاني)'
+    : (order.shippingFee !== undefined ? `${order.shippingFee} EGP` : '-');
+
+  let discountLine = '';
+  if (order.discount && Number(order.discount) > 0) {
+    discountLine = `\n• <b>الخصم:</b> ${escapeHtml(String(order.discount))} EGP`;
+  }
+
+  return `🖤 <b>DANDY STORE</b>
+<code>ORDER MANAGEMENT SYSTEM</code>
 ────────────────
-👤 <b>العميل/ة:</b> ${escapeHtml(order.name || '-')}
-📞 <b>رقم الهاتف:</b> <code>${escapeHtml(order.phone || '-')}</code>
-🏙 <b>المنطقة:</b> ${locationText}${addressLine}
-🧾 <b>كود الفاتورة:</b> <code>${escapeHtml(invoiceCodeText)}</code>${productsText}
-────────────────
-💵 <b>المنتجات:</b> ${escapeHtml(subtotalText)}
-🚚 <b>الشحن:</b> ${escapeHtml(shippingText)}
-💰 <b>الإجمالي النهائي:</b> <b>${escapeHtml(totalText)}</b>
-⏱ <b>الوقت:</b> ${escapeHtml(dateText)}
+🔔 <b>تم استلام طلب جديد!</b>
 
-🔗 <a href="https://dandy-ebon.vercel.app/dashboard-order">عرض تفاصيل الطلب في لوحة التحكم</a>`;
+🧾 <b>رقم الفاتورة:</b> <code>${escapeHtml(invoiceCodeText)}</code>
+💰 <b>إجمالي الطلب:</b> <b>${escapeHtml(totalFormatted)}</b>
+────────────────
+👤 <b>بيانات العميل</b>
+
+• <b>الاسم:</b> ${customerName}
+• <b>الهاتف:</b> <code>${customerPhone}</code>
+• <b>المحافظة:</b> ${gov}
+• <b>المدينة/المركز:</b> ${city}
+────────────────
+🛍 <b>المنتجات المطلوبة</b>${productsSection}
+────────────────
+💵 <b>ملخص الحساب</b>
+
+• <b>قيمة المنتجات:</b> ${escapeHtml(subtotalText)}${discountLine}
+• <b>تكلفة الشحن:</b> ${escapeHtml(shippingText)}
+• <b>الإجمالي النهائي:</b> <b>${escapeHtml(totalFormatted)}</b>
+────────────────
+🕒 <b>وقت الطلب:</b> ${escapeHtml(dateText)}`;
 }
 
 /**
- * Formats a low stock or out of stock alert message.
+ * Formats a low stock or out of stock alert message according to DANDY Luxury Brand standards.
  * @param {object} param
  * @param {string} param.productName
  * @param {number|null} param.remainingQty
@@ -105,20 +177,77 @@ export function formatOrderMessage(order, orderId = null) {
  */
 export function formatLowStockMessage({ productName, remainingQty }) {
   const isSoldOut = remainingQty !== null && remainingQty !== undefined && Number(remainingQty) <= 0;
-  const header = isSoldOut
-    ? '🚨 <b>نفاد مخزون منتج بالكامل في متجر داندي!</b>'
-    : '⚠️ <b>تنبيه مخزون منخفض في متجر داندي!</b>';
-
-  const qtyDisplay = isSoldOut ? '0 (نفد بالكامل)' : String(remainingQty ?? 0);
   const timeText = new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' });
 
-  return `${header}
+  if (isSoldOut) {
+    return `🚨 <b>PRODUCT OUT OF STOCK</b>
+<code>STOCK MONITORING SYSTEM</code>
 ────────────────
-📦 <b>المنتج:</b> ${escapeHtml(productName || '-')}
-📉 <b>الكمية المتبقية:</b> <b>${escapeHtml(qtyDisplay)}</b>
-⏱ <b>الوقت:</b> ${escapeHtml(timeText)}
+<b>المنتج نفد من المخزون</b>
 
-🔗 <a href="https://dandy-ebon.vercel.app/dashboard-product">إدارة المنتجات في لوحة التحكم</a>`;
+📦 <b>المنتج:</b> <b>${escapeHtml(productName || '-')}</b>
+📉 <b>الحالة:</b> <b>نفد بالكامل (0 قطع متبقية)</b>
+🕒 <b>وقت التنبيه:</b> ${escapeHtml(timeText)}`;
+  }
+
+  return `⚠️ <b>DANDY INVENTORY ALERT</b>
+<code>STOCK MONITORING SYSTEM</code>
+────────────────
+<b>تنبيه: مخزون منخفض</b>
+
+📦 <b>المنتج:</b> <b>${escapeHtml(productName || '-')}</b>
+📉 <b>الكمية المتبقية:</b> <b>${escapeHtml(String(remainingQty ?? 0))} قطع فقط</b>
+🕒 <b>وقت التنبيه:</b> ${escapeHtml(timeText)}`;
+}
+
+/**
+ * Standard inline keyboards for Telegram notifications
+ */
+export function getOrderInlineKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: '📋 فتح الطلب في الداشبورد',
+          url: TELEGRAM_ACTION_URLS.DASHBOARD_ORDER
+        },
+        {
+          text: '🏠 لوحة التحكم',
+          url: TELEGRAM_ACTION_URLS.DASHBOARD_MAIN
+        }
+      ]
+    ]
+  };
+}
+
+export function getStockInlineKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: '📦 إدارة المنتجات والمخزون',
+          url: TELEGRAM_ACTION_URLS.DASHBOARD_PRODUCT
+        }
+      ]
+    ]
+  };
+}
+
+export function getDiagnosticsInlineKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: '📋 متابعة الطلبات',
+          url: TELEGRAM_ACTION_URLS.DASHBOARD_ORDER
+        },
+        {
+          text: '🏠 لوحة التحكم',
+          url: TELEGRAM_ACTION_URLS.DASHBOARD_MAIN
+        }
+      ]
+    ]
+  };
 }
 
 /**
@@ -164,6 +293,7 @@ export function categorizeTelegramError(status, data = {}) {
 
 /**
  * Core centralized function to dispatch Telegram notifications.
+ * Supports HTML formatting and interactive Inline Keyboard buttons.
  *
  * @param {object} options
  * @param {object} [options.order]
@@ -172,6 +302,7 @@ export function categorizeTelegramError(status, data = {}) {
  * @param {string} [options.productName]
  * @param {number|null} [options.remainingQty]
  * @param {string} [options.customHtml]
+ * @param {object|boolean|null} [options.replyMarkupOverride]
  * @param {number} [options.timeoutMs=5000]
  * @param {string|string[]} [options.chatIdsOverride]
  * @param {string} [options.tokenOverride]
@@ -194,6 +325,7 @@ export async function sendTelegramNotification({
   productName = '',
   remainingQty = null,
   customHtml = null,
+  replyMarkupOverride = undefined,
   timeoutMs = 5000,
   chatIdsOverride = null,
   tokenOverride = null
@@ -235,14 +367,25 @@ export async function sendTelegramNotification({
   }
 
   let htmlMessage = '';
+  let defaultReplyMarkup = null;
+
   if (customHtml) {
     htmlMessage = customHtml;
   } else if (lowStockAlert) {
     htmlMessage = formatLowStockMessage({ productName, remainingQty });
+    defaultReplyMarkup = getStockInlineKeyboard();
   } else if (order) {
     htmlMessage = formatOrderMessage(order, orderId);
+    defaultReplyMarkup = getOrderInlineKeyboard();
   } else {
-    htmlMessage = `🔔 <b>إشعار جديد من متجر داندي</b>\n${escapeHtml(JSON.stringify({ orderId }))}`;
+    htmlMessage = `🖤 <b>DANDY STORE</b>\n<code>ORDER MANAGEMENT SYSTEM</code>\n────────────────\n🔔 <b>إشعار جديد من متجر داندي</b>\n${escapeHtml(JSON.stringify({ orderId }))}`;
+    defaultReplyMarkup = getOrderInlineKeyboard();
+  }
+
+  // Determine final reply_markup (allows disabling by passing false or providing custom)
+  let effectiveReplyMarkup = defaultReplyMarkup;
+  if (replyMarkupOverride !== undefined) {
+    effectiveReplyMarkup = replyMarkupOverride || null;
   }
 
   const telegramUrl = `https://api.telegram.org/bot${token}/sendMessage`;
@@ -267,15 +410,21 @@ export async function sendTelegramNotification({
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
+      const payload = {
+        chat_id: chatId,
+        text: htmlMessage,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
+      };
+
+      if (effectiveReplyMarkup) {
+        payload.reply_markup = effectiveReplyMarkup;
+      }
+
       const res = await fetch(telegramUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: htmlMessage,
-          parse_mode: 'HTML',
-          disable_web_page_preview: true
-        }),
+        body: JSON.stringify(payload),
         signal: controller.signal
       });
 
@@ -520,16 +669,23 @@ export async function diagnoseTelegramSetup({
 
   // 2. Inspect each chat and attempt sending test message
   const chatReports = [];
-  const testMessageText = `✅ DANDY Telegram Connection Test — تم الاتصال بنجاح، وإشعارات الطلبات جاهزة.\n⏱ ${new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' })}`;
+  const testMessageHtml = `🖤 <b>DANDY STORE</b>
+<code>SYSTEM DIAGNOSTICS & TELEGRAM BOT</code>
+────────────────
+✅ <b>DANDY Telegram Connection Test</b>
+تم الاتصال بنجاح، وإشعارات الطلبات جاهزة ومفعلة.
+
+🕒 <b>تاريخ الفحص:</b> <code>${escapeHtml(new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' }))}</code>`;
 
   for (const chatId of chatIds) {
     const inspection = await inspectTelegramChat(token, chatId, botDetails.id, timeoutMs);
 
     let testSendResult = null;
     if (inspection.accessible) {
-      // Send the strict fixed test message
+      // Send the strict fixed test message with luxury keyboard
       const sendRes = await sendTelegramNotification({
-        customHtml: `<b>✅ DANDY Telegram Connection Test</b>\n────────────────\nتم الاتصال بنجاح، وإشعارات الطلبات جاهزة.\n⏱ <code>${escapeHtml(new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' }))}</code>`,
+        customHtml: testMessageHtml,
+        replyMarkupOverride: getDiagnosticsInlineKeyboard(),
         chatIdsOverride: [chatId],
         tokenOverride: token,
         timeoutMs
@@ -541,7 +697,7 @@ export async function diagnoseTelegramSetup({
     const finalError = inspection.error || testSendResult?.error || null;
 
     chatReports.push({
-      chatId, // Kept for admin inspection
+      chatId,
       accessible: inspection.accessible,
       title: inspection.title,
       type: inspection.type,
