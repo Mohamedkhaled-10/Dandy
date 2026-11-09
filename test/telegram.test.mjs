@@ -462,3 +462,59 @@ test('15. Customer Privacy: Email and private invoiceAccessToken are NOT in noti
   assert.match(html, /منى الشريف/);
   assert.match(html, /01123456789/);
 });
+
+// 16. Dashboard DOM Structure and Initialization Integrity
+test('16. Dashboard DOM Integrity: Diagnostic modal is placed BEFORE script and elements exist', async () => {
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+
+  const dashboardContent = await fs.readFile(path.resolve('src/pages/dashboard.astro'), 'utf-8');
+
+  // Verify modal is placed BEFORE the script in the DOM hierarchy
+  const modalIndex = dashboardContent.indexOf('id="telegramTestModal"');
+  const diagBodyIndex = dashboardContent.indexOf('id="telegramDiagBody"');
+  const scriptIndex = dashboardContent.indexOf('<script is:inline>');
+
+  assert.ok(modalIndex !== -1, 'Modal #telegramTestModal must exist in dashboard.astro');
+  assert.ok(diagBodyIndex !== -1, 'Modal body #telegramDiagBody must exist in dashboard.astro');
+  assert.ok(scriptIndex !== -1, '<script is:inline> must exist in dashboard.astro');
+
+  assert.ok(
+    modalIndex < scriptIndex,
+    `Modal markup (index ${modalIndex}) must appear BEFORE <script is:inline> (index ${scriptIndex}) to prevent reading null elements`
+  );
+  assert.ok(
+    diagBodyIndex < scriptIndex,
+    `Modal body (index ${diagBodyIndex}) must appear BEFORE <script is:inline> (index ${scriptIndex})`
+  );
+
+  // Verify all 6 required diagnostic elements are present
+  const requiredElements = [
+    'btnTestTelegram',
+    'telegramTestModal',
+    'telegramDiagBody',
+    'closeTelegramModal',
+    'closeTelegramModalBtn',
+    'retryTelegramModalBtn'
+  ];
+
+  for (const elId of requiredElements) {
+    assert.ok(
+      dashboardContent.includes(`id="${elId}"`),
+      `Required diagnostic element id="${elId}" must be present in dashboard.astro`
+    );
+  }
+
+  // Verify script uses DOMContentLoaded / readyState check to safely bind listeners
+  assert.ok(
+    dashboardContent.includes("document.readyState === 'loading'") || dashboardContent.includes('DOMContentLoaded'),
+    'Script must check document.readyState or listen to DOMContentLoaded'
+  );
+
+  // Verify dynamic auth resolution is used instead of stale null reference
+  assert.ok(
+    dashboardContent.includes('getFirebaseAuth'),
+    'Script must define and use dynamic getFirebaseAuth() to avoid stale auth references'
+  );
+});
+

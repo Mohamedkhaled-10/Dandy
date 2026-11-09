@@ -435,6 +435,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </table>
       </div>
     </div>
+
+    <!-- Telegram Diagnostic Modal HTML (Placed BEFORE script so DOM elements exist reliably) -->
+    <div id="telegramTestModal" class="diag-modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="telegramModalTitle">
+      <div class="diag-modal-content">
+        <div class="diag-modal-header">
+          <h3 id="telegramModalTitle"><i class="fab fa-telegram-plane" style="color: #0088cc;"></i> فحص اتصال إشعارات تيليجرام</h3>
+          <button type="button" class="diag-modal-close" id="closeTelegramModal" aria-label="إغلاق">&times;</button>
+        </div>
+        <div class="diag-modal-body" id="telegramDiagBody">
+          <!-- Content inserted dynamically -->
+        </div>
+        <div class="diag-modal-footer">
+          <button type="button" class="diag-btn-secondary" id="closeTelegramModalBtn">إغلاق</button>
+          <button type="button" class="btn-telegram-test" id="retryTelegramModalBtn">
+            <i class="fas fa-redo"></i>
+            <span>إعادة الفحص</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script is:inline>
@@ -448,16 +468,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .replace(/'/g, '&#039;');
     }
 
-    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-    const db = window.firestore || (typeof firebase !== 'undefined' ? firebase.firestore() : null);
+    // Dynamic resolution of Firebase Auth and Firestore to avoid stale null references
+    function getFirebaseAuth() {
+      return window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+    }
 
-    const operatorCard = document.getElementById('operatorCard');
-    const operatorEmail = document.getElementById('operatorEmail');
-    const operatorInitials = document.getElementById('operatorInitials');
-    const logsTableBody = document.getElementById('logsTableBody');
+    function getFirebaseDb() {
+      return window.firestore || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
+    }
 
     // Strict Admin Auth Guard
     function handleDashboardAuth(user) {
+      const operatorCard = document.getElementById('operatorCard');
+      const operatorEmail = document.getElementById('operatorEmail');
+      const operatorInitials = document.getElementById('operatorInitials');
+
       if (!user) {
         window.location.href = '/login';
         return;
@@ -473,25 +498,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       fetchChangeLogs();
     }
 
-    if (auth && typeof auth.onAuthStateChanged === 'function') {
-      auth.onAuthStateChanged(handleDashboardAuth);
-    } else {
-      let attempts = 0;
-      const pollInterval = setInterval(() => {
-        attempts++;
-        const a = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
-        if (a && typeof a.onAuthStateChanged === 'function') {
-          clearInterval(pollInterval);
-          a.onAuthStateChanged(handleDashboardAuth);
-        } else if (attempts > 30) {
-          clearInterval(pollInterval);
-          window.location.href = '/login';
-        }
-      }, 100);
-    }
+    // Initialize Auth Listener
+    (function initAuth() {
+      const a = getFirebaseAuth();
+      if (a && typeof a.onAuthStateChanged === 'function') {
+        a.onAuthStateChanged(handleDashboardAuth);
+      } else {
+        let attempts = 0;
+        const pollInterval = setInterval(() => {
+          attempts++;
+          const dynamicAuth = getFirebaseAuth();
+          if (dynamicAuth && typeof dynamicAuth.onAuthStateChanged === 'function') {
+            clearInterval(pollInterval);
+            dynamicAuth.onAuthStateChanged(handleDashboardAuth);
+          } else if (attempts > 30) {
+            clearInterval(pollInterval);
+            window.location.href = '/login';
+          }
+        }, 100);
+      }
+    })();
 
     // Fetch Change Logs from Firestore
     async function fetchChangeLogs() {
+      const db = getFirebaseDb();
+      const logsTableBody = document.getElementById('logsTableBody');
       if (!db || !logsTableBody) return;
       try {
         const snapshot = await db.collection('change_logs')
@@ -535,28 +566,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
-    // Telegram Connection Diagnostic Logic
-    const testModal = document.getElementById('telegramTestModal');
-    const diagBody = document.getElementById('telegramDiagBody');
-    const btnTestTelegram = document.getElementById('btnTestTelegram');
-    const closeModalBtn = document.getElementById('closeTelegramModal');
-    const closeModalFooterBtn = document.getElementById('closeTelegramModalBtn');
-    const retryModalBtn = document.getElementById('retryTelegramModalBtn');
+    // ==========================================
+    // Telegram Connection Diagnostic Controller
+    // ==========================================
 
-    function closeDiagModal() {
-      if (testModal) testModal.style.display = 'none';
+    function openTelegramModal() {
+      const modal = document.getElementById('telegramTestModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        runTelegramDiagnosis();
+      }
     }
 
-    closeModalBtn?.addEventListener('click', closeDiagModal);
-    closeModalFooterBtn?.addEventListener('click', closeDiagModal);
-    retryModalBtn?.addEventListener('click', runTelegramDiagnosis);
-    btnTestTelegram?.addEventListener('click', () => {
-      if (testModal) testModal.style.display = 'flex';
-      runTelegramDiagnosis();
-    });
+    function closeTelegramModal() {
+      const modal = document.getElementById('telegramTestModal');
+      if (modal) modal.style.display = 'none';
+    }
 
     async function runTelegramDiagnosis() {
+      const diagBody = document.getElementById('telegramDiagBody');
+      const retryBtn = document.getElementById('retryTelegramModalBtn');
       if (!diagBody) return;
+
+      if (retryBtn) retryBtn.disabled = true;
+
       diagBody.innerHTML = `
         <div style="text-align: center; padding: 28px 16px;">
           <i class="fas fa-spinner fa-spin fa-2x" style="color: #0088cc;"></i>
@@ -566,13 +599,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       `;
 
       try {
-        const currentUser = auth?.currentUser;
+        const auth = getFirebaseAuth();
+        let currentUser = auth?.currentUser;
+
+        // If currentUser is not immediately resolved, wait briefly for auth restoration
+        if (!currentUser && auth) {
+          currentUser = await new Promise(resolve => {
+            const unsub = auth.onAuthStateChanged(u => {
+              if (typeof unsub === 'function') unsub();
+              resolve(u);
+            });
+            setTimeout(() => resolve(null), 2500);
+          });
+        }
+
         if (!currentUser) {
-          diagBody.innerHTML = `<div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b;"><i class="fas fa-exclamation-triangle"></i> يجب تسجيل الدخول كمسؤول أولاً.</div>`;
+          if (retryBtn) retryBtn.disabled = false;
+          diagBody.innerHTML = `
+            <div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b; padding: 16px;">
+              <div style="font-weight: 800; margin-bottom: 6px;"><i class="fas fa-exclamation-triangle"></i> لم يتم العثور على جلسة تسجيل دخول نشطة</div>
+              <p style="margin: 0 0 10px 0; font-size: 0.85rem;">يجب تسجيل الدخول كمسؤول النظام (admin@dandy.com) لتشغيل هذا الفحص.</p>
+              <a href="/login" class="diag-btn-secondary" style="display: inline-block; text-decoration: none; padding: 6px 14px; font-size: 0.82rem;">الانتقال لصفحة تسجيل الدخول</a>
+            </div>
+          `;
           return;
         }
 
-        const idToken = await currentUser.getIdToken();
+        const idToken = await currentUser.getIdToken(true);
         const res = await fetch('/api/admin/telegram-test', {
           method: 'POST',
           headers: {
@@ -583,16 +636,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         const data = await res.json().catch(() => ({}));
 
-        if (!res.ok && res.status === 401) {
-          diagBody.innerHTML = `<div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b;">غير مصرح: هذا الفحص متاح فقط لحساب admin@dandy.com.</div>`;
-          return;
+        if (!res.ok) {
+          if (res.status === 401) {
+            diagBody.innerHTML = `
+              <div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b; padding: 16px;">
+                <div style="font-weight: 800; margin-bottom: 6px;"><i class="fas fa-ban"></i> غير مصرح بالوصول (401 Unauthorized)</div>
+                <p style="margin: 0; font-size: 0.85rem;">هذا الفحص متاح فقط لحساب مدير النظام المعتمد <code>admin@dandy.com</code>.</p>
+              </div>
+            `;
+            if (retryBtn) retryBtn.disabled = false;
+            return;
+          }
+
+          if (res.status === 429) {
+            diagBody.innerHTML = `
+              <div class="diag-card-item" style="border-color: #fed7aa; background: #fffbeb; color: #9a3412; padding: 16px;">
+                <div style="font-weight: 800; margin-bottom: 6px;"><i class="fas fa-clock"></i> تم تجاوز معدل الطلبات (429 Rate Limit)</div>
+                <p style="margin: 0; font-size: 0.85rem;">${escapeHtml(data.message || 'تم تجاوز الحد المسموح من اختبارات التيليجرام. يرجى الانتظار بضع دقائق ثم المحاولة مجددًا.')}</p>
+              </div>
+            `;
+            if (retryBtn) retryBtn.disabled = false;
+            return;
+          }
         }
 
+        // Render diagnosis result cards
         let html = '';
         const isSuccess = data.success === true;
-        const statusBadge = isSuccess
-          ? `<span class="diag-badge-success"><i class="fas fa-check-circle"></i> متصل بنجاح</span>`
-          : `<span class="diag-badge-fail"><i class="fas fa-times-circle"></i> تعذر الاتصال</span>`;
+        const isPartial = data.status === 'PARTIAL_SUCCESS';
+
+        let statusBadge = `<span class="diag-badge-fail"><i class="fas fa-times-circle"></i> تعذر الاتصال</span>`;
+        if (isSuccess) {
+          statusBadge = `<span class="diag-badge-success"><i class="fas fa-check-circle"></i> متصل بنجاح</span>`;
+        } else if (isPartial) {
+          statusBadge = `<span class="diag-badge-warning" style="background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.78rem;"><i class="fas fa-exclamation-triangle"></i> اتصال جزئي</span>`;
+        }
 
         html += `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -605,9 +683,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (data.bot) {
           html += `
             <div class="diag-card-item">
-              <div style="font-weight: 700; margin-bottom: 6px;"><i class="fas fa-robot"></i> بيانات البوت:</div>
+              <div style="font-weight: 700; margin-bottom: 6px;"><i class="fas fa-robot"></i> بيانات البوت (Bot Token):</div>
               <div style="font-size: 0.84rem; color: #334155; line-height: 1.6;">
-                <div><b>الحالة:</b> ${data.bot.valid ? '✅ Bot Token صالح وموثق' : '❌ Bot Token غير صالح'}</div>
+                <div><b>الحالة:</b> ${data.bot.valid ? '✅ Bot Token صالح وموثق في خوادم Telegram' : '❌ Bot Token غير صالح'}</div>
                 ${data.bot.username ? `<div><b>اسم المستخدم:</b> @${escapeHtml(data.bot.username)}</div>` : ''}
                 ${data.bot.firstName ? `<div><b>الاسم:</b> ${escapeHtml(data.bot.firstName)}</div>` : ''}
               </div>
@@ -628,46 +706,71 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                   ${c.messageSent ? '<span class="diag-badge-success">وصلت الرسالة ✅</span>' : '<span class="diag-badge-fail">فشل الإرسال ❌</span>'}
                 </div>
                 <div style="font-size: 0.82rem; color: #475569; line-height: 1.6;">
-                  <div><b>النوع:</b> ${escapeHtml(c.type || 'غير محدد')}</div>
+                  <div><b>نوع المحادثة:</b> ${escapeHtml(c.type || 'غير محدد')}</div>
                   <div><b>حالة عضوية البوت:</b> ${escapeHtml(c.botStatus || 'غير معروف')}</div>
-                  <div><b>إمكانية الإرسال:</b> ${c.canSendMessages ? 'متاحة' : 'غير متاحة'}</div>
-                  ${c.error ? `<div style="color: #b91c1c; margin-top: 4px;"><b>الخطأ:</b> ${escapeHtml(c.error.description || JSON.stringify(c.error))}</div>` : ''}
+                  <div><b>صلاحية الإرسال:</b> ${c.canSendMessages ? 'متاحة ✅' : 'غير متاحة ❌'}</div>
+                  ${c.error ? `<div style="color: #b91c1c; margin-top: 6px; font-weight: 600;"><b>تفاصيل الخطأ:</b> ${escapeHtml(c.error.description || JSON.stringify(c.error))}</div>` : ''}
                 </div>
               </div>
             `;
           });
+        } else if (!isSuccess && data.error) {
+          html += `
+            <div class="diag-card-item" style="background: #fef2f2; border-color: #fecaca; color: #991b1b;">
+              <b>خطأ التهيئة:</b> ${escapeHtml(data.message || data.error?.description || data.error)}
+            </div>
+          `;
         }
 
         if (data.message) {
-          html += `<p style="margin-top: 12px; font-weight: 600; font-size: 0.85rem; color: #1e293b;">${escapeHtml(data.message)}</p>`;
+          html += `<p style="margin-top: 14px; font-weight: 600; font-size: 0.85rem; color: #1e293b;">${escapeHtml(data.message)}</p>`;
         }
 
         diagBody.innerHTML = html;
 
       } catch (err) {
-        diagBody.innerHTML = `<div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b;">حدث خطأ أثناء إجراء التشخيص: ${escapeHtml(err.message)}</div>`;
+        diagBody.innerHTML = `
+          <div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b; padding: 16px;">
+            <div style="font-weight: 700; margin-bottom: 4px;"><i class="fas fa-exclamation-circle"></i> تعذر إتمام طلب الفحص</div>
+            <p style="margin: 0; font-size: 0.84rem;">خطأ في الاتصال بالسيرفر أو بالشبكة: ${escapeHtml(err.message)}</p>
+          </div>
+        `;
+      } finally {
+        if (retryBtn) retryBtn.disabled = false;
       }
     }
-  </script>
 
-  <!-- Telegram Diagnostic Modal HTML -->
-  <div id="telegramTestModal" class="diag-modal-backdrop" style="display: none;">
-    <div class="diag-modal-content">
-      <div class="diag-modal-header">
-        <h3><i class="fab fa-telegram-plane" style="color: #0088cc;"></i> فحص اتصال إشعارات تيليجرام</h3>
-        <button type="button" class="diag-modal-close" id="closeTelegramModal">&times;</button>
-      </div>
-      <div class="diag-modal-body" id="telegramDiagBody">
-        <!-- Content inserted dynamically -->
-      </div>
-      <div class="diag-modal-footer">
-        <button type="button" class="diag-btn-secondary" id="closeTelegramModalBtn">إغلاق</button>
-        <button type="button" class="btn-telegram-test" id="retryTelegramModalBtn">
-          <i class="fas fa-redo"></i>
-          <span>إعادة الفحص</span>
-        </button>
-      </div>
-    </div>
-  </div>
+    // Attach event listeners safely when DOM is ready
+    function setupTelegramDiagnosticListeners() {
+      const btnTestTelegram = document.getElementById('btnTestTelegram');
+      const closeModalBtn = document.getElementById('closeTelegramModal');
+      const closeModalFooterBtn = document.getElementById('closeTelegramModalBtn');
+      const retryModalBtn = document.getElementById('retryTelegramModalBtn');
+      const modal = document.getElementById('telegramTestModal');
+
+      btnTestTelegram?.addEventListener('click', openTelegramModal);
+      closeModalBtn?.addEventListener('click', closeTelegramModal);
+      closeModalFooterBtn?.addEventListener('click', closeTelegramModal);
+      retryModalBtn?.addEventListener('click', runTelegramDiagnosis);
+
+      // Close when clicking outside content (on backdrop)
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeTelegramModal();
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && modal.style.display !== 'none') {
+          closeTelegramModal();
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupTelegramDiagnosticListeners);
+    } else {
+      setupTelegramDiagnosticListeners();
+    }
+  </script>
 </BaseLayout>
 
