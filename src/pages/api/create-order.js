@@ -13,6 +13,7 @@ import {
 } from '../../utils/pink-friday-server.ts';
 import { sendOrderNotification } from '../../utils/email-service.ts';
 import { getOrCreateInvoiceToken } from '../../utils/invoice-token.ts';
+import { sendTelegramNotification } from '../../utils/telegram.js';
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -69,40 +70,6 @@ const shippingRates = {
 function getShippingFeeForGov(govName) {
   if (!govName) return 120;
   return shippingRates[govName] !== undefined ? shippingRates[govName] : 120;
-}
-
-async function sendLowStockTelegram(productName, remainingQty) {
-  const token = process.env.TELEGRAM_TOKEN;
-  const chatIdsStr = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatIdsStr) return;
-
-  try {
-    const message = `⚠️ *تنبيه مخزون منخفض في متجر داندي!*
-────────────────
-📦 *المنتج:* ${productName || '-'}
-📉 *الكمية المتبقية:* ${remainingQty ?? 0}
-⏱ *الوقت:* ${new Date().toLocaleString('ar-EG')}
-
-🔗 *إدارة المنتجات:*
-https://dandy-ebon.vercel.app/dashboard-product`;
-
-    const telegramUrl = `https://api.telegram.org/bot${token}/sendMessage`;
-    const chatIds = chatIdsStr.split(',').map(id => id.trim()).filter(Boolean);
-
-    for (const chatId of chatIds) {
-      fetch(telegramUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: 'Markdown'
-        })
-      }).catch(err => console.error('Telegram notification error:', err));
-    }
-  } catch (err) {
-    console.error('Error sending low stock telegram notification:', err);
-  }
 }
 
 export async function POST({ request }) {
@@ -604,9 +571,8 @@ export async function POST({ request }) {
     await orderRef.set(orderData);
     const orderId = orderRef.key;
 
-    const internalSecret = process.env.INTERNAL_API_SECRET ? process.env.INTERNAL_API_SECRET.trim() : null;
-
-    // تحديث المخزون باستخدام Transaction وإطلاق تنبيه المخزون المنخفض لكل منتج شارك في الطلب
+    // تحديث المخزون وتجميع تنبيهات المخزون المنخفض/النافد
+    const lowStockAlerts = [];
     for (const [prodId, stockInfo] of stockDeductionMap.entries()) {
       const orderedQty = stockInfo.quantityNeeded;
       if (prodId && orderedQty > 0) {
@@ -622,82 +588,21 @@ export async function POST({ request }) {
           const newSnap = await stockRef.once('value');
           const rawQty = newSnap.val();
           const newQty = rawQty !== null && rawQty !== undefined ? Number(rawQty) : null;
-          if (typeof newQty === 'number' && !isNaN(newQty) && newQty <= 0) {
-            await adminDb.ref(`products/${prodId}/isSoldOut`).set(true);
-          }
-          if (typeof newQty === 'number' && !isNaN(newQty) && newQty <= 3 && newQty > 0) {
-            if (!internalSecret) {
-              console.error('Telegram low stock notification skipped (Fail Closed): INTERNAL_API_SECRET is missing or empty in environment.');
-            } else {
-              try {
-                const sendTelegramUrl = new URL('/api/send-telegram', request.url).toString();
-                fetch(sendTelegramUrl, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'x-internal-secret': internalSecret
-                  },
-                  body: JSON.stringify({
-                    lowStockAlert: true,
-                    productName: stockInfo.name,
-                    remainingQty: newQty
-                  })
-                }).catch(tgErr => console.error('Telegram low stock notification failed:', tgErr));
-              } catch (e) {
-                console.error('Error initiating low stock telegram fetch:', e);
-              }
+          if (typeof newQty === 'number' && !isNaN(newQty)) {
+            if (newQty <= 0) {
+              await adminDb.ref(`products/${prodId}/isSoldOut`).set(true);
+            }
+            if (newQty <= 3) {
+              lowStockAlerts.push({
+                productName: stockInfo.name,
+                remainingQty: newQty
+              });
             }
           }
         } catch (stockErr) {
           console.error(`Error updating stock for product ${prodId}:`, stockErr);
         }
       }
-    }
-
-    // إرسال إشعار التيليجرام للطلب الجديد داخلياً مع الرمز السري (سيرفر لسيرفر)
-    if (!internalSecret) {
-      console.error('Telegram order notification skipped (Fail Closed): INTERNAL_API_SECRET is missing or empty in environment.');
-    } else {
-      try {
-        const sendTelegramUrl = new URL('/api/send-telegram', request.url).toString();
-        fetch(sendTelegramUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-internal-secret': internalSecret
-          },
-          body: JSON.stringify({ order: orderData, orderId })
-        }).catch(tgErr => console.error('Telegram order notification failed:', tgErr));
-      } catch (e) {
-        console.error('Error initiating telegram fetch:', e);
-      }
-    }
-
-    // إرسال Webhook (Make.com) من متغير البيئة MAKE_WEBHOOK_URL
-    const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
-    if (makeWebhookUrl) {
-      // عزل وتعطيل إرسال إيميل الفاتورة عبر Make/Brevo في حال تفعيل إشعارات Gmail الجديدة
-      // لمنع إرسال فاتورتين متكررتين لنفس الطلب، مع الحفاظ الكامل على باقي أتمتات Make كالأرشفة والتسجيل
-      const isGmailEnabled = process.env.GMAIL_NOTIFICATIONS_ENABLED === 'true';
-      const isMakeEmailExplicitlyDisabled = process.env.DISABLE_MAKE_INVOICE_EMAIL === 'true';
-      const shouldSuppressMakeInvoiceEmail = isGmailEnabled || isMakeEmailExplicitlyDisabled;
-
-      const makePayload = {
-        ...orderData,
-        // Migration and email isolation flags for Make scenario routers / filters:
-        sendEmailInvoice: !shouldSuppressMakeInvoiceEmail,
-        skipEmailNotification: shouldSuppressMakeInvoiceEmail,
-        disableBrevoEmail: shouldSuppressMakeInvoiceEmail,
-        emailProvider: isGmailEnabled ? 'GMAIL_RELAY' : (shouldSuppressMakeInvoiceEmail ? 'NONE' : 'BREVO')
-      };
-
-      fetch(makeWebhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(makePayload)
-      }).catch(whErr => {
-        console.error('Make webhook sending failed:', whErr);
-      });
     }
 
     // 1. توليد رمز الوصول الآمن للفاتورة وحفظه في العقد الخاصة
@@ -708,18 +613,79 @@ export async function POST({ request }) {
       console.error('[CreateOrder] Failed generating private invoice access token:', tokenErr);
     }
 
-    // 2. إرسال إشعار تأكيد الطلب للعميل عبر Google Apps Script Mail Relay (متزامن وبمهلة محددة مع عزل أخطاء البريد)
-    let emailResult = null;
-    try {
-      emailResult = await sendOrderNotification({
-        order: orderData,
-        orderId,
-        eventType: 'ORDER_CONFIRMATION',
-        invoiceAccessToken
-      });
-    } catch (mailErr) {
+    // 2. إرسال إشعار تأكيد الطلب للعميل عبر Google Apps Script Mail Relay (معزول وبمهلة محددة)
+    const emailPromise = sendOrderNotification({
+      order: orderData,
+      orderId,
+      eventType: 'ORDER_CONFIRMATION',
+      invoiceAccessToken
+    }).catch(mailErr => {
       console.error('[CreateOrder] Order confirmation email dispatch failed (resilient):', mailErr);
+      return null;
+    });
+
+    // 3. إرسال إشعار التيليجرام للطلب الجديد عبر الخدمة المركزية (منتظرة وبمهلة 4 ثوانٍ مع عزل كامل للأخطاء)
+    const telegramOrderPromise = sendTelegramNotification({
+      order: orderData,
+      orderId,
+      timeoutMs: 4000
+    }).catch(tgErr => {
+      console.error('[CreateOrder] Telegram order notification failed (resilient):', tgErr);
+      return null;
+    });
+
+    // 4. إرسال تنبيهات المخزون المنخفض/النافد عبر تيليجرام (إن وُجدت)
+    const lowStockPromises = lowStockAlerts.map(alert =>
+      sendTelegramNotification({
+        lowStockAlert: true,
+        productName: alert.productName,
+        remainingQty: alert.remainingQty,
+        timeoutMs: 4000
+      }).catch(lsErr => {
+        console.error(`[CreateOrder] Telegram low stock alert failed for ${alert.productName} (resilient):`, lsErr);
+        return null;
+      })
+    );
+
+    // 5. إرسال Webhook (Make.com) من متغير البيئة MAKE_WEBHOOK_URL
+    let makeWebhookPromise = Promise.resolve(null);
+    const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
+    if (makeWebhookUrl) {
+      const isGmailEnabled = process.env.GMAIL_NOTIFICATIONS_ENABLED === 'true';
+      const isMakeEmailExplicitlyDisabled = process.env.DISABLE_MAKE_INVOICE_EMAIL === 'true';
+      const shouldSuppressMakeInvoiceEmail = isGmailEnabled || isMakeEmailExplicitlyDisabled;
+
+      const makePayload = {
+        ...orderData,
+        sendEmailInvoice: !shouldSuppressMakeInvoiceEmail,
+        skipEmailNotification: shouldSuppressMakeInvoiceEmail,
+        disableBrevoEmail: shouldSuppressMakeInvoiceEmail,
+        emailProvider: isGmailEnabled ? 'GMAIL_RELAY' : (shouldSuppressMakeInvoiceEmail ? 'NONE' : 'BREVO')
+      };
+
+      const makeController = new AbortController();
+      const makeTimer = setTimeout(() => makeController.abort(), 4000);
+      makeWebhookPromise = fetch(makeWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(makePayload),
+        signal: makeController.signal
+      })
+        .then(() => clearTimeout(makeTimer))
+        .catch(whErr => {
+          clearTimeout(makeTimer);
+          console.error('Make webhook sending failed (resilient):', whErr);
+          return null;
+        });
     }
+
+    // انتظار جميع الإشعارات والمهام بالتوازي لضمان اكتمالها داخل بيئة Vercel Serverless دون تأخير تجربة العميل
+    await Promise.allSettled([
+      emailPromise,
+      telegramOrderPromise,
+      ...lowStockPromises,
+      makeWebhookPromise
+    ]);
 
     return new Response(JSON.stringify({
       success: true,

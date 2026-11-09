@@ -1,6 +1,9 @@
 export const prerender = false;
 
+// src/pages/api/send-telegram.js
+// Internal authenticated endpoint for Telegram notifications
 import { getClientIp, getTelegramRateLimiter } from '../../utils/rate-limit.js';
+import { sendTelegramNotification } from '../../utils/telegram.js';
 
 export async function POST({ request }) {
   try {
@@ -61,11 +64,16 @@ export async function POST({ request }) {
     const body = await request.json().catch(() => ({}));
     const { order, orderId, lowStockAlert, productName, remainingQty } = body || {};
 
-    const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
-    const TELEGRAM_CHAT_IDS = process.env.TELEGRAM_CHAT_ID;
+    const dispatchResult = await sendTelegramNotification({
+      order,
+      orderId,
+      lowStockAlert,
+      productName,
+      remainingQty,
+      timeoutMs: 5000
+    });
 
-    if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_IDS) {
-      console.warn('TELEGRAM_TOKEN or TELEGRAM_CHAT_ID not configured in environment. Notification simulated.');
+    if (dispatchResult.simulated) {
       return new Response(JSON.stringify({
         success: true,
         simulated: true,
@@ -76,62 +84,42 @@ export async function POST({ request }) {
       });
     }
 
-    let message = '';
-    if (lowStockAlert) {
-      message = `⚠️ *تنبيه مخزون منخفض في متجر داندي!*
-────────────────
-📦 *المنتج:* ${productName || '-'}
-📉 *الكمية المتبقية:* ${remainingQty ?? 0}
-⏱ *الوقت:* ${new Date().toLocaleString('ar-EG')}
-
-🔗 *إدارة المنتجات:*
-https://dandy-ebon.vercel.app/dashboard-product`;
-    } else {
-      const dateText = order?.timestamp
-        ? new Date(order.timestamp).toLocaleString('ar-EG')
-        : new Date().toLocaleString('ar-EG');
-
-      message = `🔔 *طلب جديد في متجر داندي!*
-────────────────
-👤 *العميل\\ة:* ${order?.name || '-'}
-📞 *رقم الهاتف:* ${order?.phone || '-'}
-📍 *المحافظة:* ${order?.governorate || '-'}
-📦 *العنوان:* ${order?.address || '-'}
-💰 *كود الفاتورة:* ${order?.invoiceCode || orderId}
-⏱ *الوقت:* ${dateText}
-
-🔗 *تفاصيل الطلب:*
-https://dandy-ebon.vercel.app/dashboard-order`;
-    }
-
-    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-
-    const chatIds = TELEGRAM_CHAT_IDS
-      .split(',')
-      .map(id => id.trim())
-      .filter(Boolean);
-
-    for (const chatId of chatIds) {
-      const response = await fetch(telegramUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: "Markdown"
-        })
+    if (dispatchResult.status === 'SUCCESS') {
+      return new Response(JSON.stringify({
+        success: true,
+        status: 'SUCCESS',
+        totalSent: dispatchResult.totalSent,
+        results: dispatchResult.results
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error(`Telegram API error for Chat ID ${chatId}:`, errorData);
-      }
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
+    if (dispatchResult.status === 'PARTIAL_SUCCESS') {
+      return new Response(JSON.stringify({
+        success: false,
+        partialSuccess: true,
+        status: 'PARTIAL_SUCCESS',
+        totalSent: dispatchResult.totalSent,
+        totalFailed: dispatchResult.totalFailed,
+        results: dispatchResult.results
+      }), {
+        status: 207,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // FAILURE
+    return new Response(JSON.stringify({
+      success: false,
+      status: 'FAILURE',
+      error: 'TELEGRAM_DISPATCH_FAILED',
+      totalSent: dispatchResult.totalSent,
+      totalFailed: dispatchResult.totalFailed,
+      results: dispatchResult.results
+    }), {
+      status: 502,
       headers: { 'Content-Type': 'application/json' }
     });
 

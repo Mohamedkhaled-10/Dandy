@@ -69,6 +69,126 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         color: var(--color-primary, #111827);
       }
 
+      .btn-telegram-test {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #0088cc;
+        color: #ffffff;
+        border: none;
+        border-radius: var(--border-radius-sm, 6px);
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.15s ease, transform 0.15s ease;
+      }
+      .btn-telegram-test:hover {
+        background: #0077b5;
+        transform: translateY(-1px);
+      }
+      .btn-telegram-test:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* Diagnostics Modal */
+      .diag-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .diag-modal-content {
+        background: #ffffff;
+        border-radius: 12px;
+        max-width: 620px;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+        overflow: hidden;
+      }
+      .diag-modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-light, #e5e7eb);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .diag-modal-header h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .diag-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.4rem;
+        cursor: pointer;
+        color: var(--color-muted, #6b7280);
+      }
+      .diag-modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        font-size: 0.9rem;
+      }
+      .diag-modal-footer {
+        padding: 12px 20px;
+        border-top: 1px solid var(--border-light, #e5e7eb);
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        background: var(--color-surface-soft, #f9fafb);
+      }
+      .diag-btn-secondary {
+        padding: 8px 16px;
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: inherit;
+      }
+      .diag-card-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .diag-badge-success {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        background: #dcfce7;
+        color: #166534;
+        border-radius: 4px;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+      .diag-badge-fail {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        background: #fee2e2;
+        color: #991b1b;
+        border-radius: 4px;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
       /* Clean Operational Bento Grid */
       .admin-modules-grid {
         display: grid;
@@ -226,9 +346,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <p>نظرة عامة على أقسام المتجر وسجل العمليات اللحظي.</p>
       </div>
 
-      <div class="operator-chip" id="operatorCard" style="display: none;">
-        <div class="operator-initial" id="operatorInitials">A</div>
-        <div class="operator-info" id="operatorEmail">...</div>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <button type="button" id="btnTestTelegram" class="btn-telegram-test">
+          <i class="fab fa-telegram-plane"></i>
+          <span>فحص إشعارات التيليجرام</span>
+        </button>
+
+        <div class="operator-chip" id="operatorCard" style="display: none;">
+          <div class="operator-initial" id="operatorInitials">A</div>
+          <div class="operator-info" id="operatorEmail">...</div>
+        </div>
       </div>
     </div>
 
@@ -407,6 +534,140 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         logsTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 24px; color:var(--color-muted);">لا توجد نشاطات مسجلة حتى الآن.</td></tr>';
       }
     }
+
+    // Telegram Connection Diagnostic Logic
+    const testModal = document.getElementById('telegramTestModal');
+    const diagBody = document.getElementById('telegramDiagBody');
+    const btnTestTelegram = document.getElementById('btnTestTelegram');
+    const closeModalBtn = document.getElementById('closeTelegramModal');
+    const closeModalFooterBtn = document.getElementById('closeTelegramModalBtn');
+    const retryModalBtn = document.getElementById('retryTelegramModalBtn');
+
+    function closeDiagModal() {
+      if (testModal) testModal.style.display = 'none';
+    }
+
+    closeModalBtn?.addEventListener('click', closeDiagModal);
+    closeModalFooterBtn?.addEventListener('click', closeDiagModal);
+    retryModalBtn?.addEventListener('click', runTelegramDiagnosis);
+    btnTestTelegram?.addEventListener('click', () => {
+      if (testModal) testModal.style.display = 'flex';
+      runTelegramDiagnosis();
+    });
+
+    async function runTelegramDiagnosis() {
+      if (!diagBody) return;
+      diagBody.innerHTML = `
+        <div style="text-align: center; padding: 28px 16px;">
+          <i class="fas fa-spinner fa-spin fa-2x" style="color: #0088cc;"></i>
+          <p style="margin-top: 14px; font-weight: 700; color: #1e293b;">جاري فحص اتصال Telegram Bot والتحقق من الجروب...</p>
+          <p style="font-size: 0.8rem; color: #64748b;">يتم فحص getMe و getChat وإرسال رسالة اختبار حقيقية إلى الجروب المصرح به.</p>
+        </div>
+      `;
+
+      try {
+        const currentUser = auth?.currentUser;
+        if (!currentUser) {
+          diagBody.innerHTML = `<div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b;"><i class="fas fa-exclamation-triangle"></i> يجب تسجيل الدخول كمسؤول أولاً.</div>`;
+          return;
+        }
+
+        const idToken = await currentUser.getIdToken();
+        const res = await fetch('/api/admin/telegram-test', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          }
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok && res.status === 401) {
+          diagBody.innerHTML = `<div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b;">غير مصرح: هذا الفحص متاح فقط لحساب admin@dandy.com.</div>`;
+          return;
+        }
+
+        let html = '';
+        const isSuccess = data.success === true;
+        const statusBadge = isSuccess
+          ? `<span class="diag-badge-success"><i class="fas fa-check-circle"></i> متصل بنجاح</span>`
+          : `<span class="diag-badge-fail"><i class="fas fa-times-circle"></i> تعذر الاتصال</span>`;
+
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 800;">نتيجة الفحص التشخيصي</h4>
+            ${statusBadge}
+          </div>
+        `;
+
+        // Bot Info Card
+        if (data.bot) {
+          html += `
+            <div class="diag-card-item">
+              <div style="font-weight: 700; margin-bottom: 6px;"><i class="fas fa-robot"></i> بيانات البوت:</div>
+              <div style="font-size: 0.84rem; color: #334155; line-height: 1.6;">
+                <div><b>الحالة:</b> ${data.bot.valid ? '✅ Bot Token صالح وموثق' : '❌ Bot Token غير صالح'}</div>
+                ${data.bot.username ? `<div><b>اسم المستخدم:</b> @${escapeHtml(data.bot.username)}</div>` : ''}
+                ${data.bot.firstName ? `<div><b>الاسم:</b> ${escapeHtml(data.bot.firstName)}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }
+
+        // Chat Info Cards
+        if (Array.isArray(data.chats) && data.chats.length > 0) {
+          html += `<div style="font-weight: 700; margin: 12px 0 6px;"><i class="fas fa-comments"></i> الجروبات الموجه إليها:</div>`;
+          data.chats.forEach((c, idx) => {
+            const cardBg = c.messageSent ? '#f0fdf4' : '#fef2f2';
+            const cardBorder = c.messageSent ? '#bbf7d0' : '#fecaca';
+            html += `
+              <div class="diag-card-item" style="background: ${cardBg}; border-color: ${cardBorder};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <b>الوجهة ${idx + 1}: ${escapeHtml(c.title || c.chatId || 'جروب')}</b>
+                  ${c.messageSent ? '<span class="diag-badge-success">وصلت الرسالة ✅</span>' : '<span class="diag-badge-fail">فشل الإرسال ❌</span>'}
+                </div>
+                <div style="font-size: 0.82rem; color: #475569; line-height: 1.6;">
+                  <div><b>النوع:</b> ${escapeHtml(c.type || 'غير محدد')}</div>
+                  <div><b>حالة عضوية البوت:</b> ${escapeHtml(c.botStatus || 'غير معروف')}</div>
+                  <div><b>إمكانية الإرسال:</b> ${c.canSendMessages ? 'متاحة' : 'غير متاحة'}</div>
+                  ${c.error ? `<div style="color: #b91c1c; margin-top: 4px;"><b>الخطأ:</b> ${escapeHtml(c.error.description || JSON.stringify(c.error))}</div>` : ''}
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        if (data.message) {
+          html += `<p style="margin-top: 12px; font-weight: 600; font-size: 0.85rem; color: #1e293b;">${escapeHtml(data.message)}</p>`;
+        }
+
+        diagBody.innerHTML = html;
+
+      } catch (err) {
+        diagBody.innerHTML = `<div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b;">حدث خطأ أثناء إجراء التشخيص: ${escapeHtml(err.message)}</div>`;
+      }
+    }
   </script>
+
+  <!-- Telegram Diagnostic Modal HTML -->
+  <div id="telegramTestModal" class="diag-modal-backdrop" style="display: none;">
+    <div class="diag-modal-content">
+      <div class="diag-modal-header">
+        <h3><i class="fab fa-telegram-plane" style="color: #0088cc;"></i> فحص اتصال إشعارات تيليجرام</h3>
+        <button type="button" class="diag-modal-close" id="closeTelegramModal">&times;</button>
+      </div>
+      <div class="diag-modal-body" id="telegramDiagBody">
+        <!-- Content inserted dynamically -->
+      </div>
+      <div class="diag-modal-footer">
+        <button type="button" class="diag-btn-secondary" id="closeTelegramModalBtn">إغلاق</button>
+        <button type="button" class="btn-telegram-test" id="retryTelegramModalBtn">
+          <i class="fas fa-redo"></i>
+          <span>إعادة الفحص</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </BaseLayout>
 
