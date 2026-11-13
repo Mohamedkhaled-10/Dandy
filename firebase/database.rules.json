@@ -22,10 +22,10 @@
           ".validate": "newData.isBoolean() && ((auth != null && auth.token.email == 'admin@dandy.com') || (newData.val() == true))"
         },
         "avgRating": {
-          ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+          ".write": "auth != null"
         },
         "reviewCount": {
-          ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+          ".write": "auth != null"
         }
       }
     },
