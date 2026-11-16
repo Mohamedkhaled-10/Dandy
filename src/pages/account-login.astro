@@ -8,7 +8,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
   description="سجّلي الدخول إلى حسابك في داندي لمتابعة طلباتك، تعديل عناوين الشحن، ومشاهدة قائمتك المفضلة."
 >
   <slot name="head" slot="head">
-    {turnstileSiteKey && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style is:global>
       .login-editorial-page {
         min-height: calc(100vh - 80px);
@@ -492,24 +492,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
           </div>
 
           <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
-          <div class="login-turnstile-wrap" style="margin: 16px 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
-            {turnstileSiteKey ? (
-              <>
-                <div
-                  class="cf-turnstile"
-                  data-sitekey={turnstileSiteKey}
-                  data-theme="light"
-                  data-callback="onLoginTurnstileVerified"
-                  data-expired-callback="onLoginTurnstileExpired"
-                  data-error-callback="onLoginTurnstileError"
-                ></div>
-                <p id="loginTurnstileStatusMsg" style="display: none; margin: 0; font-size: 0.78rem; color: #b45309; font-weight: 600; text-align: center;"></p>
-              </>
-            ) : (
-              <div role="status" style="padding:10px 14px; border-radius:8px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.82rem; font-weight:600; text-align:center;">
-                خدمة التحقق الأمني (Turnstile) غير مهيأة في هذه البيئة حالياً.
-              </div>
-            )}
+          <div class="login-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
+            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
           </div>
 
           <button type="submit" id="loginSubmitBtn" class="login-submit-btn">
@@ -551,9 +535,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
   <script is:inline>
     (function() {
-      const auth = (typeof window.getSafeFirebaseAuth === 'function' ? window.getSafeFirebaseAuth() : null) ||
-        window.auth ||
-        (() => { try { return typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null; } catch (_) { return null; } })();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
 
       const form = document.getElementById('customerLoginForm');
       const submitBtn = document.getElementById('loginSubmitBtn');
@@ -575,37 +557,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       function showAlert(text, type = 'error') {
         if (!alertBox) return;
         alertBox.className = 'login-alert-box ' + type;
-        alertBox.innerHTML = '';
-        const icon = document.createElement('i');
-        icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
-        alertBox.appendChild(icon);
-        alertBox.appendChild(document.createTextNode(' ' + String(text || '')));
+        alertBox.innerHTML = (type === 'error' ? '<i class="fas fa-exclamation-circle"></i> ' : '<i class="fas fa-check-circle"></i> ') + text;
       }
-
-      function setLoginTurnstileStatus(message) {
-        const statusEl = document.getElementById('loginTurnstileStatusMsg');
-        if (!statusEl) return;
-        if (!message) {
-          statusEl.style.display = 'none';
-          statusEl.textContent = '';
-          return;
-        }
-        statusEl.textContent = message;
-        statusEl.style.display = 'block';
-      }
-
-      window.onLoginTurnstileVerified = function() {
-        setLoginTurnstileStatus('');
-      };
-      window.onLoginTurnstileExpired = function() {
-        setLoginTurnstileStatus('انتهت صلاحية رمز التحقق الأمني (Turnstile). يرجى إعادة التحقق قبل تسجيل الدخول.');
-        if (typeof turnstile !== 'undefined') {
-          try { turnstile.reset(); } catch (_) {}
-        }
-      };
-      window.onLoginTurnstileError = function() {
-        setLoginTurnstileStatus('تعذر تحميل أو إتمام التحقق الأمني (Turnstile). يرجى تعطيل مانع الإعلانات إن وجد أو إعادة المحاولة.');
-      };
 
       function clearAlert() {
         if (!alertBox) return;
@@ -630,11 +583,6 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
           if (!email || !email.includes('@')) {
             showAlert('يرجى كتابة بريدكِ الإلكتروني في الحقل أولاً، ثم اضغطي على "نسيتِ كلمة السر؟".', 'error');
             emailInput?.focus();
-            return;
-          }
-
-          if (!auth) {
-            showAlert('خدمة إعادة تعيين كلمة المرور غير متاحة حالياً في هذه البيئة.', 'error');
             return;
           }
 

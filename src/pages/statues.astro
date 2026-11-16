@@ -1308,17 +1308,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       consoleBox.scrollTop = consoleBox.scrollHeight;
     }
 
-    function getSafeStatuesAuth() {
-      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
-      if (window.auth) return window.auth;
-      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
-    }
-    function getSafeStatuesDb() {
-      if (typeof window.getSafeFirebaseDb === 'function') return window.getSafeFirebaseDb();
-      if (window.db) return window.db;
-      try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; }
-    }
-
     // Strict Admin Auth Guard
     function checkAdminAuth() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -1330,14 +1319,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return;
       }
 
-      const auth = getSafeStatuesAuth();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
       if (auth && typeof auth.onAuthStateChanged === 'function') {
         auth.onAuthStateChanged(handleAuthUser);
       } else {
         let attempts = 0;
         const poll = setInterval(() => {
           attempts++;
-          const a = getSafeStatuesAuth();
+          const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
           if (a && typeof a.onAuthStateChanged === 'function') {
             clearInterval(poll);
             a.onAuthStateChanged(handleAuthUser);
@@ -1356,13 +1345,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
         window.location.replace('/');
-        return;
-      }
-      if (user.emailVerified !== true) {
-        const a = getSafeStatuesAuth();
-        Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
-          window.location.replace('/login?reason=email_not_verified');
-        });
         return;
       }
       // Authorized admin: start fetching and initialize UI
@@ -1474,7 +1456,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Data Fetching via once('value')
     async function fetchDashboardData(isTestMode = false) {
-      const db = getSafeStatuesDb();
+      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
       const startTime = performance.now();
       appendDiagnosticLog('Executing in-memory batch fetch on nodes orders and products...', 'INFO');
 

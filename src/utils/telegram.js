@@ -142,15 +142,6 @@ export function formatOrderMessage(order, orderId = null) {
     discountLine = `\n• <b>الخصم:</b> ${escapeHtml(String(order.discount))} EGP`;
   }
 
-  let couponLine = '';
-  if (order.coupon && typeof order.coupon === 'object' && !Array.isArray(order.coupon)) {
-    const rawCouponCode = typeof order.coupon.code === 'string' ? order.coupon.code.trim().toUpperCase() : '';
-    const rawCouponDiscount = Number(order.coupon.discountAmount);
-    if (rawCouponCode && Number.isFinite(rawCouponDiscount) && rawCouponDiscount > 0) {
-      couponLine = `\n• <b>خصم الكوبون (<code>${escapeHtml(rawCouponCode)}</code>):</b> -${escapeHtml(String(rawCouponDiscount))} EGP`;
-    }
-  }
-
   return `🖤 <b>DANDY STORE</b>
 <code>ORDER MANAGEMENT SYSTEM</code>
 ────────────────
@@ -170,7 +161,7 @@ export function formatOrderMessage(order, orderId = null) {
 ────────────────
 💵 <b>ملخص الحساب</b>
 
-• <b>قيمة المنتجات:</b> ${escapeHtml(subtotalText)}${discountLine}${couponLine}
+• <b>قيمة المنتجات:</b> ${escapeHtml(subtotalText)}${discountLine}
 • <b>تكلفة الشحن:</b> ${escapeHtml(shippingText)}
 • <b>الإجمالي النهائي:</b> <b>${escapeHtml(totalFormatted)}</b>
 ────────────────

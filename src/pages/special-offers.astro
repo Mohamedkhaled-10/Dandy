@@ -59,14 +59,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 
   <script is:inline>
-    const db = (typeof window.getSafeFirebaseDb === 'function' ? window.getSafeFirebaseDb() : null) ||
-      window.db ||
-      (() => { try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; } })();
-    function getSafeOffersAuth() {
-      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
-      if (window.auth) return window.auth;
-      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
-    }
+    const db = window.db || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
 
     function escapeHtml(string) {
       if (!string) return '';
@@ -82,7 +75,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     window.userWishlistSet = window.userWishlistSet || new Set();
 
     function initWishlistTracking() {
-      const auth = getSafeOffersAuth();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
       if (!auth) return;
 
       auth.onAuthStateChanged(async (user) => {
@@ -122,7 +115,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     window.toggleCardWishlist = async function(productId, btnEl) {
-      const auth = getSafeOffersAuth();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
       const user = auth ? auth.currentUser : null;
 
       if (!user) {

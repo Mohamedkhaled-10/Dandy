@@ -2,7 +2,6 @@
 // Header.astro
 // Phase 02: Modern Minimal E-commerce Header & Navigation
 import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../utils/pink-friday-server';
-import { FREE_SHIPPING_THRESHOLD_EGP } from '../config/store-policy';
 const publishedCampaign = await getPublishedPinkFridayCampaign();
 const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
 ---
@@ -29,13 +28,13 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
 </script>
 <div class="announce-bar" id="site-announce-bar">
   <div class="announce-track">
-    <span>Enjoy Free Shipping on orders above {FREE_SHIPPING_THRESHOLD_EGP} LE</span>
+    <span>Enjoy Free Shipping on orders above 2000 LE</span>
     <span>•</span>
-    <span>توصيل مجاني لجميع الطلبات فوق {FREE_SHIPPING_THRESHOLD_EGP} جنيه</span>
+    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
     <span>•</span>
-    <span>Enjoy Free Shipping on orders above {FREE_SHIPPING_THRESHOLD_EGP} LE</span>
+    <span>Enjoy Free Shipping on orders above 2000 LE</span>
     <span>•</span>
-    <span>توصيل مجاني لجميع الطلبات فوق {FREE_SHIPPING_THRESHOLD_EGP} جنيه</span>
+    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
   </div>
 </div>
 
@@ -564,9 +563,9 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
       </div>
     `;
 
-    const resolvedDb = typeof window.getSafeFirebaseDb === 'function'
-      ? window.getSafeFirebaseDb()
-      : (window.db || null);
+    if (typeof window.db === 'undefined' && typeof firebase !== 'undefined') {
+      window.db = firebase.database();
+    }
 
     // Meta Pixel Search Event via DandyMeta (actual search execution, debounced)
     if (window.DandyMeta && typeof window.DandyMeta.trackSearch === 'function') {
@@ -575,7 +574,7 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
       fbq('track', 'Search', { search_string: query });
     }
 
-    if (!resolvedDb) {
+    if (typeof window.db === 'undefined') {
       fetch("https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app/products.json")
       .then(res => res.json())
       .then(data => {
@@ -586,7 +585,7 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
         resultsContainer.innerHTML = '<p class="search-error-msg">حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.</p>';
       });
     } else {
-      resolvedDb.ref('products').once('value').then(snap => {
+      window.db.ref('products').once('value').then(snap => {
         renderSearchResults(snap.val(), query, resultsContainer);
       }).catch(err => {
         console.error(err);
@@ -604,7 +603,6 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
     let products = [];
     Object.keys(data).forEach(k => {
       let p = data[k];
-      if (!p || p.isHidden === true || p.isHidden === 'true') return;
       p.id = k;
       if (p.name) products.push(p);
     });
@@ -646,24 +644,18 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
       if (p.onSale && p.discount) {
         let priceRaw = parseFloat(p.price);
         let discountPercent = parseFloat(p.discount) || 0;
-        let oldPrice = (Number.isFinite(priceRaw) && discountPercent > 0 && discountPercent < 100)
-          ? (priceRaw / (1 - (discountPercent / 100))).toFixed(0)
-          : '';
-        priceHtml = `${oldPrice ? `<span class="old-price">${escapeHtml(oldPrice)} ج.م</span> ` : ''}<span class="current-price">${escapeHtml(Number.isFinite(priceRaw) ? priceRaw : p.price)} ج.م</span>`;
+        let oldPrice = priceRaw / (1 - (discountPercent/100));
+        priceHtml = `<span class="old-price">${oldPrice.toFixed(0)} ج.م</span> <span class="current-price">${priceRaw} ج.م</span>`;
       } else if (p.originalPrice) {
-        priceHtml = `<span class="old-price">${escapeHtml(p.originalPrice)} ج.م</span> <span class="current-price">${escapeHtml(p.price)} ج.م</span>`;
+        priceHtml = `<span class="old-price">${p.originalPrice} ج.م</span> <span class="current-price">${p.price} ج.م</span>`;
       } else {
-        priceHtml = `<span class="current-price">${escapeHtml(p.price)} ج.م</span>`;
+        priceHtml = `<span class="current-price">${p.price} ج.م</span>`;
       }
-
-      const rawImg = typeof p.image === 'string' ? p.image.trim() : '';
-      const safeImg = (/^https?:\/\//i.test(rawImg) || (rawImg.startsWith('/') && !rawImg.startsWith('//')))
-        ? rawImg
-        : '/assets/images/logo.png';
-      const pLink = p.slug ? `/product/${encodeURIComponent(p.slug)}` : `/product?id=${encodeURIComponent(p.id)}`;
+      
+      const pLink = p.slug ? `/product/${encodeURIComponent(p.slug)}` : `/product?id=${p.id}`;
       html += `
-        <a href="${escapeHtml(pLink)}" class="search-result-card" onclick="window.toggleSearchPanel()">
-          <img src="${escapeHtml(safeImg)}" alt="${escapeHtml(p.name)}" loading="lazy" />
+        <a href="${pLink}" class="search-result-card" onclick="window.toggleSearchPanel()">
+          <img src="${p.image || '/assets/images/logo.png'}" alt="${escapeHtml(p.name)}" loading="lazy" />
           <div class="result-details">
             <h4 class="result-name">${escapeHtml(p.name)}</h4>
             <div class="result-price">${priceHtml}</div>
@@ -690,19 +682,9 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
       .replace(/'/g, '&#039;');
   }
 
-  function getHeaderSafeAuth() {
-    if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
-    if (window.auth) return window.auth;
-    try {
-      return (typeof firebase !== 'undefined' && typeof firebase.auth === 'function') ? firebase.auth() : null;
-    } catch (_) {
-      return null;
-    }
-  }
-
   // --- Auth state check (Customer vs Guest) ---
   window.headerSignOut = async function() {
-    const auth = getHeaderSafeAuth();
+    const auth = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
     if (auth) {
       try {
         await auth.signOut();
@@ -736,14 +718,14 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
       }
     }
 
-    const auth = getHeaderSafeAuth();
+    const auth = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
     if (auth && typeof auth.onAuthStateChanged === 'function') {
       auth.onAuthStateChanged(handleUserState);
     } else {
       let attempts = 0;
       const pollInterval = setInterval(() => {
         attempts++;
-        const a = getHeaderSafeAuth();
+        const a = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
         if (a && typeof a.onAuthStateChanged === 'function') {
           clearInterval(pollInterval);
           a.onAuthStateChanged(handleUserState);

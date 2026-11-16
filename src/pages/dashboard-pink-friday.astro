@@ -269,19 +269,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       /* Main Sections Layout: Controls & Products */
       .pf-layout-grid {
         display: grid;
-        grid-template-columns: 380px minmax(0, 1fr);
+        grid-template-columns: 380px 1fr;
         gap: 24px;
         align-items: start;
       }
 
-      .pf-left-col,
-      .pf-right-col {
-        min-width: 0;
-      }
-
       @media (max-width: 1024px) {
         .pf-layout-grid {
-          grid-template-columns: minmax(0, 1fr);
+          grid-template-columns: 1fr;
         }
       }
 
@@ -433,7 +428,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       .table-container {
         overflow-x: auto;
-        max-width: 100%;
         border: 1px solid #e5e7eb;
         border-radius: 8px;
       }
@@ -903,7 +897,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <label for="visualHeroImg">رابط صورة الهيرو (Cloudinary أو رابط مباشر)</label>
             <input type="url" id="visualHeroImg" class="pf-form-input" placeholder="https://res.cloudinary.com/...">
             <div class="pf-visual-preview-box" id="heroPreviewBox">
-              <img id="heroPreviewImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Hero Preview" onerror="this.src='https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';">
+              <img id="heroPreviewImg" src="" alt="Hero Preview" onerror="this.src='https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';">
             </div>
           </div>
 
@@ -1359,21 +1353,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     });
 
-    function getSafePfAuth() {
-      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
-      if (window.auth) return window.auth;
-      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
-    }
-
-    function getSafePfDb() {
-      if (typeof window.getSafeFirebaseDb === 'function') return window.getSafeFirebaseDb();
-      if (window.db) return window.db;
-      try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; }
-    }
-
     // Helper: Firebase Auth ID Token for API Calls
     async function getAuthToken() {
-      const auth = getSafePfAuth();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
       if (!auth || !auth.currentUser) return '';
       return await auth.currentUser.getIdToken();
     }
@@ -1389,24 +1371,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           window.location.replace('/');
           return;
         }
-        if (user.emailVerified !== true) {
-          const a = getSafePfAuth();
-          Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
-            window.location.replace('/login?reason=email_not_verified');
-          });
-          return;
-        }
         loadAllData();
       }
 
-      const auth = getSafePfAuth();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
       if (auth && typeof auth.onAuthStateChanged === 'function') {
         auth.onAuthStateChanged(check);
       } else {
         let attempts = 0;
         const interval = setInterval(() => {
           attempts++;
-          const a = getSafePfAuth();
+          const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
           if (a && typeof a.onAuthStateChanged === 'function') {
             clearInterval(interval);
             a.onAuthStateChanged(check);
@@ -1476,7 +1451,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
 
         // Fetch products catalog from RTDB for selection
-        const db = getSafePfDb();
+        const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
         if (db) {
           db.ref('products').once('value', snap => {
             catalogProducts = [];

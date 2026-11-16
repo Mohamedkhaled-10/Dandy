@@ -24,7 +24,6 @@ test('1. verifyTurnstileToken is exported and is an async function', async () =>
 // 2. Order request without CAPTCHA returns 400
 test('2. Order submission without CAPTCHA returns 400 CAPTCHA_REQUIRED', async () => {
   const { POST } = await import('../src/pages/api/create-order.js');
-  const allowRedis = { limit: async () => ({ success: true, limit: 10, remaining: 9, reset: Date.now() + 60000 }) };
 
   const dummyRequest = new Request('http://localhost:3000/api/create-order', {
     method: 'POST',
@@ -42,11 +41,7 @@ test('2. Order submission without CAPTCHA returns 400 CAPTCHA_REQUIRED', async (
     })
   });
 
-  const response = await POST({
-    request: dummyRequest,
-    clientAddress: '127.0.0.1',
-    _deps: { redis: allowRedis }
-  });
+  const response = await POST({ request: dummyRequest });
   assert.equal(response.status, 400);
   const data = await response.json();
   assert.equal(data.success, false);
@@ -56,7 +51,6 @@ test('2. Order submission without CAPTCHA returns 400 CAPTCHA_REQUIRED', async (
 // 3. Order request with invalid CAPTCHA token returns 403 or handled config error
 test('3. Order submission with invalid CAPTCHA returns 403 or handled config status', async () => {
   const { POST } = await import('../src/pages/api/create-order.js');
-  const allowRedis = { limit: async () => ({ success: true, limit: 10, remaining: 9, reset: Date.now() + 60000 }) };
 
   const dummyRequest = new Request('http://localhost:3000/api/create-order', {
     method: 'POST',
@@ -74,11 +68,7 @@ test('3. Order submission with invalid CAPTCHA returns 403 or handled config sta
     })
   });
 
-  const response = await POST({
-    request: dummyRequest,
-    clientAddress: '127.0.0.1',
-    _deps: { redis: allowRedis }
-  });
+  const response = await POST({ request: dummyRequest });
   // If TURNSTILE_SECRET_KEY is not defined, it returns 500 (SERVER_MISCONFIGURATION)
   // If defined and token rejected, it returns 403 (CAPTCHA_FAILED)
   // In neither case does it crash or return ORDER_CREATION_FAILED
@@ -101,7 +91,6 @@ test('4. Customer validations reject invalid inputs with 400', async () => {
     return originalFetch(url, options);
   };
   process.env.TURNSTILE_SECRET_KEY = 'mock_secret_key';
-  const allowRedis = { limit: async () => ({ success: true, limit: 10, remaining: 9, reset: Date.now() + 60000 }) };
 
   try {
     const { POST } = await import('../src/pages/api/create-order.js');
@@ -116,11 +105,7 @@ test('4. Customer validations reject invalid inputs with 400', async () => {
         turnstileToken: 'valid_mock_token'
       })
     });
-    const resShortName = await POST({
-      request: reqShortName,
-      clientAddress: '127.0.0.1',
-      _deps: { redis: allowRedis }
-    });
+    const resShortName = await POST({ request: reqShortName });
     assert.equal(resShortName.status, 400);
     const dataName = await resShortName.json();
     assert.equal(dataName.error, 'INVALID_NAME');
@@ -135,11 +120,7 @@ test('4. Customer validations reject invalid inputs with 400', async () => {
         turnstileToken: 'valid_mock_token'
       })
     });
-    const resShortPhone = await POST({
-      request: reqShortPhone,
-      clientAddress: '127.0.0.1',
-      _deps: { redis: allowRedis }
-    });
+    const resShortPhone = await POST({ request: reqShortPhone });
     assert.equal(resShortPhone.status, 400);
     const dataPhone = await resShortPhone.json();
     assert.equal(dataPhone.error, 'INVALID_PHONE');
@@ -154,11 +135,7 @@ test('4. Customer validations reject invalid inputs with 400', async () => {
         turnstileToken: 'valid_mock_token'
       })
     });
-    const resEmptyCart = await POST({
-      request: reqEmptyCart,
-      clientAddress: '127.0.0.1',
-      _deps: { redis: allowRedis }
-    });
+    const resEmptyCart = await POST({ request: reqEmptyCart });
     assert.equal(resEmptyCart.status, 400);
     const dataEmptyCart = await resEmptyCart.json();
     assert.equal(dataEmptyCart.error, 'EMPTY_CART');

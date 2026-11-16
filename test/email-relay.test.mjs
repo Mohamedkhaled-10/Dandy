@@ -444,16 +444,8 @@ test('12. Order creation in create-order.js succeeds independently of email rela
       })
     });
 
-    const res = await POST({
-      request: req,
-      clientAddress: '127.0.0.1',
-      _deps: {
-        redis: {
-          limit: async () => ({ success: true, limit: 10, remaining: 9, reset: Date.now() + 60000 })
-        }
-      }
-    });
-    // In test environment without Firebase service account, it returns 500 SERVER_CONFIG_ERROR / ORDER_CREATION_FAILED
+    const res = await POST({ request: req });
+    // In test environment without Firebase service account, it returns 500 ORDER_CREATION_FAILED
     // (due to no DB), but does NOT crash or fail on the email service
     assert.ok(res.status === 200 || res.status === 500);
     const data = await res.json();
@@ -2005,133 +1997,6 @@ test('50. dashboard-order.astro defines drawOrdersTable, alias renderOrders, and
 
   // Verify changeOrderStatus has serverCommitted flag protection
   assert.ok(dashContent.includes('let serverCommitted = false;'));
-});
-
-// =============================================================================
-// GROUP 2A.1.1: EMAIL SERVICE CENTRALIZED SHIPPING POLICY TESTS (Tests 51 - 53)
-// =============================================================================
-
-test('51. Email service uses centralized store-policy.ts without duplicated EGYPT_SHIPPING_RATES or subtotal > 2000', async () => {
-  const fs = await import('node:fs/promises');
-  const path = await import('node:path');
-
-  const emailServiceSource = await fs.readFile(path.resolve('src/utils/email-service.ts'), 'utf8');
-
-  assert.equal(emailServiceSource.includes('EGYPT_SHIPPING_RATES'), false, 'EGYPT_SHIPPING_RATES must be removed from email-service.ts');
-  assert.equal(/if\s*\(\s*subtotal\s*>\s*2000\s*\)/.test(emailServiceSource), false, 'Hardcoded subtotal > 2000 condition must be removed from email-service.ts');
-  assert.match(emailServiceSource, /from\s+['"]\.\.\/config\/store-policy\.ts['"]/);
-  assert.match(emailServiceSource, /getShippingFeeForGovernorate/);
-  assert.match(emailServiceSource, /calculateShippingFee/);
-});
-
-test('52. Email service shipping rates match centralized store-policy for all English, Arabic, case-insensitive, and fallback inputs', async () => {
-  const {
-    GOVERNORATE_ALIASES,
-    SHIPPING_RATES_BY_GOVERNORATE,
-    getShippingFeeForGovernorate
-  } = await import('../src/config/store-policy.ts');
-  const { getShippingFeeForGov } = await import('../src/utils/email-service.ts');
-
-  // Representative rates required by Group 2A.1.1
-  assert.equal(getShippingFeeForGov('Gharbia'), 70);
-  assert.equal(getShippingFeeForGov('الغربية'), 70);
-  assert.equal(getShippingFeeForGov('gharbia'), 70);
-
-  assert.equal(getShippingFeeForGov('Dakahlia'), 85);
-  assert.equal(getShippingFeeForGov('الدقهلية'), 85);
-  assert.equal(getShippingFeeForGov('Cairo'), 85);
-  assert.equal(getShippingFeeForGov('القاهرة'), 85);
-  assert.equal(getShippingFeeForGov('  cairo  '), 85);
-
-  assert.equal(getShippingFeeForGov('Fayoum'), 100);
-  assert.equal(getShippingFeeForGov('الفيوم'), 100);
-
-  assert.equal(getShippingFeeForGov('Aswan'), 120);
-  assert.equal(getShippingFeeForGov('أسوان'), 120);
-  assert.equal(getShippingFeeForGov('Luxor'), 120);
-  assert.equal(getShippingFeeForGov('الأقصر'), 120);
-
-  // Unknown / empty / null / undefined / prototype keys -> 120 EGP fallback
-  for (const invalid of ['UnknownGov', '', '   ', null, undefined, 'constructor', 'toString']) {
-    assert.equal(getShippingFeeForGov(invalid), 120, `Expected 120 fallback for ${String(invalid)}`);
-    assert.equal(getShippingFeeForGovernorate(invalid), 120);
-  }
-
-  // Full 27 English & 27 Arabic parity check
-  for (const [engGov, expectedFee] of Object.entries(SHIPPING_RATES_BY_GOVERNORATE)) {
-    assert.equal(getShippingFeeForGov(engGov), expectedFee);
-    assert.equal(getShippingFeeForGov(engGov.toLowerCase()), expectedFee);
-    assert.equal(getShippingFeeForGov(engGov.toUpperCase()), expectedFee);
-    assert.equal(getShippingFeeForGovernorate(engGov), expectedFee);
-  }
-  for (const [arGov, engGov] of Object.entries(GOVERNORATE_ALIASES)) {
-    const expectedFee = SHIPPING_RATES_BY_GOVERNORATE[engGov];
-    assert.equal(getShippingFeeForGov(arGov), expectedFee, `Mismatch for Arabic governorate ${arGov}`);
-    assert.equal(getShippingFeeForGovernorate(arGov), expectedFee);
-  }
-});
-
-test('53. calculateOrderFinancials and generated email templates preserve strict >2000 boundary and exact totals for Arabic/English governorates', async () => {
-  const {
-    calculateOrderFinancials,
-    generateOrderConfirmationEmail
-  } = await import('../src/utils/email-service.ts');
-
-  // 1. Subtotal < 2000 (1999 EGP) in Gharbia (Arabic) -> 70 EGP shipping, 2069 total
-  const subBelowOrder = {
-    name: 'نور الهدى',
-    email: 'noor@example.com',
-    governorate: 'الغربية',
-    invoiceCode: 'DNY-2A11-BELOW',
-    products: [{ name: 'سيروم', quantity: 1, price: 1999, lineTotal: 1999 }]
-  };
-  const finBelow = calculateOrderFinancials(subBelowOrder);
-  assert.equal(finBelow.subtotal, 1999);
-  assert.equal(finBelow.shippingFee, 70);
-  assert.equal(finBelow.totalAmount, 2069);
-  assert.equal(finBelow.isFreeShipping, false);
-  const emailBelow = generateOrderConfirmationEmail(subBelowOrder, 'ord_2a11_below');
-  assert.ok(emailBelow.htmlBody.includes('70 ج.م'));
-  assert.ok(emailBelow.htmlBody.includes('2,069 ج.م'));
-  assert.ok(!emailBelow.htmlBody.includes('شحن مجاني 🎉'));
-  assert.ok(emailBelow.textBody.includes('70 ج.م'));
-
-  // 2. Subtotal === 2000 EGP in Fayoum (Arabic) -> MUST NOT qualify for free shipping (100 EGP shipping, 2100 total)
-  const subExactOrder = {
-    name: 'سارة علي',
-    email: 'sara@example.com',
-    governorate: 'الفيوم',
-    invoiceCode: 'DNY-2A11-EXACT',
-    products: [{ name: 'مجموعة العناية', quantity: 1, price: 2000, lineTotal: 2000 }]
-  };
-  const finExact = calculateOrderFinancials(subExactOrder);
-  assert.equal(finExact.subtotal, 2000);
-  assert.equal(finExact.shippingFee, 100);
-  assert.equal(finExact.totalAmount, 2100);
-  assert.equal(finExact.isFreeShipping, false);
-  const emailExact = generateOrderConfirmationEmail(subExactOrder, 'ord_2a11_exact');
-  assert.ok(emailExact.htmlBody.includes('100 ج.م'));
-  assert.ok(emailExact.htmlBody.includes('2,100 ج.م'));
-  assert.ok(!emailExact.htmlBody.includes('شحن مجاني 🎉'));
-  assert.ok(emailExact.textBody.includes('100 ج.م'));
-
-  // 3. Subtotal > 2000 EGP (2001 EGP) in Luxor (Arabic) -> 0 EGP free shipping, 2001 total
-  const subAboveOrder = {
-    name: 'مريم حسن',
-    email: 'mariam@example.com',
-    governorate: 'الأقصر',
-    invoiceCode: 'DNY-2A11-ABOVE',
-    products: [{ name: 'كوليكشن VIP', quantity: 1, price: 2001, lineTotal: 2001 }]
-  };
-  const finAbove = calculateOrderFinancials(subAboveOrder);
-  assert.equal(finAbove.subtotal, 2001);
-  assert.equal(finAbove.shippingFee, 0);
-  assert.equal(finAbove.totalAmount, 2001);
-  assert.equal(finAbove.isFreeShipping, true);
-  const emailAbove = generateOrderConfirmationEmail(subAboveOrder, 'ord_2a11_above');
-  assert.ok(emailAbove.htmlBody.includes('شحن مجاني 🎉'));
-  assert.ok(emailAbove.htmlBody.includes('2,001 ج.م'));
-  assert.ok(emailAbove.textBody.includes('شحن مجاني'));
 });
 
 

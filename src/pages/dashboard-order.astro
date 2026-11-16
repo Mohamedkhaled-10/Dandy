@@ -73,24 +73,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       .notif-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; font-size: 0.74rem; font-weight: 700; white-space: nowrap; }
       .notif-badge.st-accepted { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
       .notif-badge.st-pending { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
-      .notif-badge.st-processing { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
       .notif-badge.st-failed { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
       .notif-badge.st-unknown { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
-      .notif-badge.st-deleted { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
       .notif-badge.st-skipped { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
-      .info-card-full { grid-column: 1 / -1; }
-      .outbox-channels-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
-      .outbox-channel-row { background: #ffffff; border: 1px solid var(--border-light, #e5e7eb); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
-      .outbox-channel-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-      .outbox-channel-name { font-weight: 800; font-size: 0.84rem; color: var(--color-primary, #111827); }
-      .outbox-channel-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.76rem; color: var(--color-muted, #6b7280); }
-      .outbox-channel-id { font-family: monospace; word-break: break-all; }
-      .outbox-channel-error { font-size: 0.76rem; color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px; padding: 4px 8px; word-break: break-word; }
-      .outbox-unknown-warning { margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; font-size: 0.8rem; font-weight: 700; display: none; }
-      .recover-result-box { margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: #f8fafc; border: 1px solid #cbd5e1; color: #1e293b; font-size: 0.8rem; font-weight: 600; display: none; white-space: pre-line; }
-      .btn-recover-notifs { background: #0f766e; color: #ffffff; border: 1px solid #0f766e; }
-      .btn-recover-notifs:hover:not(:disabled) { background: #115e59; border-color: #115e59; }
-      .btn-recover-notifs:disabled { opacity: 0.6; cursor: not-allowed; }
       
       .action-badge-btn { padding: 5px 10px; border: 1px solid var(--border-light, #e5e7eb); border-radius: 4px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 5px; font-family: inherit; background: #ffffff; color: var(--color-primary, #374151); }
       .badge-btn-edit:hover { border-color: var(--color-primary, #111827); color: var(--color-primary, #111827); }
@@ -316,18 +301,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <p>المحافظة/المدينة: <strong id="md-coords">...</strong></p>
             <p>تفاصيل العنوان: <span id="md-address">...</span></p>
           </div>
-          <div class="info-card info-card-full" id="md-notif-box">
-            <h4><i class="fas fa-envelope-open-text"></i> حالة إشعارات الطلب (Email • Telegram • Make Webhook)</h4>
-            <p>الحالة الرئيسية للبريد: <strong id="md-notif-status">...</strong></p>
+          <div class="info-card" id="md-notif-box">
+            <h4><i class="fas fa-envelope-open-text"></i> إشعار البريد الإلكتروني</h4>
+            <p>الحالة: <strong id="md-notif-status">...</strong></p>
             <p>معرّف الإشعار: <span id="md-notif-id" style="font-family: monospace; font-size: 0.8rem; word-break: break-all;">-</span></p>
-            <div id="md-outbox-unknown-warning" class="outbox-unknown-warning">
-              ⚠️ يوجد إشعار بحالة غير مؤكدة (unknown)؛ يُمنع إعادة الإرسال التلقائي أو اليدوي لتجنب التكرار قبل التحقق اليدوي.
-            </div>
-            <div id="md-outbox-channels" class="outbox-channels-grid" aria-live="polite"></div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-              <button id="md-recover-notifs-btn" class="action-badge-btn btn-recover-notifs" onclick="recoverOrderNotifications()">
-                <i class="fas fa-sync-alt"></i> معالجة الإشعارات المعلقة
-              </button>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
               <button id="md-retry-notif-btn" class="action-badge-btn" style="display: none;" onclick="retryCurrentNotification()">
                 <i class="fas fa-redo"></i> إعادة إرسال الإشعار
               </button>
@@ -335,7 +313,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 <i class="fas fa-paper-plane"></i> إرسال تحديث الحالة الحالية
               </button>
             </div>
-            <div id="md-recover-result" class="recover-result-box" aria-live="polite"></div>
           </div>
         </div>
 
@@ -355,21 +332,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <!-- Items injected here -->
             </tbody>
             <tfoot style="background: var(--color-surface-soft, #fcfcfc);">
-              <tr id="md-subtotal-row">
-                <td colspan="3" style="text-align: left; font-weight: 700; color: var(--color-muted);">المجموع الفرعي للمنتجات:</td>
-                <td id="md-subtotal" style="text-align: left; font-weight: 700; color: var(--color-primary);">0 ج.م</td>
-              </tr>
-              <tr id="md-coupon-row" style="display: none; background: rgba(5, 150, 105, 0.05);">
-                <td colspan="3" id="md-coupon-label" style="text-align: left; font-weight: 700; color: #059669;">خصم الكوبون:</td>
-                <td id="md-coupon-discount" style="text-align: left; font-weight: 800; color: #059669; direction: ltr;">0 ج.م</td>
-              </tr>
-              <tr id="md-shipping-row">
-                <td colspan="3" style="text-align: left; font-weight: 700; color: var(--color-muted);">مصاريف الشحن:</td>
-                <td id="md-shipping-fee" style="text-align: left; font-weight: 700; color: var(--color-primary);">0 ج.م</td>
-              </tr>
               <tr>
-                <td colspan="3" style="text-align: left; font-weight: 800; color: var(--color-primary);">إجمالي الطلب النهائي:</td>
-                <td id="md-grand-total" style="text-align: left; font-weight: 800; color: var(--color-blush); font-size: 1.1rem;">0 ج.م</td>
+                <td colspan="3" style="text-align: left; font-weight: 800; color: var(--color-primary);">إجمالي الطلب:</td>
+                <td id="md-grand-total" style="text-align: left; font-weight: 800; color: var(--color-blush); font-size: 1.1rem;">0 EGP</td>
               </tr>
             </tfoot>
           </table>
@@ -443,32 +408,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .replace(/'/g, '&#039;');
     }
 
-    function getSafeOrderAuth() {
-      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
-      if (window.auth) return window.auth;
-      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
-    }
-    function getSafeOrderDb() {
-      if (typeof window.getSafeFirebaseDb === 'function') return window.getSafeFirebaseDb();
-      if (window.db) return window.db;
-      try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; }
-    }
-    function getSafeOrderFirestore() {
-      if (typeof window.getSafeFirebaseFirestore === 'function') return window.getSafeFirebaseFirestore();
-      if (window.firestore) return window.firestore;
-      try { return (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null; } catch (_) { return null; }
-    }
-
-    const auth = getSafeOrderAuth();
-    const db = getSafeOrderDb();
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
     async function logAdminAction(actionText) {
       try {
-        const a = getSafeOrderAuth();
-        const fs = getSafeOrderFirestore();
-        const user = a ? a.currentUser : null;
-        if (!fs) return;
-        await fs.collection('change_logs').add({
+        const user = firebase.auth().currentUser;
+        await firebase.firestore().collection('change_logs').add({
           adminEmail: user ? user.email : 'غير معروف',
           action: actionText,
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -532,13 +478,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         window.location.replace('/');
         return;
       }
-      if (user.emailVerified !== true) {
-        const a = getSafeOrderAuth();
-        Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
-          window.location.replace('/login?reason=email_not_verified');
-        });
-        return;
-      }
       listenToOrders();
     }
 
@@ -548,7 +487,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       let attempts = 0;
       const pollInterval = setInterval(() => {
         attempts++;
-        const a = getSafeOrderAuth();
+        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
         if (a && typeof a.onAuthStateChanged === 'function') {
           clearInterval(pollInterval);
           a.onAuthStateChanged(handleOrderAuth);
@@ -709,7 +648,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <td data-label="إشعار البريد">${notifBadge}</td>
           <td data-label="" style="text-align:center; white-space:nowrap;">
             <button class="action-badge-btn badge-btn-edit" data-order-id="${escapeHtml(o.id)}" onclick="revealOrder(this.getAttribute('data-order-id'))" title="معاينة التفاصيل"><i class="fas fa-eye"></i> معاينة</button>
-            <button class="action-badge-btn badge-btn-del" data-order-id="${escapeHtml(o.id)}" onclick="deleteOrder(this.getAttribute('data-order-id'), this)" title="حذف الطلب" aria-label="حذف"><i class="fas fa-trash-alt"></i></button>
+            <button class="action-badge-btn badge-btn-del" data-order-id="${escapeHtml(o.id)}" onclick="deleteOrder(this.getAttribute('data-order-id'))" title="حذف الطلب" aria-label="حذف"><i class="fas fa-trash-alt"></i></button>
           </td>
         `;
         ordersListArea.appendChild(tr);
@@ -839,8 +778,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       try {
-        const a = getSafeOrderAuth();
-        const user = a ? a.currentUser : null;
+        const user = firebase.auth().currentUser;
         if (!user) {
           alert("يجب تسجيل الدخول كمسؤول أولاً.");
           return;
@@ -966,13 +904,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       };
 
-      let serverCommitted = false;
-
       try {
         let idToken = null;
-        const a = getSafeOrderAuth();
-        if (a && a.currentUser) {
-          idToken = await a.currentUser.getIdToken();
+        if (window.auth && window.auth.currentUser) {
+          idToken = await window.auth.currentUser.getIdToken();
         }
 
         if (!idToken) {
@@ -998,6 +933,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (el) el.disabled = false;
 
+        let serverCommitted = false;
         const resData = await res.json().catch(() => null);
         if (!res.ok || !resData || !resData.success) {
           revertDropdown();
@@ -1032,489 +968,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     };
 
-    window.deleteOrder = async function(id, btnEl) {
-      if (!id) return;
+    window.deleteOrder = async function(id) {
       if(!confirm('هل أنتِ متأكدة من مسح هذا الطلب بالكامل من قاعدة البيانات؟ (هذا الإجراء لا يمكن التراجع عنه)')) return;
       const orderObj = rawOrders.find(o => o.id === id);
       const invoiceCode = orderObj ? (orderObj.invoiceCode || id) : id;
-      const origHtml = btnEl ? btnEl.innerHTML : '';
-
       try {
-        const authObj = getSafeOrderAuth();
-        const currentUser = authObj?.currentUser || null;
-        if (!currentUser || !currentUser.email || currentUser.email.toLowerCase() !== 'admin@dandy.com' || currentUser.emailVerified !== true) {
-          alert('يجب تسجيل الدخول بحساب الإدارة المفعّل لتنفيذ حذف الطلب.');
-          return;
-        }
-
-        const idToken = await currentUser.getIdToken();
-        if (!idToken) {
-          alert('تعذر التحقق من جلسة الإدارة. يرجى إعادة تسجيل الدخول.');
-          return;
-        }
-
-        if (btnEl) {
-          btnEl.disabled = true;
-          btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        }
-
-        const res = await fetch('/api/admin/delete-order', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + idToken
-          },
-          body: JSON.stringify({ orderId: id })
-        });
-
-        const resData = await res.json().catch(() => null);
-        if (!res.ok || !resData || !resData.success) {
-          if (btnEl) {
-            btnEl.disabled = false;
-            btnEl.innerHTML = origHtml;
-          }
-          alert(resData?.message || 'فشل في مسح الطلب عبر الخادم.');
-          return;
-        }
-
-        rawOrders = rawOrders.filter(o => o.id !== id);
-        updateKPIs();
-        drawOrdersTable();
+        await db.ref(`orders/${id}`).remove();
         logAdminAction('تم حذف الطلب: ' + invoiceCode);
       } catch(err) {
-        if (btnEl) {
-          btnEl.disabled = false;
-          btnEl.innerHTML = origHtml;
-        }
         console.error('Delete Error:', err);
-        alert('حدث خطأ في الاتصال بالخادم أثناء حذف الطلب.');
-      }
-    };
-
-    let activeModalOrderId = null;
-    const NON_RETRYABLE_OUTBOX_STATUSES = new Set([
-      'accepted_by_mailapp',
-      'sent',
-      'processing',
-      'unknown',
-      'unfinalized',
-      'unavailable',
-      'skipped_no_valid_email',
-      'skipped_not_configured',
-      'skipped_intentionally_disabled',
-      'cancelled_order_deleted',
-      'unknown_deleted_during_dispatch',
-      'none'
-    ]);
-    const RETRYABLE_EMAIL_STATUSES = new Set(['failed', 'pending']);
-
-    function getOutboxChannelLabel(channel) {
-      if (channel === 'email') return 'البريد الإلكتروني (Email)';
-      if (channel === 'telegram') return 'تيليجرام (Telegram)';
-      if (channel === 'make') return 'ويب هوك Make (Make Webhook)';
-      return String(channel || 'قناة غير معروفة');
-    }
-
-    function getOutboxStatusLabel(status, rec) {
-      if (
-        rec &&
-        (status === 'unfinalized' ||
-          rec.persistenceOutcome === 'finalization_failed' ||
-          rec.persistenceOutcome === 'ownership_mismatch')
-      ) {
-        if (rec.providerOutcome === 'accepted') {
-          return 'قبل المزوّد الإرسال — فشل تثبيت السجل';
-        }
-        if (rec.providerOutcome === 'rejected') {
-          return 'رفض المزوّد الإرسال — فشل تثبيت السجل';
-        }
-        if (rec.providerOutcome === 'timeout' || rec.providerOutcome === 'ambiguous') {
-          return 'نتيجة المزوّد غير مؤكدة — فشل تثبيت السجل';
-        }
-        return 'تمت محاولة الإرسال — فشل تثبيت السجل';
-      }
-
-      switch (status) {
-        case 'pending': return 'قيد الانتظار';
-        case 'processing': return 'قيد الإرسال';
-        case 'accepted_by_mailapp': return 'تم قبول الإرسال';
-        case 'sent': return 'تم الإرسال';
-        case 'failed': return 'فشل الإرسال';
-        case 'unknown': return 'نتيجة غير مؤكدة';
-        case 'unfinalized': return 'تمت محاولة الإرسال — فشل تثبيت السجل';
-        case 'unavailable': return 'غير متاح (تعذّر حجز السجل)';
-        case 'skipped_intentionally_disabled':
-          return 'معطّل بقرار الإدارة';
-        case 'cancelled_order_deleted':
-        case 'unknown_deleted_during_dispatch':
-          return 'ملغي بسبب حذف الطلب';
-        case 'skipped_no_valid_email':
-        case 'skipped_not_configured':
-          return 'غير مهيأ / متجاوز';
-        case 'none':
-        default:
-          return status && status !== 'none' ? String(status) : 'غير مسجل';
-      }
-    }
-
-    function getOutboxStatusBadgeClass(status) {
-      if (status === 'accepted_by_mailapp' || status === 'sent') return 'st-accepted';
-      if (status === 'processing') return 'st-processing';
-      if (status === 'failed' || status === 'unavailable') return 'st-failed';
-      if (status === 'unknown' || status === 'unfinalized') return 'st-unknown';
-      if (status === 'cancelled_order_deleted' || status === 'unknown_deleted_during_dispatch') return 'st-deleted';
-      if (
-        status === 'skipped_no_valid_email' ||
-        status === 'skipped_not_configured' ||
-        status === 'skipped_intentionally_disabled' ||
-        status === 'none'
-      ) {
-        return 'st-skipped';
-      }
-      return 'st-pending';
-    }
-
-    function getSafeOutboxDiagnosticText(rec) {
-      if (!rec || typeof rec !== 'object') return '';
-      if (rec.status === 'skipped_intentionally_disabled' || rec.persistenceOutcome === 'intentionally_disabled') {
-        return 'Make معطّل بقرار الإدارة ولم يُرسل أي طلب';
-      }
-      if (rec.persistenceOutcome === 'finalization_failed' || rec.persistenceOutcome === 'ownership_mismatch') {
-        return 'تعذّر تثبيت حالة السجل في قاعدة البيانات بعد محاولة الإرسال؛ يُمنع إعادة الإرسال التلقائي قبل المراجعة';
-      }
-      if (rec.persistenceOutcome === 'claim_unavailable' || rec.status === 'unavailable') {
-        return 'قاعدة بيانات الإشعارات غير متاحة أو فشل الحجز الذري قبل الإرسال';
-      }
-      if (rec.error === 'INVALID_NOTIFICATION_IDENTITY' || rec.persistenceOutcome === 'identity_mismatch') {
-        return 'سجل إشعار غير متطابق الهوية؛ تم تجاهله بأمان';
-      }
-      const code = rec.staleDiagnosticCode || rec.error || '';
-      if (code === 'PROCESSING_LEASE_EXPIRED') return 'انتهت مهلة قفل المعالجة دون تأكيد النتيجة';
-      if (code === 'LEGACY_PROCESSING_STALE') return 'سجل معالجة قديم تجاوز المهلة الآمنة';
-      if (code === 'MISSING_OR_INVALID_PROCESSING_TIMESTAMP') return 'توقيت المعالجة مفقود أو غير صالح — يتطلب مراجعة يدوية';
-      if (code) return String(code);
-      if (rec.manualReviewRequired) return 'يتطلب مراجعة يدوية';
-      return '';
-    }
-
-    function formatOutboxTimestamp(isoStr) {
-      if (!isoStr || typeof isoStr !== 'string') return '-';
-      const parsed = Date.parse(isoStr);
-      if (!Number.isFinite(parsed)) return '-';
-      try {
-        return new Date(parsed).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
-      } catch {
-        return isoStr;
-      }
-    }
-
-    function buildSafeChannelRow(rec, fallbackChannel) {
-      const channel = rec?.channel || fallbackChannel || 'unknown';
-      const status = rec?.status || 'none';
-      const row = document.createElement('div');
-      row.className = 'outbox-channel-row';
-      row.setAttribute('data-channel', channel);
-      row.setAttribute('data-status', status);
-
-      const top = document.createElement('div');
-      top.className = 'outbox-channel-top';
-
-      const nameEl = document.createElement('span');
-      nameEl.className = 'outbox-channel-name';
-      nameEl.textContent = getOutboxChannelLabel(channel);
-
-      const badge = document.createElement('span');
-      badge.className = 'notif-badge ' + getOutboxStatusBadgeClass(status);
-      badge.textContent = getOutboxStatusLabel(status, rec);
-
-      top.appendChild(nameEl);
-      top.appendChild(badge);
-      row.appendChild(top);
-
-      const meta = document.createElement('div');
-      meta.className = 'outbox-channel-meta';
-
-      const idSpan = document.createElement('span');
-      idSpan.className = 'outbox-channel-id';
-      idSpan.textContent = 'المعرّف: ' + (rec?.notificationId || '-');
-
-      const attemptsSpan = document.createElement('span');
-      attemptsSpan.textContent = 'المحاولات: ' + (Number(rec?.attempts) || 0);
-
-      const timeSpan = document.createElement('span');
-      timeSpan.textContent = 'آخر محاولة: ' + formatOutboxTimestamp(rec?.lastAttemptAt);
-
-      meta.appendChild(idSpan);
-      meta.appendChild(attemptsSpan);
-      meta.appendChild(timeSpan);
-      row.appendChild(meta);
-
-      const safeDetail = getSafeOutboxDiagnosticText(rec);
-      if (safeDetail) {
-        const errDiv = document.createElement('div');
-        errDiv.className = 'outbox-channel-error';
-        errDiv.textContent = 'التفاصيل: ' + String(safeDetail);
-        row.appendChild(errDiv);
-      }
-
-      return row;
-    }
-
-    function applyOutboxUiState(orderObj, recordsList) {
-      const container = document.getElementById('md-outbox-channels');
-      const warnEl = document.getElementById('md-outbox-unknown-warning');
-      const stEl = document.getElementById('md-notif-status');
-      const idEl = document.getElementById('md-notif-id');
-      const btnRetry = document.getElementById('md-retry-notif-btn');
-      const btnSendCurrent = document.getElementById('md-send-current-status-btn');
-
-      const list = Array.isArray(recordsList) ? recordsList : [];
-      const hasEmail = Boolean(orderObj?.email && orderObj.email !== 'N/A' && String(orderObj.email).includes('@'));
-      const latestNotif = orderObj?.latestNotification || null;
-
-      // Resolve primary email record from outbox records (preferring latestNotification match or confirmation)
-      const emailRecords = list.filter(r => r && r.channel === 'email');
-      const primaryEmailRec =
-        (latestNotif?.notificationId && emailRecords.find(r => r.notificationId === latestNotif.notificationId)) ||
-        emailRecords[emailRecords.length - 1] ||
-        (latestNotif && latestNotif.status
-          ? {
-              notificationId: latestNotif.notificationId || '-',
-              channel: 'email',
-              status: latestNotif.status,
-              attempts: latestNotif.attempts || 0,
-              lastAttemptAt: latestNotif.updatedAt || null
-            }
-          : null);
-
-      const telegramRec = list.find(r => r && r.channel === 'telegram') || null;
-      const makeRec = list.find(r => r && r.channel === 'make') || null;
-
-      const emailStatus = primaryEmailRec?.status || (hasEmail ? 'none' : 'skipped_no_valid_email');
-      const emailId = primaryEmailRec?.notificationId || '-';
-
-      if (stEl) stEl.textContent = getOutboxStatusLabel(emailStatus, primaryEmailRec);
-      if (idEl) idEl.textContent = emailId;
-
-      if (container) {
-        container.textContent = '';
-        container.appendChild(
-          buildSafeChannelRow(
-            primaryEmailRec || { channel: 'email', status: emailStatus, notificationId: emailId, attempts: 0 },
-            'email'
-          )
-        );
-        // Also render any extra email records (e.g. both confirmation and status notifications)
-        emailRecords.forEach(extraRec => {
-          if (!primaryEmailRec || extraRec.notificationId !== primaryEmailRec.notificationId) {
-            container.appendChild(buildSafeChannelRow(extraRec, 'email'));
-          }
-        });
-        container.appendChild(
-          buildSafeChannelRow(
-            telegramRec || { channel: 'telegram', status: 'none', notificationId: '-', attempts: 0 },
-            'telegram'
-          )
-        );
-        container.appendChild(
-          buildSafeChannelRow(
-            makeRec || { channel: 'make', status: 'none', notificationId: '-', attempts: 0 },
-            'make'
-          )
-        );
-      }
-
-      const hasUnknownOrManual = list.some(
-        r =>
-          r &&
-          (r.status === 'unknown' ||
-            r.status === 'unfinalized' ||
-            r.status === 'unavailable' ||
-            r.persistenceOutcome === 'finalization_failed' ||
-            r.manualReviewRequired)
-      ) || emailStatus === 'unknown' || emailStatus === 'unfinalized' || emailStatus === 'unavailable';
-
-      if (warnEl) {
-        warnEl.style.display = hasUnknownOrManual ? 'block' : 'none';
-      }
-
-      if (btnRetry) {
-        btnRetry.setAttribute('data-order-id', orderObj.id);
-        btnRetry.setAttribute('data-notif-id', emailId);
-        // Never display retry controls for unknown, unfinalized, unavailable, processing, sent, accepted, skipped, or deleted states
-        const canRetry = Boolean(
-          hasEmail &&
-          primaryEmailRec &&
-          primaryEmailRec.notificationId &&
-          primaryEmailRec.notificationId !== '-' &&
-          !NON_RETRYABLE_OUTBOX_STATUSES.has(emailStatus) &&
-          RETRYABLE_EMAIL_STATUSES.has(emailStatus) &&
-          primaryEmailRec.persistenceOutcome !== 'finalization_failed'
-        );
-        btnRetry.style.display = canRetry ? 'inline-flex' : 'none';
-        btnRetry.disabled = false;
-        btnRetry.textContent = '';
-        const icon = document.createElement('i');
-        icon.className = 'fas fa-redo';
-        btnRetry.appendChild(icon);
-        btnRetry.appendChild(document.createTextNode(' إعادة إرسال الإشعار السابق'));
-      }
-
-      if (btnSendCurrent) {
-        btnSendCurrent.setAttribute('data-order-id', orderObj.id);
-        btnSendCurrent.setAttribute('data-order-status', orderObj.status || 'جديد');
-        const currentBlocked =
-          emailStatus === 'unknown' ||
-          emailStatus === 'unfinalized' ||
-          emailStatus === 'unavailable' ||
-          emailStatus === 'processing' ||
-          emailStatus === 'cancelled_order_deleted' ||
-          emailStatus === 'unknown_deleted_during_dispatch' ||
-          primaryEmailRec?.persistenceOutcome === 'finalization_failed';
-        btnSendCurrent.style.display = (hasEmail && !currentBlocked) ? 'inline-flex' : 'none';
-        btnSendCurrent.disabled = false;
-        btnSendCurrent.textContent = '';
-        const sendIcon = document.createElement('i');
-        sendIcon.className = 'fas fa-paper-plane';
-        btnSendCurrent.appendChild(sendIcon);
-        btnSendCurrent.appendChild(
-          document.createTextNode(' إرسال إشعار بالحالة الحالية (' + (orderObj.status || 'جديد') + ')')
-        );
-      }
-    }
-
-    async function loadOrderOutboxDetails(orderId) {
-      if (!orderId) return;
-      const orderObj = rawOrders.find(order => order.id === orderId);
-      if (!orderObj) return;
-
-      try {
-        const authObj = getSafeOrderAuth();
-        const currentUser = authObj?.currentUser || null;
-        if (!currentUser || typeof currentUser.getIdToken !== 'function') return;
-
-        const idToken = await currentUser.getIdToken();
-        if (!idToken || activeModalOrderId !== orderId) return;
-
-        const res = await fetch('/api/order-status?orderId=' + encodeURIComponent(orderId), {
-          method: 'GET',
-          headers: {
-            'Authorization': 'Bearer ' + idToken
-          }
-        });
-        const data = await res.json().catch(() => null);
-        if (activeModalOrderId !== orderId) return;
-
-        if (res.ok && data && data.success && Array.isArray(data.notifications)) {
-          applyOutboxUiState(orderObj, data.notifications);
-        }
-      } catch (err) {
-        console.warn('Could not load outbox channel details:', err);
-      }
-    }
-
-    window.recoverOrderNotifications = async function() {
-      const btn = document.getElementById('md-recover-notifs-btn');
-      const resultBox = document.getElementById('md-recover-result');
-      if (!btn) return;
-      const orderId = btn.getAttribute('data-order-id') || activeModalOrderId;
-      if (!orderId) return;
-
-      btn.disabled = true;
-      btn.textContent = '';
-      const spinIcon = document.createElement('i');
-      spinIcon.className = 'fas fa-spinner fa-spin';
-      btn.appendChild(spinIcon);
-      btn.appendChild(document.createTextNode(' جاري معالجة الإشعارات المعلقة...'));
-
-      if (resultBox) {
-        resultBox.style.display = 'none';
-        resultBox.textContent = '';
-      }
-
-      try {
-        const authObj = getSafeOrderAuth();
-        const currentUser = authObj?.currentUser || null;
-        if (!currentUser || typeof currentUser.getIdToken !== 'function') {
-          if (resultBox) {
-            resultBox.textContent = 'يجب تسجيل الدخول بصلاحيات الإدارة أولاً.';
-            resultBox.style.display = 'block';
-          }
-          return;
-        }
-
-        const idToken = await currentUser.getIdToken();
-        const res = await fetch('/api/admin/recover-order-notifications', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + idToken
-          },
-          body: JSON.stringify({ orderId })
-        });
-        const data = await res.json().catch(() => null);
-
-        if (!res.ok || !data || !data.success) {
-          if (resultBox) {
-            resultBox.textContent = data?.message || data?.error || ('تعذر استئناف الإشعارات (' + res.status + ')');
-            resultBox.style.display = 'block';
-          }
-          return;
-        }
-
-        const s = data.summary || {};
-        const summaryLine =
-          'نتيجة المعالجة — تم الإرسال: ' + (s.processed || 0) +
-          ' | مكتمل مسبقاً: ' + (s.alreadyCompleted || 0) +
-          ' | قيد الإرسال: ' + (s.inFlight || 0) +
-          ' | تحوّل لغير مؤكد: ' + (s.reconciledUnknown || 0) +
-          ' | فشل: ' + (s.failed || 0) +
-          ' | متجاوز: ' + (s.skipped || 0);
-
-        const perChannelLines = Array.isArray(data.notifications)
-          ? data.notifications.map(n => '• ' + getOutboxChannelLabel(n.channel) + ': ' + getOutboxStatusLabel(n.status, n))
-          : [];
-
-        if (resultBox) {
-          resultBox.textContent = [summaryLine, ...perChannelLines].join('\n');
-          resultBox.style.display = 'block';
-        }
-
-        const orderObj = rawOrders.find(order => order.id === orderId);
-        if (orderObj && Array.isArray(data.notifications)) {
-          const emailRec = data.notifications.find(n => n && n.channel === 'email');
-          if (emailRec && emailRec.outboxFinalized !== false && emailRec.status !== 'unfinalized' && emailRec.status !== 'unavailable') {
-            orderObj.latestNotification = {
-              notificationId: emailRec.notificationId,
-              status: emailRec.status,
-              eventType: emailRec.eventType || 'ORDER_CONFIRMATION',
-              updatedAt: emailRec.lastAttemptAt || new Date().toISOString()
-            };
-          }
-          applyOutboxUiState(orderObj, data.notifications);
-          try { drawOrdersTable(); } catch {}
-        }
-
-        logAdminAction('معالجة الإشعارات المعلقة للطلب ' + (orderObj?.invoiceCode || orderId));
-      } catch (err) {
-        if (resultBox) {
-          resultBox.textContent = 'حدث خطأ بالاتصال أثناء معالجة الإشعارات المعلقة.';
-          resultBox.style.display = 'block';
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '';
-        const syncIcon = document.createElement('i');
-        syncIcon.className = 'fas fa-sync-alt';
-        btn.appendChild(syncIcon);
-        btn.appendChild(document.createTextNode(' معالجة الإشعارات المعلقة'));
+        alert('فشل في مسح الطلب.');
       }
     };
 
     window.revealOrder = function(id) {
       const o = rawOrders.find(order => order.id === id);
       if(!o) return;
-      activeModalOrderId = o.id;
 
       document.getElementById('md-print-id').textContent = o.invoiceCode || o.id; 
       document.getElementById('md-name').textContent = o.name || 'غير متوفر';
@@ -1525,20 +994,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('md-coords').textContent = fullLocation || '-';
       document.getElementById('md-address').textContent = o.address || 'لا يوجد تفاصيل للعنوان';
 
-      const btnRecover = document.getElementById('md-recover-notifs-btn');
-      if (btnRecover) {
-        btnRecover.setAttribute('data-order-id', o.id);
-        btnRecover.disabled = false;
-      }
-      const recoverResultEl = document.getElementById('md-recover-result');
-      if (recoverResultEl) {
-        recoverResultEl.style.display = 'none';
-        recoverResultEl.textContent = '';
+      // عرض حالة إشعار البريد الإلكتروني وتفعيل أزرار الإرسال
+      const notif = o.latestNotification || null;
+      const hasEmail = Boolean(o.email && o.email !== 'N/A' && o.email.includes('@'));
+      let notifStatus = 'none';
+      let notifId = '-';
+
+      if (notif && notif.status) {
+        notifStatus = notif.status;
+        notifId = notif.notificationId || '-';
+      } else if (!hasEmail) {
+        notifStatus = 'skipped_no_valid_email';
+      } else {
+        notifStatus = 'none';
       }
 
-      // Render immediate baseline state, then load complete multi-channel outbox snapshot
-      applyOutboxUiState(o, []);
-      loadOrderOutboxDetails(o.id);
+      const statusLabels = {
+        'accepted_by_mailapp': 'تم قبول الإرسال عبر Google Apps Script MailApp ✅',
+        'pending': 'قيد الانتظار ⏳',
+        'failed': 'تعذر الإرسال ❌',
+        'unknown': 'غير مؤكد (انتهت المهلة) ⚠️',
+        'skipped_no_valid_email': 'بدون بريد إلكتروني صالح ℹ️',
+        'none': 'لم يُسجل إرسال إشعار سابق ℹ️'
+      };
+      const stEl = document.getElementById('md-notif-status');
+      if (stEl) stEl.textContent = statusLabels[notifStatus] || notifStatus;
+      const idEl = document.getElementById('md-notif-id');
+      if (idEl) idEl.textContent = notifId;
+
+      const btnRetry = document.getElementById('md-retry-notif-btn');
+      const btnSendCurrent = document.getElementById('md-send-current-status-btn');
+
+      if (btnRetry) {
+        btnRetry.setAttribute('data-order-id', o.id);
+        btnRetry.setAttribute('data-notif-id', notifId);
+        // Only show retry if an actual notification record exists and is pending/failed/unknown (not historical 'none' and not accepted)
+        const canRetry = Boolean(hasEmail && notif && notif.notificationId && notifStatus !== 'accepted_by_mailapp');
+        btnRetry.style.display = canRetry ? 'inline-flex' : 'none';
+        btnRetry.disabled = false;
+        btnRetry.innerHTML = '<i class="fas fa-redo"></i> إعادة إرسال الإشعار السابق';
+      }
+
+      if (btnSendCurrent) {
+        btnSendCurrent.setAttribute('data-order-id', o.id);
+        btnSendCurrent.setAttribute('data-order-status', o.status || 'جديد');
+        btnSendCurrent.style.display = hasEmail ? 'inline-flex' : 'none';
+        btnSendCurrent.disabled = false;
+        btnSendCurrent.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال إشعار بالحالة الحالية (' + (o.status || 'جديد') + ')';
+      }
 
       let productsListText = '';
       if (o.products && Object.keys(o.products).length > 0) {
@@ -1553,24 +1056,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }).join('\n');
       }
 
-      const rawCoupon = o.coupon && typeof o.coupon === 'object' && !Array.isArray(o.coupon)
-        ? o.coupon
-        : null;
-      const couponCode = rawCoupon && typeof rawCoupon.code === 'string' && rawCoupon.code.trim()
-        ? rawCoupon.code.trim().toUpperCase()
-        : '';
-      const couponDiscount = rawCoupon && Number.isFinite(Number(rawCoupon.discountAmount)) && Number(rawCoupon.discountAmount) > 0
-        ? Math.round(Number(rawCoupon.discountAmount) * 100) / 100
-        : 0;
-      const couponSummaryText = couponCode && couponDiscount > 0
-        ? `\n- خصم الكوبون (${couponCode}): -${currencyFormatter.format(couponDiscount)} ج.م`
-        : '';
-
-      const wpSum = `مرحباً ${o.name ?? 'يا فندم'}، نتواصل معكِ من Dandy لتأكيد تفاصيل طلبك:\n- كود الفاتورة: ${o.invoiceCode || o.id}\n- العنوان: ${fullLocation} - ${o.address ?? ''}\n\nالمنتجات:\n${productsListText}${couponSummaryText}\n\nنتمنى لكِ يوماً سعيداً!`;
+      const wpSum = `مرحباً ${o.name ?? 'يا فندم'}، نتواصل معكِ من Dandy لتأكيد تفاصيل طلبك:\n- كود الفاتورة: ${o.invoiceCode || o.id}\n- العنوان: ${fullLocation} - ${o.address ?? ''}\n\nالمنتجات:\n${productsListText}\n\nنتمنى لكِ يوماً سعيداً!`;
       document.getElementById('md-whatsapp').href = `https://wa.me/${(o.phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(wpSum)}`;
 
       const copyBtn = document.getElementById('md-copy-btn');
-      const copyText = `طلب رقم: ${o.invoiceCode || o.id}\nالاسم: ${o.name || '-'}\nالهاتف: ${o.phone || '-'}\nالعنوان: ${fullLocation} - ${o.address || ''}\n\nالمنتجات:\n${productsListText}${couponSummaryText}`;
+      const copyText = `طلب رقم: ${o.invoiceCode || o.id}\nالاسم: ${o.name || '-'}\nالهاتف: ${o.phone || '-'}\nالعنوان: ${fullLocation} - ${o.address || ''}\n\nالمنتجات:\n${productsListText}`;
       
       copyBtn.onclick = () => {
         navigator.clipboard.writeText(copyText).then(() => {
@@ -1588,11 +1078,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       };
 
       const itemsBody = document.getElementById('md-items-body');
-      const subtotalEl = document.getElementById('md-subtotal');
-      const couponRowEl = document.getElementById('md-coupon-row');
-      const couponLabelEl = document.getElementById('md-coupon-label');
-      const couponDiscountEl = document.getElementById('md-coupon-discount');
-      const shippingFeeEl = document.getElementById('md-shipping-fee');
       const grandTotalEl = document.getElementById('md-grand-total');
       itemsBody.innerHTML = '';
       
@@ -1637,37 +1122,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           itemsBody.appendChild(tr);
         });
         
-        const subtotalVal = (o.subtotal !== undefined && o.subtotal !== null && !Number.isNaN(Number(o.subtotal)))
-          ? Number(o.subtotal)
-          : calculatedTotal;
         const shippingFee = parseFloat(o.shippingFee) || 0;
-        const savedTotal = (o.totalAmount !== undefined && o.totalAmount !== null && !Number.isNaN(Number(o.totalAmount)))
-          ? Number(o.totalAmount)
-          : NaN;
-        const finalTotal = Number.isFinite(savedTotal) && savedTotal > 0
-          ? savedTotal
-          : Math.max(0, Math.round((subtotalVal - couponDiscount + shippingFee) * 100) / 100);
-
-        if (subtotalEl) subtotalEl.textContent = currencyFormatter.format(subtotalVal) + ' ج.م';
-        if (couponRowEl && couponLabelEl && couponDiscountEl) {
-          if (couponCode && couponDiscount > 0) {
-            couponLabelEl.textContent = 'خصم الكوبون (' + couponCode + '):';
-            couponDiscountEl.textContent = '-' + currencyFormatter.format(couponDiscount) + ' ج.م';
-            couponRowEl.style.display = 'table-row';
-          } else {
-            couponRowEl.style.display = 'none';
-            couponLabelEl.textContent = 'خصم الكوبون:';
-            couponDiscountEl.textContent = '0 ج.م';
-          }
-        }
-        if (shippingFeeEl) shippingFeeEl.textContent = currencyFormatter.format(shippingFee) + ' ج.م';
+        const finalTotal = (parseFloat(o.totalAmount) || (calculatedTotal + shippingFee));
         grandTotalEl.textContent = currencyFormatter.format(finalTotal) + ' ج.م';
 
       } else {
         itemsBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--color-muted); padding: 20px;">السلة خالية من المنتجات أو غير متوفرة.</td></tr>';
-        if (subtotalEl) subtotalEl.textContent = '0 ج.م';
-        if (couponRowEl) couponRowEl.style.display = 'none';
-        if (shippingFeeEl) shippingFeeEl.textContent = '0 ج.م';
         grandTotalEl.textContent = '0 ج.م';
       }
 
@@ -1714,21 +1174,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         const data = await res.json();
         if (data.success) {
-          alert('تمت محاولة إعادة الإرسال بنجاح. الحالة: ' + getOutboxStatusLabel(data.status || 'accepted_by_mailapp'));
-          btnRetry.textContent = 'تمت المحاولة';
+          alert('تمت محاولة إعادة الإرسال بنجاح. الحالة: ' + (data.status || 'مقبول'));
+          btnRetry.innerHTML = '<i class="fas fa-check"></i> تمت المحاولة';
           const stEl = document.getElementById('md-notif-status');
-          if (stEl) stEl.textContent = getOutboxStatusLabel(data.status || 'accepted_by_mailapp');
-          await loadOrderOutboxDetails(orderId);
+          if (stEl) stEl.textContent = data.status || 'accepted_by_mailapp';
         } else {
           alert('فشلت إعادة الإرسال: ' + (data.message || data.error));
           btnRetry.disabled = false;
-          btnRetry.textContent = 'إعادة إرسال الإشعار';
-          await loadOrderOutboxDetails(orderId);
+          btnRetry.innerHTML = '<i class="fas fa-redo"></i> إعادة إرسال الإشعار';
         }
       } catch (err) {
         alert('حدث خطأ بالاتصال أثناء إعادة الإرسال.');
         btnRetry.disabled = false;
-        btnRetry.textContent = 'إعادة إرسال الإشعار';
+        btnRetry.innerHTML = '<i class="fas fa-redo"></i> إعادة إرسال الإشعار';
       }
     };
 
@@ -1746,7 +1204,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       btn.disabled = true;
-      btn.textContent = 'جاري الإرسال...';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
 
       try {
         let idToken = null;
@@ -1757,7 +1215,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (!idToken) {
           alert('يجب تسجيل الدخول بصلاحيات الإدارة أولاً.');
           btn.disabled = false;
-          btn.textContent = 'إرسال إشعار بالحالة الحالية';
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال إشعار بالحالة الحالية';
           return;
         }
 
@@ -1775,14 +1233,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         const data = await res.json().catch(() => null);
         if (res.ok && data && data.success) {
-          alert('تم إرسال إشعار الحالة بنجاح عبر خادم البريد. الحالة: ' + getOutboxStatusLabel(data.notification?.status || 'accepted_by_mailapp'));
-          btn.textContent = 'تم الإرسال بنجاح';
+          alert('تم إرسال إشعار الحالة بنجاح عبر خادم البريد. الحالة: ' + (data.notification?.status || 'مقبول'));
+          btn.innerHTML = '<i class="fas fa-check"></i> تم الإرسال بنجاح';
           
           if (orderObj && data.notification) {
             orderObj.latestNotification = data.notification;
           }
           const stEl = document.getElementById('md-notif-status');
-          if (stEl) stEl.textContent = getOutboxStatusLabel(data.notification?.status || 'accepted_by_mailapp');
+          if (stEl) stEl.textContent = 'تم قبول الإرسال عبر Google Apps Script MailApp ✅';
           const idEl = document.getElementById('md-notif-id');
           if (idEl && data.notification?.notificationId) idEl.textContent = data.notification.notificationId;
 
@@ -1793,24 +1251,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           try {
             drawOrdersTable();
           } catch(e) {}
-          await loadOrderOutboxDetails(orderId);
         } else {
           const errMsg = data?.message || data?.error || `رمز الخطأ: ${res.status}`;
           alert('تعذر إرسال الإشعار: ' + errMsg);
           btn.disabled = false;
-          btn.textContent = 'إرسال إشعار بالحالة الحالية';
-          await loadOrderOutboxDetails(orderId);
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال إشعار بالحالة الحالية';
         }
       } catch (err) {
         console.error('Send current status notification error:', err);
         alert('حدث خطأ بالاتصال أثناء إرسال الإشعار.');
         btn.disabled = false;
-        btn.textContent = 'إرسال إشعار بالحالة الحالية';
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال إشعار بالحالة الحالية';
       }
     };
 
     function hideModal(){
-      activeModalOrderId = null;
       if (detailsModal) detailsModal.classList.remove('show');
       setTimeout(() => {
         const printHeader = document.getElementById('printHeader');

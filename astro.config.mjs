@@ -15,10 +15,6 @@ export default defineConfig({
       }),
   build: {
     format: 'directory'
-  },
-  vite: {
-    server: {
-      allowedHosts: true
-    }
   }
 });
+

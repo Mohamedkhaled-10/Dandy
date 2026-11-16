@@ -2,9 +2,31 @@ export const prerender = false;
 
 // src/pages/api/admin/telegram-test.js
 // Dedicated protected Admin endpoint for diagnosing Telegram Bot & Group Connectivity
-import { verifyAdminRequest, adminUnauthorizedResponse } from '../../../utils/admin-auth.js';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { getClientIp, getAdminAuthRateLimiter } from '../../../utils/rate-limit.js';
 import { diagnoseTelegramSetup } from '../../../utils/telegram.js';
+
+function getAdminApp() {
+  if (getApps().length > 0) {
+    return getApps()[0];
+  }
+
+  const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!saEnv) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is missing');
+  }
+
+  const serviceAccount = typeof saEnv === 'string' ? JSON.parse(saEnv) : saEnv;
+  if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string' && serviceAccount.private_key.includes('\\n')) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
+
+  return initializeApp({
+    credential: cert(serviceAccount),
+    databaseURL: 'https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app'
+  });
+}
 
 // In-memory rate limiting fallback for admin diagnostics (max 5 diagnostic runs per 5 minutes)
 const diagMemoryRateLimit = new Map();
@@ -46,13 +68,41 @@ async function checkDiagnosticsRateLimit(clientIp) {
   return { allowed: true };
 }
 
-export async function POST({ request, _deps = undefined }) {
+async function authenticateAdmin(request) {
+  const authHeader = request.headers.get('authorization') || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  const idToken = authHeader.substring(7).trim();
+  if (!idToken) return null;
+
+  try {
+    const app = getAdminApp();
+    const adminAuth = getAuth(app);
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    if (decoded && decoded.email && decoded.email.toLowerCase() === 'admin@dandy.com') {
+      return decoded;
+    }
+  } catch (err) {
+    console.warn('[Telegram Admin Diag] Auth verification failed:', err.message);
+  }
+  return null;
+}
+
+export async function POST({ request }) {
   const clientIp = getClientIp(request);
 
-  // 1. Strict Admin Authentication Guard (Bearer Firebase ID token for verified admin@dandy.com)
-  const authResult = await verifyAdminRequest(request, _deps);
-  if (!authResult.authorized) {
-    return adminUnauthorizedResponse(authResult);
+  // 1. Strict Admin Authentication Guard (Bearer Firebase ID token for admin@dandy.com)
+  const admin = await authenticateAdmin(request);
+  if (!admin) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'UNAUTHORIZED',
+      message: 'غير مصرح: هذا الاختبار مخصص لمدير النظام (admin@dandy.com) فقط.'
+    }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   // 2. Rate Limiting Check

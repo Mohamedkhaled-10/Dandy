@@ -2,19 +2,63 @@ export const prerender = false;
 
 // src/pages/api/pink-friday/admin.js
 // Protected Admin API for Dandy Pink Friday Annual Campaign Management
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getDatabase } from 'firebase-admin/database';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { getAdminApp, getAdminDb } from '../../../utils/firebase-admin.ts';
-import { verifyAdminRequest, adminUnauthorizedResponse } from '../../../utils/admin-auth.js';
 import { INITIAL_2026_CAMPAIGN } from '../../../utils/pink-friday-server.ts';
 
-export async function GET({ request, _deps = undefined }) {
-  const authResult = await verifyAdminRequest(request, _deps);
-  if (!authResult.authorized) {
-    return adminUnauthorizedResponse(authResult);
+function getAdminApp() {
+  if (getApps().length > 0) {
+    return getApps()[0];
+  }
+
+  const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!saEnv) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is missing');
+  }
+
+  const serviceAccount = typeof saEnv === 'string' ? JSON.parse(saEnv) : saEnv;
+
+  return initializeApp({
+    credential: cert(serviceAccount),
+    databaseURL: 'https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app'
+  });
+}
+
+async function authenticateAdmin(request) {
+  const authHeader = request.headers.get('authorization') || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  const idToken = authHeader.substring(7).trim();
+  if (!idToken) return null;
+
+  try {
+    const app = getAdminApp();
+    const adminAuth = getAuth(app);
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    if (decoded && decoded.email && decoded.email.toLowerCase() === 'admin@dandy.com') {
+      return decoded;
+    }
+  } catch (err) {
+    console.warn('[PinkFriday Admin API] Auth verification failed:', err.message);
+  }
+  return null;
+}
+
+export async function GET({ request }) {
+  const admin = await authenticateAdmin(request);
+  if (!admin) {
+    return new Response(JSON.stringify({ success: false, error: 'UNAUTHORIZED' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   try {
-    const adminDb = _deps?.adminDb || getAdminDb();
+    const app = getAdminApp();
+    const adminDb = getDatabase(app);
 
     const snap = await adminDb.ref('settings/pinkFriday').once('value');
     let data = snap.val();
@@ -58,21 +102,24 @@ export async function GET({ request, _deps = undefined }) {
   }
 }
 
-export async function POST({ request, _deps = undefined }) {
-  const authResult = await verifyAdminRequest(request, _deps);
-  if (!authResult.authorized) {
-    return adminUnauthorizedResponse(authResult);
+export async function POST({ request }) {
+  const admin = await authenticateAdmin(request);
+  if (!admin) {
+    return new Response(JSON.stringify({ success: false, error: 'UNAUTHORIZED' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
-  const admin = authResult.admin;
 
   try {
     const body = await request.json();
     const { action, year, campaignData } = body;
 
-    const adminDb = _deps?.adminDb || getAdminDb();
+    const app = getAdminApp();
+    const adminDb = getDatabase(app);
     let adminFs;
     try {
-      adminFs = _deps?.adminFs !== undefined ? _deps.adminFs : getFirestore(getAdminApp());
+      adminFs = getFirestore(app);
     } catch (e) {
       // Optional firestore logger
     }

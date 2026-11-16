@@ -8,7 +8,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
   description="انضمي إلى عائلة داندي وتابعي طلباتك السابقة، عناوينك المحفوظة، وقائمتك المفضلة بكل سهولة."
 >
   <slot name="head" slot="head">
-    {turnstileSiteKey && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style is:global>
       .account-auth-container {
         min-height: calc(85vh - 120px);
@@ -197,24 +197,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         </div>
 
         <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
-        <div class="signup-turnstile-wrap" style="margin: 16px 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
-          {turnstileSiteKey ? (
-            <>
-              <div
-                class="cf-turnstile"
-                data-sitekey={turnstileSiteKey}
-                data-theme="light"
-                data-callback="onSignupTurnstileVerified"
-                data-expired-callback="onSignupTurnstileExpired"
-                data-error-callback="onSignupTurnstileError"
-              ></div>
-              <p id="signupTurnstileStatusMsg" style="display: none; margin: 0; font-size: 0.78rem; color: #b45309; font-weight: 600; text-align: center;"></p>
-            </>
-          ) : (
-            <div role="status" style="padding:10px 14px; border-radius:8px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.82rem; font-weight:600; text-align:center;">
-              خدمة التحقق الأمني (Turnstile) غير مهيأة في هذه البيئة حالياً.
-            </div>
-          )}
+        <div class="signup-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
         </div>
 
         <button type="submit" id="signupSubmitBtn" class="btn-auth-submit">
@@ -231,12 +215,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
   <script is:inline>
     (function() {
-      const auth = (typeof window.getSafeFirebaseAuth === 'function' ? window.getSafeFirebaseAuth() : null) ||
-        window.auth ||
-        (() => { try { return typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null; } catch (_) { return null; } })();
-      const db = (typeof window.getSafeFirebaseDb === 'function' ? window.getSafeFirebaseDb() : null) ||
-        window.db ||
-        (() => { try { return typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null; } catch (_) { return null; } })();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
       const form = document.getElementById('signupForm');
       const submitBtn = document.getElementById('signupSubmitBtn');
@@ -245,37 +225,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       function showAlert(text, type = 'error') {
         if (!alertBox) return;
         alertBox.className = 'auth-alert-msg ' + type;
-        alertBox.innerHTML = '';
-        const icon = document.createElement('i');
-        icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
-        alertBox.appendChild(icon);
-        alertBox.appendChild(document.createTextNode(' ' + String(text || '')));
+        alertBox.innerHTML = (type === 'error' ? '<i class="fas fa-exclamation-circle"></i> ' : '<i class="fas fa-check-circle"></i> ') + text;
       }
-
-      function setSignupTurnstileStatus(message) {
-        const statusEl = document.getElementById('signupTurnstileStatusMsg');
-        if (!statusEl) return;
-        if (!message) {
-          statusEl.style.display = 'none';
-          statusEl.textContent = '';
-          return;
-        }
-        statusEl.textContent = message;
-        statusEl.style.display = 'block';
-      }
-
-      window.onSignupTurnstileVerified = function() {
-        setSignupTurnstileStatus('');
-      };
-      window.onSignupTurnstileExpired = function() {
-        setSignupTurnstileStatus('انتهت صلاحية رمز التحقق الأمني (Turnstile). يرجى إعادة التحقق قبل إنشاء الحساب.');
-        if (typeof turnstile !== 'undefined') {
-          try { turnstile.reset(); } catch (_) {}
-        }
-      };
-      window.onSignupTurnstileError = function() {
-        setSignupTurnstileStatus('تعذر تحميل أو إتمام التحقق الأمني (Turnstile). يرجى تعطيل مانع الإعلانات إن وجد أو إعادة المحاولة.');
-      };
 
       function clearAlert() {
         if (!alertBox) return;
@@ -374,18 +325,16 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
               createdAt: firebase.database.ServerValue.TIMESTAMP
             });
 
-            // استدعاء خدمة ربط الطلبات القديمة فقط إذا كان البريد الإلكتروني مفعّلاً (يتم ربط الطلبات تلقائياً لاحقاً في /account بعد تفعيل البريد)
-            if (cred.user && cred.user.emailVerified === true) {
-              try {
-                const idToken = await cred.user.getIdToken();
-                await fetch('/api/link-customer-orders', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ idToken })
-                });
-              } catch (linkErr) {
-                console.warn('Orders link notice:', linkErr);
-              }
+            // استدعاء خدمة ربط الطلبات القديمة تلقائياً (المرحلة 3)
+            try {
+              const idToken = await cred.user.getIdToken();
+              await fetch('/api/link-customer-orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, phone })
+              });
+            } catch (linkErr) {
+              console.warn('Orders link notice:', linkErr);
             }
 
             showAlert('تم إنشاء الحساب بنجاح! جاري التوجيه...', 'success');

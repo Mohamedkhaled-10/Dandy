@@ -8,7 +8,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   robots="noindex, nofollow"
 >
   <slot name="head" slot="head">
-    <script is:inline src="/assets/js/order-flow-helpers.js"></script>
     <style is:global>
       .account-page-wrapper {
         padding-top: 110px;
@@ -1027,7 +1026,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <!-- Tab 1: Orders Section -->
       <section id="panelOrders" class="account-tab-content active">
-        <div id="ordersActionErrorBanner" role="alert" aria-live="polite" style="display:none; margin-bottom:16px; padding:12px 16px; border-radius:10px; border:1px solid #fecdd3; background:#fff1f2; color:#9f1239; font-weight:700; font-size:0.88rem;"></div>
         <div id="ordersLoading" style="text-align:center; padding:40px;">
           <i class="fas fa-spinner fa-spin" style="color:var(--color-blush); font-size:2rem;"></i>
           <p style="margin-top:10px; color:var(--color-muted);">جاري تحميل سجل طلباتكِ...</p>
@@ -1125,7 +1123,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <option value="Fayoum">الفيوم</option>
             <option value="Beni Suef">بني سويف</option>
             <option value="Minya">المنيا</option>
-            <option value="Assiut">أسيوط</option>
+            <option value="Asyut">أسيوط</option>
             <option value="Sohag">سوهاج</option>
             <option value="Qena">قنا</option>
             <option value="Luxor">الأقصر</option>
@@ -1228,18 +1226,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           .replace(/'/g, '&#039;');
       }
 
-      const auth = (typeof window.getSafeFirebaseAuth === 'function' ? window.getSafeFirebaseAuth() : null) ||
-        window.auth ||
-        (() => { try { return typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null; } catch (_) { return null; } })();
-      const db = (typeof window.getSafeFirebaseDb === 'function' ? window.getSafeFirebaseDb() : null) ||
-        window.db ||
-        (() => { try { return typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null; } catch (_) { return null; } })();
+      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
 
       if (!auth || !db) {
-        const loadingEl = document.getElementById('accountLoading');
-        if (loadingEl) {
-          loadingEl.innerHTML = '<div style="padding:24px; background:#fff; border:1px solid var(--border-light); border-radius:12px; max-width:460px; margin:0 auto;"><p style="color:var(--color-primary); font-weight:700; margin-bottom:10px;">خدمة الحساب غير متاحة حالياً في هذه البيئة.</p><a href="/" style="color:var(--color-blush); font-weight:700; text-decoration:underline;">العودة إلى المتجر</a></div>';
-        }
+        console.error('Firebase Auth or DB not available');
         return;
       }
 
@@ -1258,51 +1249,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         loadOrders();
         loadAddresses();
         loadWishlist();
-
-        // ربط الطلبات القديمة بالبريد المفعّل بعد تحديث حالة التحقق وتجديد ID Token
-        if (window.DandyOrderFlow && typeof window.DandyOrderFlow.syncVerifiedCustomerOrdersLink === 'function') {
-          window.DandyOrderFlow.syncVerifiedCustomerOrdersLink({
-            user,
-            onLinkedOrders: () => loadOrders()
-          }).catch((linkErr) => {
-            console.warn('Verified orders link notice:', linkErr);
-          });
-        } else {
-          (async function linkVerifiedCustomerOrdersFallback() {
-            const linkSessionKey = 'dandy_orders_linked_' + user.uid;
-            try {
-              if (window.sessionStorage && window.sessionStorage.getItem(linkSessionKey) === '1') {
-                return;
-              }
-            } catch (e) {}
-
-            try {
-              if (user.emailVerified !== true && typeof user.reload === 'function') {
-                await user.reload();
-              }
-              if (user.emailVerified !== true) {
-                return;
-              }
-              const idToken = await user.getIdToken(true);
-              const linkRes = await fetch('/api/link-customer-orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken })
-              });
-              const linkData = await linkRes.json().catch(() => ({}));
-              if (linkRes.ok && linkData.success) {
-                try {
-                  if (window.sessionStorage) window.sessionStorage.setItem(linkSessionKey, '1');
-                } catch (e) {}
-                if (Number(linkData.linkedCount) > 0) {
-                  loadOrders();
-                }
-              }
-            } catch (linkErr) {
-              console.warn('Verified orders link notice:', linkErr);
-            }
-          })();
-        }
       });
 
       // إعداد بيانات المستخدم والهيدر
@@ -1387,8 +1333,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           // ترتيب الأحدث أولاً
           ordersList.sort((a, b) => {
-            const timeA = a.createdAt || a.timestamp || (a.date ? new Date(a.date).getTime() : 0);
-            const timeB = b.createdAt || b.timestamp || (b.date ? new Date(b.date).getTime() : 0);
+            const timeA = a.createdAt || (a.date ? new Date(a.date).getTime() : 0);
+            const timeB = b.createdAt || (b.date ? new Date(b.date).getTime() : 0);
             return timeB - timeA;
           });
 
@@ -1429,12 +1375,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
             const invoiceCode = order.invoiceCode || order.id || 'DNY-ORDER';
             let dateStr = 'تاريخ حديث';
-            const orderTs = order.createdAt || order.timestamp;
-            if (orderTs) {
-              const d = new Date(orderTs);
-              if (!Number.isNaN(d.getTime())) {
-                dateStr = d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-              }
+            if (order.createdAt) {
+              const d = new Date(order.createdAt);
+              dateStr = d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             } else if (order.date) {
               dateStr = String(order.date);
             }
@@ -1488,20 +1431,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
                       let reviewBtnHtml = '';
                       if (isDelivered && pId) {
-                        const realOrderId = String(order.id || '');
-                        const safeOrderId = escapeHtml(realOrderId).replace(/'/g, "\\'");
-                        const safeInvoiceCode = escapeHtml(invoiceCode).replace(/'/g, "\\'");
                         const existingReview = userProductReviews[pId];
                         if (existingReview) {
                           reviewBtnHtml = `
-                            <button type="button" class="btn-review-product has-review" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${safeOrderId}', '${escapeHtml(pImg).replace(/'/g, "\\'")}', '${safeInvoiceCode}')" title="تعديل تقييمكِ">
+                            <button type="button" class="btn-review-product has-review" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${escapeHtml(invoiceCode)}', '${escapeHtml(pImg).replace(/'/g, "\\'")}')" title="تعديل تقييمكِ">
                               <i class="fas fa-star" style="color: #f59e0b;"></i>
                               <span>عدّلي تقييمكِ (${existingReview.rating}★)</span>
                             </button>
                           `;
                         } else {
                           reviewBtnHtml = `
-                            <button type="button" class="btn-review-product" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${safeOrderId}', '${escapeHtml(pImg).replace(/'/g, "\\'")}', '${safeInvoiceCode}')" title="تقييم هذا المنتج">
+                            <button type="button" class="btn-review-product" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${escapeHtml(invoiceCode)}', '${escapeHtml(pImg).replace(/'/g, "\\'")}')" title="تقييم هذا المنتج">
                               <i class="far fa-star"></i>
                               <span>قيّمي هذا المنتج</span>
                             </button>
@@ -1530,8 +1470,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             card.innerHTML = `
               <div class="order-card-header">
                 <div>
-                  <span class="order-code-badge"><i class="fas fa-receipt"></i> ${escapeHtml(invoiceCode)}</span>
-                  <div class="order-date-text" style="margin-top:4px;"><i class="far fa-clock"></i> ${escapeHtml(dateStr)}</div>
+                  <span class="order-code-badge"><i class="fas fa-receipt"></i> ${invoiceCode}</span>
+                  <div class="order-date-text" style="margin-top:4px;"><i class="far fa-clock"></i> ${dateStr}</div>
                 </div>
                 <div>
                   <span class="order-status-pill ${statusClass}">${statusText}</span>
@@ -1541,25 +1481,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <div class="order-card-body">
                 <div class="order-info-item">
                   <div class="label">إجمالي الطلب</div>
-                  <div class="val" style="color:var(--color-blush); font-size:1.15rem;">${escapeHtml(totalAmount)} ج.م</div>
+                  <div class="val" style="color:var(--color-blush); font-size:1.15rem;">${totalAmount} ج.م</div>
                 </div>
                 <div class="order-info-item">
                   <div class="label">عدد المنتجات</div>
-                  <div class="val">${escapeHtml(itemsCount)} منتج/منتجات</div>
+                  <div class="val">${itemsCount} منتج/منتجات</div>
                 </div>
                 <div class="order-info-item">
                   <div class="label">عنوان التوصيل</div>
-                  <div class="val" style="font-size:0.88rem;">${escapeHtml(order.governorate || '')} - ${escapeHtml(order.city || '')}</div>
+                  <div class="val" style="font-size:0.88rem;">${order.governorate || ''} - ${order.city || ''}</div>
                 </div>
               </div>
 
               ${productsHtml}
 
               <div class="order-card-footer">
-                <button type="button" class="btn-order-action primary js-open-customer-invoice" data-order-id="${escapeHtml(String(order.id || ''))}">
-                  <i class="fas fa-file-invoice"></i> <span>عرض الفاتورة</span>
-                </button>
-                <a href="/track-order?code=${encodeURIComponent(invoiceCode)}" class="btn-order-action secondary">
+                <a href="/invoice?invoice=${encodeURIComponent(invoiceCode)}" class="btn-order-action primary" target="_blank">
+                  <i class="fas fa-file-invoice"></i> عرض الفاتورة
+                </a>
+                <a href="/track-order?invoice=${encodeURIComponent(invoiceCode)}" class="btn-order-action secondary">
                   <i class="fas fa-truck"></i> تتبع الطلب
                 </a>
               </div>
@@ -1576,76 +1516,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           emptyEl.style.display = 'block';
         }
       }
-
-      // فتح الفاتورة بأمان عبر /api/customer-invoice-access باستخدام توكن حساب العميل
-      document.getElementById('ordersContainer')?.addEventListener('click', async function (e) {
-        const btn = e.target && typeof e.target.closest === 'function'
-          ? e.target.closest('.js-open-customer-invoice')
-          : null;
-        if (!btn) return;
-
-        const errBanner = document.getElementById('ordersActionErrorBanner');
-        const showOrderActionError = (msg) => {
-          if (errBanner) {
-            errBanner.textContent = msg;
-            errBanner.style.display = 'block';
-            errBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        };
-        if (errBanner) {
-          errBanner.style.display = 'none';
-          errBanner.textContent = '';
-        }
-
-        if (!currentUser) {
-          showOrderActionError('انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مرة أخرى لفتح الفاتورة.');
-          return;
-        }
-
-        const orderId = (btn.getAttribute('data-order-id') || '').trim();
-        if (!orderId) {
-          showOrderActionError('تعذر تحديد معرف الطلب لفتح الفاتورة.');
-          return;
-        }
-
-        if (btn.disabled) return;
-        const origHtml = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>جاري فتح الفاتورة...</span>';
-
-        try {
-          const idToken = await currentUser.getIdToken();
-          const res = await fetch('/api/customer-invoice-access', {
-            method: 'POST',
-            cache: 'no-store',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + idToken
-            },
-            body: JSON.stringify({ orderId })
-          });
-
-          const data = await res.json().catch(() => ({}));
-          if (!res.ok || !data || !data.success || !data.invoiceAccessToken) {
-            if (res.status === 401) {
-              throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى لفتح الفاتورة.');
-            }
-            if (res.status === 429) {
-              throw new Error('تم إرسال طلبات متكررة لفتح الفاتورة. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.');
-            }
-            if (res.status === 503) {
-              throw new Error('الخدمة غير متاحة مؤقتاً. يرجى المحاولة بعد قليل.');
-            }
-            throw new Error((data && data.message) || 'تعذر فتح الفاتورة حالياً. يرجى المحاولة مرة أخرى.');
-          }
-
-          window.location.href = '/invoice#access=' + encodeURIComponent(data.invoiceAccessToken);
-        } catch (err) {
-          btn.disabled = false;
-          btn.innerHTML = origHtml;
-          showOrderActionError((err && err.message) || 'تعذر فتح الفاتورة حالياً. يرجى المحاولة مرة أخرى.');
-        }
-      });
 
       // -------------------------------------------------------------
       // ب) العناوين المحفوظة (Addresses CRUD)
@@ -1736,34 +1606,31 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             card.innerHTML = `
               <div>
                 <div class="address-card-top">
-                  <span class="address-label"><i class="fas fa-home"></i> ${escapeHtml(addr.label || 'عنوان')}</span>
+                  <span class="address-label"><i class="fas fa-home"></i> ${addr.label || 'عنوان'}</span>
                   ${addr.isDefault ? '<span class="badge-default-address"><i class="fas fa-check-circle"></i> افتراضي</span>' : ''}
                 </div>
 
                 <div class="address-details">
-                  <div><strong>المحافظة:</strong> ${escapeHtml(govArabic)}</div>
-                  <div><strong>المدينة / المنطقة:</strong> ${escapeHtml(addr.city || '')}</div>
-                  <div><strong>العنوان:</strong> ${escapeHtml(addr.address || '')}</div>
+                  <div><strong>المحافظة:</strong> ${govArabic}</div>
+                  <div><strong>المدينة / المنطقة:</strong> ${addr.city || ''}</div>
+                  <div><strong>العنوان:</strong> ${addr.address || ''}</div>
                 </div>
               </div>
 
               <div class="address-card-actions">
-                <button type="button" class="btn-addr-action edit">
+                <button type="button" class="btn-addr-action edit" onclick="window.editAddress('${key}')">
                   <i class="fas fa-edit"></i> تعديل
                 </button>
-                <button type="button" class="btn-addr-action delete">
+                <button type="button" class="btn-addr-action delete" onclick="window.deleteAddress('${key}')">
                   <i class="fas fa-trash-alt"></i> حذف
                 </button>
                 ${!addr.isDefault ? `
-                  <button type="button" class="btn-addr-action set-default">
+                  <button type="button" class="btn-addr-action set-default" onclick="window.setDefaultAddress('${key}')">
                     <i class="fas fa-star"></i> تعيين كافتراضي
                   </button>
                 ` : ''}
               </div>
             `;
-            card.querySelector('.btn-addr-action.edit')?.addEventListener('click', () => window.editAddress(key));
-            card.querySelector('.btn-addr-action.delete')?.addEventListener('click', () => window.deleteAddress(key));
-            card.querySelector('.btn-addr-action.set-default')?.addEventListener('click', () => window.setDefaultAddress(key));
             container.appendChild(card);
           });
 
@@ -1932,26 +1799,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       }
 
-      function sanitizeAccountMediaUrl(rawUrl, fallback = '/assets/images/logo.png') {
-        if (!rawUrl || typeof rawUrl !== 'string') return fallback;
-        const trimmed = rawUrl.trim();
-        if (/^https?:\/\//i.test(trimmed) || (trimmed.startsWith('/') && !trimmed.startsWith('//'))) {
-          return trimmed;
-        }
-        return fallback;
-      }
-
       function renderWishlistProduct(data, container) {
         const productEl = document.createElement('div');
         productEl.className = 'wishlist-product-card';
         productEl.id = 'wishlist-item-' + data.id;
 
-        const rawLink = (typeof window.getProductLink === 'function')
+        const productLink = (typeof window.getProductLink === 'function')
           ? window.getProductLink(data)
-          : (data.slug ? `/product/${encodeURIComponent(data.slug)}` : `/product?id=${encodeURIComponent(data.id)}`);
-        const productLink = (typeof rawLink === 'string' && rawLink.startsWith('/') && !rawLink.startsWith('//')) ? rawLink : '/all-products';
-        const safeImg = sanitizeAccountMediaUrl(data.image);
-        const safeName = escapeHtml(data.name || 'منتج داندي');
+          : (data.slug ? `/product/${encodeURIComponent(data.slug)}` : `/product?id=${data.id}`);
 
         const priceRaw = parseFloat(data.price) || 0;
         let priceStr = `${priceRaw} ج.م`;
@@ -1963,24 +1818,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           badgeStr = `<div class="wishlist-sale-badge">خصم</div>`;
         } else if (data.onSale && data.discount) {
           const discountPercent = parseFloat(data.discount) || 0;
-          const oldPrice = (discountPercent > 0 && discountPercent < 100) ? priceRaw / (1 - (discountPercent / 100)) : 0;
-          priceStr = `${oldPrice > priceRaw ? `<span class="old-price">${oldPrice.toFixed(0)} ج.م</span>` : ''}${priceRaw} ج.م`;
-          badgeStr = `<div class="wishlist-sale-badge">خصم ${escapeHtml(data.discount)}%</div>`;
+          const oldPrice = priceRaw / (1 - (discountPercent / 100));
+          priceStr = `<span class="old-price">${oldPrice.toFixed(0)} ج.م</span>${priceRaw} ج.م`;
+          badgeStr = `<div class="wishlist-sale-badge">خصم ${data.discount}%</div>`;
         }
 
         const hasVars = typeof hasSelectableVariants === 'function'
           ? hasSelectableVariants(data)
           : (data.hasVariants === true || data.hasVariants === 'true');
 
-        let actionBtnHtml = `
-          <button type="button" class="btn-wishlist-add-cart js-wishlist-add">
+        let actionBtn = `
+          <button type="button" class="btn-wishlist-add-cart" onclick="event.stopPropagation(); window.quickAddWishlist('${data.id}', \`${(data.name || '').replace(/`/g, '')}\`, '${data.price}', '${data.image}', '${data.discount || ''}', ${data.onSale || false}, false, '${data.slug || ''}')">
             <i class="fas fa-shopping-bag"></i> أضف للسلة
           </button>
         `;
 
         if (hasVars) {
-          actionBtnHtml = `
-            <button type="button" class="btn-wishlist-add-cart js-wishlist-variants">
+          actionBtn = `
+            <button type="button" class="btn-wishlist-add-cart" onclick="event.stopPropagation(); window.location.href='${productLink}'">
               <i class="fas fa-spray-can"></i> اختاري الرائحة
             </button>
           `;
@@ -1988,7 +1843,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (data.isSoldOut) {
           badgeStr += `<div class="wishlist-sale-badge" style="background:#222; top:${badgeStr ? '35px' : '10px'};">نفذت الكمية</div>`;
-          actionBtnHtml = `
+          actionBtn = `
             <button type="button" disabled class="btn-wishlist-add-cart" style="background:#aaa; cursor:not-allowed;">
               <i class="fas fa-ban"></i> نفذت الكمية
             </button>
@@ -1996,45 +1851,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
 
         productEl.innerHTML = `
-          <div class="wishlist-img-wrap">
+          <div class="wishlist-img-wrap" onclick="window.location.href='${productLink}'">
             ${badgeStr}
-            <img src="${escapeHtml(safeImg)}" alt="${safeName}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
+            <img src="${data.image}" alt="${data.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=400&q=80';">
           </div>
           <div class="wishlist-card-content">
-            <h3 class="wishlist-product-title">${safeName}</h3>
+            <h3 class="wishlist-product-title" onclick="window.location.href='${productLink}'">${data.name}</h3>
             <div class="wishlist-price-row">${priceStr}</div>
             <div class="wishlist-actions">
-              ${actionBtnHtml}
-              <button type="button" class="btn-wishlist-remove">
+              ${actionBtn}
+              <button type="button" class="btn-wishlist-remove" onclick="window.removeFromWishlist('${data.id}')">
                 <i class="fas fa-trash-alt"></i> إزالة من المفضلة
               </button>
             </div>
           </div>
         `;
-
-        const goToProduct = () => { window.location.href = productLink; };
-        productEl.querySelector('.wishlist-img-wrap')?.addEventListener('click', goToProduct);
-        productEl.querySelector('.wishlist-product-title')?.addEventListener('click', goToProduct);
-        productEl.querySelector('.js-wishlist-variants')?.addEventListener('click', (e) => {
-          e.stopPropagation();
-          goToProduct();
-        });
-        productEl.querySelector('.js-wishlist-add')?.addEventListener('click', (e) => {
-          e.stopPropagation();
-          window.quickAddWishlist(
-            data.id,
-            data.name || '',
-            data.price,
-            safeImg,
-            data.discount || '',
-            Boolean(data.onSale),
-            false,
-            data.slug || ''
-          );
-        });
-        productEl.querySelector('.btn-wishlist-remove')?.addEventListener('click', () => {
-          window.removeFromWishlist(data.id);
-        });
 
         container.appendChild(productEl);
       }
@@ -2105,7 +1936,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (descEl) descEl.textContent = labels[rating] || 'اضغطي على النجوم لاختيار التقييم';
       }
 
-      window.openReviewModal = function(productId, productName, orderId, productImg, invoiceCode) {
+      window.openReviewModal = function(productId, productName, orderId, productImg) {
         activeReviewProductId = productId;
         activeReviewOrderId = orderId;
 
@@ -2119,7 +1950,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (nameEl) nameEl.textContent = productName || 'منتج داندي';
         if (thumbEl) thumbEl.src = productImg || '/assets/images/logo.png';
-        if (orderRefEl) orderRefEl.textContent = 'طلب رقم: #' + (invoiceCode || orderId);
+        if (orderRefEl) orderRefEl.textContent = 'طلب رقم: #' + orderId;
 
         const existing = userProductReviews[productId];
         if (existing) {

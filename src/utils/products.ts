@@ -228,8 +228,8 @@ export async function getAllProducts(forceFresh = false): Promise<Product[]> {
         inStock: rawProd.inStock !== false && !rawProd.isSoldOut,
         isHidden: Boolean(rawProd.isHidden),
         stockQuantity: rawProd.stockQuantity !== undefined ? rawProd.stockQuantity : null,
-        hasVariants: rawProd.hasVariants === true || rawProd.hasVariants === 'true',
-        variantType: typeof rawProd.variantType === 'string' && rawProd.variantType.trim() ? rawProd.variantType.trim() : undefined,
+        hasVariants: Boolean(rawProd.hasVariants),
+        variantType: rawProd.variantType || undefined,
         variants: rawProd.variants || undefined,
       });
     }
@@ -299,8 +299,8 @@ export async function getProductById(id: string): Promise<Product | null> {
           inStock: data.inStock !== false && !data.isSoldOut,
           isHidden: Boolean(data.isHidden),
           stockQuantity: data.stockQuantity !== undefined ? data.stockQuantity : null,
-          hasVariants: data.hasVariants === true || data.hasVariants === 'true',
-          variantType: typeof data.variantType === 'string' && data.variantType.trim() ? data.variantType.trim() : undefined,
+          hasVariants: Boolean(data.hasVariants),
+          variantType: data.variantType || undefined,
           variants: data.variants || undefined,
         };
       }

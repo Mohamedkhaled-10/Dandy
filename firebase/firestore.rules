@@ -3,12 +3,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function isAdmin() {
       return request.auth != null
-        && request.auth.token.email == 'admin@dandy.com'
-        && request.auth.token.email_verified == true;
+        && request.auth.token.email == 'admin@dandy.com';
     }
 
     match /articles/{articleId} {
-      allow read: if isAdmin() || resource.data.status == 'published';
+      allow read: if true;
       allow write: if isAdmin();
     }
 
@@ -17,7 +16,7 @@ service cloud.firestore {
     }
 
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if isAdmin();
     }
   }
 }

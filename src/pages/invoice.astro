@@ -10,7 +10,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <slot name="head" slot="head">
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
-    <script is:inline src="/assets/js/order-flow-helpers.js"></script>
 
     <style is:global>
       .invoice-section {
@@ -280,7 +279,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </slot>
 
   <section class="invoice-section">
-    <div class="container" id="invoiceStateContainer" style="display:none;"></div>
     <div class="container" id="invoiceCard">
       
       <div class="invoice-panel" dir="rtl">
@@ -376,10 +374,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <td colspan="2" style="text-align: left; font-weight: 700; color: var(--color-muted);">المجموع الفرعي:</td>
               <td id="tableSubtotal" style="text-align: left; font-weight: 700;">...</td>
             </tr>
-            <tr id="tableCouponRow" style="display: none; background: rgba(5, 150, 105, 0.04);">
-              <td colspan="2" id="tableCouponLabel" style="text-align: left; font-weight: 700; color: #059669;">خصم الكوبون:</td>
-              <td id="tableCouponDiscount" style="text-align: left; font-weight: 800; color: #059669; direction: ltr;">0 ج.م</td>
-            </tr>
             <tr>
               <td colspan="2" style="text-align: left; font-weight: 700; color: var(--color-muted);">مصاريف الشحن:</td>
               <td id="tableShipping" style="text-align: left; font-weight: 700; color: var(--color-success);">...</td>
@@ -414,6 +408,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 
   <script is:inline>
+    const db = firebase.database();
+
     const params = new URLSearchParams(window.location.search);
     const idParam = params.get('id');
     const invoiceParam = params.get('invoice');
@@ -431,32 +427,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const itemsBody = document.getElementById('itemsBody');
 
     const tableSubtotal = document.getElementById('tableSubtotal');
-    const tableCouponRow = document.getElementById('tableCouponRow');
-    const tableCouponLabel = document.getElementById('tableCouponLabel');
-    const tableCouponDiscount = document.getElementById('tableCouponDiscount');
     const tableShipping = document.getElementById('tableShipping');
     const tableGrandTotal = document.getElementById('tableGrandTotal');
-
-    function formatInvoiceEgp(value) {
-      const n = Number(value);
-      if (!Number.isFinite(n)) return '0';
-      const rounded = Math.round(n * 100) / 100;
-      const clean = Object.is(rounded, -0) ? 0 : rounded;
-      return Math.abs(clean - Math.round(clean)) < 1e-9 ? String(Math.round(clean)) : String(clean);
-    }
-
-    const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';
-    let currentInvoiceCode = '';
-
-    function sanitizeImageUrl(url) {
-      if (typeof url !== 'string') return DEFAULT_FALLBACK_IMAGE;
-      const trimmed = url.trim();
-      if (!trimmed) return DEFAULT_FALLBACK_IMAGE;
-      if (trimmed.startsWith('/') || trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
-        return trimmed;
-      }
-      return DEFAULT_FALLBACK_IMAGE;
-    }
 
     function setStatusBadge(status){
       const s = status || 'New';
@@ -549,13 +521,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     function drawOrder(order, key) {
-      const stateContainer = document.getElementById('invoiceStateContainer');
-      const cardEl = document.getElementById('invoiceCard');
-      if (stateContainer) stateContainer.style.display = 'none';
-      if (cardEl) cardEl.style.display = 'block';
-
-      currentInvoiceCode = order.invoiceCode || key || '';
-      invoiceCodeEl.textContent = currentInvoiceCode || '-';
+      invoiceCodeEl.textContent = order.invoiceCode || key || '-';
       invoiceDateEl.textContent = order.timestamp ? new Date(order.timestamp).toLocaleString('en-US') : new Date().toLocaleString('en-US');
 
       custName.textContent = order.name || '-';
@@ -577,142 +543,56 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           calculatedSubtotal += lineTotal;
 
-          const tr = document.createElement('tr');
-
-          // Cell 1: Image + Product Name (safe DOM)
-          const tdProduct = document.createElement('td');
-          const prodFlex = document.createElement('div');
-          prodFlex.style.display = 'flex';
-          prodFlex.style.alignItems = 'center';
-          prodFlex.style.gap = '10px';
-
-          const imgEl = document.createElement('img');
-          imgEl.loading = 'lazy';
-          imgEl.src = sanitizeImageUrl(p.image);
-          imgEl.alt = p.name || 'منتج داندي';
-          imgEl.onerror = function() {
-            this.onerror = null;
-            this.src = DEFAULT_FALLBACK_IMAGE;
-          };
-
-          const titleEl = document.createElement('strong');
-          titleEl.style.color = 'var(--color-primary)';
-          titleEl.style.fontSize = '0.95rem';
-          titleEl.textContent = p.name || 'منتج داندي';
-
-          prodFlex.appendChild(imgEl);
-          prodFlex.appendChild(titleEl);
-          tdProduct.appendChild(prodFlex);
-
-          // Cell 2: Details (variants & quantity, safe DOM)
-          const tdDetails = document.createElement('td');
-          const varInfo = typeof getVariantsDisplayInfo === 'function'
-            ? getVariantsDisplayInfo(p)
-            : (p.selectedVariant && p.selectedVariant.name ? { count: 1, label: 'الرائحة', text: p.selectedVariant.name } : null);
-
-          if (varInfo && varInfo.text && String(varInfo.text).trim() !== '' && varInfo.text !== 'undefined') {
-            const varWrap = document.createElement('div');
-            varWrap.style.display = 'inline-flex';
-            varWrap.style.alignItems = 'center';
-            varWrap.style.gap = '6px';
-            varWrap.style.fontSize = '0.88rem';
-            varWrap.style.color = 'var(--color-rose-kiss-500, #fe5d9f)';
-            varWrap.style.fontWeight = '600';
-
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-spray-can';
-            icon.style.fontSize = '0.75rem';
-            varWrap.appendChild(icon);
-
-            const spanText = document.createElement('span');
-            spanText.appendChild(document.createTextNode((varInfo.label || 'الرائحة') + ': '));
-            const strongVar = document.createElement('strong');
-            strongVar.textContent = String(varInfo.text);
-            spanText.appendChild(strongVar);
-            spanText.appendChild(document.createTextNode(' × ' + quantity));
-            varWrap.appendChild(spanText);
-
-            tdDetails.appendChild(varWrap);
-          } else {
-            const qtySpan = document.createElement('span');
-            qtySpan.style.fontSize = '0.88rem';
-            qtySpan.style.color = 'var(--color-muted)';
-            qtySpan.style.fontWeight = '600';
-            qtySpan.textContent = '× ' + quantity;
-            tdDetails.appendChild(qtySpan);
-          }
-
-          if (p.isCollection && Array.isArray(p.items) && p.items.length > 0) {
-            const colList = document.createElement('div');
-            colList.style.marginTop = '6px';
-            colList.style.fontSize = '0.78rem';
-            colList.style.color = 'var(--color-muted)';
-            p.items.forEach(sub => {
-              const subRow = document.createElement('div');
-              const subName = sub.productName || sub.name || '';
-              const subVar = sub.variantName ? ' (' + sub.variantName + ')' : '';
-              subRow.textContent = '• ' + subName + subVar;
-              colList.appendChild(subRow);
-            });
-            tdDetails.appendChild(colList);
-          }
-
-          // Cell 3: Price Total
-          const tdPrice = document.createElement('td');
-          tdPrice.style.textAlign = 'left';
-          tdPrice.style.fontWeight = '800';
-          tdPrice.style.color = 'var(--color-rose-kiss-500, #fe5d9f)';
-          tdPrice.style.whiteSpace = 'nowrap';
-
+          let displayPriceText = lineTotal.toFixed(0) + " ج.م";
           if (p.discount && typeof p.lineTotal !== 'number') {
             const price = parseFloat(p.price) || 0;
             const discountAmount = (price * parseFloat(p.discount)) / 100;
             const finalPrice = price - discountAmount;
-            tdPrice.appendChild(document.createTextNode((finalPrice * quantity).toFixed(0) + ' ج.م '));
-            const crossed = document.createElement('span');
-            crossed.className = 'price-crossed';
-            crossed.textContent = (price * quantity).toFixed(0);
-            tdPrice.appendChild(crossed);
-          } else {
-            tdPrice.textContent = lineTotal.toFixed(0) + ' ج.م';
+            displayPriceText = `${(finalPrice * quantity).toFixed(0)} ج.م <span class="price-crossed">${(price * quantity).toFixed(0)}</span>`;
           }
 
-          tr.appendChild(tdProduct);
-          tr.appendChild(tdDetails);
-          tr.appendChild(tdPrice);
+          // استخراج الرائحة حصراً من snapshot المحفوظ داخل order.products
+          const varInfo = typeof getVariantsDisplayInfo === 'function'
+            ? getVariantsDisplayInfo(p)
+            : (p.selectedVariant && p.selectedVariant.name ? { count: 1, label: 'الرائحة', text: p.selectedVariant.name } : null);
+
+          let detailsHtml = '';
+          if (varInfo && varInfo.text && String(varInfo.text).trim() !== '' && varInfo.text !== 'undefined') {
+            detailsHtml = `
+              <div style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--color-rose-kiss-500, #fe5d9f); font-weight:600;">
+                <i class="fas fa-spray-can" style="font-size:0.75rem;"></i>
+                <span>${varInfo.label}: <strong>${varInfo.text}</strong> × ${quantity}</span>
+              </div>
+            `;
+          } else {
+            detailsHtml = `
+              <span style="font-size:0.88rem; color:var(--color-muted); font-weight:600;">× ${quantity}</span>
+            `;
+          }
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img loading="lazy" src="${p.image}" alt="${p.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+                <strong style="color:var(--color-primary); font-size:0.95rem;">${p.name}</strong>
+              </div>
+            </td>
+            <td>
+              ${detailsHtml}
+            </td>
+            <td style="text-align: left; font-weight:800; color:var(--color-rose-kiss-500, #fe5d9f); white-space:nowrap;">${displayPriceText}</td>
+          `;
           itemsBody.appendChild(tr);
         });
 
-        const rawCoupon = order.coupon && typeof order.coupon === 'object' && !Array.isArray(order.coupon)
-          ? order.coupon
-          : null;
-        const couponCode = rawCoupon && typeof rawCoupon.code === 'string' && rawCoupon.code.trim()
-          ? rawCoupon.code.trim().toUpperCase()
-          : '';
-        const couponDiscountVal = rawCoupon && Number.isFinite(Number(rawCoupon.discountAmount)) && Number(rawCoupon.discountAmount) > 0
-          ? Math.round(Number(rawCoupon.discountAmount) * 100) / 100
-          : 0;
-
         const subtotalVal = order.subtotal !== undefined ? parseFloat(order.subtotal) : calculatedSubtotal;
         const shippingVal = order.shippingFee !== undefined ? parseFloat(order.shippingFee) : 0;
-        const totalVal = order.totalAmount !== undefined
-          ? parseFloat(order.totalAmount)
-          : Math.max(0, Math.round((subtotalVal - couponDiscountVal + shippingVal) * 100) / 100);
+        const totalVal = order.totalAmount !== undefined ? parseFloat(order.totalAmount) : (subtotalVal + shippingVal);
 
-        tableSubtotal.textContent = formatInvoiceEgp(subtotalVal) + " ج.م";
-        if (tableCouponRow && tableCouponLabel && tableCouponDiscount) {
-          if (couponCode && couponDiscountVal > 0) {
-            tableCouponLabel.textContent = "خصم الكوبون (" + couponCode + "):";
-            tableCouponDiscount.textContent = "-" + formatInvoiceEgp(couponDiscountVal) + " ج.م";
-            tableCouponRow.style.display = "table-row";
-          } else {
-            tableCouponRow.style.display = "none";
-            tableCouponLabel.textContent = "خصم الكوبون:";
-            tableCouponDiscount.textContent = "0 ج.م";
-          }
-        }
-        tableShipping.textContent = formatInvoiceEgp(shippingVal) + " ج.م";
-        tableGrandTotal.textContent = formatInvoiceEgp(totalVal) + " ج.م";
+        tableSubtotal.textContent = subtotalVal.toFixed(0) + " ج.م";
+        tableShipping.textContent = shippingVal.toFixed(0) + " ج.م";
+        tableGrandTotal.textContent = totalVal.toFixed(0) + " ج.م";
 
         // =========================================================================
         // إضافة حدث الشراء (Meta Pixel Purchase Event) عبر DandyMeta
@@ -723,10 +603,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           window.DandyMeta.trackPurchase(order);
         } else if (typeof fbq !== 'undefined') {
           const storageKey = 'meta_pixel_purchase_fired_' + transactionId;
-          const safeStorage = getSafeSessionStorage();
           let alreadyFired = false;
           try {
-            alreadyFired = Boolean(safeStorage && safeStorage.getItem(storageKey));
+            alreadyFired = Boolean(sessionStorage.getItem(storageKey));
           } catch(e) {}
 
           if (!alreadyFired) {
@@ -752,17 +631,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             });
 
             try {
-              if (safeStorage) {
-                safeStorage.setItem(storageKey, 'true');
-              }
+              sessionStorage.setItem(storageKey, 'true');
             } catch(e) {}
+            console.log('✅ Meta Pixel [Purchase] Event fired successfully for:', transactionId);
           }
         }
 
       } else {
-        itemsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--color-muted);padding:20px;">سلة المشتريات فارغة.</td></tr>';
+        itemsBody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--color-muted);padding:20px;">سلة المشتريات فارغة.</td></tr>';
         tableSubtotal.textContent = '0 ج.م';
-        if (tableCouponRow) tableCouponRow.style.display = 'none';
         tableShipping.textContent = '0 ج.م';
         tableGrandTotal.textContent = '0 ج.م';
       }
@@ -770,260 +647,78 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       setStatusBadge(order.status || 'New');
     }
 
-    function renderInvoiceStateCard(options) {
-      const stateContainer = document.getElementById('invoiceStateContainer');
-      const cardEl = document.getElementById('invoiceCard');
-      if (!stateContainer) return;
-
-      if (cardEl) {
-        cardEl.style.display = 'none';
-      }
-
-      const wrapper = document.createElement('div');
-      wrapper.style.textAlign = 'center';
-      wrapper.style.padding = '70px 24px';
-      wrapper.style.background = '#fff';
-      wrapper.style.border = '1px solid var(--border-light)';
-      wrapper.style.borderRadius = 'var(--border-radius-lg)';
-      wrapper.style.boxShadow = 'var(--shadow-sm)';
-      wrapper.style.maxWidth = '600px';
-      wrapper.style.margin = '0 auto';
-      wrapper.setAttribute('dir', 'rtl');
-
-      const icon = document.createElement('i');
-      icon.className = options.iconClass || 'fas fa-exclamation-circle';
-      icon.style.fontSize = '3.2rem';
-      icon.style.color = options.iconColor || 'var(--color-danger)';
-      icon.style.marginBottom = '16px';
-      wrapper.appendChild(icon);
-
-      const h2 = document.createElement('h2');
-      h2.style.margin = '0 0 10px';
-      h2.style.fontWeight = '800';
-      h2.style.color = 'var(--color-primary)';
-      h2.textContent = options.title || 'تعذر عرض الفاتورة';
-      wrapper.appendChild(h2);
-
-      const p = document.createElement('p');
-      p.style.color = 'var(--color-muted)';
-      p.style.lineHeight = '1.7';
-      p.style.margin = '0 auto 22px';
-      p.style.maxWidth = '460px';
-      p.textContent = options.message || '';
-      wrapper.appendChild(p);
-
-      const actionsRow = document.createElement('div');
-      actionsRow.style.display = 'flex';
-      actionsRow.style.justifyContent = 'center';
-      actionsRow.style.flexWrap = 'wrap';
-      actionsRow.style.gap = '12px';
-
-      if (options.onRetry) {
-        const retryBtn = document.createElement('button');
-        retryBtn.type = 'button';
-        retryBtn.id = 'btnRetryLoadInvoice';
-        retryBtn.className = 'i-btn i-btn-print';
-        retryBtn.innerHTML = '<i class="fas fa-redo"></i> إعادة المحاولة';
-        retryBtn.addEventListener('click', options.onRetry);
-        actionsRow.appendChild(retryBtn);
-      }
-
-      if (options.trackHref) {
-        const trackLink = document.createElement('a');
-        trackLink.href = options.trackHref;
-        trackLink.id = 'legacyTrackRedirectLink';
-        trackLink.className = 'i-btn i-btn-wp';
-        trackLink.style.textDecoration = 'none';
-        trackLink.innerHTML = '<i class="fas fa-truck"></i> الانتقال إلى تتبع الطلب';
-        actionsRow.appendChild(trackLink);
-      }
-
-      const homeLink = document.createElement('a');
-      homeLink.href = '/';
-      homeLink.className = 'i-btn';
-      homeLink.style.textDecoration = 'none';
-      homeLink.style.background = '#f3f4f6';
-      homeLink.style.color = 'var(--color-primary)';
-      homeLink.textContent = 'العودة للرئيسية';
-      actionsRow.appendChild(homeLink);
-
-      wrapper.appendChild(actionsRow);
-      stateContainer.innerHTML = '';
-      stateContainer.appendChild(wrapper);
-      stateContainer.style.display = 'block';
+    function orderError() {
+      document.getElementById('invoiceCard').innerHTML = `
+        <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid var(--border-light); border-radius:var(--border-radius-lg); box-shadow:var(--shadow-sm); max-width:600px; margin:0 auto;" dir="rtl">
+          <i class="fas fa-exclamation-circle" style="font-size:3.5rem; color:var(--color-danger); margin-bottom:16px;"></i>
+          <h2 style="font-family:'Space Grotesk', sans-serif;">الفاتورة غير موجودة</h2>
+          <p style="color:var(--color-muted); margin-top:8px;">يرجى التحقق من كود الفاتورة أو التواصل مع خدمة العملاء.</p>
+          <a href="/" class="btn-checkout-primary" style="margin-top:20px; border-radius:99px; padding:12px 24px; text-decoration:none;">العودة للرئيسية</a>
+        </div>
+      `;
     }
 
-    function orderError(customTitle, customMessage, onRetry) {
-      renderInvoiceStateCard({
-        iconClass: onRetry ? 'fas fa-clock' : 'fas fa-exclamation-circle',
-        iconColor: onRetry ? '#d97706' : 'var(--color-danger)',
-        title: customTitle || 'الفاتورة غير موجودة',
-        message: customMessage || 'يرجى التحقق من رابط الفاتورة أو تتبع طلبك باستخدام كود الفاتورة ورقم الهاتف.',
-        trackHref: '/track-order',
-        onRetry: onRetry || null
-      });
-    }
-
-    let activeInvoiceTokenInMemory = null;
-    const rejectedInvoiceTokens = new Set();
-
-    function getSafeSessionStorage() {
-      const flow = window.DandyOrderFlow;
-      if (flow && typeof flow.getSafeSessionStorage === 'function') {
-        return flow.getSafeSessionStorage(window);
-      }
-      try {
-        return window.sessionStorage || null;
-      } catch (_) {
-        return null;
+    // Support secure one-click direct access via URL fragment (#access={token})
+    let hashToken = null;
+    const currentHash = window.location.hash ? window.location.hash.substring(1) : '';
+    if (currentHash) {
+      if (currentHash.includes('=')) {
+        const hashParams = new URLSearchParams(currentHash);
+        hashToken = hashParams.get('access') || hashParams.get('token');
+      } else if (currentHash.length >= 32) {
+        hashToken = currentHash;
       }
     }
 
-    function stripInvoiceHashFromUrl() {
-      if (!window.location.hash) return;
+    if (hashToken) {
+      // Immediately strip the token from URL history to prevent exposure in referrers or shared links
       try {
         history.replaceState(null, '', window.location.pathname + window.location.search);
-      } catch (_) {}
-    }
+      } catch (e) {}
 
-    async function loadInvoiceWithToken(accessToken, tokenResolution) {
-      const flow = window.DandyOrderFlow;
-      const candidateToken = accessToken || activeInvoiceTokenInMemory;
-      if (!candidateToken || rejectedInvoiceTokens.has(candidateToken)) {
-        activeInvoiceTokenInMemory = null;
-        orderError(
-          'رابط الفاتورة غير صالح أو انتهت صلاحيته',
-          'لم نتمكن من التحقق من رابط الفاتورة. يمكنكِ مراجعة الرابط المرسل إلى بريدكِ الإلكتروني أو متابعة حالة الطلب عبر صفحة تتبع الطلب.',
-          null
-        );
-        return;
-      }
-
-      activeInvoiceTokenInMemory = candidateToken;
-      const effectiveToken = activeInvoiceTokenInMemory;
-      let res = null;
-      let data = {};
-      let networkError = false;
-
-      try {
-        res = await fetch('/api/public-invoice', {
-          method: 'POST',
-          cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ access: effectiveToken })
-        });
-        data = await res.json().catch(() => ({}));
-      } catch (_) {
-        networkError = true;
-      }
-
-      const outcome = flow
-        ? flow.classifyPublicInvoiceResponse({
-            ok: Boolean(res && res.ok),
-            status: res ? res.status : 0,
-            data,
-            networkError
-          })
-        : {
-            action: (res && res.ok && data && data.success && data.order) ? 'RENDER_INVOICE' : 'INVALID_OR_NOT_FOUND',
-            order: data && data.order,
-            clearSessionToken: Boolean(res && res.status === 404),
-            stripHash: Boolean(res && res.status === 404),
-            showRetry: !res || res.status !== 404,
-            title: 'تعذر تحميل الفاتورة',
-            message: 'يرجى المحاولة مرة أخرى.'
-          };
-
-      if (outcome.action === 'RENDER_INVOICE' && outcome.order) {
-        drawOrder(outcome.order, outcome.order.orderId || outcome.order.invoiceCode);
-        if (tokenResolution && tokenResolution.stripHashAfterRender) {
-          stripInvoiceHashFromUrl();
+      fetch('/api/public-invoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ access: hashToken })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success && data.order) {
+          drawOrder(data.order, data.order.orderId || data.order.invoiceCode);
+        } else {
+          orderError();
         }
-        return;
-      }
-
-      if (outcome.clearSessionToken) {
-        activeInvoiceTokenInMemory = null;
-        rejectedInvoiceTokens.add(effectiveToken);
-        if (flow) {
-          flow.clearInvoiceSessionToken(getSafeSessionStorage());
-        }
-      }
-
-      if (outcome.stripHash || outcome.clearSessionToken) {
-        stripInvoiceHashFromUrl();
-      }
-
-      orderError(
-        outcome.title,
-        outcome.message,
-        outcome.showRetry ? () => loadInvoiceWithToken(effectiveToken, tokenResolution) : null
-      );
-    }
-
-    (function bootstrapInvoicePage() {
-      const flow = window.DandyOrderFlow;
-      const safeStorage = getSafeSessionStorage();
-      const tokenResolution = flow
-        ? flow.resolveInvoiceAccessToken(window.location.hash, safeStorage)
-        : {
-            token: null,
-            source: 'none',
-            persisted: false,
-            shouldStripHash: false,
-            stripHashAfterRender: false
-          };
-
-      if (tokenResolution.shouldStripHash) {
-        stripInvoiceHashFromUrl();
-      }
-
-      if (tokenResolution.token) {
-        loadInvoiceWithToken(tokenResolution.token, tokenResolution);
-        return;
-      }
-
-      // Legacy URL handling: NEVER read Firebase RTDB directly; NEVER pass phone in URL
-      if (invoiceParam && invoiceParam.trim()) {
-        const cleanCode = invoiceParam.trim().toUpperCase();
-        renderInvoiceStateCard({
-          iconClass: 'fas fa-shield-alt',
-          iconColor: 'var(--color-rose-kiss-500, #fe5d9f)',
-          title: 'تم تحديث نظام حماية الفواتير',
-          message:
-            'للحفاظ على خصوصية بياناتكِ، تتطلب روابط الفواتير القديمة إدخال كود الطلب (' +
-            cleanCode +
-            ') ورقم الهاتف للتحقق عبر صفحة تتبع الطلب.',
-          trackHref: '/track-order?code=' + encodeURIComponent(cleanCode)
-        });
-        return;
-      }
-
-      if (idParam && idParam.trim()) {
-        renderInvoiceStateCard({
-          iconClass: 'fas fa-shield-alt',
-          iconColor: 'var(--color-rose-kiss-500, #fe5d9f)',
-          title: 'الرابط القديم غير متاح للعرض المباشر',
-          message:
-            'لحماية بيانات الطلبات، لم يعد عرض الفاتورة متاحاً عبر معرف الطلب المباشر. يرجى استخدام رابط الفاتورة المرسل لبريدكِ الإلكتروني أو صفحة تتبع الطلب.',
-          trackHref: '/track-order'
-        });
-        return;
-      }
-
+      })
+      .catch(err => {
+        console.error('Invoice token resolution error:', err);
+        orderError();
+      });
+    } else if (idParam) {
+      const ref = db.ref('orders/' + idParam);
+      ref.on('value', snap => {
+        if(snap.exists()) drawOrder(snap.val(), idParam);
+        else orderError();
+      });
+    } else if (invoiceParam) {
+      const query = db.ref('orders').orderByChild('invoiceCode').equalTo(invoiceParam);
+      query.on('value', snap => {
+        if (snap.exists()) {
+          let matched = false;
+          snap.forEach(child => {
+            if(!matched) { drawOrder(child.val(), child.key); matched = true; }
+          });
+        } else orderError();
+      });
+    } else {
       orderError();
-    })();
+    }
 
     document.getElementById('print-btn')?.addEventListener('click', () => window.print());
 
     document.getElementById('share-whatsapp')?.addEventListener('click', () => {
-      const safeCode = currentInvoiceCode || invoiceCodeEl.textContent || '';
-      const trackingUrl = safeCode
-        ? `${window.location.origin}/track-order?code=${encodeURIComponent(safeCode)}`
-        : `${window.location.origin}/track-order`;
-      const wpInquiry = `مرحباً، أود الاستعلام عن حالة شحن طلب Dandy الخاص بي:\n- كود الفاتورة: ${safeCode}\n- العميل: ${custName.textContent}\n- الحالة الحالية: ${statusBadge.textContent}\n- رابط التتبع: ${trackingUrl}`;
+      const wpInquiry = `مرحباً، أود الاستعلام عن حالة شحن طلب Dandy الخاص بي:\n- كود الفاتورة: ${invoiceCodeEl.textContent}\n- العميل: ${custName.textContent}\n- الحالة الحالية: ${statusBadge.textContent}\n- رابط التتبع: ${window.location.href}`;
       window.open(`https://wa.me/201038941005?text=${encodeURIComponent(wpInquiry)}`, '_blank');
     });
   </script>

@@ -271,37 +271,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 
   <script is:inline>
-    function escapeBlogHtml(str) {
-      if (str == null) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function getSafeBlogAuth() {
-      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
-      if (window.auth) return window.auth;
-      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
-    }
-    function getSafeBlogFirestore() {
-      if (typeof window.getSafeFirebaseFirestore === 'function') return window.getSafeFirebaseFirestore();
-      if (window.firestore) return window.firestore;
-      try { return (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null; } catch (_) { return null; }
-    }
-
-    const auth = getSafeBlogAuth();
-    const db = getSafeBlogFirestore();
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    const db = window.firestore || (typeof firebase !== 'undefined' ? firebase.firestore() : null);
 
     async function logAdminAction(actionText) {
       try {
-        const a = getSafeBlogAuth();
-        const fs = getSafeBlogFirestore();
-        const user = a ? a.currentUser : null;
-        if (!fs) return;
-        await fs.collection('change_logs').add({
+        const user = firebase.auth().currentUser;
+        await firebase.firestore().collection('change_logs').add({
           adminEmail: user ? user.email : 'غير معروف',
           action: actionText,
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -376,13 +352,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         window.location.replace('/');
         return;
       }
-      if (user.emailVerified !== true) {
-        const a = getSafeBlogAuth();
-        Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
-          window.location.replace('/login?reason=email_not_verified');
-        });
-        return;
-      }
       loadArticlesAdmin();
     }
 
@@ -392,7 +361,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       let attempts = 0;
       const pollInterval = setInterval(() => {
         attempts++;
-        const a = getSafeBlogAuth();
+        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
         if (a && typeof a.onAuthStateChanged === 'function') {
           clearInterval(pollInterval);
           a.onAuthStateChanged(handleBlogAuth);
@@ -437,20 +406,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           }
 
           const tr = document.createElement('tr');
-          const safeDocId = escapeBlogHtml(doc.id);
           tr.innerHTML = `
-            <td style="font-weight:700;color:var(--color-primary);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeBlogHtml(d.title || '')}</td>
-            <td><span style="background:var(--color-gold-cream, #fdf5e6);padding:4px 10px;border-radius:99px;font-size:0.8rem;">${escapeBlogHtml(d.category || 'العناية')}</span></td>
+            <td style="font-weight:700;color:var(--color-primary);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.title || ''}</td>
+            <td><span style="background:var(--color-gold-cream, #fdf5e6);padding:4px 10px;border-radius:99px;font-size:0.8rem;">${d.category || 'العناية'}</span></td>
             <td>${statusBadge}</td>
-            <td style="white-space:nowrap;font-size:0.85rem;">${escapeBlogHtml(dateStr)}</td>
+            <td style="white-space:nowrap;font-size:0.85rem;">${dateStr}</td>
             <td style="text-align:center;white-space:nowrap;">
-              <a href="${escapeBlogHtml(postLink)}" target="_blank" class="action-badge-btn" style="background:#f1f5f9;color:#475569;" title="معاينة المقال"><i class="fas fa-external-link-alt"></i></a>
-              <button type="button" class="action-badge-btn badge-btn-edit" data-article-id="${safeDocId}"><i class="fas fa-edit"></i> تعديل</button>
-              <button type="button" class="action-badge-btn badge-btn-del" data-article-id="${safeDocId}"><i class="fas fa-trash"></i> حذف</button>
+              <a href="${postLink}" target="_blank" class="action-badge-btn" style="background:#f1f5f9;color:#475569;" title="معاينة المقال"><i class="fas fa-external-link-alt"></i></a>
+              <button class="action-badge-btn badge-btn-edit" onclick="startEdit('${doc.id}')"><i class="fas fa-edit"></i> تعديل</button>
+              <button class="action-badge-btn badge-btn-del" onclick="deleteArticle('${doc.id}')"><i class="fas fa-trash"></i> حذف</button>
             </td>
           `;
-          tr.querySelector('.badge-btn-edit')?.addEventListener('click', () => startEdit(doc.id));
-          tr.querySelector('.badge-btn-del')?.addEventListener('click', () => deleteArticle(doc.id));
           articlesTableBody.appendChild(tr);
         });
 

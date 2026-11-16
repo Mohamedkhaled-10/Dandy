@@ -7,8 +7,6 @@ const navItems = [
   { href: '/dashboard-order', label: 'الطلبات', icon: 'fa-shopping-bag' },
   { href: '/dashboard-product', label: 'المنتجات', icon: 'fa-boxes' },
   { href: '/dashboard-pink-friday', label: 'Pink Friday', icon: 'fa-tags' },
-  { href: '/dashboard-coupons', label: 'الكوبونات', icon: 'fa-ticket-alt' },
-  { href: '/dashboard-coupon-analytics', label: 'تحليلات الكوبونات', icon: 'fa-chart-pie' },
   { href: '/dashboard-blog', label: 'المدونة', icon: 'fa-newspaper' },
   { href: '/dashboard-index', label: 'تخصيص الواجهة', icon: 'fa-sliders-h' },
   { href: '/statues', label: 'الإحصائيات', icon: 'fa-chart-line' },
@@ -70,10 +68,7 @@ function isItemActive(itemHref: string) {
 
 <script is:inline>
   document.getElementById('dashGlobalLogoutBtn')?.addEventListener('click', async () => {
-    let auth = typeof window.getSafeFirebaseAuth === 'function' ? window.getSafeFirebaseAuth() : (window.auth || null);
-    if (!auth && typeof firebase !== 'undefined' && typeof firebase.auth === 'function') {
-      try { auth = firebase.auth(); } catch (_) { auth = null; }
-    }
+    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
     if (auth) {
       try {
         await auth.signOut();
@@ -143,7 +138,6 @@ function isItemActive(itemHref: string) {
 
   .admin-nav-tabs-wrap {
     flex: 1;
-    min-width: 0;
     overflow-x: auto;
     scrollbar-width: none;
     display: flex;

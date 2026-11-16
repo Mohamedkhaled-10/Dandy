@@ -470,15 +470,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Dynamic resolution of Firebase Auth and Firestore to avoid stale null references
     function getFirebaseAuth() {
-      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
-      if (window.auth) return window.auth;
-      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
+      return window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
     }
 
     function getFirebaseDb() {
-      if (typeof window.getSafeFirebaseFirestore === 'function') return window.getSafeFirebaseFirestore();
-      if (window.firestore) return window.firestore;
-      try { return (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null; } catch (_) { return null; }
+      return window.firestore || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
     }
 
     // Strict Admin Auth Guard
@@ -493,13 +489,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
         window.location.replace('/');
-        return;
-      }
-      if (user.emailVerified !== true) {
-        const a = getFirebaseAuth();
-        Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
-          window.location.replace('/login?reason=email_not_verified');
-        });
         return;
       }
       if (operatorCard) operatorCard.style.display = 'inline-flex';
@@ -624,12 +613,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           });
         }
 
-        if (!currentUser || !currentUser.email || currentUser.email.toLowerCase() !== 'admin@dandy.com' || currentUser.emailVerified !== true) {
+        if (!currentUser) {
           if (retryBtn) retryBtn.disabled = false;
           diagBody.innerHTML = `
             <div class="diag-card-item" style="border-color: #fca5a5; background: #fef2f2; color: #991b1b; padding: 16px;">
-              <div style="font-weight: 800; margin-bottom: 6px;"><i class="fas fa-exclamation-triangle"></i> جلسة الإدارة غير صالحة أو غير مفعّلة</div>
-              <p style="margin: 0 0 10px 0; font-size: 0.85rem;">يجب تسجيل الدخول كمسؤول النظام (admin@dandy.com) ببريد إلكتروني مفعّل لتشغيل هذا الفحص.</p>
+              <div style="font-weight: 800; margin-bottom: 6px;"><i class="fas fa-exclamation-triangle"></i> لم يتم العثور على جلسة تسجيل دخول نشطة</div>
+              <p style="margin: 0 0 10px 0; font-size: 0.85rem;">يجب تسجيل الدخول كمسؤول النظام (admin@dandy.com) لتشغيل هذا الفحص.</p>
               <a href="/login" class="diag-btn-secondary" style="display: inline-block; text-decoration: none; padding: 6px 14px; font-size: 0.82rem;">الانتقال لصفحة تسجيل الدخول</a>
             </div>
           `;
