@@ -63,7 +63,7 @@ export type PinkFridayCampaign = PinkFridayCampaignData;
 
 export type CampaignStatus = 'disabled' | 'upcoming' | 'active' | 'ended';
 
-const RTDB_URL = 'https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app';
+import { getAdminDb } from './firebase-admin.ts';
 
 // Official Baseline Campaign for 2026 as mandated
 export const INITIAL_2026_CAMPAIGN: PinkFridayCampaignData = {
@@ -89,64 +89,157 @@ let cachedPublishedCampaign: PinkFridayCampaignData | null = null;
 let lastCacheTime = 0;
 const CACHE_TTL_MS = 10 * 1000; // 10s memory cache for fast SSR
 
+export function resetPinkFridayCampaignCacheForTests(): void {
+  cachedPublishedCampaign = null;
+  lastCacheTime = 0;
+}
+
 /**
- * Fetch the currently published campaign from Firebase Realtime Database.
- * Client-facing routes consume this snapshot. Draft edits never leak here.
+ * Strips any admin/draft/internal metadata (draft, meta, updatedBy, publishedBy, updatedAt)
+ * and keeps strictly the fields needed for public campaign display and server pricing.
  */
-export async function getPublishedPinkFridayCampaign(forceFresh = false): Promise<PinkFridayCampaignData> {
+export function sanitizePublishedPinkFridayCampaign(rawData: any): PinkFridayCampaignData {
+  if (!rawData || typeof rawData !== 'object' || (!rawData.id && !rawData.year)) {
+    return {
+      ...INITIAL_2026_CAMPAIGN,
+      offers: [...INITIAL_2026_CAMPAIGN.offers],
+      collections: [...(INITIAL_2026_CAMPAIGN.collections || [])],
+      visuals: { ...INITIAL_2026_CAMPAIGN.visuals }
+    };
+  }
+
+  const rawOffers = rawData.offers;
+  const offersList = Array.isArray(rawOffers)
+    ? rawOffers
+    : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+
+  const sanitizedOffers: PinkFridayOffer[] = offersList
+    .filter((o: any) => o && typeof o === 'object' && o.productId)
+    .map((o: any) => ({
+      productId: String(o.productId),
+      expectedBasePrice: Number(o.expectedBasePrice) || 0,
+      discountPercentage: Number(o.discountPercentage) || 0,
+      campaignPrice: Number(o.campaignPrice) || 0,
+      active: o.active !== false,
+      ...(typeof o.badgeText === 'string' ? { badgeText: o.badgeText } : {}),
+      ...(o.allowWithGenericDiscount !== undefined
+        ? { allowWithGenericDiscount: Boolean(o.allowWithGenericDiscount) }
+        : {})
+    }));
+
+  const rawCollections = rawData.collections;
+  const collectionsList = Array.isArray(rawCollections)
+    ? rawCollections
+    : (rawCollections && typeof rawCollections === 'object' ? Object.values(rawCollections) : []);
+
+  const sanitizedCollections: PinkFridayCollection[] = collectionsList
+    .filter((c: any) => c && typeof c === 'object')
+    .map((col: any) => {
+      const rawItems = col.items;
+      const itemsList = Array.isArray(rawItems)
+        ? rawItems
+        : (rawItems && typeof rawItems === 'object' ? Object.values(rawItems) : []);
+
+      return {
+        id: String(col.id || ''),
+        name: typeof col.name === 'string' ? col.name : '',
+        description: typeof col.description === 'string' ? col.description : '',
+        coverImage: typeof col.coverImage === 'string' ? col.coverImage : '',
+        allowDuplicates: Boolean(col.allowDuplicates),
+        items: itemsList
+          .filter((it: any) => it && typeof it === 'object')
+          .map((it: any) => ({
+            collectionItemId: String(it.collectionItemId || ''),
+            productId: String(it.productId || ''),
+            ...(typeof it.defaultVariantId === 'string' ? { defaultVariantId: it.defaultVariantId } : {}),
+            ...(it.sortOrder !== undefined ? { sortOrder: Number(it.sortOrder) } : {})
+          })),
+        pricingType: col.pricingType === 'percentage' ? 'percentage' : 'package',
+        ...(col.packagePrice !== undefined ? { packagePrice: Number(col.packagePrice) } : {}),
+        ...(col.discountPercentage !== undefined ? { discountPercentage: Number(col.discountPercentage) } : {}),
+        ...(typeof col.badgeText === 'string' ? { badgeText: col.badgeText } : {}),
+        active: col.active !== false,
+        ...(col.allowWithGenericDiscount !== undefined
+          ? { allowWithGenericDiscount: Boolean(col.allowWithGenericDiscount) }
+          : {})
+      };
+    });
+
+  const rawVisuals = rawData.visuals && typeof rawData.visuals === 'object' ? rawData.visuals : {};
+  const sanitizedVisuals: PinkFridayVisuals = {
+    ...(INITIAL_2026_CAMPAIGN.visuals || {}),
+    ...(typeof rawVisuals.bannerImage === 'string' ? { bannerImage: rawVisuals.bannerImage } : {}),
+    ...(typeof rawVisuals.bannerPosition === 'string' ? { bannerPosition: rawVisuals.bannerPosition } : {}),
+    ...(typeof rawVisuals.ctaText === 'string' ? { ctaText: rawVisuals.ctaText } : {}),
+    ...(typeof rawVisuals.badgeText === 'string' ? { badgeText: rawVisuals.badgeText } : {}),
+    ...(typeof (rawVisuals as any).headline === 'string' ? { headline: (rawVisuals as any).headline } : {})
+  };
+
+  const resolvedYear = Number(rawData.year) || INITIAL_2026_CAMPAIGN.year;
+
+  return {
+    id: typeof rawData.id === 'string' && rawData.id.trim() ? rawData.id : `pink-friday-${resolvedYear}`,
+    year: resolvedYear,
+    title: typeof rawData.title === 'string' && rawData.title.trim() ? rawData.title : INITIAL_2026_CAMPAIGN.title,
+    subtitleAr:
+      typeof rawData.subtitleAr === 'string' && rawData.subtitleAr.trim()
+        ? rawData.subtitleAr
+        : INITIAL_2026_CAMPAIGN.subtitleAr,
+    timezone:
+      typeof rawData.timezone === 'string' && rawData.timezone.trim()
+        ? rawData.timezone
+        : INITIAL_2026_CAMPAIGN.timezone,
+    startAt: rawData.startAt || rawData.startDate || INITIAL_2026_CAMPAIGN.startAt,
+    endAt: rawData.endAt || rawData.endDate || INITIAL_2026_CAMPAIGN.endAt,
+    enabled: typeof rawData.enabled === 'boolean' ? rawData.enabled : INITIAL_2026_CAMPAIGN.enabled,
+    offers: sanitizedOffers,
+    collections: sanitizedCollections,
+    visuals: sanitizedVisuals
+  };
+}
+
+/**
+ * Fetch the currently published campaign strictly via Firebase Admin SDK (server-only).
+ * Never reads settings via unauthenticated REST and never exposes draft, meta, or admin emails.
+ */
+export async function getPublishedPinkFridayCampaign(
+  forceFresh = false,
+  options?: { adminDb?: any }
+): Promise<PinkFridayCampaignData> {
   const now = Date.now();
-  if (!forceFresh && cachedPublishedCampaign && (now - lastCacheTime) < CACHE_TTL_MS) {
+  const useCache = !forceFresh && !options?.adminDb;
+  if (useCache && cachedPublishedCampaign && (now - lastCacheTime) < CACHE_TTL_MS) {
     return cachedPublishedCampaign;
   }
 
   try {
-    const res = await fetch(`${RTDB_URL}/settings/pinkFriday/publishedActiveCampaign.json`, {
-      headers: { 'Accept': 'application/json' }
-    });
+    let adminDb = options?.adminDb || null;
+    if (!adminDb && process.env.FIREBASE_SERVICE_ACCOUNT) {
+      adminDb = getAdminDb();
+    }
 
-    if (res.ok) {
-      const data = await res.json();
+    if (adminDb && typeof adminDb.ref === 'function') {
+      const snap = await adminDb.ref('settings/pinkFriday/publishedActiveCampaign').once('value');
+      const data = snap?.val?.();
       if (data && typeof data === 'object' && (data.id || data.year)) {
-        const rawOffers = data.offers;
-        const normalizedOffers = Array.isArray(rawOffers)
-          ? rawOffers
-          : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
-
-        const rawCollections = data.collections;
-        const collectionsList = Array.isArray(rawCollections)
-          ? rawCollections
-          : (rawCollections && typeof rawCollections === 'object' ? Object.values(rawCollections) : []);
-
-        const normalizedCollections = collectionsList.filter(Boolean).map((col: any) => ({
-          ...col,
-          allowDuplicates: Boolean(col.allowDuplicates),
-          active: col.active !== false,
-          items: Array.isArray(col.items)
-            ? col.items
-            : (col.items && typeof col.items === 'object' ? Object.values(col.items) : [])
-        }));
-
-        cachedPublishedCampaign = {
-          ...INITIAL_2026_CAMPAIGN,
-          ...data,
-          id: data.id || `pink-friday-${data.year || 2026}`,
-          startAt: data.startAt || data.startDate || INITIAL_2026_CAMPAIGN.startAt,
-          endAt: data.endAt || data.endDate || INITIAL_2026_CAMPAIGN.endAt,
-          offers: normalizedOffers,
-          collections: normalizedCollections
-        };
-        lastCacheTime = now;
-        return cachedPublishedCampaign;
+        const sanitized = sanitizePublishedPinkFridayCampaign(data);
+        if (!options?.adminDb) {
+          cachedPublishedCampaign = sanitized;
+          lastCacheTime = now;
+        }
+        return sanitized;
       }
     }
   } catch (err) {
-    console.warn('[PinkFriday] Could not fetch live published campaign from RTDB:', err);
+    console.warn('[PinkFriday] Could not fetch live published campaign via Admin SDK:', err);
   }
 
-  // Fallback to initial 2026 baseline if not yet saved in database
-  cachedPublishedCampaign = INITIAL_2026_CAMPAIGN;
-  lastCacheTime = now;
-  return INITIAL_2026_CAMPAIGN;
+  const fallback = sanitizePublishedPinkFridayCampaign(null);
+  if (!options?.adminDb) {
+    cachedPublishedCampaign = fallback;
+    lastCacheTime = now;
+  }
+  return fallback;
 }
 
 /**

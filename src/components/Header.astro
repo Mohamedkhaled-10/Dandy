@@ -2,6 +2,7 @@
 // Header.astro
 // Phase 02: Modern Minimal E-commerce Header & Navigation
 import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../utils/pink-friday-server';
+import { FREE_SHIPPING_THRESHOLD_EGP } from '../config/store-policy';
 const publishedCampaign = await getPublishedPinkFridayCampaign();
 const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
 ---
@@ -28,13 +29,13 @@ const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
 </script>
 <div class="announce-bar" id="site-announce-bar">
   <div class="announce-track">
-    <span>Enjoy Free Shipping on orders above 2000 LE</span>
+    <span>Enjoy Free Shipping on orders above {FREE_SHIPPING_THRESHOLD_EGP} LE</span>
     <span>•</span>
-    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
+    <span>توصيل مجاني لجميع الطلبات فوق {FREE_SHIPPING_THRESHOLD_EGP} جنيه</span>
     <span>•</span>
-    <span>Enjoy Free Shipping on orders above 2000 LE</span>
+    <span>Enjoy Free Shipping on orders above {FREE_SHIPPING_THRESHOLD_EGP} LE</span>
     <span>•</span>
-    <span>توصيل مجاني لجميع الطلبات فوق 2000 جنيه</span>
+    <span>توصيل مجاني لجميع الطلبات فوق {FREE_SHIPPING_THRESHOLD_EGP} جنيه</span>
   </div>
 </div>
 

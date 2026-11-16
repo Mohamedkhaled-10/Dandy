@@ -8,6 +8,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   robots="noindex, nofollow"
 >
   <slot name="head" slot="head">
+    <script is:inline src="/assets/js/order-flow-helpers.js"></script>
     <style is:global>
       .account-page-wrapper {
         padding-top: 110px;
@@ -1026,6 +1027,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <!-- Tab 1: Orders Section -->
       <section id="panelOrders" class="account-tab-content active">
+        <div id="ordersActionErrorBanner" role="alert" aria-live="polite" style="display:none; margin-bottom:16px; padding:12px 16px; border-radius:10px; border:1px solid #fecdd3; background:#fff1f2; color:#9f1239; font-weight:700; font-size:0.88rem;"></div>
         <div id="ordersLoading" style="text-align:center; padding:40px;">
           <i class="fas fa-spinner fa-spin" style="color:var(--color-blush); font-size:2rem;"></i>
           <p style="margin-top:10px; color:var(--color-muted);">جاري تحميل سجل طلباتكِ...</p>
@@ -1249,6 +1251,51 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         loadOrders();
         loadAddresses();
         loadWishlist();
+
+        // ربط الطلبات القديمة بالبريد المفعّل بعد تحديث حالة التحقق وتجديد ID Token
+        if (window.DandyOrderFlow && typeof window.DandyOrderFlow.syncVerifiedCustomerOrdersLink === 'function') {
+          window.DandyOrderFlow.syncVerifiedCustomerOrdersLink({
+            user,
+            onLinkedOrders: () => loadOrders()
+          }).catch((linkErr) => {
+            console.warn('Verified orders link notice:', linkErr);
+          });
+        } else {
+          (async function linkVerifiedCustomerOrdersFallback() {
+            const linkSessionKey = 'dandy_orders_linked_' + user.uid;
+            try {
+              if (window.sessionStorage && window.sessionStorage.getItem(linkSessionKey) === '1') {
+                return;
+              }
+            } catch (e) {}
+
+            try {
+              if (user.emailVerified !== true && typeof user.reload === 'function') {
+                await user.reload();
+              }
+              if (user.emailVerified !== true) {
+                return;
+              }
+              const idToken = await user.getIdToken(true);
+              const linkRes = await fetch('/api/link-customer-orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+              });
+              const linkData = await linkRes.json().catch(() => ({}));
+              if (linkRes.ok && linkData.success) {
+                try {
+                  if (window.sessionStorage) window.sessionStorage.setItem(linkSessionKey, '1');
+                } catch (e) {}
+                if (Number(linkData.linkedCount) > 0) {
+                  loadOrders();
+                }
+              }
+            } catch (linkErr) {
+              console.warn('Verified orders link notice:', linkErr);
+            }
+          })();
+        }
       });
 
       // إعداد بيانات المستخدم والهيدر
@@ -1431,17 +1478,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
                       let reviewBtnHtml = '';
                       if (isDelivered && pId) {
+                        const realOrderId = String(order.id || '');
+                        const safeOrderId = escapeHtml(realOrderId).replace(/'/g, "\\'");
+                        const safeInvoiceCode = escapeHtml(invoiceCode).replace(/'/g, "\\'");
                         const existingReview = userProductReviews[pId];
                         if (existingReview) {
                           reviewBtnHtml = `
-                            <button type="button" class="btn-review-product has-review" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${escapeHtml(invoiceCode)}', '${escapeHtml(pImg).replace(/'/g, "\\'")}')" title="تعديل تقييمكِ">
+                            <button type="button" class="btn-review-product has-review" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${safeOrderId}', '${escapeHtml(pImg).replace(/'/g, "\\'")}', '${safeInvoiceCode}')" title="تعديل تقييمكِ">
                               <i class="fas fa-star" style="color: #f59e0b;"></i>
                               <span>عدّلي تقييمكِ (${existingReview.rating}★)</span>
                             </button>
                           `;
                         } else {
                           reviewBtnHtml = `
-                            <button type="button" class="btn-review-product" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${escapeHtml(invoiceCode)}', '${escapeHtml(pImg).replace(/'/g, "\\'")}')" title="تقييم هذا المنتج">
+                            <button type="button" class="btn-review-product" onclick="openReviewModal('${escapeHtml(pId)}', '${escapeHtml(pName).replace(/'/g, "\\'")}', '${safeOrderId}', '${escapeHtml(pImg).replace(/'/g, "\\'")}', '${safeInvoiceCode}')" title="تقييم هذا المنتج">
                               <i class="far fa-star"></i>
                               <span>قيّمي هذا المنتج</span>
                             </button>
@@ -1496,10 +1546,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               ${productsHtml}
 
               <div class="order-card-footer">
-                <a href="/invoice?invoice=${encodeURIComponent(invoiceCode)}" class="btn-order-action primary" target="_blank">
-                  <i class="fas fa-file-invoice"></i> عرض الفاتورة
-                </a>
-                <a href="/track-order?invoice=${encodeURIComponent(invoiceCode)}" class="btn-order-action secondary">
+                <button type="button" class="btn-order-action primary js-open-customer-invoice" data-order-id="${escapeHtml(String(order.id || ''))}">
+                  <i class="fas fa-file-invoice"></i> <span>عرض الفاتورة</span>
+                </button>
+                <a href="/track-order?code=${encodeURIComponent(invoiceCode)}" class="btn-order-action secondary">
                   <i class="fas fa-truck"></i> تتبع الطلب
                 </a>
               </div>
@@ -1516,6 +1566,76 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           emptyEl.style.display = 'block';
         }
       }
+
+      // فتح الفاتورة بأمان عبر /api/customer-invoice-access باستخدام توكن حساب العميل
+      document.getElementById('ordersContainer')?.addEventListener('click', async function (e) {
+        const btn = e.target && typeof e.target.closest === 'function'
+          ? e.target.closest('.js-open-customer-invoice')
+          : null;
+        if (!btn) return;
+
+        const errBanner = document.getElementById('ordersActionErrorBanner');
+        const showOrderActionError = (msg) => {
+          if (errBanner) {
+            errBanner.textContent = msg;
+            errBanner.style.display = 'block';
+            errBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        };
+        if (errBanner) {
+          errBanner.style.display = 'none';
+          errBanner.textContent = '';
+        }
+
+        if (!currentUser) {
+          showOrderActionError('انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مرة أخرى لفتح الفاتورة.');
+          return;
+        }
+
+        const orderId = (btn.getAttribute('data-order-id') || '').trim();
+        if (!orderId) {
+          showOrderActionError('تعذر تحديد معرف الطلب لفتح الفاتورة.');
+          return;
+        }
+
+        if (btn.disabled) return;
+        const origHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>جاري فتح الفاتورة...</span>';
+
+        try {
+          const idToken = await currentUser.getIdToken();
+          const res = await fetch('/api/customer-invoice-access', {
+            method: 'POST',
+            cache: 'no-store',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + idToken
+            },
+            body: JSON.stringify({ orderId })
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data || !data.success || !data.invoiceAccessToken) {
+            if (res.status === 401) {
+              throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى لفتح الفاتورة.');
+            }
+            if (res.status === 429) {
+              throw new Error('تم إرسال طلبات متكررة لفتح الفاتورة. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.');
+            }
+            if (res.status === 503) {
+              throw new Error('الخدمة غير متاحة مؤقتاً. يرجى المحاولة بعد قليل.');
+            }
+            throw new Error((data && data.message) || 'تعذر فتح الفاتورة حالياً. يرجى المحاولة مرة أخرى.');
+          }
+
+          window.location.href = '/invoice#access=' + encodeURIComponent(data.invoiceAccessToken);
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+          showOrderActionError((err && err.message) || 'تعذر فتح الفاتورة حالياً. يرجى المحاولة مرة أخرى.');
+        }
+      });
 
       // -------------------------------------------------------------
       // ب) العناوين المحفوظة (Addresses CRUD)
@@ -1936,7 +2056,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (descEl) descEl.textContent = labels[rating] || 'اضغطي على النجوم لاختيار التقييم';
       }
 
-      window.openReviewModal = function(productId, productName, orderId, productImg) {
+      window.openReviewModal = function(productId, productName, orderId, productImg, invoiceCode) {
         activeReviewProductId = productId;
         activeReviewOrderId = orderId;
 
@@ -1950,7 +2070,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (nameEl) nameEl.textContent = productName || 'منتج داندي';
         if (thumbEl) thumbEl.src = productImg || '/assets/images/logo.png';
-        if (orderRefEl) orderRefEl.textContent = 'طلب رقم: #' + orderId;
+        if (orderRefEl) orderRefEl.textContent = 'طلب رقم: #' + (invoiceCode || orderId);
 
         const existing = userProductReviews[productId];
         if (existing) {

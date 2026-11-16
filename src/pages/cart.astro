@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPublicStoreShippingPolicy } from '../config/store-policy';
 const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+const publicStoreShippingPolicy = getPublicStoreShippingPolicy();
+const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).replace(/</g, '\\u003c');
 ---
 
 <BaseLayout
@@ -11,6 +14,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 >
   <slot name="head" slot="head">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script is:inline src="/assets/js/order-flow-helpers.js"></script>
+    <script is:inline src="/assets/js/cart-shipping-progress.js"></script>
     <meta name="robots" content="noindex, nofollow" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://dandy-ebon.vercel.app/cart" />
@@ -716,6 +721,339 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       .trust-checkout-tag i {
         color: #059669;
       }
+
+      /* Free-Shipping Progress Card & Summary Clarity (Group 2A.4) */
+      .free-shipping-progress-card {
+        background: var(--color-surface);
+        border: 1.5px solid var(--border-blush);
+        border-radius: var(--border-radius-md);
+        padding: 16px 20px;
+        margin-bottom: 22px;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+        box-sizing: border-box;
+      }
+
+      .free-shipping-progress-card[data-state="below_threshold"] {
+        background: var(--color-blush-soft);
+        border-color: var(--border-blush);
+      }
+
+      .free-shipping-progress-card[data-state="at_threshold"] {
+        background: var(--color-warning-soft);
+        border-color: #fcd34d;
+      }
+
+      .free-shipping-progress-card[data-state="unlocked"] {
+        background: var(--color-success-soft);
+        border-color: #bbf7d0;
+      }
+
+      .free-shipping-progress-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+
+      .free-shipping-title-wrap {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        flex: 1 1 260px;
+        min-width: 0;
+      }
+
+      .free-shipping-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.98rem;
+        background: #fff;
+        border: 1px solid var(--border-light);
+        color: var(--color-blush);
+      }
+
+      .free-shipping-progress-card[data-state="at_threshold"] .free-shipping-icon {
+        color: var(--color-warning);
+        border-color: #fde68a;
+      }
+
+      .free-shipping-progress-card[data-state="unlocked"] .free-shipping-icon {
+        color: var(--color-success);
+        border-color: #bbf7d0;
+      }
+
+      .free-shipping-title {
+        font-size: 0.96rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        line-height: 1.4;
+        margin-bottom: 3px;
+      }
+
+      .free-shipping-subtitle {
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+        line-height: 1.55;
+        word-break: break-word;
+      }
+
+      .free-shipping-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 99px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+        background: #fff;
+        border: 1px solid var(--border-blush);
+        color: var(--color-blush);
+        flex-shrink: 0;
+      }
+
+      .free-shipping-progress-card[data-state="at_threshold"] .free-shipping-badge {
+        color: var(--color-warning);
+        border-color: #fcd34d;
+      }
+
+      .free-shipping-progress-card[data-state="unlocked"] .free-shipping-badge {
+        color: var(--color-success);
+        border-color: #86efac;
+      }
+
+      .free-shipping-track {
+        width: 100%;
+        height: 10px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+      }
+
+      .free-shipping-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 99px;
+        background: var(--color-blush);
+        transition: width 0.25s ease, background-color 0.2s ease;
+      }
+
+      .free-shipping-progress-card[data-state="at_threshold"] .free-shipping-fill {
+        background: var(--color-warning);
+      }
+
+      .free-shipping-progress-card[data-state="unlocked"] .free-shipping-fill {
+        background: var(--color-success);
+      }
+
+      .free-shipping-scale {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+        font-size: 0.76rem;
+        color: var(--color-muted);
+        font-weight: 600;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+      }
+
+      .summary-row-label {
+        color: var(--color-muted);
+        flex-shrink: 0;
+      }
+
+      .summary-row-value {
+        font-weight: 700;
+        color: var(--color-primary);
+        text-align: left;
+        word-break: break-word;
+      }
+
+      .summary-total-row {
+        border-top: 1px solid var(--border-light);
+        margin: 14px 0 10px;
+        padding-top: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .summary-total-hint {
+        font-size: 0.8rem;
+        color: var(--color-muted);
+        line-height: 1.5;
+        margin-bottom: 14px;
+      }
+
+      @media (max-width: 600px) {
+        .free-shipping-progress-card {
+          padding: 14px 14px;
+          margin-bottom: 18px;
+        }
+        .free-shipping-badge {
+          white-space: normal;
+        }
+        .summary-total-row strong {
+          font-size: 1.12rem !important;
+        }
+      }
+
+      /* Coupon Box Styling */
+      .coupon-box-card {
+        background: var(--color-surface-soft, #faf7f9);
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+        padding: 12px;
+        margin: 12px 0 14px;
+      }
+
+      .coupon-box-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin-bottom: 8px;
+      }
+
+      .coupon-box-label i {
+        color: var(--color-blush);
+      }
+
+      .coupon-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+      }
+
+      .coupon-input-row input {
+        flex: 1;
+        min-width: 0;
+        padding: 9px 11px;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        background: #ffffff;
+        color: var(--color-primary);
+        font-size: 0.88rem;
+        font-weight: 700;
+        font-family: inherit;
+        text-align: left;
+      }
+
+      .coupon-input-row input:focus {
+        outline: none;
+        border-color: var(--color-blush);
+        box-shadow: 0 0 0 3px rgba(254, 93, 159, 0.12);
+      }
+
+      .coupon-apply-btn {
+        padding: 0 14px;
+        min-height: 40px;
+        border-radius: 8px;
+        border: none;
+        background: var(--color-primary);
+        color: #ffffff;
+        font-size: 0.84rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: var(--transition-fast);
+      }
+
+      .coupon-apply-btn:hover:not(:disabled) {
+        background: var(--color-blush);
+      }
+
+      .coupon-apply-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .coupon-applied-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .coupon-remove-btn {
+        border: 1px solid #6ee7b7;
+        background: #ffffff;
+        color: #047857;
+        border-radius: 6px;
+        padding: 3px 9px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .coupon-remove-btn:hover {
+        background: #fef2f2;
+        border-color: #fecdd3;
+        color: #be123c;
+      }
+
+      .coupon-feedback {
+        margin-top: 8px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .coupon-feedback.is-success {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+      }
+
+      .coupon-feedback.is-error {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #9f1239;
+      }
+
+      .coupon-feedback.is-info {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+      }
     </style>
   </slot>
 
@@ -743,13 +1081,44 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       </div>
 
       <div class="info-bubbles-container" dir="rtl">
-        <span class="info-bubble"><i class="fas fa-truck"></i> شحن مجاني للطلبات فوق 2000 ج.م</span>
+        <span class="info-bubble"><i class="fas fa-truck"></i> شحن مجاني للطلبات فوق {publicStoreShippingPolicy.freeShippingThresholdEgp} ج.م</span>
         <span class="info-bubble"><i class="fas fa-money-bill-wave"></i> الدفع عند الاستلام</span>
         <span class="info-bubble"><i class="fas fa-shield-alt"></i> منتجات طبيعية أصلية 100%</span>
         <span class="info-bubble"><i class="fas fa-bolt"></i> شحن سريع لجميع المحافظات</span>
       </div>
 
       <div id="checkoutFlowViews">
+
+        <div id="freeShippingProgressCard" class="free-shipping-progress-card" data-state="below_threshold" dir="rtl" aria-live="polite" aria-atomic="true">
+          <div class="free-shipping-progress-header">
+            <div class="free-shipping-title-wrap">
+              <span class="free-shipping-icon" aria-hidden="true">
+                <i id="freeShippingIcon" class="fas fa-truck"></i>
+              </span>
+              <div>
+                <div class="free-shipping-title" id="freeShippingTitle"></div>
+                <div class="free-shipping-subtitle" id="freeShippingMessage"></div>
+              </div>
+            </div>
+            <span class="free-shipping-badge" id="freeShippingBadge"></span>
+          </div>
+          <div
+            class="free-shipping-track"
+            id="freeShippingProgressBar"
+            role="progressbar"
+            aria-label="تقدم الشحن المجاني"
+            aria-valuemin="0"
+            aria-valuemax={publicStoreShippingPolicy.freeShippingThresholdEgp}
+            aria-valuenow="0"
+            aria-valuetext=""
+          >
+            <div class="free-shipping-fill" id="freeShippingProgressFill" style="width: 0%;"></div>
+          </div>
+          <div class="free-shipping-scale" aria-hidden="true">
+            <span>0 ج.م</span>
+            <span>حد التجاوز: {publicStoreShippingPolicy.freeShippingThresholdEgp} ج.م</span>
+          </div>
+        </div>
         
         <div id="step-panel-1" class="checkout-step-panel active">
           <div class="catalog-checkout-grid">
@@ -763,25 +1132,63 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
               </div>
             </div>
 
-            <div class="panel-side-summary">
+            <div class="panel-side-summary" dir="rtl">
               <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:16px; color:var(--color-primary); text-align: right;" dir="rtl">
                 <i class="fas fa-receipt" style="color:var(--color-blush); margin-left:6px;"></i> ملخص الحساب
               </h3>
               
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.92rem;">
-                <span style="color:var(--color-muted);">المجموع الفرعي:</span>
-                <span id="subtotalValSummary" style="font-weight:700; color:var(--color-primary);">00.00 ج.م</span>
-              </div>
-              
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.88rem;">
-                <span style="color:var(--color-muted);">تكلفة الشحن:</span>
-                <span style="color:var(--color-muted);" id="shippingCostSummary1">تُحدد في الخطوة التالية</span>
+              <div class="summary-row">
+                <span class="summary-row-label">المجموع الفرعي للمنتجات:</span>
+                <span id="subtotalValSummary" class="summary-row-value">0 ج.م</span>
               </div>
 
-              <div style="border-top:1px solid var(--border-light); margin:14px 0; padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:800; font-size:1rem; color:var(--color-primary);">الإجمالي التقديري:</span>
-                <strong style="font-size:1.35rem; color:var(--color-blush);" id="grandTotalSummaryValue1">00 ج.م</strong>
+              <div class="coupon-box-card" id="couponBoxCard">
+                <label for="couponCodeInput" class="coupon-box-label">
+                  <i class="fas fa-ticket-alt"></i>
+                  <span>كود الخصم</span>
+                </label>
+                <div class="coupon-input-row">
+                  <input
+                    type="text"
+                    id="couponCodeInput"
+                    placeholder="أدخلي كود الخصم"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    spellcheck="false"
+                    dir="ltr"
+                  />
+                  <button type="button" id="applyCouponBtn" class="coupon-apply-btn">تطبيق</button>
+                </div>
+                <div id="appliedCouponBadge" class="coupon-applied-chip" style="display:none;">
+                  <span>مُطبق: <strong id="appliedCouponCodeLabel" dir="ltr"></strong></span>
+                  <button type="button" id="removeCouponBtn" class="coupon-remove-btn">
+                    <i class="fas fa-times"></i> إزالة
+                  </button>
+                </div>
+                <div id="couponFeedback" class="coupon-feedback" role="status" aria-live="polite" style="display:none;"></div>
               </div>
+
+              <div class="summary-row" id="couponSummaryRow1" style="display:none;">
+                <span class="summary-row-label">خصم الكوبون (<span id="couponCodeSummary1" dir="ltr"></span>):</span>
+                <span id="couponDiscountSummary1" class="summary-row-value" dir="ltr" style="color:#059669; font-weight:800;">0 ج.م</span>
+              </div>
+
+              <div class="summary-row">
+                <span class="summary-row-label">حالة الشحن المجاني:</span>
+                <span id="freeShippingStatusSummary1" class="summary-row-value" style="font-size:0.82rem;"></span>
+              </div>
+              
+              <div class="summary-row">
+                <span class="summary-row-label">تكلفة الشحن:</span>
+                <span class="summary-row-value" style="color:var(--color-muted); font-size:0.86rem;" id="shippingCostSummary1"></span>
+              </div>
+
+              <div class="summary-total-row">
+                <span id="grandTotalLabelSummary1" style="font-weight:800; font-size:0.96rem; color:var(--color-primary);">مجموع المنتجات (قبل الشحن):</span>
+                <strong style="font-size:1.25rem; color:var(--color-blush); text-align:left;" id="grandTotalSummaryValue1">0 ج.م</strong>
+              </div>
+
+              <div id="shippingSummaryHint1" class="summary-total-hint"></div>
 
               <button class="btn-checkout-primary" style="width:100%; justify-content:center;" onclick="goToStep(2)">
                 <span>متابعة لبيانات الشحن</span>
@@ -904,28 +1311,40 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
               </div>
             </div>
 
-            <div class="panel-side-summary">
+            <div class="panel-side-summary" dir="rtl">
               <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:14px; color:var(--color-primary); text-align: right;" dir="rtl">
                 <i class="fas fa-receipt" style="color:var(--color-blush); margin-left:6px;"></i> ملخص الطلب
               </h3>
               
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.92rem;">
-                <span style="color:var(--color-muted);">المجموع الفرعي:</span>
-                <span id="subtotalValSummary2" style="font-weight:700; color:var(--color-primary);">00.00 ج.م</span>
+              <div class="summary-row">
+                <span class="summary-row-label">المجموع الفرعي للمنتجات:</span>
+                <span id="subtotalValSummary2" class="summary-row-value">0 ج.م</span>
               </div>
 
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items: center; font-size:0.88rem;">
-                <span style="color:var(--color-muted);">مصاريف الشحن:</span>
-                <span id="shippingCostSummary2" style="font-weight:700; color:var(--color-blush);">شحن مجاني عند الشراء بأكثر من 2000 ج.م</span>
+              <div class="summary-row" id="couponSummaryRow2" style="display:none;">
+                <span class="summary-row-label">خصم الكوبون (<span id="couponCodeSummary2" dir="ltr"></span>):</span>
+                <span id="couponDiscountSummary2" class="summary-row-value" dir="ltr" style="color:#059669; font-weight:800;">0 ج.م</span>
               </div>
 
-              <div style="border-top:1px solid var(--border-light); margin:14px 0; padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:800; font-size:1rem; color:var(--color-primary);">الإجمالي الكلي:</span>
-                <strong style="font-size:1.35rem; color:var(--color-blush);" id="grandTotalSummaryValue2">00 ج.م</strong>
+              <div class="summary-row">
+                <span class="summary-row-label">حالة الشحن المجاني:</span>
+                <span id="freeShippingStatusSummary2" class="summary-row-value" style="font-size:0.82rem;"></span>
               </div>
+
+              <div class="summary-row">
+                <span class="summary-row-label">مصاريف الشحن:</span>
+                <span id="shippingCostSummary2" class="summary-row-value" style="font-size:0.86rem;"></span>
+              </div>
+
+              <div class="summary-total-row">
+                <span id="grandTotalLabelSummary2" style="font-weight:800; font-size:0.96rem; color:var(--color-primary);">الإجمالي النهائي:</span>
+                <strong style="font-size:1.25rem; color:var(--color-blush); text-align:left;" id="grandTotalSummaryValue2">يُحدد بعد اختيار المحافظة</strong>
+              </div>
+
+              <div id="shippingSummaryHint2" class="summary-total-hint" style="margin-bottom:0;"></div>
 
               <div style="background:var(--color-surface-soft); font-size:0.8rem; padding:12px; border-radius:8px; margin-top:14px; border:1px solid var(--border-light); color:var(--color-text); line-height:1.5;">
-                <i class="fas fa-shipping-fast" style="color:var(--color-blush); margin-left:4px;"></i> يصلكِ الطلب خلال 2 إلى 5 أيام عمل من تاريخ التأكيد.
+                <i class="fas fa-shipping-fast" style="color:var(--color-blush); margin-left:4px;"></i> يصلكِ الطلب خلال {publicStoreShippingPolicy.deliveryEstimate.minDays} إلى {publicStoreShippingPolicy.deliveryEstimate.maxDays} أيام عمل من تاريخ التأكيد.
               </div>
             </div>
 
@@ -963,6 +1382,23 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
                 <small style="color:var(--color-muted); font-size:0.75rem;">حماية أمنية مشددة لمنع الطلبات الوهمية</small>
               </div>
 
+              <div id="checkoutStatusBanner" role="alert" aria-live="polite" style="display:none; margin: 0 0 16px; padding: 14px 16px; border-radius: 10px; font-size: 0.88rem; line-height: 1.65; border: 1px solid #fecdd3; background: #fff1f2; color: #9f1239;">
+                <div style="display:flex; align-items:flex-start; gap:10px;">
+                  <i class="fas fa-exclamation-circle" style="margin-top:3px;"></i>
+                  <div style="flex:1;">
+                    <div id="checkoutStatusBannerText" style="font-weight:700;"></div>
+                    <div id="checkoutStatusBannerActions" style="display:none; margin-top:10px; gap:8px; flex-wrap:wrap;">
+                      <button type="button" id="btnResetOrderAttempt" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:99px; border:1px solid #be123c; background:#fff; color:#be123c; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                        <i class="fas fa-redo"></i> بدء محاولة طلب جديدة
+                      </button>
+                      <a href="/track-order" style="display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:99px; border:1px solid var(--border-light); background:#fff; color:var(--color-primary); font-weight:700; font-size:0.82rem; text-decoration:none;">
+                        <i class="fas fa-truck"></i> الانتقال لتتبع الطلب
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="checkout-nav-row">
                 <button class="btn-checkout-secondary" onclick="goToStep(2)">
                   <i class="fas fa-arrow-right"></i>
@@ -986,17 +1422,25 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
               </div>
 
               <div style="margin-bottom:12px; line-height:1.6;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.9rem;">
-                  <span style="color:var(--color-muted);">المجموع الفرعي:</span>
-                  <span id="summSubtotal" style="font-weight:700; color:var(--color-primary);">00 ج.م</span>
+                <div class="summary-row">
+                  <span class="summary-row-label">المجموع الفرعي للمنتجات:</span>
+                  <span id="summSubtotal" class="summary-row-value">0 ج.م</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size: 0.9rem;">
-                  <span style="color:var(--color-muted);">مصاريف الشحن:</span>
-                  <span id="summShipping" style="font-weight:700; color:#059669;">00 ج.م</span>
+                <div class="summary-row" id="couponSummaryRow3" style="display:none;">
+                  <span class="summary-row-label">خصم الكوبون (<span id="couponCodeSummary3" dir="ltr"></span>):</span>
+                  <span id="summCouponDiscount" class="summary-row-value" dir="ltr" style="color:#059669; font-weight:800;">0 ج.م</span>
                 </div>
-                <div style="border-top:1px solid var(--border-light); margin-top:10px; padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                  <span style="color:var(--color-primary); font-size:0.92rem; font-weight:800;">الإجمالي الكلي:</span>
-                  <strong style="font-size: 1.4rem; color:var(--color-blush);" id="finalSummaryTotal">00 ج.م</strong>
+                <div class="summary-row">
+                  <span class="summary-row-label">حالة الشحن المجاني:</span>
+                  <span id="freeShippingStatusSummary3" class="summary-row-value" style="font-size:0.82rem;"></span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-row-label">مصاريف الشحن:</span>
+                  <span id="summShipping" class="summary-row-value" style="color:#059669;">0 ج.م</span>
+                </div>
+                <div class="summary-total-row" style="margin-bottom:0;">
+                  <span style="color:var(--color-primary); font-size:0.95rem; font-weight:800;">الإجمالي النهائي المستحق:</span>
+                  <strong style="font-size: 1.35rem; color:var(--color-blush); text-align:left;" id="finalSummaryTotal">0 ج.م</strong>
                 </div>
               </div>
               
@@ -1013,10 +1457,31 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     </div>
   </section>
 
+  <script type="application/json" id="dandy-store-shipping-policy" set:html={serializedStoreShippingPolicy}></script>
+
   <script is:inline>
     const db = firebase.database();
 
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    function escapeCartHtml(str) {
+      if (str === undefined || str === null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    let cart = typeof safeParseCart === 'function'
+      ? safeParseCart(localStorage.getItem('cart'))
+      : (() => {
+          try {
+            const parsed = JSON.parse(localStorage.getItem('cart') || '[]');
+            return Array.isArray(parsed) ? parsed.filter(i => i && typeof i === 'object') : [];
+          } catch (_) {
+            return [];
+          }
+        })();
     let currentStep = 1;
 
     // Reconcile cart items with current Pink Friday campaign state
@@ -1068,40 +1533,39 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     }
     reconcileCartWithCampaign();
 
-    // English shipping fees mapped to Egyptian governorate zones
-    const shippingRates = {
-      "Gharbia": 70,
-      "Dakahlia": 85,
-      "Sharqia": 85,
-      "Kafr El Sheikh": 85,
-      "Qalyubia": 85,
-      "Port Said": 85,
-      "Damietta": 85,
-      "Suez": 85,
-      "Ismailia": 85,
-      "Cairo": 85,
-      "Giza": 85,
-      "Beheira": 85,
-      "Monufia": 85,
-      "Alexandria": 85,
-      "Fayoum": 100,
-      "Beni Suef": 100,
-      "Minya": 100,
-      "Luxor": 120,
-      "Aswan": 120,
-      "Assiut": 120,
-      "Sohag": 120,
-      "North Sinai": 120,
-      "South Sinai": 120,
-      "Qena": 120,
-      "New Valley": 120,
-      "Red Sea": 120,
-      "Matrouh": 120
-    };
+    // Centralized shipping policy injected from src/config/store-policy.ts (public policy fields only)
+    const STORE_SHIPPING_POLICY = (() => {
+      try {
+        const policyEl = document.getElementById('dandy-store-shipping-policy');
+        const parsed = policyEl && policyEl.textContent ? JSON.parse(policyEl.textContent) : null;
+        if (parsed && typeof parsed === 'object') {
+          return parsed;
+        }
+      } catch (_) {}
+      return {
+        ratesByGovernorate: {},
+        defaultFeeEgp: 120,
+        freeShippingThresholdEgp: 2000
+      };
+    })();
 
     function getShippingFeeForGov(govName) {
-      if (!govName) return null;
-      return shippingRates[govName] || 120;
+      const defaultFee = Number(STORE_SHIPPING_POLICY.defaultFeeEgp);
+      if (!govName || typeof govName !== 'string') return defaultFee;
+      const key = govName.trim();
+      if (!key) return defaultFee;
+      const rates = STORE_SHIPPING_POLICY.ratesByGovernorate || {};
+      return Object.prototype.hasOwnProperty.call(rates, key) ? rates[key] : defaultFee;
+    }
+
+    function isFreeShippingEligible(subtotal) {
+      const threshold = Number(STORE_SHIPPING_POLICY.freeShippingThresholdEgp);
+      return typeof subtotal === 'number' && Number.isFinite(subtotal) && subtotal > threshold;
+    }
+
+    function calculateShippingFeeForGov(govName, subtotal) {
+      if (isFreeShippingEligible(subtotal)) return 0;
+      return getShippingFeeForGov(govName);
     }
 
     // Render elements references
@@ -1125,47 +1589,551 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
     const summSubtotal = document.getElementById('summSubtotal');
     const summShipping = document.getElementById('summShipping');
 
+    function formatCartEgp(value) {
+      if (window.DandyCartShipping && typeof window.DandyCartShipping.formatCurrencyAmount === 'function') {
+        return window.DandyCartShipping.formatCurrencyAmount(value);
+      }
+      const n = Number(value);
+      if (!Number.isFinite(n) || n <= 0) return '0';
+      const rounded = Math.round(n * 100) / 100;
+      return Math.abs(rounded - Math.round(rounded)) < 1e-9 ? String(Math.round(rounded)) : String(rounded);
+    }
+
     function calculateCartSubtotal() {
+      if (window.DandyCartShipping && typeof window.DandyCartShipping.computeCartSubtotal === 'function') {
+        return window.DandyCartShipping.computeCartSubtotal(
+          cart,
+          typeof getEffectiveUnitPrice === 'function' ? getEffectiveUnitPrice : null
+        );
+      }
       let subtotal = 0;
       cart.forEach(item => {
         const unitPrice = typeof getEffectiveUnitPrice === 'function'
           ? getEffectiveUnitPrice(item)
           : (Number(item.price) || 0);
-        const qtyVal = parseInt(item.quantity) || 1;
+        const qtyVal = parseInt(item.quantity, 10) || 1;
         subtotal += unitPrice * qtyVal;
       });
-      return subtotal;
+      return Math.round(subtotal * 100) / 100;
+    }
+
+    function getSelectedGovernorateInfo() {
+      const govDropdown = document.getElementById('f-gov');
+      if (!govDropdown || !govDropdown.value) {
+        return { value: '', label: '' };
+      }
+      const selectedIdx = govDropdown.selectedIndex;
+      const optText = selectedIdx >= 0 && govDropdown.options[selectedIdx]
+        ? govDropdown.options[selectedIdx].text
+        : govDropdown.value;
+      return {
+        value: govDropdown.value,
+        label: optText || govDropdown.value
+      };
+    }
+
+    function renderFreeShippingProgressCard(progress) {
+      const card = document.getElementById('freeShippingProgressCard');
+      if (!card || !progress) return;
+
+      card.setAttribute('data-state', progress.state);
+
+      const iconEl = document.getElementById('freeShippingIcon');
+      if (iconEl) {
+        if (progress.state === 'unlocked') {
+          iconEl.className = 'fas fa-check-circle';
+        } else if (progress.state === 'at_threshold') {
+          iconEl.className = 'fas fa-exclamation-circle';
+        } else {
+          iconEl.className = 'fas fa-truck';
+        }
+      }
+
+      const titleEl = document.getElementById('freeShippingTitle');
+      const msgEl = document.getElementById('freeShippingMessage');
+      const badgeEl = document.getElementById('freeShippingBadge');
+      const barEl = document.getElementById('freeShippingProgressBar');
+      const fillEl = document.getElementById('freeShippingProgressFill');
+
+      if (titleEl) titleEl.textContent = progress.titleText;
+      if (msgEl) msgEl.textContent = progress.messageText;
+      if (badgeEl) badgeEl.textContent = progress.badgeText;
+      if (fillEl) fillEl.style.width = progress.progressPercent + '%';
+      if (barEl) {
+        barEl.setAttribute('aria-valuemax', String(progress.threshold));
+        barEl.setAttribute('aria-valuenow', String(Math.min(progress.subtotal, progress.threshold)));
+        barEl.setAttribute('aria-valuetext', progress.ariaValueText);
+      }
+    }
+
+    function applyFreeShippingStatusEl(el, progress) {
+      if (!el || !progress) return;
+      el.textContent = progress.statusChipText;
+      if (progress.state === 'unlocked') {
+        el.style.color = 'var(--color-success)';
+      } else if (progress.state === 'at_threshold') {
+        el.style.color = 'var(--color-warning)';
+      } else {
+        el.style.color = 'var(--color-blush)';
+      }
+    }
+
+    // Coupon Checkout State & Persistence (Stores normalized code only — never definitions or trusted discounts)
+    const COUPON_STORAGE_KEY = 'dandy_checkout_coupon_v1';
+    let couponPreviewSeq = 0;
+    let isValidatingCoupon = false;
+    let activeCouponState = null;
+
+    function normalizeClientCouponCode(raw) {
+      if (typeof raw !== 'string') return '';
+      return raw.trim().toUpperCase();
+    }
+
+    function readStoredCouponCode() {
+      try {
+        if (typeof localStorage === 'undefined' || !localStorage || typeof localStorage.getItem !== 'function') {
+          return null;
+        }
+        const raw = localStorage.getItem(COUPON_STORAGE_KEY);
+        const normalized = normalizeClientCouponCode(raw);
+        return normalized || null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function writeStoredCouponCode(code) {
+      const normalized = normalizeClientCouponCode(code);
+      if (!normalized) return;
+      try {
+        if (typeof localStorage !== 'undefined' && localStorage && typeof localStorage.setItem === 'function') {
+          localStorage.setItem(COUPON_STORAGE_KEY, normalized);
+        }
+      } catch (_) {}
+    }
+
+    function clearStoredCouponCode() {
+      try {
+        if (typeof localStorage !== 'undefined' && localStorage && typeof localStorage.removeItem === 'function') {
+          localStorage.removeItem(COUPON_STORAGE_KEY);
+        }
+      } catch (_) {}
+    }
+
+    let pendingCouponCode = readStoredCouponCode();
+
+    function buildMinimalCouponPreviewItems() {
+      return cart.map(item => {
+        if (item.type === 'collection' || item.isCollection || item.collectionId) {
+          return {
+            type: 'collection',
+            isCollection: true,
+            collectionId: item.collectionId || item.id,
+            quantity: parseInt(item.quantity, 10) || 1,
+            selectedItems: Array.isArray(item.selectedItems) ? item.selectedItems : []
+          };
+        }
+
+        const rawVariants = (Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0)
+          ? item.selectedVariants
+          : (item.selectedVariant ? [item.selectedVariant] : (item.variantName ? [{ id: item.variantId || 'scent-variant', name: item.variantName }] : []));
+
+        return {
+          productId: item.productId || String(item.id).split('::')[0],
+          quantity: parseInt(item.quantity, 10) || 1,
+          selectedVariants: rawVariants.map(v => ({
+            id: v.id || 'scent-variant',
+            name: v.name || String(v)
+          }))
+        };
+      });
+    }
+
+    function renderCouponFeedback(type, message) {
+      const feedbackEl = document.getElementById('couponFeedback');
+      if (!feedbackEl) return;
+      if (!message) {
+        feedbackEl.style.display = 'none';
+        feedbackEl.textContent = '';
+        feedbackEl.className = 'coupon-feedback';
+        return;
+      }
+      feedbackEl.textContent = message;
+      feedbackEl.className = 'coupon-feedback ' + (type === 'success' ? 'is-success' : (type === 'info' ? 'is-info' : 'is-error'));
+      feedbackEl.style.display = 'block';
+    }
+
+    function renderCouponUiState(options) {
+      const opts = options || {};
+      const inputEl = document.getElementById('couponCodeInput');
+      const applyBtn = document.getElementById('applyCouponBtn');
+      const appliedBadge = document.getElementById('appliedCouponBadge');
+      const appliedCodeLabel = document.getElementById('appliedCouponCodeLabel');
+      const removeBtn = document.getElementById('removeCouponBtn');
+
+      if (applyBtn) {
+        applyBtn.disabled = Boolean(opts.loading);
+        applyBtn.innerHTML = opts.loading
+          ? '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...'
+          : 'تطبيق';
+      }
+      if (removeBtn) {
+        removeBtn.disabled = Boolean(opts.loading);
+      }
+
+      if (activeCouponState && activeCouponState.code) {
+        if (inputEl && typeof opts.preserveInput !== 'boolean') {
+          inputEl.value = activeCouponState.code;
+        }
+        if (appliedCodeLabel) appliedCodeLabel.textContent = activeCouponState.code;
+        if (appliedBadge) appliedBadge.style.display = 'flex';
+      } else {
+        if (appliedCodeLabel) appliedCodeLabel.textContent = '';
+        if (appliedBadge) appliedBadge.style.display = 'none';
+      }
+
+      if (Object.prototype.hasOwnProperty.call(opts, 'feedbackMessage')) {
+        renderCouponFeedback(opts.feedbackType || 'info', opts.feedbackMessage);
+      }
+    }
+
+    async function validateCouponWithServer(rawCode, options) {
+      const opts = options || {};
+      const normalizedCode = normalizeClientCouponCode(rawCode);
+      const inputEl = document.getElementById('couponCodeInput');
+
+      if (!normalizedCode) {
+        activeCouponState = null;
+        pendingCouponCode = null;
+        clearStoredCouponCode();
+        renderCouponUiState({
+          loading: false,
+          preserveInput: true,
+          feedbackType: 'error',
+          feedbackMessage: 'يرجى إدخال كود الخصم أولاً.'
+        });
+        syncAllShippingAndOrderSummaries();
+        return { ok: false, reason: 'COUPON_CODE_REQUIRED' };
+      }
+
+      if (!Array.isArray(cart) || cart.length === 0) {
+        activeCouponState = null;
+        pendingCouponCode = null;
+        clearStoredCouponCode();
+        renderCouponUiState({ loading: false, feedbackMessage: '' });
+        syncAllShippingAndOrderSummaries();
+        return { ok: false, reason: 'EMPTY_CART' };
+      }
+
+      if (inputEl && !opts.preserveInput) {
+        inputEl.value = normalizedCode;
+      }
+
+      if (typeof fetch !== 'function') {
+        activeCouponState = null;
+        pendingCouponCode = null;
+        renderCouponUiState({
+          loading: false,
+          preserveInput: true,
+          feedbackType: 'error',
+          feedbackMessage: 'تعذر التحقق من الكوبون حالياً؛ لم يتم تطبيق أي خصم.'
+        });
+        syncAllShippingAndOrderSummaries();
+        return { ok: false, reason: 'FETCH_UNAVAILABLE' };
+      }
+
+      const seq = ++couponPreviewSeq;
+      isValidatingCoupon = true;
+      renderCouponUiState({
+        loading: true,
+        preserveInput: true,
+        feedbackType: 'info',
+        feedbackMessage: opts.isRevalidation ? 'جاري إعادة التحقق من صلاحية الكوبون...' : 'جاري التحقق من الكوبون...'
+      });
+
+      let res = null;
+      let data = {};
+      let networkError = false;
+
+      try {
+        res = await fetch('/api/coupons/validate', {
+          method: 'POST',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: normalizedCode,
+            items: buildMinimalCouponPreviewItems()
+          })
+        });
+        data = await res.json().catch(() => ({}));
+      } catch (_) {
+        networkError = true;
+      }
+
+      if (seq !== couponPreviewSeq) {
+        return { ok: false, stale: true };
+      }
+
+      isValidatingCoupon = false;
+
+      if (!Array.isArray(cart) || cart.length === 0) {
+        activeCouponState = null;
+        pendingCouponCode = null;
+        clearStoredCouponCode();
+        renderCouponUiState({ loading: false, feedbackMessage: '' });
+        syncAllShippingAndOrderSummaries();
+        return { ok: false, reason: 'EMPTY_CART' };
+      }
+
+      if (!networkError && res && res.ok && data && data.success === true && data.eligible === true) {
+        const discountVal = Math.round((Number(data.discountAmount) || 0) * 100) / 100;
+        const resolvedCode = normalizeClientCouponCode(data.code || normalizedCode);
+        activeCouponState = {
+          code: resolvedCode,
+          discountType: data.discountType || null,
+          discountValue: data.discountValue ?? null,
+          scope: data.scope || null,
+          categorySlug: data.categorySlug || null,
+          eligibleSubtotal: Number(data.eligibleSubtotal) || 0,
+          orderProductSubtotal: Number(data.orderProductSubtotal) || 0,
+          discountAmount: discountVal,
+          discountedProductSubtotal: Number(data.discountedProductSubtotal) || 0,
+          message: data.message || `تم تطبيق الكوبون ${resolvedCode} بخصم ${formatCartEgp(discountVal)} ج.م.`
+        };
+        pendingCouponCode = resolvedCode;
+        writeStoredCouponCode(resolvedCode);
+        renderCouponUiState({
+          loading: false,
+          feedbackType: 'success',
+          feedbackMessage: activeCouponState.message
+        });
+        syncAllShippingAndOrderSummaries();
+        return { ok: true, data };
+      }
+
+      // Any rejection, rate limit, outage, or network error: NEVER preserve stale active discount preview
+      activeCouponState = null;
+      pendingCouponCode = null;
+      clearStoredCouponCode();
+
+      let errMsg = (data && typeof data.message === 'string' && data.message.trim())
+        ? data.message.trim()
+        : '';
+      if (!errMsg) {
+        if (networkError || !res || res.status >= 500) {
+          errMsg = 'تعذر التحقق من صلاحية الكوبون حالياً؛ لم يتم تطبيق أي خصم. يرجى المحاولة مرة أخرى.';
+        } else if (res.status === 429) {
+          errMsg = 'تم إرسال عدد كبير من محاولات التحقق من الكوبون. يرجى الانتظار قليلاً ثم المحاولة.';
+        } else {
+          errMsg = 'كود الخصم غير صالح أو غير مؤهل لهذه السلة.';
+        }
+      }
+
+      renderCouponUiState({
+        loading: false,
+        preserveInput: true,
+        feedbackType: 'error',
+        feedbackMessage: errMsg
+      });
+      syncAllShippingAndOrderSummaries();
+      return { ok: false, reason: (data && (data.reason || data.error)) || 'COUPON_VALIDATION_FAILED', message: errMsg };
+    }
+
+    window.applyCouponCode = function() {
+      const inputEl = document.getElementById('couponCodeInput');
+      const raw = inputEl ? inputEl.value : '';
+      return validateCouponWithServer(raw, { isRevalidation: false });
+    };
+
+    window.removeCouponCode = function(silent) {
+      couponPreviewSeq += 1;
+      isValidatingCoupon = false;
+      activeCouponState = null;
+      pendingCouponCode = null;
+      clearStoredCouponCode();
+      const inputEl = document.getElementById('couponCodeInput');
+      if (inputEl) inputEl.value = '';
+      renderCouponUiState({
+        loading: false,
+        preserveInput: true,
+        feedbackType: 'info',
+        feedbackMessage: silent ? '' : 'تمت إزالة كود الخصم.'
+      });
+      syncAllShippingAndOrderSummaries();
+    };
+
+    const applyCouponBtnEl = document.getElementById('applyCouponBtn');
+    if (applyCouponBtnEl) {
+      applyCouponBtnEl.addEventListener('click', function() {
+        window.applyCouponCode();
+      });
+    }
+    const removeCouponBtnEl = document.getElementById('removeCouponBtn');
+    if (removeCouponBtnEl) {
+      removeCouponBtnEl.addEventListener('click', function() {
+        window.removeCouponCode(false);
+      });
+    }
+    const couponInputDomEl = document.getElementById('couponCodeInput');
+    if (couponInputDomEl) {
+      couponInputDomEl.addEventListener('keydown', function(evt) {
+        if (evt && evt.key === 'Enter') {
+          if (typeof evt.preventDefault === 'function') evt.preventDefault();
+          window.applyCouponCode();
+        }
+      });
+    }
+
+    function updateCouponSummaryRows(couponCode, couponDiscount) {
+      const show = Boolean(couponCode && couponDiscount > 0);
+      const formattedDiscount = '-' + formatCartEgp(couponDiscount) + ' ج.م';
+
+      const pairs = [
+        { row: 'couponSummaryRow1', code: 'couponCodeSummary1', val: 'couponDiscountSummary1' },
+        { row: 'couponSummaryRow2', code: 'couponCodeSummary2', val: 'couponDiscountSummary2' },
+        { row: 'couponSummaryRow3', code: 'couponCodeSummary3', val: 'summCouponDiscount' }
+      ];
+
+      pairs.forEach(p => {
+        const rowEl = document.getElementById(p.row);
+        const codeEl = document.getElementById(p.code);
+        const valEl = document.getElementById(p.val);
+        if (rowEl) rowEl.style.display = show ? 'flex' : 'none';
+        if (codeEl) codeEl.textContent = show ? couponCode : '';
+        if (valEl) valEl.textContent = show ? formattedDiscount : '0 ج.م';
+      });
+    }
+
+    function syncAllShippingAndOrderSummaries() {
+      const subtotal = calculateCartSubtotal();
+      const govInfo = getSelectedGovernorateInfo();
+
+      const summaryState = (window.DandyCartShipping && typeof window.DandyCartShipping.computeCheckoutSummaryState === 'function')
+        ? window.DandyCartShipping.computeCheckoutSummaryState({
+            subtotal: subtotal,
+            policy: STORE_SHIPPING_POLICY,
+            selectedGovernorate: govInfo.value,
+            selectedGovernorateLabel: govInfo.label
+          })
+        : (() => {
+            const eligible = isFreeShippingEligible(subtotal);
+            const hasGov = Boolean(govInfo.value);
+            const fee = eligible ? 0 : (hasGov ? calculateShippingFeeForGov(govInfo.value, subtotal) : null);
+            const threshold = Number(STORE_SHIPPING_POLICY.freeShippingThresholdEgp);
+            const feeRange = STORE_SHIPPING_POLICY.feeRangeEgp || { min: 70, max: 120 };
+            const state = eligible ? 'unlocked' : (subtotal === threshold ? 'at_threshold' : 'below_threshold');
+            return {
+              progress: {
+                state,
+                isEligible: eligible,
+                isAtThreshold: subtotal === threshold,
+                subtotal,
+                threshold,
+                progressPercent: eligible ? 100 : (subtotal === threshold ? 99 : Math.min(98, Math.round((subtotal / threshold) * 100))),
+                titleText: eligible ? 'تم تفعيل الشحن المجاني' : `شحن مجاني للطلبات فوق ${threshold} ج.م`,
+                messageText: eligible ? `تجاوز المجموع ${threshold} ج.م` : `يتبقى للوصول ${Math.max(0, threshold - subtotal)} ج.م ويلزم تجاوز ${threshold} ج.م`,
+                badgeText: eligible ? 'شحن مجاني مُفعّل' : (state === 'at_threshold' ? 'عند الحد تماماً' : 'متبقي للشحن المجاني'),
+                statusChipText: eligible ? 'مُفعّل' : 'غير مؤهل بعد',
+                ariaValueText: String(subtotal)
+              },
+              subtotalText: formatCartEgp(subtotal) + ' ج.م',
+              shippingFee: fee,
+              shippingConfirmed: fee !== null,
+              totalConfirmed: fee !== null,
+              shippingDisplayText: fee === 0 ? 'شحن مجاني (0 ج.م)' : (fee !== null ? `${formatCartEgp(fee)} ج.م (${govInfo.label})` : `تُحدد حسب المحافظة (${feeRange.min}–${feeRange.max} ج.م)`),
+              step1TotalLabel: eligible ? 'الإجمالي المستحق:' : (hasGov ? `الإجمالي شامل الشحن (${govInfo.label}):` : 'مجموع المنتجات (قبل الشحن):'),
+              step1TotalText: eligible ? formatCartEgp(subtotal) + ' ج.م' : (hasGov ? formatCartEgp(subtotal + fee) + ' ج.م' : formatCartEgp(subtotal) + ' ج.م + الشحن'),
+              step2TotalLabel: eligible ? 'الإجمالي النهائي:' : (hasGov ? 'الإجمالي الكلي (شامل الشحن):' : 'الإجمالي النهائي:'),
+              step2TotalText: eligible ? formatCartEgp(subtotal) + ' ج.م' : (hasGov ? formatCartEgp(subtotal + fee) + ' ج.م' : 'يُحدد بعد اختيار المحافظة'),
+              step2TotalHint: '',
+              step3ShippingText: fee === 0 ? 'شحن مجاني (0 ج.م)' : (fee !== null ? `${formatCartEgp(fee)} ج.م (${govInfo.label})` : `تُحدد حسب المحافظة`),
+              step3TotalText: fee !== null ? formatCartEgp(subtotal + fee) + ' ج.م' : 'يُحدد بعد اختيار المحافظة'
+            };
+          })();
+
+      const activeCode = activeCouponState && activeCouponState.code ? activeCouponState.code : '';
+      const rawCouponDiscount = activeCode && Number.isFinite(Number(activeCouponState.discountAmount)) && Number(activeCouponState.discountAmount) > 0
+        ? Math.round(Number(activeCouponState.discountAmount) * 100) / 100
+        : 0;
+      const couponDiscount = Math.min(subtotal, rawCouponDiscount);
+      const hasActiveCoupon = Boolean(activeCode && couponDiscount > 0);
+      const discountedSubtotal = Math.max(0, Math.round((subtotal - couponDiscount) * 100) / 100);
+
+      updateCouponSummaryRows(activeCode, couponDiscount);
+
+      const step1TotalText = hasActiveCoupon
+        ? (summaryState.shippingConfirmed
+            ? formatCartEgp(Math.max(0, Math.round((discountedSubtotal + Number(summaryState.shippingFee || 0)) * 100) / 100)) + ' ج.م'
+            : formatCartEgp(discountedSubtotal) + ' ج.م + الشحن')
+        : summaryState.step1TotalText;
+
+      const step2TotalText = hasActiveCoupon
+        ? (summaryState.totalConfirmed
+            ? formatCartEgp(Math.max(0, Math.round((discountedSubtotal + Number(summaryState.shippingFee || 0)) * 100) / 100)) + ' ج.م'
+            : summaryState.step2TotalText)
+        : summaryState.step2TotalText;
+
+      const step3TotalText = hasActiveCoupon
+        ? (summaryState.shippingConfirmed
+            ? formatCartEgp(Math.max(0, Math.round((discountedSubtotal + Number(summaryState.shippingFee || 0)) * 100) / 100)) + ' ج.م'
+            : summaryState.step3TotalText)
+        : summaryState.step3TotalText;
+
+      renderFreeShippingProgressCard(summaryState.progress);
+
+      // Step 1 Summary
+      if (subtotalValSummary) subtotalValSummary.textContent = summaryState.subtotalText;
+      applyFreeShippingStatusEl(document.getElementById('freeShippingStatusSummary1'), summaryState.progress);
+      const shippingCostSummary1 = document.getElementById('shippingCostSummary1');
+      if (shippingCostSummary1) {
+        shippingCostSummary1.textContent = summaryState.shippingDisplayText;
+        shippingCostSummary1.style.color = summaryState.progress.isEligible
+          ? 'var(--color-success)'
+          : (summaryState.shippingConfirmed ? 'var(--color-primary)' : 'var(--color-muted)');
+        shippingCostSummary1.style.fontWeight = summaryState.shippingConfirmed ? '700' : '600';
+      }
+      const grandTotalLabel1 = document.getElementById('grandTotalLabelSummary1');
+      if (grandTotalLabel1) grandTotalLabel1.textContent = summaryState.step1TotalLabel;
+      if (grandTotalSummaryValue1) grandTotalSummaryValue1.textContent = step1TotalText;
+      const hint1 = document.getElementById('shippingSummaryHint1');
+      if (hint1) hint1.textContent = summaryState.step1TotalHint || '';
+
+      // Step 2 Summary
+      if (subtotalValSummary2) subtotalValSummary2.textContent = summaryState.subtotalText;
+      applyFreeShippingStatusEl(document.getElementById('freeShippingStatusSummary2'), summaryState.progress);
+      if (shippingCostSummary2) {
+        shippingCostSummary2.textContent = summaryState.shippingDisplayText;
+        shippingCostSummary2.style.color = summaryState.progress.isEligible
+          ? 'var(--color-success)'
+          : (summaryState.shippingConfirmed ? 'var(--color-primary)' : 'var(--color-blush)');
+      }
+      const grandTotalLabel2 = document.getElementById('grandTotalLabelSummary2');
+      if (grandTotalLabel2) grandTotalLabel2.textContent = summaryState.step2TotalLabel;
+      if (grandTotalSummaryValue2) {
+        grandTotalSummaryValue2.textContent = step2TotalText;
+        grandTotalSummaryValue2.style.fontSize = summaryState.totalConfirmed ? '1.25rem' : '0.96rem';
+        grandTotalSummaryValue2.style.color = summaryState.totalConfirmed ? 'var(--color-blush)' : 'var(--color-primary)';
+      }
+      const hint2 = document.getElementById('shippingSummaryHint2');
+      if (hint2) hint2.textContent = summaryState.step2TotalHint;
+
+      // Step 3 Summary
+      if (summSubtotal) summSubtotal.textContent = summaryState.subtotalText;
+      applyFreeShippingStatusEl(document.getElementById('freeShippingStatusSummary3'), summaryState.progress);
+      if (summShipping) {
+        summShipping.textContent = summaryState.step3ShippingText;
+        summShipping.style.color = summaryState.progress.isEligible ? 'var(--color-success)' : 'var(--color-primary)';
+      }
+      if (finalSummaryTotal) finalSummaryTotal.textContent = step3TotalText;
+
+      return summaryState;
     }
 
     // Handle live updates on Governorates dropdown change
     window.handleGovChange = function() {
       const govDropdown = document.getElementById('f-gov');
       if (!govDropdown) return; // Prevent TypeError if the cart is empty and the DOM is replaced
-
-      const selectedGov = govDropdown.value;
-      const subtotal = calculateCartSubtotal();
-      
-      if (selectedGov) {
-        let fee = getShippingFeeForGov(selectedGov);
-        if (subtotal > 2000) {
-          fee = 0;
-          shippingCostSummary2.textContent = "شحن مجاني";
-          shippingCostSummary2.style.color = "var(--color-success)";
-        } else {
-          shippingCostSummary2.textContent = fee + " ج.م";
-          shippingCostSummary2.style.color = "var(--color-primary)";
-        }
-        grandTotalSummaryValue2.textContent = (subtotal + fee).toFixed(0) + " ج.م";
-      } else {
-        if (subtotal > 2000) {
-          shippingCostSummary2.textContent = "شحن مجاني";
-          shippingCostSummary2.style.color = "var(--color-success)";
-        } else {
-          shippingCostSummary2.textContent = "شحن مجاني عندما تتخطى القيمة 2000 جنيه";
-          shippingCostSummary2.style.color = "var(--color-blush)";
-        }
-        grandTotalSummaryValue2.textContent = subtotal.toFixed(0) + " ج.م";
-      }
+      syncAllShippingAndOrderSummaries();
     };
 
     // Update Cart Badge inside Navbar
@@ -1175,7 +2143,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       } else {
         const badge = document.getElementById('cart-count');
         if (badge) {
-          const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
+          const totalQty = cart.reduce((sum, item) => sum + (parseInt(item.quantity, 10) || 1), 0);
           badge.textContent = totalQty;
         }
       }
@@ -1203,7 +2171,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
       cartItemsList.innerHTML = '';
       cart.forEach((item, index) => {
-        const qtyVal = parseInt(item.quantity) || 1;
+        const qtyVal = parseInt(item.quantity, 10) || 1;
         const unitPrice = typeof getEffectiveUnitPrice === 'function'
           ? getEffectiveUnitPrice(item)
           : (Number(item.price) || 0);
@@ -1217,7 +2185,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         const variantHtml = (varInfo && varInfo.text)
           ? `<div class="cart-item-scent-badge">
                <i class="fas fa-sparkles"></i>
-               <span>${varInfo.label}: <strong>${varInfo.text}</strong></span>
+               <span>${escapeCartHtml(varInfo.label)}: <strong>${escapeCartHtml(varInfo.text)}</strong></span>
              </div>`
           : '';
 
@@ -1229,7 +2197,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
               <ul style="margin:0; padding-right:16px; list-style-type:circle; color:#374151;">
                 ${item.selectedItems.map(si => {
                   const scentName = si.selectedVariant && (si.selectedVariant.name || si.selectedVariant.id) ? (si.selectedVariant.name || si.selectedVariant.id) : '';
-                  return `<li>${si.productName || 'منتج'}${scentName ? ` <span style="color:#9d174d; font-weight:600;">(الرائحة: ${scentName})</span>` : ''}</li>`;
+                  return `<li>${escapeCartHtml(si.productName || 'منتج')}${scentName ? ` <span style="color:#9d174d; font-weight:600;">(الرائحة: ${escapeCartHtml(scentName)})</span>` : ''}</li>`;
                 }).join('')}
               </ul>
             </div>
@@ -1238,8 +2206,8 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
         const pfBadgeHtml = item.isPinkFriday
           ? `<div class="cart-item-pf-badge" style="display:inline-flex; align-items:center; gap:6px; background:#fe5d9f; color:#ffffff; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:99px; margin-bottom:4px;">
-               <span>${item.badgeText || (item.isCollection ? 'كوليكشن Pink Friday' : 'Pink Friday')}</span>
-               ${item.regularPrice ? `<span style="text-decoration:line-through; opacity:0.85;">${Number(item.regularPrice).toFixed(0)} ج.م</span>` : ''}
+               <span>${escapeCartHtml(item.badgeText || (item.isCollection ? 'كوليكشن Pink Friday' : 'Pink Friday'))}</span>
+               ${item.regularPrice ? `<span style="text-decoration:line-through; opacity:0.85;">${formatCartEgp(item.regularPrice)} ج.م</span>` : ''}
              </div>`
           : '';
 
@@ -1247,13 +2215,13 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         itemCard.className = 'cart-product-list-item';
         itemCard.innerHTML = `
           <div class="cart-item-info">
-            <img loading="lazy" src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+            <img loading="lazy" src="${escapeCartHtml(item.image || '')}" alt="${escapeCartHtml(item.name || '')}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
             <div class="cart-item-meta">
-              <h3>${item.name}</h3>
+              <h3>${escapeCartHtml(item.name || '')}</h3>
               ${pfBadgeHtml}
               ${variantHtml}
               ${collectionHtml}
-              <div class="cart-item-unit-price">${Number(unitPrice).toFixed(0)} ج.م للقطعة</div>
+              <div class="cart-item-unit-price">${formatCartEgp(unitPrice)} ج.م للقطعة</div>
             </div>
           </div>
 
@@ -1266,7 +2234,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
             <div class="cart-item-actions-left">
               <div class="cart-item-subtotal">
-                ${Number(rowSubtotal).toFixed(0)} ج.م
+                ${formatCartEgp(rowSubtotal)} ج.م
               </div>
 
               <button type="button" class="action-btn-delete" onclick="removeItemFromCart(${index})" title="حذف من السلة" aria-label="حذف المنتج">
@@ -1278,34 +2246,39 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         cartItemsList.appendChild(itemCard);
       });
 
-      const sub = calculateCartSubtotal();
-      subtotalValSummary.textContent = sub.toFixed(0) + ' ج.م';
-      subtotalValSummary2.textContent = sub.toFixed(0) + ' ج.م';
-      grandTotalSummaryValue1.textContent = sub.toFixed(0) + ' ج.م';
-      grandTotalSummaryValue2.textContent = sub.toFixed(0) + ' ج.م';
+      syncAllShippingAndOrderSummaries();
+    }
 
-      const shippingCostSummary1 = document.getElementById('shippingCostSummary1');
-      if (shippingCostSummary1) {
-        if (sub > 2000) {
-          shippingCostSummary1.textContent = 'شحن مجاني';
-          shippingCostSummary1.style.color = 'var(--color-success)';
-          shippingCostSummary1.style.fontWeight = 'bold';
-        } else {
-          shippingCostSummary1.textContent = 'تُحدد في الخطوة التالية';
-          shippingCostSummary1.style.color = 'var(--color-muted)';
-          shippingCostSummary1.style.fontWeight = 'normal';
-        }
+    function revalidateActiveCouponOnCartChange() {
+      const codeToCheck = (activeCouponState && activeCouponState.code) || pendingCouponCode;
+      if (!codeToCheck || !Array.isArray(cart) || cart.length === 0) {
+        couponPreviewSeq += 1;
+        isValidatingCoupon = false;
+        activeCouponState = null;
+        pendingCouponCode = null;
+        clearStoredCouponCode();
+        renderCouponUiState({ loading: false, feedbackMessage: '' });
+        syncAllShippingAndOrderSummaries();
+        return;
       }
+      // Clear active discount immediately until server confirms new cart totals
+      activeCouponState = null;
+      syncAllShippingAndOrderSummaries();
+      validateCouponWithServer(codeToCheck, { isRevalidation: true });
     }
 
     window.changeQty = function(index, delta) {
       if (cart[index]) {
-        cart[index].quantity = (parseInt(cart[index].quantity) || 1) + delta;
-        if (cart[index].quantity < 1) cart[index].quantity = 1;
+        const current = parseInt(cart[index].quantity, 10) || 1;
+        cart[index].quantity = Math.max(1, current + delta);
         localStorage.setItem('cart', JSON.stringify(cart));
         renderStep1CartItems();
         handleGovChange();
         if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+        if ((activeCouponState && activeCouponState.code) || pendingCouponCode) {
+          revalidateActiveCouponOnCartChange();
+        }
       }
     };
 
@@ -1315,13 +2288,29 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       renderStep1CartItems();
       handleGovChange();
       if (typeof window.updateSharedCartCount === 'function') window.updateSharedCartCount();
+      window.dispatchEvent(new CustomEvent('cart-updated'));
+      if (cart.length === 0) {
+        couponPreviewSeq += 1;
+        isValidatingCoupon = false;
+        activeCouponState = null;
+        pendingCouponCode = null;
+        clearStoredCouponCode();
+      } else if ((activeCouponState && activeCouponState.code) || pendingCouponCode) {
+        revalidateActiveCouponOnCartChange();
+      }
     };
 
     // --- تكامل حساب العميل والعناوين المحفوظة في الـ Checkout ---
     let customerSavedAddresses = {};
 
     function initCustomerCheckoutAddresses() {
-      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+      let auth = null;
+      try {
+        auth = window.auth || (typeof firebase !== 'undefined' && typeof firebase.auth === 'function' ? firebase.auth() : null);
+      } catch (authInitErr) {
+        console.warn('Firebase auth unavailable in cart checkout:', authInitErr?.code || authInitErr?.message || authInitErr);
+        return;
+      }
       if (!auth) return;
 
       auth.onAuthStateChanged(async (user) => {
@@ -1464,6 +2453,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       const pct = ((step - 1) / 2) * 100;
       document.getElementById('stepperLineProgress').style.width = pct + '%';
       document.getElementById(`step-panel-${step}`).classList.add('active');
+      syncAllShippingAndOrderSummaries();
       
       window.scrollTo({ top: 40, behavior: 'smooth' });
     };
@@ -1493,11 +2483,6 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         return;
       }
 
-      const subtotal = calculateCartSubtotal();
-      let fee = getShippingFeeForGov(governorate);
-      if (subtotal > 2000) fee = 0;
-      const orderTotal = subtotal + fee;
-
       revCustName.textContent = name;
       revCustPhone.textContent = phone;
       revCustEmail.textContent = email || 'لا يوجد';
@@ -1509,7 +2494,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       revContainer.className = 'rev-products-container';
 
       cart.forEach(item => {
-        const qtyVal = parseInt(item.quantity) || 1;
+        const qtyVal = parseInt(item.quantity, 10) || 1;
         const unitPrice = typeof getEffectiveUnitPrice === 'function'
           ? getEffectiveUnitPrice(item)
           : (Number(item.price) || 0);
@@ -1523,7 +2508,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         divItem.className = 'rev-product-item';
 
         const variantBadgeHtml = (varInfo && varInfo.text)
-          ? `<span class="rev-product-variant"><i class="fas fa-sparkles" style="font-size:0.7rem;"></i> ${varInfo.label}: <strong>${varInfo.text}</strong></span>`
+          ? `<span class="rev-product-variant"><i class="fas fa-sparkles" style="font-size:0.7rem;"></i> ${escapeCartHtml(varInfo.label)}: <strong>${escapeCartHtml(varInfo.text)}</strong></span>`
           : '';
 
         let revCollectionHtml = '';
@@ -1533,7 +2518,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
               <span style="font-weight:700;">محتويات الكوليكشن:</span>
               ${item.selectedItems.map(si => {
                 const sName = si.selectedVariant && (si.selectedVariant.name || si.selectedVariant.id) ? (si.selectedVariant.name || si.selectedVariant.id) : '';
-                return `• ${si.productName || 'منتج'}${sName ? ` (${sName})` : ''}`;
+                return `• ${escapeCartHtml(si.productName || 'منتج')}${sName ? ` (${escapeCartHtml(sName)})` : ''}`;
               }).join(' | ')}
             </div>
           `;
@@ -1541,35 +2526,93 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
         divItem.innerHTML = `
           <div class="rev-product-start">
-            <img class="rev-product-img" loading="lazy" src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
+            <img class="rev-product-img" loading="lazy" src="${escapeCartHtml(item.image || '')}" alt="${escapeCartHtml(item.name || '')}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">
             <div class="rev-product-details">
-              <h4 class="rev-product-name">${item.name}</h4>
+              <h4 class="rev-product-name">${escapeCartHtml(item.name || '')}</h4>
               <div class="rev-product-meta-row">
                 ${variantBadgeHtml}
-                <span class="rev-product-qty-badge">الكمية: <strong>${qtyVal}</strong> × ${unitPrice.toFixed(0)} ج.م</span>
+                <span class="rev-product-qty-badge">الكمية: <strong>${qtyVal}</strong> × ${formatCartEgp(unitPrice)} ج.م</span>
               </div>
               ${revCollectionHtml}
             </div>
           </div>
           <div class="rev-product-subtotal">
-            ${sub.toFixed(0)} ج.م
+            ${formatCartEgp(sub)} ج.م
           </div>
         `;
         revContainer.appendChild(divItem);
       });
       revProductsList.appendChild(revContainer);
 
-      summSubtotal.textContent = subtotal.toFixed(0) + " ج.م";
-      summShipping.textContent = fee === 0 ? "شحن مجاني" : fee.toFixed(0) + " ج.م";
-      finalSummaryTotal.textContent = orderTotal.toFixed(0) + " ج.م";
-
+      syncAllShippingAndOrderSummaries();
       goToStep(3);
     };
+
+    function showCheckoutBanner(message, tone, options) {
+      const banner = document.getElementById('checkoutStatusBanner');
+      const textEl = document.getElementById('checkoutStatusBannerText');
+      const actionsEl = document.getElementById('checkoutStatusBannerActions');
+      const resetBtn = document.getElementById('btnResetOrderAttempt');
+      if (!banner || !textEl) return;
+
+      const isWarning = tone === 'warning';
+      banner.style.background = isWarning ? '#fffbeb' : '#fff1f2';
+      banner.style.borderColor = isWarning ? '#fde68a' : '#fecdd3';
+      banner.style.color = isWarning ? '#92400e' : '#9f1239';
+      textEl.textContent = message || 'حدث خطأ أثناء تنفيذ الطلب.';
+
+      const showNewAttemptBtn = Boolean(options && options.showNewAttemptAction);
+      if (actionsEl) {
+        actionsEl.style.display = showNewAttemptBtn ? 'flex' : 'none';
+      }
+      if (resetBtn) {
+        resetBtn.style.display = showNewAttemptBtn ? 'inline-flex' : 'none';
+      }
+      banner.style.display = 'block';
+    }
+
+    function hideCheckoutBanner() {
+      const banner = document.getElementById('checkoutStatusBanner');
+      const actionsEl = document.getElementById('checkoutStatusBannerActions');
+      if (banner) banner.style.display = 'none';
+      if (actionsEl) actionsEl.style.display = 'none';
+    }
+
+    function resetTurnstileWidgetSafely() {
+      if (typeof turnstile !== 'undefined' && typeof turnstile.reset === 'function') {
+        try {
+          turnstile.reset();
+        } catch (_) {}
+      }
+    }
+
+    document.getElementById('btnResetOrderAttempt')?.addEventListener('click', function () {
+      if (window.DandyOrderFlow) {
+        window.DandyOrderFlow.clearCheckoutAttemptState(window.sessionStorage);
+      }
+      resetTurnstileWidgetSafely();
+      showCheckoutBanner(
+        'تم تجهيز محاولة طلب جديدة. يرجى إكمال التحقق الأمني (CAPTCHA) ثم الضغط على «تأكيد وإتمام الطلب».',
+        'warning',
+        { showNewAttemptAction: false }
+      );
+      const savingTextLoader = document.getElementById('savingTextLoader');
+      if (savingTextLoader) {
+        savingTextLoader.innerHTML = '<i class="fas fa-lock" style="color:#059669; margin-left:4px;"></i> تأكيد الطلب يسجله بأمان ويوفر لك كود تتبع فوري.';
+      }
+    });
 
     window.submitFinalOrder = async function() {
       const finalBtn = document.getElementById('finalPlaceOrderBtn');
       const savingTextLoader = document.getElementById('savingTextLoader');
+      const restoreSubmitBtn = () => {
+        if (finalBtn) {
+          finalBtn.disabled = false;
+          finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإتمام الطلب';
+        }
+      };
 
+      hideCheckoutBanner();
       finalBtn.disabled = true;
       finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ طلبك...';
       savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع تفاصيل الفاتورة وحجز منتجاتك...</span>';
@@ -1623,7 +2666,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         }
       }
 
-      // جلب توكن التحقق الأمني من كابتشا Cloudflare Turnstile
+      // جلب توكن التحقق الأمني من كابتشا Cloudflare Turnstile (مرة واحدة لكل محاولة إرسال فعلية)
       let turnstileToken = '';
       if (typeof turnstile !== 'undefined') {
         try {
@@ -1636,64 +2679,190 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       }
 
       if (!turnstileToken) {
-        alert('يرجى إكمال اختبار التحقق الأمني (CAPTCHA) قبل تأكيد الطلب.');
-        finalBtn.disabled = false;
-        finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإتمام الطلب';
+        showCheckoutBanner('يرجى إكمال اختبار التحقق الأمني (CAPTCHA) قبل تأكيد الطلب.', 'warning');
+        restoreSubmitBtn();
+        savingTextLoader.innerHTML = '<i class="fas fa-shield-alt" style="color:var(--color-blush);"></i> يرجى إكمال التحقق الأمني أولاً.';
         return;
       }
 
+      const flow = window.DandyOrderFlow;
+      if (!flow || typeof flow.prepareCheckoutIdempotency !== 'function' || typeof flow.isValidUuidV4 !== 'function') {
+        showCheckoutBanner(
+          'تعذر تحميل وحدة حماية الطلب من التكرار. تم الحفاظ على سلتكِ بأمان؛ يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.',
+          'error',
+          { showNewAttemptAction: false }
+        );
+        restoreSubmitBtn();
+        savingTextLoader.innerHTML =
+          '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> تعذر التحقق من حماية الطلب؛ سلتكِ محفوظة كما هي.';
+        return;
+      }
+
+      if (isValidatingCoupon) {
+        showCheckoutBanner('جاري التحقق من كود الخصم؛ يرجى الانتظار لحظة ثم المحاولة مرة أخرى.', 'warning');
+        restoreSubmitBtn();
+        savingTextLoader.innerHTML = '<i class="fas fa-clock" style="color:var(--color-blush);"></i> يرجى الانتظار حتى يكتمل التحقق من الكوبون.';
+        return;
+      }
+
+      const appliedCouponCode = activeCouponState && activeCouponState.code
+        ? normalizeClientCouponCode(activeCouponState.code)
+        : null;
+
+      const customerUid = currentAuthUser && currentAuthUser.uid ? currentAuthUser.uid : null;
+      let idempotencyPrep = null;
       try {
-        const response = await fetch('/api/create-order', {
+        idempotencyPrep = await flow.prepareCheckoutIdempotency({
+          orderInput: {
+            name,
+            phone,
+            email: email || 'N/A',
+            governorate,
+            city,
+            address,
+            customerId: customerUid,
+            couponCode: appliedCouponCode,
+            items
+          },
+          sessionStorage: window.sessionStorage
+        });
+      } catch (_) {
+        idempotencyPrep = { ok: false, clientRequestId: null };
+      }
+
+      if (!idempotencyPrep || !idempotencyPrep.ok || !flow.isValidUuidV4(idempotencyPrep.clientRequestId)) {
+        showCheckoutBanner(
+          (idempotencyPrep && idempotencyPrep.message) ||
+            'تعذر حفظ معرّف تأكيد الطلب في تخزين الجلسة بالمتصفح. تم الحفاظ على سلتكِ بأمان ولم يتم إرسال الطلب؛ يرجى السماح بتخزين الجلسة ثم المحاولة مرة أخرى.',
+          'error',
+          { showNewAttemptAction: false }
+        );
+        restoreSubmitBtn();
+        savingTextLoader.innerHTML =
+          '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> لم يتم إرسال الطلب حفاظاً على عدم التكرار؛ سلتكِ محفوظة كما هي.';
+        return;
+      }
+
+      const clientRequestId = idempotencyPrep.clientRequestId;
+
+      let response = null;
+      let result = {};
+      let networkError = false;
+
+      try {
+        const orderRequestBody = {
+          customer: {
+            name,
+            phone,
+            email: email || 'N/A',
+            governorate,
+            city,
+            address
+          },
+          items,
+          idToken,
+          turnstileToken,
+          clientRequestId
+        };
+        if (appliedCouponCode) {
+          orderRequestBody.couponCode = appliedCouponCode;
+        }
+
+        response = await fetch('/api/create-order', {
           method: 'POST',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            customer: {
-              name,
-              phone,
-              email: email || 'N/A',
-              governorate,
-              city,
-              address
-            },
-            items,
-            idToken,
-            turnstileToken
-          })
+          body: JSON.stringify(orderRequestBody)
         });
 
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok || !result.success) {
-          if (typeof turnstile !== 'undefined') {
-            try { turnstile.reset(); } catch(e) {}
-          }
-          throw new Error(result.message || 'حدث خطأ أثناء معالجة الطلب.');
-        }
-
-        const generatedKey = result.orderId;
-        const invoiceCode = result.invoiceCode;
-
-        localStorage.removeItem('cart');
-
-        let recent = JSON.parse(localStorage.getItem('dandy_recent_lookups')) || [];
-        recent.unshift({ code: invoiceCode, phone: phone, time: new Date().getTime() });
-        localStorage.setItem('dandy_recent_lookups', JSON.stringify(recent));
-
-        window.location.href = `/invoice?id=${encodeURIComponent(generatedKey)}&invoice=${encodeURIComponent(invoiceCode)}`;
-
-      } catch(err) {
-        console.error('Order submission error:', err);
-        if (typeof turnstile !== 'undefined') {
-          try { turnstile.reset(); } catch(e) {}
-        }
-        alert(err.message || 'حدث خطأ أثناء الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى.');
-        finalBtn.disabled = false;
-        finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإتمام الطلب';
-        savingTextLoader.innerHTML = '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> حدث خطأ. يرجى المحاولة مرة أخرى.';
+        result = await response.json().catch(() => ({}));
+      } catch (fetchErr) {
+        networkError = true;
       }
+
+      const outcome = flow
+        ? flow.classifyCreateOrderOutcome({
+            ok: Boolean(response && response.ok),
+            status: response ? response.status : 0,
+            result,
+            networkError
+          })
+        : {
+            action: (response && response.ok && result && result.success && result.invoiceAccessToken) ? 'SUCCESS_REDIRECT' : 'ERROR_KEEP_STATE',
+            clearCart: Boolean(response && response.ok && result && result.success && result.invoiceAccessToken),
+            clearAttempt: Boolean(response && response.ok && result && result.success && result.invoiceAccessToken),
+            resetTurnstile: !(response && response.ok && result && result.success && result.invoiceAccessToken),
+            redirectUrl: result && result.invoiceAccessToken ? '/invoice#access=' + encodeURIComponent(result.invoiceAccessToken) : '',
+            invoiceCode: result && result.invoiceCode ? result.invoiceCode : '',
+            message: (result && result.message) || 'حدث خطأ أثناء معالجة الطلب.'
+          };
+
+      if (outcome.action === 'SUCCESS_REDIRECT') {
+        if (flow) {
+          flow.clearCheckoutAttemptState(window.sessionStorage);
+          if (outcome.invoiceCode) {
+            flow.saveRecentLookupCode(window.localStorage, outcome.invoiceCode);
+          }
+        }
+        clearStoredCouponCode();
+        activeCouponState = null;
+        pendingCouponCode = null;
+        localStorage.removeItem('cart');
+        window.location.href = outcome.redirectUrl;
+        return;
+      }
+
+      // If final submission rejected coupon, clear applied coupon state so stale discount is never shown
+      const serverErrCode = result && typeof result.error === 'string' ? result.error : '';
+      if (
+        appliedCouponCode &&
+        (serverErrCode.startsWith('COUPON_') ||
+          serverErrCode === 'PINK_FRIDAY_NOT_COMBINABLE' ||
+          serverErrCode === 'NO_ELIGIBLE_CATEGORY_ITEMS' ||
+          serverErrCode === 'EMPTY_ELIGIBLE_SUBTOTAL' ||
+          serverErrCode === 'MINIMUM_SUBTOTAL_NOT_MET' ||
+          serverErrCode === 'INVALID_COUPON_TOTAL')
+      ) {
+        activeCouponState = null;
+        pendingCouponCode = null;
+        clearStoredCouponCode();
+        renderCouponUiState({
+          loading: false,
+          preserveInput: true,
+          feedbackType: 'error',
+          feedbackMessage: outcome.message
+        });
+        syncAllShippingAndOrderSummaries();
+      }
+
+      // Any non-redirect outcome: NEVER clear cart, NEVER auto-retry silently, reset one-time Turnstile token
+      if (outcome.resetTurnstile) {
+        resetTurnstileWidgetSafely();
+      }
+
+      const showNewAttemptAction = Boolean(outcome.requireNewAttempt);
+      const tone =
+        outcome.action === 'ORDER_IN_PROGRESS' ||
+        outcome.action === 'RATE_LIMITED_KEEP_ID' ||
+        outcome.action === 'CAPTCHA_FAILED_KEEP_ID'
+          ? 'warning'
+          : 'error';
+
+      showCheckoutBanner(outcome.message, tone, { showNewAttemptAction });
+      restoreSubmitBtn();
+      savingTextLoader.innerHTML =
+        '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> لم يتم استلام تأكيد نهائي للطلب بعد؛ سلتكِ محفوظة كما هي.';
     };
 
     renderStep1CartItems();
+    if (cart.length === 0) {
+      clearStoredCouponCode();
+      pendingCouponCode = null;
+      activeCouponState = null;
+    } else if (pendingCouponCode) {
+      validateCouponWithServer(pendingCouponCode, { isRevalidation: true });
+    }
   </script>
 </BaseLayout>

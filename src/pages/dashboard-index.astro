@@ -1519,6 +1519,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           window.location.replace('/');
           return;
         }
+        if (user.emailVerified !== true) {
+          Promise.resolve(auth && typeof auth.signOut === 'function' ? auth.signOut() : null).catch(() => {}).finally(() => {
+            window.location.replace('/login?reason=email_not_verified');
+          });
+          return;
+        }
 
         // ONLY executed if user is authenticated and verified as admin@dandy.com
         await loadProductsCatalog();

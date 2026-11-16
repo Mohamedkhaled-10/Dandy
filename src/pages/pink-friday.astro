@@ -12,6 +12,10 @@ import {
   validateOffer,
   type PinkFridayCampaign
 } from '../utils/pink-friday-server';
+import {
+  hasExposedCollectionVariantSelector,
+  getExposedCollectionVariantOptions
+} from '../utils/server-variant-pricing';
 
 const campaign: PinkFridayCampaign = await getPublishedPinkFridayCampaign();
 const status = getCampaignStatus(campaign);
@@ -104,12 +108,12 @@ if (status === 'active' && campaignCollectionsList.length > 0) {
       const itemBasePrice = parseFloat(String(prod.price)) || 0;
       totalRegPrice += itemBasePrice;
 
-      // Extract scents / variants if available
-      const rawScents = (prod as any).scents || (prod as any).variants || [];
-      const cleanScents = Array.isArray(rawScents) ? rawScents.map(s => ({
-        id: typeof s === 'object' ? (s.id || s.name) : String(s),
-        name: typeof s === 'object' ? s.name : String(s)
-      })) : [];
+      // Extract exposed selectable collection variants under unified eligibility contract
+      const cleanScents = getExposedCollectionVariantOptions(prod);
+      if (hasExposedCollectionVariantSelector(prod) && cleanScents.length === 0) {
+        isAllAvailable = false;
+        break;
+      }
 
       resolvedItems.push({
         collectionItemId: cItem.collectionItemId,
@@ -510,6 +514,16 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
         if (modal) modal.style.display = 'none';
       });
 
+      function escapeColHtml(val) {
+        if (val === undefined || val === null) return '';
+        return String(val)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
       function renderSfColModal() {
         if (!selectedColData) return;
         document.getElementById('sfColModalName').textContent = selectedColData.name;
@@ -523,13 +537,21 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
           const div = document.createElement('div');
           div.style.cssText = 'background:#f9fafb; padding:10px 14px; border-radius:8px; border:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; gap:10px;';
 
-          const scents = item.scents || [];
+          const scents = Array.isArray(item.scents) ? item.scents : [];
           let scentSelectHtml = '';
 
           if (scents.length > 0) {
+            const defaultVarId = item.defaultVariantId !== undefined && item.defaultVariantId !== null
+              ? String(item.defaultVariantId).trim()
+              : '';
             scentSelectHtml = `
               <select class="sf-item-scent-select" data-item-index="${idx}" style="border:1px solid #d1d5db; border-radius:6px; padding:4px 8px; font-size:0.8rem; outline:none; background:#ffffff;">
-                ${scents.map(s => `<option value="${s.id}" ${String(s.id) === String(item.defaultVariantId) ? 'selected' : ''}>${s.name}</option>`).join('')}
+                ${scents.map(s => {
+                  const optId = String(s.id ?? '').trim();
+                  const optName = String(s.name ?? '');
+                  const isSelected = defaultVarId !== '' && optId === defaultVarId;
+                  return `<option value="${escapeColHtml(optId)}" ${isSelected ? 'selected' : ''}>${escapeColHtml(optName)}</option>`;
+                }).join('')}
               </select>
             `;
           } else {
@@ -538,9 +560,9 @@ const canonicalUrl = `${SITE_URL}/pink-friday`;
 
           div.innerHTML = `
             <div style="display:flex; align-items:center; gap:10px;">
-              <img src="${item.image}" style="width:36px; height:36px; border-radius:4px; object-fit:cover;">
+              <img src="${escapeColHtml(item.image || '')}" style="width:36px; height:36px; border-radius:4px; object-fit:cover;">
               <div>
-                <strong style="font-size:0.82rem; color:#111827; display:block;">${item.productName}</strong>
+                <strong style="font-size:0.82rem; color:#111827; display:block;">${escapeColHtml(item.productName || '')}</strong>
               </div>
             </div>
             <div>${scentSelectHtml}</div>

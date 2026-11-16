@@ -2932,46 +2932,55 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
     }
 
     /* --------------------------------------------------------------------------
-       5. BLOG ARTICLES RENDERER (Firestore)
+       5. BLOG ARTICLES RENDERER (Server-Filtered Public Articles API)
        -------------------------------------------------------------------------- */
     async function loadHomeBlog() {
       const container = document.getElementById('homeBlogContainer');
+      const blogSection = document.getElementById('editorial-blog-section');
       if (!container) return;
 
-      const firestore = window.firestore || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
-      if (!firestore) {
-        document.getElementById('editorial-blog-section')?.style.setProperty('display', 'none');
-        return;
-      }
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
 
       try {
-        const fetchPromise = firestore.collection('articles').orderBy('createdAt', 'desc').limit(3).get();
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 3500));
-        const snapshot = await Promise.race([fetchPromise, timeoutPromise]);
+        const res = await fetch('/api/public-articles?limit=3', {
+          headers: { 'Accept': 'application/json' },
+          signal: controller ? controller.signal : undefined
+        });
+        if (timeoutId) clearTimeout(timeoutId);
 
-        if (snapshot.empty) {
-          document.getElementById('editorial-blog-section')?.style.setProperty('display', 'none');
+        if (!res.ok) {
+          blogSection?.style.setProperty('display', 'none');
+          return;
+        }
+
+        const payload = await res.json();
+        const articles = payload && payload.success && Array.isArray(payload.articles)
+          ? payload.articles
+          : [];
+
+        if (!articles.length) {
+          blogSection?.style.setProperty('display', 'none');
           return;
         }
 
         let html = '';
         let validCount = 0;
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.status === 'draft') return;
+        articles.forEach(data => {
+          if (!data) return;
           validCount++;
 
           const img = data.image || 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=600&q=80';
           const title = data.title || 'أسرار العناية بالجمال الطبيعي';
           const category = data.category || 'العناية بالبشرة';
-          const excerpt = data.excerpt || (data.content ? data.content.replace(/<[^>]+>/g, '').substring(0, 110) + '...' : 'اكتشفي أفضل النصائح والوصفات الطبيعية للحفاظ على نضارة وإشراقة بشرتكِ.');
-          const postLink = data.slug ? `/blog/${encodeURIComponent(data.slug)}` : `/post?id=${doc.id}`;
+          const excerpt = data.excerpt || 'اكتشفي أفضل النصائح والوصفات الطبيعية للحفاظ على نضارة وإشراقة بشرتكِ.';
+          const postLink = data.slug ? `/blog/${encodeURIComponent(data.slug)}` : `/post?id=${encodeURIComponent(data.id || '')}`;
 
           html += `
             <a href="${postLink}" class="blog-journal-card">
               <div class="blog-card-thumb">
-                <img src="${img}" alt="${escapeHtml(title)}" loading="lazy" />
+                <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" loading="lazy" />
               </div>
               <div class="blog-card-body">
                 <span class="blog-meta-tag">${escapeHtml(category)}</span>
@@ -2992,11 +3001,12 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
             window.DandyAnimationController.getInstance().refresh();
           }
         } else {
-          document.getElementById('editorial-blog-section')?.style.setProperty('display', 'none');
+          blogSection?.style.setProperty('display', 'none');
         }
       } catch (err) {
+        if (timeoutId) clearTimeout(timeoutId);
         console.warn("Home blog load failed:", err);
-        document.getElementById('editorial-blog-section')?.style.setProperty('display', 'none');
+        blogSection?.style.setProperty('display', 'none');
       }
     }
 

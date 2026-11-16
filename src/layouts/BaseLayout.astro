@@ -36,7 +36,12 @@ const pathname = (Astro.url.pathname || '').replace(/\/$/, '');
 const defaultCanonical = `https://dandy-ebon.vercel.app${pathname || '/'}`;
 const resolvedCanonical = canonical || defaultCanonical;
 
-const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU";
+const firebaseApiKey =
+  process.env.FIREBASE_API_KEY ||
+  process.env.PUBLIC_FIREBASE_API_KEY ||
+  import.meta.env?.FIREBASE_API_KEY ||
+  import.meta.env?.PUBLIC_FIREBASE_API_KEY ||
+  '';
 const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
 ---
 
@@ -102,11 +107,21 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
     };
 
     if (typeof firebase !== 'undefined') {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        window.db = firebase.database();
+      } catch (err) {
+        console.warn('Firebase database initialization notice:', err);
       }
-      window.db = firebase.database();
-      window.auth = firebase.auth();
+      try {
+        if (typeof firebase.auth === 'function') {
+          window.auth = firebase.auth();
+        }
+      } catch (err) {
+        console.warn('Firebase auth initialization notice:', err?.code || 'auth_unavailable');
+      }
       try {
         if (firebase.firestore) {
           firebase.firestore.setLogLevel('error');

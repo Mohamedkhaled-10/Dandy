@@ -325,16 +325,18 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
               createdAt: firebase.database.ServerValue.TIMESTAMP
             });
 
-            // استدعاء خدمة ربط الطلبات القديمة تلقائياً (المرحلة 3)
-            try {
-              const idToken = await cred.user.getIdToken();
-              await fetch('/api/link-customer-orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken, phone })
-              });
-            } catch (linkErr) {
-              console.warn('Orders link notice:', linkErr);
+            // استدعاء خدمة ربط الطلبات القديمة فقط إذا كان البريد الإلكتروني مفعّلاً (يتم ربط الطلبات تلقائياً لاحقاً في /account بعد تفعيل البريد)
+            if (cred.user && cred.user.emailVerified === true) {
+              try {
+                const idToken = await cred.user.getIdToken();
+                await fetch('/api/link-customer-orders', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ idToken })
+                });
+              } catch (linkErr) {
+                console.warn('Orders link notice:', linkErr);
+              }
             }
 
             showAlert('تم إنشاء الحساب بنجاح! جاري التوجيه...', 'success');

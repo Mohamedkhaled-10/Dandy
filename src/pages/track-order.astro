@@ -9,6 +9,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   canonical="https://dandy-ebon.vercel.app/track-order"
 >
   <slot name="head" slot="head">
+    <script is:inline src="/assets/js/order-flow-helpers.js"></script>
     <meta name="robots" content="noindex, follow" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://dandy-ebon.vercel.app/track-order" />
@@ -338,23 +339,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         margin-left: 10px;
       }
 
-      .track-total-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 12px;
-      }
-
-      .track-total-row span {
+      .track-status-banner {
+        display: none;
+        margin-top: 16px;
+        padding: 13px 16px;
+        border-radius: var(--border-radius-sm);
         font-size: 0.9rem;
         font-weight: 700;
+        line-height: 1.6;
+        border: 1px solid #fecdd3;
+        background: #fff1f2;
+        color: #9f1239;
+      }
+
+      .track-status-banner.info {
+        border-color: #fde68a;
+        background: #fffbeb;
+        color: #92400e;
+      }
+
+      .track-stage-dates {
+        margin-top: 16px;
+        padding: 12px 14px;
+        background: var(--color-surface-soft);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-sm);
+        display: none;
+        flex-wrap: wrap;
+        gap: 12px 20px;
+        font-size: 0.82rem;
         color: var(--color-muted);
       }
 
-      .track-total-row strong {
-        font-size: 1.25rem;
-        font-weight: 800;
+      .track-stage-dates strong {
         color: var(--color-primary);
+      }
+
+      .track-privacy-note {
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: var(--color-muted);
+        line-height: 1.6;
       }
 
       @media (max-width: 600px) {
@@ -393,17 +418,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <button type="submit" class="btn-submit-track">
+            <button type="submit" id="btnSubmitTrack" class="btn-submit-track">
               <i class="fas fa-search"></i> تتبع الطلب
             </button>
             <div id="loadingIndicator" class="track-loading-text">
               <i class="fas fa-circle-notch fa-spin"></i> جاري التحقق من السجلات...
             </div>
           </div>
+
+          <div id="trackStatusBanner" class="track-status-banner" role="alert" aria-live="polite"></div>
         </form>
 
         <div class="recent-lookups" id="recentSearchesBox" style="display:none;">
-          <span>عمليات البحث الأخيرة على هذا الجهاز:</span>
+          <span>أكواد الطلبات الأخيرة على هذا الجهاز (اضغطي لتعبئة الكود ثم أدخلي رقم الهاتف):</span>
           <div class="recent-chips-list" id="recentTagsList"></div>
         </div>
       </section>
@@ -415,8 +442,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <span>كود الطلب</span>
             <h2 id="resInvoiceCode">DNY-******</h2>
           </div>
-          <button class="btn-print-invoice" onclick="window.print()">
-            <i class="fas fa-print"></i> طباعة الفاتورة
+          <button type="button" class="btn-print-invoice" onclick="window.print()">
+            <i class="fas fa-print"></i> طباعة حالة الطلب
           </button>
         </div>
 
@@ -448,18 +475,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <div class="timeline-text">تم التوصيل</div>
             </div>
           </div>
+
+          <div class="track-stage-dates" id="stageDatesRow"></div>
         </div>
 
         <div class="track-meta-row">
           <div class="track-meta-col">
-            <span>بيانات المستلم</span>
-            <strong id="resCustName">...</strong>
-            <p id="resCustPhone">...</p>
+            <span>المستلم</span>
+            <strong id="resCustName">-</strong>
+            <p id="resOrderDates"></p>
           </div>
           <div class="track-meta-col">
-            <span>عنوان التوصيل</span>
-            <strong id="resCustLocation">...</strong>
-            <p id="resCustAddress">...</p>
+            <span>نطاق التوصيل وحالة الشحن</span>
+            <strong id="resCustLocation">-</strong>
+            <p id="resShippingMeta"></p>
           </div>
         </div>
 
@@ -467,36 +496,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <thead>
             <tr>
               <th style="text-align: right;">المنتج</th>
-              <th style="text-align: center; width: 60px;">الكمية</th>
-              <th style="text-align: left; width: 100px;">المجموع</th>
+              <th style="text-align: center; width: 90px;">الكمية</th>
             </tr>
           </thead>
           <tbody id="resProductsBody"></tbody>
         </table>
 
-        <div class="track-total-row">
-          <span>إجمالي المبلغ المطلوب:</span>
-          <strong id="resTotal">0 ج.م</strong>
-        </div>
+        <p class="track-privacy-note">
+          <i class="fas fa-shield-alt" style="color:var(--color-blush); margin-left:4px;"></i>
+          لحماية خصوصيتكِ، تعرض صفحة التتبع العامة حالة الشحنة والمنتجات فقط دون عرض تفاصيل العنوان أو المبالغ المالية.
+        </p>
       </section>
     </main>
   </div>
 
   <script is:inline>
-    const db = window.db || firebase.database();
     const trackingForm = document.getElementById('trackingForm');
     const trackCodeInput = document.getElementById('trackCode');
     const trackPhoneInput = document.getElementById('trackPhone');
+    const submitBtn = document.getElementById('btnSubmitTrack');
     const loadingIndicator = document.getElementById('loadingIndicator');
-    
+    const statusBanner = document.getElementById('trackStatusBanner');
+
     const resultsCard = document.getElementById('trackingResultsCard');
     const resInvoiceCode = document.getElementById('resInvoiceCode');
     const resCustName = document.getElementById('resCustName');
-    const resCustPhone = document.getElementById('resCustPhone');
+    const resOrderDates = document.getElementById('resOrderDates');
     const resCustLocation = document.getElementById('resCustLocation');
-    const resCustAddress = document.getElementById('resCustAddress');
+    const resShippingMeta = document.getElementById('resShippingMeta');
     const resProductsBody = document.getElementById('resProductsBody');
-    const resTotal = document.getElementById('resTotal');
+    const stageDatesRow = document.getElementById('stageDatesRow');
 
     const cancelledBanner = document.getElementById('cancelledBanner');
     const timelineContainer = document.getElementById('timelineContainer');
@@ -510,37 +539,66 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const recentSearchesBox = document.getElementById('recentSearchesBox');
     const recentTagsList = document.getElementById('recentTagsList');
 
+    function showTrackBanner(message, isInfo) {
+      if (!statusBanner) return;
+      statusBanner.textContent = message || '';
+      statusBanner.classList.toggle('info', Boolean(isInfo));
+      statusBanner.style.display = message ? 'block' : 'none';
+    }
+
+    function hideTrackBanner() {
+      if (!statusBanner) return;
+      statusBanner.style.display = 'none';
+      statusBanner.textContent = '';
+    }
+
+    function formatArabicDate(value) {
+      if (!value) return '';
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
     function drawRecentSearches() {
-      const recent = JSON.parse(localStorage.getItem('dandy_recent_lookups')) || [];
+      const flow = window.DandyOrderFlow;
+      const recent = flow ? flow.loadAndMigrateRecentLookups(window.localStorage, 4) : [];
       if (!recentSearchesBox || !recentTagsList) return;
-      if (recent.length === 0) {
+      if (!recent || recent.length === 0) {
         recentSearchesBox.style.display = 'none';
+        recentTagsList.innerHTML = '';
         return;
       }
 
       recentSearchesBox.style.display = 'block';
       recentTagsList.innerHTML = '';
-      
-      recent.forEach(r => {
-        const tag = document.createElement('span');
+
+      recent.forEach((r) => {
+        const tag = document.createElement('button');
+        tag.type = 'button';
         tag.className = 'recent-chip';
         tag.textContent = r.code;
-        tag.title = 'اضغط لتتبع هذه الشحنة';
+        tag.title = 'اضغطي لتعبئة كود الفاتورة ثم أدخلي رقم الهاتف';
         tag.addEventListener('click', () => {
           trackCodeInput.value = r.code;
-          trackPhoneInput.value = r.phone;
-          performQuery(r.code, r.phone);
+          trackPhoneInput.value = '';
+          trackPhoneInput.focus();
+          showTrackBanner('تم تعبئة كود الفاتورة. يرجى إدخال رقم الهاتف المسجل بالطلب للمتابعة.', true);
         });
         recentTagsList.appendChild(tag);
       });
     }
 
-    function saveRecentSearch(code, phone) {
-      let recent = JSON.parse(localStorage.getItem('dandy_recent_lookups')) || [];
-      recent = recent.filter(r => r.code !== code);
-      recent.unshift({ code, phone, time: new Date().getTime() });
-      if (recent.length > 4) recent.pop();
-      localStorage.setItem('dandy_recent_lookups', JSON.stringify(recent));
+    function saveRecentSearchCodeOnly(code) {
+      const flow = window.DandyOrderFlow;
+      if (flow) {
+        flow.saveRecentLookupCode(window.localStorage, code, 4);
+      }
       drawRecentSearches();
     }
 
@@ -553,64 +611,95 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     function renderOrderResults(order) {
+      hideTrackBanner();
       resultsCard.classList.add('show');
-      resInvoiceCode.textContent = order.invoiceCode;
-      resCustName.textContent = order.name || '';
-      resCustPhone.textContent = order.phone || '';
-      resCustLocation.textContent = (order.city || '') + (order.governorate ? '، ' + order.governorate : '');
-      resCustAddress.textContent = order.address || '';
+      resInvoiceCode.textContent = order.invoiceCode || '';
+      resCustName.textContent = order.firstName || '-';
+
+      const createdStr = formatArabicDate(order.createdAt);
+      const updatedStr = formatArabicDate(order.lastStatusUpdate);
+      const dateParts = [];
+      if (createdStr) dateParts.push('تاريخ الطلب: ' + createdStr);
+      if (updatedStr) dateParts.push('آخر تحديث: ' + updatedStr);
+      resOrderDates.textContent = dateParts.join(' · ');
+
+      const locationParts = [];
+      if (order.city) locationParts.push(order.city);
+      if (order.governorate) locationParts.push(order.governorate);
+      resCustLocation.textContent = locationParts.length > 0 ? locationParts.join('، ') : '-';
+
+      const shippingParts = [];
+      if (order.shippingCompany) shippingParts.push('شركة الشحن: ' + order.shippingCompany);
+      if (order.shippingStatus) shippingParts.push('تفاصيل الشحن: ' + order.shippingStatus);
+      resShippingMeta.textContent = shippingParts.join(' · ');
 
       resProductsBody.innerHTML = '';
-      let calculatedSubtotal = 0;
 
-      if (order.products && order.products.length > 0) {
-        order.products.forEach(p => {
-          const qty = parseInt(p.quantity) || 1;
-          const lineTotal = (typeof p.lineTotal === 'number')
-            ? p.lineTotal
-            : (Number(p.price) || 0) * (Number(p.quantity) || 1);
-          calculatedSubtotal += lineTotal;
-
-          const imgHtml = p.image ? `<img loading="lazy" src="${p.image}" alt="${p.name}" class="track-item-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80';">` : '';
-          
-          const varInfo = typeof getVariantsDisplayInfo === 'function'
-            ? getVariantsDisplayInfo(p)
-            : (p.selectedVariant && p.selectedVariant.name ? { count: 1, label: 'الرائحة', text: p.selectedVariant.name } : null);
-
-          let variantRow = '';
-          if (varInfo && varInfo.text && String(varInfo.text).trim() !== '' && varInfo.text !== 'undefined') {
-            variantRow = `<div style="font-size:0.8rem; color:var(--color-rose-kiss-500, #fe5d9f); font-weight:700;">${varInfo.label}: ${varInfo.text}</div>`;
-          }
+      if (Array.isArray(order.products) && order.products.length > 0) {
+        order.products.forEach((p) => {
+          const qty = Number.isFinite(Number(p.quantity)) && Number(p.quantity) > 0
+            ? Math.floor(Number(p.quantity))
+            : 1;
 
           const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>
-              <div style="display:flex; align-items:center;">
-                ${imgHtml}
-                <div>
-                  <strong style="color:var(--color-primary); font-size:0.9rem;">${p.name}</strong>
-                  ${variantRow}
-                </div>
-              </div>
-            </td>
-            <td style="text-align:center; font-weight:700;">${qty}</td>
-            <td style="text-align:left; font-weight:800; color:var(--color-primary); white-space:nowrap;">${lineTotal.toFixed(0)} ج.م</td>
-          `;
+
+          const tdName = document.createElement('td');
+          const strongName = document.createElement('strong');
+          strongName.style.color = 'var(--color-primary)';
+          strongName.style.fontSize = '0.92rem';
+          strongName.textContent = p && typeof p.name === 'string' && p.name.trim() ? p.name.trim() : 'منتج داندي';
+          tdName.appendChild(strongName);
+
+          const tdQty = document.createElement('td');
+          tdQty.style.textAlign = 'center';
+          tdQty.style.fontWeight = '700';
+          tdQty.textContent = String(qty);
+
+          tr.appendChild(tdName);
+          tr.appendChild(tdQty);
           resProductsBody.appendChild(tr);
         });
-
-        const sub = order.subtotal !== undefined ? parseFloat(order.subtotal) : calculatedSubtotal;
-        const ship = order.shippingFee !== undefined ? parseFloat(order.shippingFee) : 0;
-        const total = order.totalAmount !== undefined ? parseFloat(order.totalAmount) : (sub + ship);
-
-        resTotal.textContent = total.toFixed(0) + ' ج.م';
       } else {
-        resProductsBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--color-muted);padding:16px;">لا توجد منتجات مسجلة.</td></tr>';
-        resTotal.textContent = '0 ج.م';
+        const emptyTr = document.createElement('tr');
+        const emptyTd = document.createElement('td');
+        emptyTd.colSpan = 2;
+        emptyTd.style.textAlign = 'center';
+        emptyTd.style.color = 'var(--color-muted)';
+        emptyTd.style.padding = '16px';
+        emptyTd.textContent = 'لا توجد منتجات مسجلة.';
+        emptyTr.appendChild(emptyTd);
+        resProductsBody.appendChild(emptyTr);
+      }
+
+      if (stageDatesRow) {
+        stageDatesRow.innerHTML = '';
+        const stageLabels = [
+          { key: 'processingAt', label: 'بدء التجهيز' },
+          { key: 'shippedAt', label: 'تاريخ الشحن' },
+          { key: 'deliveredAt', label: 'تاريخ التوصيل' },
+          { key: 'cancelledAt', label: 'تاريخ الإلغاء' }
+        ];
+        let hasAnyStageDate = false;
+        if (order.stageDates && typeof order.stageDates === 'object') {
+          stageLabels.forEach(({ key, label }) => {
+            const formatted = formatArabicDate(order.stageDates[key]);
+            if (formatted) {
+              hasAnyStageDate = true;
+              const chip = document.createElement('div');
+              const labelSpan = document.createElement('span');
+              labelSpan.textContent = label + ': ';
+              const valStrong = document.createElement('strong');
+              valStrong.textContent = formatted;
+              chip.appendChild(labelSpan);
+              chip.appendChild(valStrong);
+              stageDatesRow.appendChild(chip);
+            }
+          });
+        }
+        stageDatesRow.style.display = hasAnyStageDate ? 'flex' : 'none';
       }
 
       const status = order.status || 'New';
-      
       stepNew.classList.remove('active');
       stepProcessing.classList.remove('active');
       stepShipped.classList.remove('active');
@@ -624,7 +713,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         timelineContainer.style.display = 'none';
       } else {
         const normStatus = getNormalizedStatus(status);
-        
         if (normStatus === 'new') {
           stepNew.classList.add('active');
           timelineProgressBar.style.width = '0%';
@@ -649,50 +737,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function performQuery(code, phone) {
+    async function performQuery(code, phone) {
+      hideTrackBanner();
       loadingIndicator.style.display = 'inline-block';
+      if (submitBtn) submitBtn.disabled = true;
       resultsCard.classList.remove('show');
 
-      db.ref('orders')
-        .orderByChild('invoiceCode')
-        .equalTo(code)
-        .once('value')
-        .then(snap => {
-          loadingIndicator.style.display = 'none';
-          
-          if (!snap.exists()) {
-            alert('لم نتمكن من العثور على أي طلب يطابق كود الفاتورة المدخل. يرجى التحقق والمحاولة مرة أخرى.');
-            return;
-          }
+      const flow = window.DandyOrderFlow;
+      let response = null;
+      let data = {};
+      let networkError = false;
 
-          let foundOrder = null;
-          let matchedPhone = false;
-
-          const normalizedPhoneInput = phone.replace(/[^0-9]/g, '');
-
-          snap.forEach(child => {
-            const o = child.val();
-            const normalizedOrderPhone = (o.phone || '').replace(/[^0-9]/g, '');
-            if (normalizedOrderPhone.includes(normalizedPhoneInput) || normalizedPhoneInput.includes(normalizedOrderPhone)) {
-              foundOrder = { id: child.key, ...o };
-              matchedPhone = true;
-            }
-          });
-
-          if (!matchedPhone) {
-            alert('كود الفاتورة صحيح، لكن رقم الهاتف لا يطابق سجلاتنا. يرجى إدخال رقم الهاتف المسجل بالطلب.');
-            return;
-          }
-
-          renderOrderResults(foundOrder);
-          saveRecentSearch(code, phone);
-
-        })
-        .catch(err => {
-          loadingIndicator.style.display = 'none';
-          console.error(err);
-          alert('حدث خطأ فني أثناء جلب بيانات طلبك. يرجى المحاولة مرة أخرى.');
+      try {
+        response = await fetch('/api/track-order', {
+          method: 'POST',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            invoiceCode: code,
+            phone: phone
+          })
         });
+        data = await response.json().catch(() => ({}));
+      } catch (_) {
+        networkError = true;
+      } finally {
+        loadingIndicator.style.display = 'none';
+        if (submitBtn) submitBtn.disabled = false;
+      }
+
+      if (!networkError && response && response.ok && data && data.success && data.order) {
+        renderOrderResults(data.order);
+        saveRecentSearchCodeOnly(data.order.invoiceCode || code);
+        return;
+      }
+
+      const errorMsg = flow
+        ? flow.classifyTrackOrderError({
+            status: response ? response.status : 0,
+            data,
+            networkError
+          })
+        : (data && data.message) || 'تعذر العثور على الطلب أو بيانات التحقق غير مطابقة.';
+
+      showTrackBanner(errorMsg, false);
     }
 
     if (trackingForm) {
@@ -702,7 +792,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const phone = trackPhoneInput.value.trim();
 
         if (!code || !phone) {
-          alert('يرجى إدخال كود الفاتورة ورقم الهاتف.');
+          showTrackBanner('يرجى إدخال كود الفاتورة ورقم الهاتف.', false);
           return;
         }
 
@@ -712,13 +802,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     drawRecentSearches();
 
-    const params = new URLSearchParams(window.location.search);
-    const codeParam = params.get('code');
-    const phoneParam = params.get('phone');
-    if (codeParam && phoneParam && trackCodeInput && trackPhoneInput) {
-      trackCodeInput.value = codeParam;
-      trackPhoneInput.value = phoneParam;
-      performQuery(codeParam, phoneParam);
-    }
+    (function handleInitialUrlParams() {
+      const flow = window.DandyOrderFlow;
+      const extracted = flow
+        ? flow.extractTrackOrderUrlParams(window.location.search)
+        : { code: '', phone: '', shouldStripPhone: false, cleanedRelativeSearch: '' };
+
+      if (extracted.shouldStripPhone) {
+        try {
+          history.replaceState(null, '', window.location.pathname + extracted.cleanedRelativeSearch);
+        } catch (_) {}
+      }
+
+      if (extracted.code && trackCodeInput) {
+        trackCodeInput.value = extracted.code;
+      }
+
+      if (extracted.code && extracted.phone && trackCodeInput && trackPhoneInput) {
+        trackPhoneInput.value = extracted.phone;
+        performQuery(extracted.code, extracted.phone);
+      } else if (extracted.code && trackPhoneInput) {
+        trackPhoneInput.focus();
+      }
+    })();
   </script>
 </BaseLayout>

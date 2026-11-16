@@ -1371,6 +1371,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           window.location.replace('/');
           return;
         }
+        if (user.emailVerified !== true) {
+          const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+          Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
+            window.location.replace('/login?reason=email_not_verified');
+          });
+          return;
+        }
         loadAllData();
       }
 

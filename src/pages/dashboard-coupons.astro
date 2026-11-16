@@ -1,0 +1,1778 @@
+---
+// src/pages/dashboard-coupons.astro
+// Dandy Cosmetics — Protected Admin Coupon Definitions Management (GROUP 2A.5)
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="إدارة الكوبونات | Dandy Operations"
+  description="لوحة إدارة تعريفات كوبونات الخصم العامة والمخصصة للأقسام في متجر داندي"
+  robots="noindex, nofollow"
+  showHeader={false}
+  showFooter={false}
+  showDashboardNav={true}
+>
+  <slot name="head" slot="head">
+    <style is:global>
+      .cp-admin-wrap {
+        padding: 24px 20px 80px;
+        max-width: 1400px;
+        margin: 0 auto;
+        font-family: 'Cairo', sans-serif;
+      }
+
+      .cp-admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 18px;
+        background: #ffffff;
+        padding: 20px 24px;
+        border-radius: 10px;
+        border: 1px solid var(--border-light, #e5e7eb);
+      }
+
+      .cp-header-info h1 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .cp-header-badge {
+        font-size: 0.74rem;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: #f7f6f6;
+        color: #595050;
+        border: 1px solid #dedbdb;
+        font-weight: 700;
+      }
+
+      .cp-header-info p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+
+      .cp-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        background: #2c2828;
+        color: #ffffff;
+        border: 1px solid #2c2828;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s ease;
+      }
+
+      .cp-btn-primary:hover {
+        background: #111827;
+      }
+
+      .cp-btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .cp-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        background: #ffffff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.15s ease;
+      }
+
+      .cp-btn-secondary:hover {
+        border-color: #111827;
+        color: #111827;
+      }
+
+      .cp-notice-banner {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e3a8a;
+        font-size: 0.84rem;
+        line-height: 1.6;
+      }
+
+      .cp-notice-banner i {
+        margin-top: 3px;
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+
+      /* Definition Count Overview Cards (Config status only, no analytics) */
+      .cp-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .cp-summary-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 15px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .cp-summary-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+      }
+
+      .cp-summary-body h4 {
+        margin: 0 0 2px 0;
+        font-size: 0.78rem;
+        color: #6b7280;
+        font-weight: 600;
+      }
+
+      .cp-summary-body span {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #111827;
+      }
+
+      /* Panel & Filter Toolbar */
+      .cp-panel-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      .cp-filters-bar {
+        display: grid;
+        grid-template-columns: minmax(200px, 1.5fr) repeat(3, minmax(150px, 1fr)) auto;
+        gap: 12px;
+        margin-bottom: 18px;
+        align-items: end;
+      }
+
+      .cp-filter-group label {
+        display: block;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #4b5563;
+        margin-bottom: 5px;
+      }
+
+      .cp-input,
+      .cp-select {
+        width: 100%;
+        padding: 8px 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-family: inherit;
+        background: #ffffff;
+        color: #111827;
+        box-sizing: border-box;
+        outline: none;
+      }
+
+      .cp-input:focus,
+      .cp-select:focus {
+        border-color: #2c2828;
+      }
+
+      .cp-input:disabled,
+      .cp-select:disabled {
+        background: #f3f4f6;
+        color: #9ca3af;
+        cursor: not-allowed;
+      }
+
+      /* Table */
+      .cp-table-container {
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+      }
+
+      .cp-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.83rem;
+        text-align: right;
+      }
+
+      .cp-table th {
+        background: #f9fafb;
+        padding: 11px 12px;
+        font-weight: 700;
+        color: #374151;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+      }
+
+      .cp-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+        color: #1f2937;
+      }
+
+      .cp-table tbody tr:hover {
+        background: #fafafa;
+      }
+
+      .cp-code-badge {
+        display: inline-block;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.84rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        padding: 4px 8px;
+        border-radius: 5px;
+        background: #f3f4f6;
+        color: #111827;
+        border: 1px solid #e5e7eb;
+        direction: ltr;
+      }
+
+      .cp-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 9px;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .cp-status-badge.active {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+      }
+
+      .cp-status-badge.scheduled {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+      }
+
+      .cp-status-badge.expired {
+        background: #f3f4f6;
+        color: #4b5563;
+        border: 1px solid #d1d5db;
+      }
+
+      .cp-status-badge.disabled {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+      }
+
+      .cp-scope-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #374151;
+      }
+
+      .cp-actions-cell {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .cp-btn-sm {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid #d1d5db;
+        background: #ffffff;
+        color: #374151;
+        font-family: inherit;
+        transition: all 0.15s ease;
+      }
+
+      .cp-btn-sm:hover {
+        border-color: #111827;
+        color: #111827;
+      }
+
+      .cp-btn-sm.deactivate {
+        color: #b91c1c;
+        background: #fef2f2;
+        border-color: #fecaca;
+      }
+
+      .cp-btn-sm.deactivate:hover {
+        background: #dc2626;
+        color: #ffffff;
+        border-color: #dc2626;
+      }
+
+      .cp-btn-sm.activate {
+        color: #047857;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+      }
+
+      .cp-btn-sm.activate:hover {
+        background: #059669;
+        color: #ffffff;
+        border-color: #059669;
+      }
+
+      /* Modals */
+      .cp-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 16px;
+      }
+
+      .cp-modal-dialog {
+        background: #ffffff;
+        border-radius: 12px;
+        max-width: 680px;
+        width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+      }
+
+      .cp-modal-dialog.compact {
+        max-width: 480px;
+      }
+
+      .cp-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .cp-modal-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cp-modal-close {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        cursor: pointer;
+        color: #9ca3af;
+        line-height: 1;
+      }
+
+      .cp-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .cp-form-group {
+        margin-bottom: 14px;
+      }
+
+      .cp-form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 6px;
+      }
+
+      .cp-form-hint {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.72rem;
+        color: #6b7280;
+      }
+
+      .cp-form-error {
+        display: none;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 14px;
+      }
+
+      .cp-form-warning {
+        display: none;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 14px;
+      }
+
+      .cp-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        background: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 14px;
+      }
+
+      .cp-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+
+      .cp-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .cp-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #d1d5db;
+        transition: 0.2s;
+        border-radius: 24px;
+      }
+
+      .cp-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: #ffffff;
+        transition: 0.2s;
+        border-radius: 50%;
+      }
+
+      .cp-switch input:checked + .cp-slider {
+        background-color: #10b981;
+      }
+
+      .cp-switch input:checked + .cp-slider:before {
+        transform: translateX(20px);
+      }
+
+      .cp-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid #f3f4f6;
+      }
+
+      /* Toast */
+      .cp-toast {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        background: #111827;
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        z-index: 3000;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.25s ease;
+        pointer-events: none;
+      }
+
+      .cp-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .cp-toast.success {
+        background: #065f46;
+        border: 1px solid #059669;
+      }
+
+      .cp-toast.error {
+        background: #991b1b;
+        border: 1px solid #dc2626;
+      }
+
+      @media (max-width: 960px) {
+        .cp-filters-bar {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .cp-admin-wrap {
+          padding: 16px 12px 64px;
+        }
+        .cp-filters-bar,
+        .cp-form-grid {
+          grid-template-columns: 1fr;
+        }
+        .cp-admin-header {
+          padding: 16px;
+        }
+      }
+    </style>
+  </slot>
+
+  <main class="cp-admin-wrap" dir="rtl">
+    <!-- Header -->
+    <div class="cp-admin-header">
+      <div class="cp-header-info">
+        <h1>
+          <i class="fas fa-ticket-alt" style="color: #2c2828;"></i>
+          <span>إدارة كوبونات الخصم</span>
+          <span class="cp-header-badge">إعداد الكوبونات</span>
+        </h1>
+        <p>إنشاء وتعديل وتفعيل كوبونات الخصم العامة والمخصصة لأقسام المتجر المعتمدة.</p>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <a href="/dashboard-coupon-analytics" class="cp-btn-secondary" style="text-decoration: none;">
+          <i class="fas fa-chart-pie"></i>
+          <span>تحليلات الكوبونات</span>
+        </a>
+        <button type="button" class="cp-btn-primary" id="btnOpenCreateCoupon">
+          <i class="fas fa-plus"></i>
+          <span>إنشاء كوبون جديد</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Integration Scope Readiness Notice -->
+    <div class="cp-notice-banner" role="status">
+      <i class="fas fa-info-circle"></i>
+      <div>
+        <strong>نطاق المرحلة الحالية:</strong>
+        يمكن للعملاء تطبيق الكوبونات المؤهلة في سلة التسوق، ويتم التحقق النهائي وحساب الخصم بأمان على السيرفر أثناء إنشاء الطلب. لمتابعة تقارير الاستخدام والخصومات والمبيعات المؤهلة (GROUP 2A.7) انتقلي إلى <a href="/dashboard-coupon-analytics" style="color: #7c3aed; font-weight: 700; text-decoration: underline;">لوحة تحليلات أداء الكوبونات</a>.
+      </div>
+    </div>
+
+    <!-- Configuration Count Summary (No fake usage analytics) -->
+    <div class="cp-summary-grid">
+      <div class="cp-summary-card">
+        <div class="cp-summary-icon" style="background: #f3f4f6; color: #111827;">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="cp-summary-body">
+          <h4>إجمالي الكوبونات المسجلة</h4>
+          <span id="summaryTotalCount">0</span>
+        </div>
+      </div>
+
+      <div class="cp-summary-card">
+        <div class="cp-summary-icon" style="background: #ecfdf5; color: #059669;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="cp-summary-body">
+          <h4>مفعّلة ونشطة الآن</h4>
+          <span id="summaryActiveCount">0</span>
+        </div>
+      </div>
+
+      <div class="cp-summary-card">
+        <div class="cp-summary-icon" style="background: #fffbeb; color: #d97706;">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="cp-summary-body">
+          <h4>مجدولة مستقبلاً</h4>
+          <span id="summaryScheduledCount">0</span>
+        </div>
+      </div>
+
+      <div class="cp-summary-card">
+        <div class="cp-summary-icon" style="background: #fef2f2; color: #b91c1c;">
+          <i class="fas fa-ban"></i>
+        </div>
+        <div class="cp-summary-body">
+          <h4>معطلة / منتهية</h4>
+          <span id="summaryInactiveCount">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Coupons Table -->
+    <section class="cp-panel-card">
+      <div class="cp-filters-bar">
+        <div class="cp-filter-group">
+          <label for="couponSearchInput">بحث بكود الكوبون</label>
+          <input
+            type="text"
+            id="couponSearchInput"
+            class="cp-input"
+            placeholder="مثال: WELCOME20"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="cp-filter-group">
+          <label for="filterStatusSelect">الحالة</label>
+          <select id="filterStatusSelect" class="cp-select">
+            <option value="all">جميع الحالات</option>
+            <option value="active">مفعّل</option>
+            <option value="scheduled">مجدول</option>
+            <option value="expired">منتهي</option>
+            <option value="disabled">معطّل</option>
+          </select>
+        </div>
+
+        <div class="cp-filter-group">
+          <label for="filterTypeSelect">نوع الخصم</label>
+          <select id="filterTypeSelect" class="cp-select">
+            <option value="all">الكل</option>
+            <option value="percentage">نسبة مئوية</option>
+            <option value="fixed">مبلغ ثابت</option>
+          </select>
+        </div>
+
+        <div class="cp-filter-group">
+          <label for="filterScopeSelect">نطاق القسم</label>
+          <select id="filterScopeSelect" class="cp-select">
+            <option value="all">جميع النطاقات</option>
+            <option value="__all_products__">جميع المنتجات</option>
+          </select>
+        </div>
+
+        <div>
+          <button type="button" class="cp-btn-secondary" id="btnRefreshCoupons" title="تحديث القائمة">
+            <i class="fas fa-sync-alt"></i>
+            <span>تحديث</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="cp-table-container">
+        <table class="cp-table">
+          <thead>
+            <tr>
+              <th>كود الكوبون</th>
+              <th>نوع الخصم</th>
+              <th>القيمة</th>
+              <th>النطاق</th>
+              <th>الحد الأدنى</th>
+              <th>أقصى خصم</th>
+              <th>بداية الصلاحية</th>
+              <th>نهاية الصلاحية</th>
+              <th>الحالة</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="couponsTableBody">
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 40px; color: #6b7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
+                جاري تحميل بيانات الكوبونات...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Create / Edit Coupon Modal -->
+    <div class="cp-modal-backdrop" id="couponFormModal" role="dialog" aria-modal="true" aria-labelledby="couponModalTitle">
+      <div class="cp-modal-dialog">
+        <div class="cp-modal-header">
+          <h3>
+            <i class="fas fa-ticket-alt"></i>
+            <span id="couponModalTitle">إنشاء كوبون جديد</span>
+          </h3>
+          <button type="button" class="cp-modal-close" data-close-modal="couponFormModal" aria-label="إغلاق">&times;</button>
+        </div>
+
+        <div id="couponFormWarningBanner" class="cp-form-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>تنبيه: هذا الكوبون مفعّل ونشط حالياً. أي تعديل عليه سيؤثر على إعداداته فور الحفظ.</span>
+        </div>
+
+        <div id="couponFormErrorBox" class="cp-form-error"></div>
+
+        <form id="couponForm" novalidate>
+          <div class="cp-form-grid">
+            <div class="cp-form-group">
+              <label for="couponCodeInput">كود الكوبون *</label>
+              <input
+                type="text"
+                id="couponCodeInput"
+                class="cp-input"
+                placeholder="WELCOME20"
+                maxlength="32"
+                required
+                dir="ltr"
+              />
+              <span class="cp-form-hint">حروف إنجليزية وأرقام وشرطة (-) أو (_) من 3 إلى 32 حرفاً (يحول تلقائياً لأحرف كبيرة).</span>
+            </div>
+
+            <div class="cp-form-group">
+              <label for="couponDiscountTypeSelect">نوع الخصم *</label>
+              <select id="couponDiscountTypeSelect" class="cp-select" required>
+                <option value="percentage">نسبة مئوية (%)</option>
+                <option value="fixed">مبلغ ثابت (ج.م)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="cp-form-grid">
+            <div class="cp-form-group">
+              <label for="couponDiscountValueInput" id="couponDiscountValueLabel">قيمة الخصم (%) *</label>
+              <input
+                type="number"
+                id="couponDiscountValueInput"
+                class="cp-input"
+                step="0.01"
+                min="0.01"
+                max="100"
+                placeholder="20"
+                required
+              />
+            </div>
+
+            <div class="cp-form-group">
+              <label for="couponMaxDiscountInput">أقصى خصم بالـ ج.م (اختياري)</label>
+              <input
+                type="number"
+                id="couponMaxDiscountInput"
+                class="cp-input"
+                step="0.01"
+                min="0.01"
+                placeholder="بدون حد أقصى"
+              />
+              <span class="cp-form-hint" id="couponMaxDiscountHint">متاح فقط مع خصم النسبة المئوية.</span>
+            </div>
+          </div>
+
+          <div class="cp-form-grid">
+            <div class="cp-form-group">
+              <label for="couponScopeSelect">نطاق الكوبون *</label>
+              <select id="couponScopeSelect" class="cp-select" required>
+                <option value="all">جميع المنتجات</option>
+                <option value="category">قسم محدد فقط</option>
+              </select>
+            </div>
+
+            <div class="cp-form-group" id="couponCategoryFieldWrap" style="display: none;">
+              <label for="couponCategorySelect">القسم المستهدف *</label>
+              <select id="couponCategorySelect" class="cp-select">
+                <option value="">اختاري القسم...</option>
+              </select>
+              <span class="cp-form-hint">ينطبق الخصم والحد الأدنى على منتجات هذا القسم فقط.</span>
+            </div>
+          </div>
+
+          <div class="cp-form-group">
+            <label for="couponMinSubtotalInput">الحد الأدنى لقيمة المنتجات المؤهلة بالـ ج.م (اختياري)</label>
+            <input
+              type="number"
+              id="couponMinSubtotalInput"
+              class="cp-input"
+              step="0.01"
+              min="0.01"
+              placeholder="بدون حد أدنى"
+            />
+          </div>
+
+          <div class="cp-form-grid">
+            <div class="cp-form-group">
+              <label for="couponStartsAtInput">تاريخ ووقت البداية - توقيت القاهرة (اختياري)</label>
+              <input type="datetime-local" id="couponStartsAtInput" class="cp-input" />
+            </div>
+
+            <div class="cp-form-group">
+              <label for="couponExpiresAtInput">تاريخ ووقت النهاية - توقيت القاهرة (اختياري)</label>
+              <input type="datetime-local" id="couponExpiresAtInput" class="cp-input" />
+            </div>
+          </div>
+
+          <div class="cp-toggle-row">
+            <div>
+              <strong style="font-size: 0.85rem; color: #111827; display: block;">تفعيل الكوبون</strong>
+              <small style="color: #6b7280; font-size: 0.74rem;">لن يتم حذف الكوبون نهائياً؛ يمكن تعطيله وإعادة تفعيله في أي وقت.</small>
+            </div>
+            <label class="cp-switch">
+              <input type="checkbox" id="couponIsActiveToggle" checked />
+              <span class="cp-slider"></span>
+            </label>
+          </div>
+
+          <div class="cp-modal-footer">
+            <button type="button" class="cp-btn-secondary" data-close-modal="couponFormModal">إلغاء</button>
+            <button type="submit" class="cp-btn-primary" id="btnSubmitCouponForm">
+              <i class="fas fa-save"></i>
+              <span id="btnSubmitCouponText">حفظ الكوبون</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal (Deactivation / Active Coupon Update Warning) -->
+    <div class="cp-modal-backdrop" id="couponConfirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+      <div class="cp-modal-dialog compact">
+        <div class="cp-modal-header">
+          <h3>
+            <i class="fas fa-exclamation-triangle" style="color: #d97706;"></i>
+            <span id="confirmModalTitle">تأكيد الإجراء</span>
+          </h3>
+          <button type="button" class="cp-modal-close" data-close-modal="couponConfirmModal" aria-label="إغلاق">&times;</button>
+        </div>
+
+        <p id="confirmModalBody" style="font-size: 0.88rem; color: #374151; line-height: 1.7; margin: 0;"></p>
+
+        <div class="cp-modal-footer">
+          <button type="button" class="cp-btn-secondary" data-close-modal="couponConfirmModal">تراجع</button>
+          <button type="button" class="cp-btn-primary" id="btnConfirmModalAction">تأكيد المتابعة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="couponToast" class="cp-toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      const COUPONS_API_URL = '/api/coupons/admin';
+      const CAIRO_TIMEZONE = 'Africa/Cairo';
+      const CODE_PATTERN = /^[A-Z0-9_-]{3,32}$/;
+
+      let allCoupons = [];
+      let serverCategories = [];
+      let isLoading = true;
+      let loadErrorMessage = '';
+      let editingCouponId = null;
+      let editingOriginalStatus = null;
+      let pendingConfirmCallback = null;
+      let activeModalStack = [];
+      let toastTimer = null;
+
+      function escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function showToast(message, type = 'success') {
+        const toast = document.getElementById('couponToast');
+        if (!toast) return;
+        toast.textContent = '';
+        const icon = document.createElement('i');
+        icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+        const span = document.createElement('span');
+        span.textContent = String(message || '');
+        toast.appendChild(icon);
+        toast.appendChild(span);
+        toast.className = `cp-toast ${type} show`;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3800);
+      }
+
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        if (!activeModalStack.includes(id)) {
+          activeModalStack.push(id);
+        }
+        modal.style.zIndex = String(2000 + activeModalStack.length * 100);
+        modal.style.display = 'flex';
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        modal.style.display = 'none';
+        activeModalStack = activeModalStack.filter((item) => item !== id);
+      }
+
+      document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          closeModal(btn.getAttribute('data-close-modal'));
+        });
+      });
+
+      document.querySelectorAll('.cp-modal-backdrop').forEach((backdrop) => {
+        backdrop.addEventListener('click', (e) => {
+          if (e.target === backdrop) {
+            closeModal(backdrop.id);
+          }
+        });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && activeModalStack.length > 0) {
+          closeModal(activeModalStack[activeModalStack.length - 1]);
+        }
+      });
+
+      async function getAuthToken() {
+        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (!auth || !auth.currentUser) return '';
+        return await auth.currentUser.getIdToken();
+      }
+
+      function deriveCouponStatus(coupon, nowMs = Date.now()) {
+        if (!coupon || coupon.isActive !== true) return 'disabled';
+        if (typeof coupon.startsAt === 'number' && Number.isFinite(coupon.startsAt) && nowMs < coupon.startsAt) {
+          return 'scheduled';
+        }
+        if (typeof coupon.expiresAt === 'number' && Number.isFinite(coupon.expiresAt) && nowMs >= coupon.expiresAt) {
+          return 'expired';
+        }
+        return 'active';
+      }
+
+      function getStatusMeta(status) {
+        switch (status) {
+          case 'active':
+            return { label: 'مفعّل', icon: 'fa-check-circle', cls: 'active' };
+          case 'scheduled':
+            return { label: 'مجدول', icon: 'fa-clock', cls: 'scheduled' };
+          case 'expired':
+            return { label: 'منتهي', icon: 'fa-history', cls: 'expired' };
+          default:
+            return { label: 'معطّل', icon: 'fa-ban', cls: 'disabled' };
+        }
+      }
+
+      function getCairoOffsetMinutes(utcMs) {
+        try {
+          const d = new Date(utcMs);
+          const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: CAIRO_TIMEZONE,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          }).formatToParts(d);
+          const map = {};
+          for (const p of parts) {
+            if (p.type !== 'literal') map[p.type] = Number(p.value);
+          }
+          const asUtc = Date.UTC(
+            map.year,
+            map.month - 1,
+            map.day,
+            map.hour === 24 ? 0 : map.hour,
+            map.minute,
+            map.second
+          );
+          return Math.round((asUtc - utcMs) / 60000);
+        } catch {
+          return 120;
+        }
+      }
+
+      function cairoLocalInputToUtcMs(value) {
+        if (!value || typeof value !== 'string') return null;
+        const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+        if (!match) return null;
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+        const day = Number(match[3]);
+        const hour = Number(match[4]);
+        const minute = Number(match[5]);
+        const approxUtc = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
+        const offsetMin = getCairoOffsetMinutes(approxUtc);
+        let candidate = approxUtc - offsetMin * 60000;
+        const refinedOffset = getCairoOffsetMinutes(candidate);
+        if (refinedOffset !== offsetMin) {
+          candidate = approxUtc - refinedOffset * 60000;
+        }
+        return Number.isFinite(candidate) ? candidate : null;
+      }
+
+      function utcMsToCairoLocalInput(utcMs) {
+        if (typeof utcMs !== 'number' || !Number.isFinite(utcMs)) return '';
+        try {
+          const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: CAIRO_TIMEZONE,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }).formatToParts(new Date(utcMs));
+          const map = {};
+          for (const p of parts) {
+            if (p.type !== 'literal') map[p.type] = p.value;
+          }
+          const hh = map.hour === '24' ? '00' : map.hour;
+          return `${map.year}-${map.month}-${map.day}T${hh}:${map.minute}`;
+        } catch {
+          return '';
+        }
+      }
+
+      function formatCairoDateTime(utcMs) {
+        if (typeof utcMs !== 'number' || !Number.isFinite(utcMs)) return '—';
+        try {
+          return new Intl.DateTimeFormat('ar-EG', {
+            timeZone: CAIRO_TIMEZONE,
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }).format(new Date(utcMs));
+        } catch {
+          return new Date(utcMs).toISOString();
+        }
+      }
+
+      function formatCurrency(val) {
+        if (typeof val !== 'number' || !Number.isFinite(val)) return '—';
+        const formatted = Number.isInteger(val) ? String(val) : val.toFixed(2);
+        return `${formatted} ج.م`;
+      }
+
+      function getCategoryArabicName(slug) {
+        if (!slug) return '';
+        const found = serverCategories.find((cat) => cat.slug === slug);
+        return found ? found.arabicName : slug;
+      }
+
+      function populateCategoryControls() {
+        const filterSelect = document.getElementById('filterScopeSelect');
+        const formSelect = document.getElementById('couponCategorySelect');
+
+        if (filterSelect) {
+          const prevVal = filterSelect.value || 'all';
+          filterSelect.innerHTML = '';
+          const optAll = document.createElement('option');
+          optAll.value = 'all';
+          optAll.textContent = 'جميع النطاقات';
+          filterSelect.appendChild(optAll);
+
+          const optAllProducts = document.createElement('option');
+          optAllProducts.value = '__all_products__';
+          optAllProducts.textContent = 'جميع المنتجات';
+          filterSelect.appendChild(optAllProducts);
+
+          serverCategories.forEach((cat) => {
+            const opt = document.createElement('option');
+            opt.value = cat.slug;
+            opt.textContent = cat.arabicName;
+            filterSelect.appendChild(opt);
+          });
+          filterSelect.value = prevVal;
+        }
+
+        if (formSelect) {
+          const prevFormVal = formSelect.value || '';
+          formSelect.innerHTML = '';
+          const placeholderOpt = document.createElement('option');
+          placeholderOpt.value = '';
+          placeholderOpt.textContent = 'اختاري القسم...';
+          formSelect.appendChild(placeholderOpt);
+
+          serverCategories.forEach((cat) => {
+            const opt = document.createElement('option');
+            opt.value = cat.slug;
+            opt.textContent = cat.arabicName;
+            formSelect.appendChild(opt);
+          });
+          formSelect.value = prevFormVal;
+        }
+      }
+
+      function updateSummaryCards() {
+        const nowMs = Date.now();
+        let activeCount = 0;
+        let scheduledCount = 0;
+        let inactiveCount = 0;
+
+        allCoupons.forEach((c) => {
+          const st = deriveCouponStatus(c, nowMs);
+          if (st === 'active') activeCount++;
+          else if (st === 'scheduled') scheduledCount++;
+          else inactiveCount++;
+        });
+
+        document.getElementById('summaryTotalCount').textContent = String(allCoupons.length);
+        document.getElementById('summaryActiveCount').textContent = String(activeCount);
+        document.getElementById('summaryScheduledCount').textContent = String(scheduledCount);
+        document.getElementById('summaryInactiveCount').textContent = String(inactiveCount);
+      }
+
+      function getFilteredCoupons() {
+        const searchQ = (document.getElementById('couponSearchInput')?.value || '').trim().toUpperCase();
+        const statusFilter = document.getElementById('filterStatusSelect')?.value || 'all';
+        const typeFilter = document.getElementById('filterTypeSelect')?.value || 'all';
+        const scopeFilter = document.getElementById('filterScopeSelect')?.value || 'all';
+        const nowMs = Date.now();
+
+        return allCoupons.filter((c) => {
+          if (searchQ && !String(c.code || '').toUpperCase().includes(searchQ)) {
+            return false;
+          }
+          if (statusFilter !== 'all' && deriveCouponStatus(c, nowMs) !== statusFilter) {
+            return false;
+          }
+          if (typeFilter !== 'all' && c.discountType !== typeFilter) {
+            return false;
+          }
+          if (scopeFilter === '__all_products__' && c.scope !== 'all') {
+            return false;
+          }
+          if (
+            scopeFilter !== 'all' &&
+            scopeFilter !== '__all_products__' &&
+            !(c.scope === 'category' && c.categorySlug === scopeFilter)
+          ) {
+            return false;
+          }
+          return true;
+        });
+      }
+
+      function renderCouponsTable() {
+        const tbody = document.getElementById('couponsTableBody');
+        if (!tbody) return;
+
+        if (isLoading) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 40px; color: #6b7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; display: block; margin-bottom: 8px;"></i>
+                جاري تحميل بيانات الكوبونات...
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        if (loadErrorMessage) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 40px; color: #b91c1c;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; display: block; margin-bottom: 8px;"></i>
+                ${escapeHtml(loadErrorMessage)}
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        if (allCoupons.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 48px 20px; color: #6b7280;">
+                <i class="fas fa-ticket-alt" style="font-size: 2rem; color: #d1d5db; display: block; margin-bottom: 10px;"></i>
+                <strong style="display: block; color: #374151; margin-bottom: 4px;">لا توجد كوبونات مسجلة حتى الآن</strong>
+                <span>انقري على "إنشاء كوبون جديد" لإضافة أول كوبون خصم.</span>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        const filtered = getFilteredCoupons();
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 36px 20px; color: #6b7280;">
+                لا توجد كوبونات مطابقة لمعايير البحث والتصفية الحالية.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        const nowMs = Date.now();
+        tbody.innerHTML = '';
+
+        filtered.forEach((coupon) => {
+          const status = deriveCouponStatus(coupon, nowMs);
+          const statusMeta = getStatusMeta(status);
+          const isPct = coupon.discountType === 'percentage';
+          const valueLabel = isPct
+            ? `${Number.isInteger(coupon.discountValue) ? coupon.discountValue : coupon.discountValue.toFixed(2)}%`
+            : formatCurrency(coupon.discountValue);
+          const scopeLabel =
+            coupon.scope === 'category'
+              ? getCategoryArabicName(coupon.categorySlug)
+              : 'جميع المنتجات';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="cp-code-badge">${escapeHtml(coupon.code)}</span></td>
+            <td>${isPct ? 'نسبة' : 'مبلغ ثابت'}</td>
+            <td><strong>${escapeHtml(valueLabel)}</strong></td>
+            <td>
+              <span class="cp-scope-tag">
+                <i class="fas ${coupon.scope === 'category' ? 'fa-folder-open' : 'fa-layer-group'}" style="color: #6b7280;"></i>
+                <span>${escapeHtml(scopeLabel)}</span>
+              </span>
+            </td>
+            <td>${escapeHtml(coupon.minimumSubtotal ? formatCurrency(coupon.minimumSubtotal) : '—')}</td>
+            <td>${escapeHtml(isPct && coupon.maximumDiscount ? formatCurrency(coupon.maximumDiscount) : '—')}</td>
+            <td>${escapeHtml(formatCairoDateTime(coupon.startsAt))}</td>
+            <td>${escapeHtml(formatCairoDateTime(coupon.expiresAt))}</td>
+            <td>
+              <span class="cp-status-badge ${statusMeta.cls}">
+                <i class="fas ${statusMeta.icon}"></i>
+                <span>${escapeHtml(statusMeta.label)}</span>
+              </span>
+            </td>
+            <td>
+              <div class="cp-actions-cell">
+                <button type="button" class="cp-btn-sm" data-action="edit" data-coupon-id="${escapeHtml(coupon.id)}">
+                  <i class="fas fa-edit"></i>
+                  <span>تعديل</span>
+                </button>
+                <button
+                  type="button"
+                  class="cp-btn-sm ${coupon.isActive ? 'deactivate' : 'activate'}"
+                  data-action="toggle-active"
+                  data-coupon-id="${escapeHtml(coupon.id)}"
+                >
+                  <i class="fas ${coupon.isActive ? 'fa-pause-circle' : 'fa-play-circle'}"></i>
+                  <span>${coupon.isActive ? 'تعطيل' : 'تفعيل'}</span>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadCoupons() {
+        isLoading = true;
+        loadErrorMessage = '';
+        renderCouponsTable();
+
+        try {
+          const token = await getAuthToken();
+          const res = await fetch(COUPONS_API_URL, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = '/login';
+            return;
+          }
+
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            loadErrorMessage = data.message || 'فشل تحميل قائمة الكوبونات من السيرفر.';
+            isLoading = false;
+            renderCouponsTable();
+            showToast(loadErrorMessage, 'error');
+            return;
+          }
+
+          allCoupons = Array.isArray(data.coupons) ? data.coupons : [];
+          serverCategories = Array.isArray(data.categories) ? data.categories : [];
+          isLoading = false;
+          populateCategoryControls();
+          updateSummaryCards();
+          renderCouponsTable();
+        } catch {
+          isLoading = false;
+          loadErrorMessage = 'حدث خطأ أثناء الاتصال بالسيرفر لتحميل الكوبونات.';
+          renderCouponsTable();
+          showToast(loadErrorMessage, 'error');
+        }
+      }
+
+      function clearFormError() {
+        const box = document.getElementById('couponFormErrorBox');
+        if (box) {
+          box.style.display = 'none';
+          box.textContent = '';
+        }
+      }
+
+      function showFormError(msg) {
+        const box = document.getElementById('couponFormErrorBox');
+        if (box) {
+          box.textContent = msg;
+          box.style.display = 'block';
+        }
+      }
+
+      function syncDiscountTypeFields() {
+        const discountType = document.getElementById('couponDiscountTypeSelect').value;
+        const valInput = document.getElementById('couponDiscountValueInput');
+        const valLabel = document.getElementById('couponDiscountValueLabel');
+        const maxInput = document.getElementById('couponMaxDiscountInput');
+        const maxHint = document.getElementById('couponMaxDiscountHint');
+
+        if (discountType === 'fixed') {
+          valLabel.textContent = 'قيمة الخصم الثابت (ج.م) *';
+          valInput.removeAttribute('max');
+          valInput.placeholder = '50';
+          maxInput.value = '';
+          maxInput.disabled = true;
+          maxHint.textContent = 'غير متاح لكوبونات المبلغ الثابت.';
+        } else {
+          valLabel.textContent = 'نسبة الخصم (%) *';
+          valInput.setAttribute('max', '100');
+          valInput.placeholder = '20';
+          maxInput.disabled = false;
+          maxHint.textContent = 'اختياري: يضع حداً أقصى للخصم بالجنيه المصري.';
+        }
+      }
+
+      function syncScopeFields() {
+        const scope = document.getElementById('couponScopeSelect').value;
+        const catWrap = document.getElementById('couponCategoryFieldWrap');
+        const catSelect = document.getElementById('couponCategorySelect');
+
+        if (scope === 'category') {
+          catWrap.style.display = 'block';
+          catSelect.required = true;
+        } else {
+          catWrap.style.display = 'none';
+          catSelect.required = false;
+          catSelect.value = '';
+        }
+      }
+
+      function openCreateModal() {
+        editingCouponId = null;
+        editingOriginalStatus = null;
+        clearFormError();
+        document.getElementById('couponFormWarningBanner').style.display = 'none';
+        document.getElementById('couponModalTitle').textContent = 'إنشاء كوبون جديد';
+        document.getElementById('btnSubmitCouponText').textContent = 'حفظ الكوبون';
+
+        document.getElementById('couponCodeInput').value = '';
+        document.getElementById('couponDiscountTypeSelect').value = 'percentage';
+        document.getElementById('couponDiscountValueInput').value = '';
+        document.getElementById('couponScopeSelect').value = 'all';
+        document.getElementById('couponCategorySelect').value = '';
+        document.getElementById('couponMinSubtotalInput').value = '';
+        document.getElementById('couponMaxDiscountInput').value = '';
+        document.getElementById('couponStartsAtInput').value = '';
+        document.getElementById('couponExpiresAtInput').value = '';
+        document.getElementById('couponIsActiveToggle').checked = true;
+
+        syncDiscountTypeFields();
+        syncScopeFields();
+        openModal('couponFormModal');
+      }
+
+      function openEditModal(coupon) {
+        editingCouponId = coupon.id;
+        editingOriginalStatus = deriveCouponStatus(coupon, Date.now());
+        clearFormError();
+
+        const warnBanner = document.getElementById('couponFormWarningBanner');
+        if (warnBanner) {
+          warnBanner.style.display = editingOriginalStatus === 'active' ? 'block' : 'none';
+        }
+
+        document.getElementById('couponModalTitle').textContent = `تعديل الكوبون: ${coupon.code}`;
+        document.getElementById('btnSubmitCouponText').textContent = 'حفظ التعديلات';
+
+        document.getElementById('couponCodeInput').value = coupon.code || '';
+        document.getElementById('couponDiscountTypeSelect').value = coupon.discountType || 'percentage';
+        document.getElementById('couponDiscountValueInput').value =
+          coupon.discountValue !== undefined && coupon.discountValue !== null ? String(coupon.discountValue) : '';
+        document.getElementById('couponScopeSelect').value = coupon.scope || 'all';
+        syncScopeFields();
+        document.getElementById('couponCategorySelect').value =
+          coupon.scope === 'category' ? (coupon.categorySlug || '') : '';
+        document.getElementById('couponMinSubtotalInput').value =
+          coupon.minimumSubtotal !== null && coupon.minimumSubtotal !== undefined ? String(coupon.minimumSubtotal) : '';
+        syncDiscountTypeFields();
+        document.getElementById('couponMaxDiscountInput').value =
+          coupon.discountType === 'percentage' && coupon.maximumDiscount !== null && coupon.maximumDiscount !== undefined
+            ? String(coupon.maximumDiscount)
+            : '';
+        document.getElementById('couponStartsAtInput').value = utcMsToCairoLocalInput(coupon.startsAt);
+        document.getElementById('couponExpiresAtInput').value = utcMsToCairoLocalInput(coupon.expiresAt);
+        document.getElementById('couponIsActiveToggle').checked = coupon.isActive === true;
+
+        openModal('couponFormModal');
+      }
+
+      function openConfirmationModal({ title, body, confirmLabel, onConfirm }) {
+        document.getElementById('confirmModalTitle').textContent = title;
+        document.getElementById('confirmModalBody').textContent = body;
+        const confirmBtn = document.getElementById('btnConfirmModalAction');
+        confirmBtn.textContent = confirmLabel || 'تأكيد';
+        pendingConfirmCallback = onConfirm;
+        openModal('couponConfirmModal');
+      }
+
+      document.getElementById('btnConfirmModalAction')?.addEventListener('click', async () => {
+        const cb = pendingConfirmCallback;
+        pendingConfirmCallback = null;
+        closeModal('couponConfirmModal');
+        if (typeof cb === 'function') {
+          await cb();
+        }
+      });
+
+      function buildValidatedPayloadFromForm() {
+        const rawCode = (document.getElementById('couponCodeInput').value || '').trim().toUpperCase();
+        document.getElementById('couponCodeInput').value = rawCode;
+
+        if (!rawCode) {
+          return { error: 'يرجى إدخال كود الكوبون.' };
+        }
+        if (!CODE_PATTERN.test(rawCode)) {
+          return {
+            error: 'كود الكوبون يجب أن يكون بين 3 و 32 حرفاً ويحتوي على حروف إنجليزية وأرقام وشرطة (-) أو (_) فقط.'
+          };
+        }
+
+        const discountType = document.getElementById('couponDiscountTypeSelect').value;
+        const rawVal = document.getElementById('couponDiscountValueInput').value.trim();
+        const discountValue = Number(rawVal);
+        if (!rawVal || !Number.isFinite(discountValue) || discountValue <= 0) {
+          return { error: 'يرجى إدخال قيمة خصم موجبة أكبر من صفر.' };
+        }
+        if (discountType === 'percentage' && discountValue > 100) {
+          return { error: 'نسبة الخصم لا يمكن أن تتجاوز 100%.' };
+        }
+
+        const scope = document.getElementById('couponScopeSelect').value;
+        let categorySlug = null;
+        if (scope === 'category') {
+          categorySlug = (document.getElementById('couponCategorySelect').value || '').trim();
+          if (!categorySlug) {
+            return { error: 'يرجى اختيار القسم المستهدف للكوبون.' };
+          }
+        }
+
+        const rawMinSub = document.getElementById('couponMinSubtotalInput').value.trim();
+        let minimumSubtotal = null;
+        if (rawMinSub !== '') {
+          const parsedMin = Number(rawMinSub);
+          if (!Number.isFinite(parsedMin) || parsedMin <= 0) {
+            return { error: 'الحد الأدنى لقيمة الطلب يجب أن يكون رقماً موجباً أكبر من صفر.' };
+          }
+          minimumSubtotal = parsedMin;
+        }
+
+        let maximumDiscount = null;
+        if (discountType === 'percentage') {
+          const rawMaxDisc = document.getElementById('couponMaxDiscountInput').value.trim();
+          if (rawMaxDisc !== '') {
+            const parsedMax = Number(rawMaxDisc);
+            if (!Number.isFinite(parsedMax) || parsedMax <= 0) {
+              return { error: 'الحد الأقصى للخصم يجب أن يكون رقماً موجباً أكبر من صفر.' };
+            }
+            maximumDiscount = parsedMax;
+          }
+        }
+
+        const rawStart = document.getElementById('couponStartsAtInput').value.trim();
+        const rawEnd = document.getElementById('couponExpiresAtInput').value.trim();
+        const startsAt = rawStart ? cairoLocalInputToUtcMs(rawStart) : null;
+        const expiresAt = rawEnd ? cairoLocalInputToUtcMs(rawEnd) : null;
+
+        if (rawStart && startsAt === null) {
+          return { error: 'تاريخ بداية الصلاحية غير صالح.' };
+        }
+        if (rawEnd && expiresAt === null) {
+          return { error: 'تاريخ انتهاء الصلاحية غير صالح.' };
+        }
+        if (startsAt !== null && expiresAt !== null && startsAt >= expiresAt) {
+          return { error: 'تاريخ انتهاء الصلاحية يجب أن يكون بعد تاريخ البداية.' };
+        }
+
+        const isActive = Boolean(document.getElementById('couponIsActiveToggle').checked);
+
+        return {
+          coupon: {
+            code: rawCode,
+            discountType,
+            discountValue,
+            scope,
+            categorySlug,
+            minimumSubtotal,
+            maximumDiscount,
+            startsAt,
+            expiresAt,
+            isActive
+          }
+        };
+      }
+
+      async function persistCouponForm(couponPayload) {
+        const submitBtn = document.getElementById('btnSubmitCouponForm');
+        const submitText = document.getElementById('btnSubmitCouponText');
+        const origLabel = submitText.textContent;
+        submitBtn.disabled = true;
+        submitText.textContent = 'جاري الحفظ...';
+        clearFormError();
+
+        try {
+          const token = await getAuthToken();
+          const bodyPayload = editingCouponId
+            ? { action: 'update', id: editingCouponId, coupon: couponPayload }
+            : { action: 'create', coupon: couponPayload };
+
+          const res = await fetch(COUPONS_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(bodyPayload)
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = '/login';
+            return;
+          }
+
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            const errMsg =
+              data.error === 'COUPON_CODE_EXISTS'
+                ? data.message || 'كود الكوبون مستخدم بالفعل. يرجى اختيار كود مختلف.'
+                : data.message || 'تعذر حفظ الكوبون. يرجى مراجعة البيانات.';
+            showFormError(errMsg);
+            showToast(errMsg, 'error');
+            return;
+          }
+
+          closeModal('couponFormModal');
+          showToast(data.message || 'تم حفظ الكوبون بنجاح.');
+          await loadCoupons();
+        } catch {
+          showFormError('حدث خطأ أثناء الاتصال بالسيرفر.');
+          showToast('حدث خطأ أثناء الاتصال بالسيرفر.', 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitText.textContent = origLabel;
+        }
+      }
+
+      async function executeSetActive(coupon, nextActive) {
+        try {
+          const token = await getAuthToken();
+          const res = await fetch(COUPONS_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              action: 'set_active',
+              id: coupon.id,
+              isActive: nextActive
+            })
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            window.location.href = '/login';
+            return;
+          }
+
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showToast(data.message || 'تعذر تحديث حالة الكوبون.', 'error');
+            return;
+          }
+
+          showToast(data.message || 'تم تحديث حالة الكوبون بنجاح.');
+          await loadCoupons();
+        } catch {
+          showToast('حدث خطأ أثناء تحديث حالة الكوبون.', 'error');
+        }
+      }
+
+      document.getElementById('btnOpenCreateCoupon')?.addEventListener('click', openCreateModal);
+      document.getElementById('btnRefreshCoupons')?.addEventListener('click', loadCoupons);
+      document.getElementById('couponDiscountTypeSelect')?.addEventListener('change', syncDiscountTypeFields);
+      document.getElementById('couponScopeSelect')?.addEventListener('change', syncScopeFields);
+
+      ['couponSearchInput', 'filterStatusSelect', 'filterTypeSelect', 'filterScopeSelect'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('input', renderCouponsTable);
+        document.getElementById(id)?.addEventListener('change', renderCouponsTable);
+      });
+
+      document.getElementById('couponCodeInput')?.addEventListener('blur', (e) => {
+        e.target.value = (e.target.value || '').trim().toUpperCase();
+      });
+
+      document.getElementById('couponForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearFormError();
+        const built = buildValidatedPayloadFromForm();
+        if (built.error) {
+          showFormError(built.error);
+          return;
+        }
+
+        if (editingCouponId && editingOriginalStatus === 'active') {
+          openConfirmationModal({
+            title: 'تأكيد تعديل كوبون مفعّل',
+            body: `الكوبون "${built.coupon.code}" مفعّل حالياً. هل أنتِ متأكدة من حفظ التعديلات على هذا الكوبون؟`,
+            confirmLabel: 'حفظ التعديلات',
+            onConfirm: async () => {
+              await persistCouponForm(built.coupon);
+            }
+          });
+          return;
+        }
+
+        await persistCouponForm(built.coupon);
+      });
+
+      document.getElementById('couponsTableBody')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action][data-coupon-id]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-coupon-id');
+        const coupon = allCoupons.find((c) => c.id === id);
+        if (!coupon) return;
+
+        if (action === 'edit') {
+          openEditModal(coupon);
+          return;
+        }
+
+        if (action === 'toggle-active') {
+          const nextActive = !coupon.isActive;
+          if (!nextActive) {
+            openConfirmationModal({
+              title: 'تأكيد تعطيل الكوبون',
+              body: `هل أنتِ متأكدة من تعطيل الكوبون "${coupon.code}"؟ سيحتفظ النظام بسجل الكوبون ويمكن إعادة تفعيله لاحقاً.`,
+              confirmLabel: 'تعطيل الكوبون',
+              onConfirm: async () => {
+                await executeSetActive(coupon, false);
+              }
+            });
+          } else {
+            executeSetActive(coupon, true);
+          }
+        }
+      });
+
+      function initAuthGuard() {
+        function check(user) {
+          if (!user) {
+            window.location.href = '/login';
+            return;
+          }
+          if (!user.email || user.email.toLowerCase() !== 'admin@dandy.com') {
+            window.location.replace('/');
+            return;
+          }
+          if (user.emailVerified !== true) {
+            const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+            Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null)
+              .catch(() => {})
+              .finally(() => {
+                window.location.replace('/login?reason=email_not_verified');
+              });
+            return;
+          }
+          loadCoupons();
+        }
+
+        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        if (auth && typeof auth.onAuthStateChanged === 'function') {
+          auth.onAuthStateChanged(check);
+        } else {
+          let attempts = 0;
+          const interval = setInterval(() => {
+            attempts++;
+            const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+            if (a && typeof a.onAuthStateChanged === 'function') {
+              clearInterval(interval);
+              a.onAuthStateChanged(check);
+            } else if (attempts > 30) {
+              clearInterval(interval);
+              window.location.href = '/login';
+            }
+          }, 100);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAuthGuard);
+      } else {
+        initAuthGuard();
+      }
+    })();
+  </script>
+</BaseLayout>

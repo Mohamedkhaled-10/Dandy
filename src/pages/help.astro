@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { STORE_SHIPPING_POLICY } from '../config/store-policy';
 ---
 
 <BaseLayout
@@ -323,7 +324,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <strong>تنويه:</strong> لضمان سلامة وجودة المستحضرات التجميلية، لا تتوفر معاينة للطرد مع المندوب أو إرجاع للمنتجات بعد الاستلام.
         </div>
         <p style="font-size:0.88rem; color:var(--color-muted); line-height:1.6; margin:0;">
-          تستغرق مدة التوصيل من 2 إلى 5 أيام عمل وفقاً للمحافظة، والشحن مجاني للطلبات التي تتجاوز 2000 جنيه.
+          تستغرق مدة التوصيل من {STORE_SHIPPING_POLICY.deliveryEstimate.minDays} إلى {STORE_SHIPPING_POLICY.deliveryEstimate.maxDays} أيام عمل وفقاً للمحافظة، والشحن مجاني للطلبات التي تتجاوز {STORE_SHIPPING_POLICY.freeShippingThresholdEgp} جنيه.
         </p>
       </section>
 
@@ -357,7 +358,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <i class="fas fa-chevron-down"></i>
             </div>
             <div class="faq-answer">
-              تتراوح تكلفة الشحن بين 85 إلى 120 جنيهاً مصرياً حسب المحافظة، وتظهر القيمة الإجمالية بوضوح قبل تأكيد الطلب في صفحة الدفع.
+              تتراوح تكلفة الشحن بين {STORE_SHIPPING_POLICY.feeRangeEgp.min} إلى {STORE_SHIPPING_POLICY.feeRangeEgp.max} جنيهاً مصرياً حسب المحافظة، وتظهر القيمة الإجمالية بوضوح قبل تأكيد الطلب في صفحة الدفع.
             </div>
           </div>
         </div>

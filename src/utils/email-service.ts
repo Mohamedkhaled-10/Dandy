@@ -3,13 +3,267 @@ import crypto from 'node:crypto';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
 import { getOrCreateInvoiceToken } from './invoice-token.ts';
+import {
+  claimOutboxNotification,
+  finalizeOutboxNotification,
+  isDeterministicOutboxIdForOrder,
+  sanitizeOutboxErrorCode,
+  type OutboxProviderOutcome,
+  type OutboxPersistenceOutcome
+} from './notifications-outbox.ts';
+import {
+  calculateShippingFee,
+  getShippingFeeForGovernorate
+} from '../config/store-policy.ts';
 
 export type NotificationStatus =
   | 'accepted_by_mailapp'
   | 'pending'
+  | 'processing'
   | 'failed'
   | 'unknown'
-  | 'skipped_no_valid_email';
+  | 'unavailable'
+  | 'unfinalized'
+  | 'skipped_no_valid_email'
+  | 'cancelled_order_deleted'
+  | 'unknown_deleted_during_dispatch';
+
+function isOrderDeletionTombstone(val: unknown): boolean {
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return false;
+  const st = String((val as Record<string, any>).status || '').toUpperCase();
+  return st === 'DELETING' || st === 'COMMITTING_DELETE' || st === 'DELETED';
+}
+
+const VALID_RAW_ORDER_STATUSES = new Set([
+  'جديد',
+  'قيد التجهيز',
+  'تم التواصل',
+  'تم الشحن',
+  'جاري الشحن',
+  'تم التوصيل',
+  'مكتمل',
+  'ملغي',
+  'new',
+  'processing',
+  'shipped',
+  'delivered',
+  'completed',
+  'cancelled',
+  'canceled'
+]);
+
+const PLACEHOLDER_TEXT_VALUES = new Set(['n/a', 'na', 'null', 'undefined', '-']);
+
+function isPlainRecord(val: unknown): val is Record<string, any> {
+  return Boolean(val) && typeof val === 'object' && !Array.isArray(val);
+}
+
+function parseStrictOrderNumber(val: unknown): number | null {
+  if (val === undefined || val === null) return null;
+  if (typeof val === 'number') {
+    return Number.isFinite(val) ? val : NaN;
+  }
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return null;
+    if (!/^-?\d+(?:\.\d+)?$/.test(trimmed)) return NaN;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : NaN;
+  }
+  return NaN;
+}
+
+export function isValidOrderStatusValue(status: unknown): boolean {
+  if (typeof status !== 'string') return false;
+  const trimmed = status.trim();
+  if (!trimmed) return false;
+  return VALID_RAW_ORDER_STATUSES.has(trimmed) || VALID_RAW_ORDER_STATUSES.has(trimmed.toLowerCase());
+}
+
+function isValidInvoiceCodeValue(code: unknown): boolean {
+  if (typeof code !== 'string') return false;
+  const trimmed = code.trim();
+  if (trimmed.length < 3 || trimmed.length > 64) return false;
+  if (/\s/.test(trimmed)) return false;
+  if (PLACEHOLDER_TEXT_VALUES.has(trimmed.toLowerCase())) return false;
+  return /[A-Za-z0-9]/.test(trimmed);
+}
+
+function hasValidCustomerBasics(o: Record<string, any>): boolean {
+  const customerObj = isPlainRecord(o.customer) ? o.customer : null;
+  const rawName = o.name !== undefined && o.name !== null ? o.name : customerObj?.name;
+  if (typeof rawName !== 'string') return false;
+  const trimmedName = rawName.trim();
+  if (trimmedName.length < 2 || PLACEHOLDER_TEXT_VALUES.has(trimmedName.toLowerCase())) {
+    return false;
+  }
+
+  const rawPhone = o.phone !== undefined && o.phone !== null ? o.phone : customerObj?.phone;
+  const rawEmail = o.email !== undefined && o.email !== null ? o.email : customerObj?.email;
+
+  let hasValidPhone = false;
+  if (rawPhone !== undefined && rawPhone !== null) {
+    if (typeof rawPhone !== 'string' && typeof rawPhone !== 'number') {
+      return false;
+    }
+    const phoneStr = String(rawPhone).trim();
+    if (phoneStr !== '' && !PLACEHOLDER_TEXT_VALUES.has(phoneStr.toLowerCase())) {
+      const digits = phoneStr.replace(/\D/g, '');
+      if (digits.length < 7 || digits.length > 15) {
+        return false;
+      }
+      hasValidPhone = true;
+    }
+  }
+
+  let hasValidEmailValue = false;
+  if (rawEmail !== undefined && rawEmail !== null) {
+    if (typeof rawEmail !== 'string') {
+      return false;
+    }
+    const emailStr = rawEmail.trim();
+    if (emailStr !== '' && !PLACEHOLDER_TEXT_VALUES.has(emailStr.toLowerCase())) {
+      if (!isValidEmail(emailStr)) {
+        return false;
+      }
+      hasValidEmailValue = true;
+    }
+  }
+
+  return hasValidPhone || hasValidEmailValue;
+}
+
+function validateOrderLineItems(o: Record<string, any>): { valid: boolean; computedSum: number } {
+  const rawList =
+    o.products !== undefined && o.products !== null ? o.products : o.items;
+
+  if (!Array.isArray(rawList) && !isPlainRecord(rawList)) {
+    return { valid: false, computedSum: 0 };
+  }
+
+  const entries = Array.isArray(rawList) ? rawList : Object.values(rawList);
+  if (entries.length === 0) {
+    return { valid: false, computedSum: 0 };
+  }
+
+  let computedSum = 0;
+  for (const item of entries) {
+    if (!isPlainRecord(item)) {
+      return { valid: false, computedSum: 0 };
+    }
+
+    const rawItemName =
+      typeof item.name === 'string' && item.name.trim()
+        ? item.name.trim()
+        : typeof item.productName === 'string' && item.productName.trim()
+          ? item.productName.trim()
+          : '';
+    if (!rawItemName || PLACEHOLDER_TEXT_VALUES.has(rawItemName.toLowerCase())) {
+      return { valid: false, computedSum: 0 };
+    }
+
+    const rawQty =
+      item.quantity !== undefined && item.quantity !== null && item.quantity !== ''
+        ? item.quantity
+        : item.qty;
+    const qty = parseStrictOrderNumber(rawQty);
+    if (qty === null || !Number.isFinite(qty) || qty <= 0) {
+      return { valid: false, computedSum: 0 };
+    }
+
+    const effPrice = parseStrictOrderNumber(item.effectiveUnitPrice);
+    const regPrice = parseStrictOrderNumber(item.price);
+    const lineTotal = parseStrictOrderNumber(item.lineTotal);
+    const campPrice = parseStrictOrderNumber(item.campaignPrice);
+    const pkgPrice = parseStrictOrderNumber(item.packagePrice);
+    const unitPriceField = parseStrictOrderNumber(item.unitPrice);
+
+    const priceCandidates = [effPrice, regPrice, lineTotal, campPrice, pkgPrice, unitPriceField];
+    let hasAtLeastOnePrice = false;
+    for (const candidate of priceCandidates) {
+      if (candidate === null) continue;
+      if (!Number.isFinite(candidate) || candidate < 0) {
+        return { valid: false, computedSum: 0 };
+      }
+      hasAtLeastOnePrice = true;
+    }
+    if (!hasAtLeastOnePrice) {
+      return { valid: false, computedSum: 0 };
+    }
+
+    const resolvedUnitPrice =
+      effPrice ?? regPrice ?? campPrice ?? pkgPrice ?? unitPriceField ?? 0;
+    const resolvedLineContribution =
+      lineTotal !== null ? lineTotal : resolvedUnitPrice * qty;
+    if (!Number.isFinite(resolvedLineContribution) || resolvedLineContribution < 0) {
+      return { valid: false, computedSum: 0 };
+    }
+    computedSum += resolvedLineContribution;
+  }
+
+  return { valid: true, computedSum };
+}
+
+export function hasValidCoreOrderShape(
+  val: unknown,
+  options: { requireStatus?: boolean } = {}
+): boolean {
+  if (!isPlainRecord(val)) return false;
+  const requireStatus = options.requireStatus !== false;
+
+  // 1. Valid invoiceCode
+  if (!isValidInvoiceCodeValue(val.invoiceCode)) return false;
+
+  // 2. Valid order status (mandatory unless explicitly optional for pre-persist confirmation payloads)
+  if (requireStatus || (val.status !== undefined && val.status !== null)) {
+    if (!isValidOrderStatusValue(val.status)) return false;
+  }
+
+  // 3. Basic customer info (name + phone or valid email)
+  if (!hasValidCustomerBasics(val)) return false;
+
+  // 4. Valid products / items (supports array and RTDB object map + legacy field names)
+  const itemCheck = validateOrderLineItems(val);
+  if (!itemCheck.valid) return false;
+
+  // 5. Numeric financial totals validation
+  const totalAmount = parseStrictOrderNumber(val.totalAmount);
+  const grandTotal = parseStrictOrderNumber(val.grandTotal);
+  const subtotal = parseStrictOrderNumber(val.subtotal);
+  const shippingFee = parseStrictOrderNumber(val.shippingFee);
+
+  if (totalAmount !== null && (!Number.isFinite(totalAmount) || totalAmount <= 0)) {
+    return false;
+  }
+  if (grandTotal !== null && (!Number.isFinite(grandTotal) || grandTotal <= 0)) {
+    return false;
+  }
+  if (totalAmount !== null && grandTotal !== null && Math.abs(totalAmount - grandTotal) > 0.01) {
+    return false;
+  }
+  if (subtotal !== null && (!Number.isFinite(subtotal) || subtotal < 0)) {
+    return false;
+  }
+  if (shippingFee !== null && (!Number.isFinite(shippingFee) || shippingFee < 0)) {
+    return false;
+  }
+
+  if (totalAmount === null && grandTotal === null) {
+    const hasPositiveSubtotal = subtotal !== null && subtotal > 0;
+    if (!hasPositiveSubtotal && itemCheck.computedSum <= 0) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function hasCoreOrderFieldsForNotif(
+  val: unknown,
+  options: { requireStatus?: boolean } = {}
+): boolean {
+  return hasValidCoreOrderShape(val, options);
+}
 
 export type NotificationEventType = 'ORDER_CONFIRMATION' | 'ORDER_STATUS_CHANGED';
 
@@ -101,83 +355,13 @@ function getAdminDb() {
 // Egyptian Governorate Shipping Rates & Financial Calculations
 // =============================================================================
 
-export const EGYPT_SHIPPING_RATES: Record<string, number> = {
-  // English keys
-  "Gharbia": 70,
-  "Dakahlia": 85,
-  "Sharqia": 85,
-  "Kafr El Sheikh": 85,
-  "Qalyubia": 85,
-  "Port Said": 85,
-  "Damietta": 85,
-  "Suez": 85,
-  "Ismailia": 85,
-  "Cairo": 85,
-  "Giza": 85,
-  "Beheira": 85,
-  "Monufia": 85,
-  "Alexandria": 85,
-  "Fayoum": 100,
-  "Beni Suef": 100,
-  "Minya": 100,
-  "Luxor": 120,
-  "Aswan": 120,
-  "Assiut": 120,
-  "Sohag": 120,
-  "North Sinai": 120,
-  "South Sinai": 120,
-  "Qena": 120,
-  "New Valley": 120,
-  "Red Sea": 120,
-  "Matrouh": 120,
-
-  // Arabic keys
-  "الغربية": 70,
-  "الدقهلية": 85,
-  "الشرقية": 85,
-  "كفر الشيخ": 85,
-  "القليوبية": 85,
-  "بورسعيد": 85,
-  "دمياط": 85,
-  "السويس": 85,
-  "الإسماعيلية": 85,
-  "القاهرة": 85,
-  "الجيزة": 85,
-  "البحيرة": 85,
-  "المنوفية": 85,
-  "الإسكندرية": 85,
-  "الفيوم": 100,
-  "بني سويف": 100,
-  "المنيا": 100,
-  "الأقصر": 120,
-  "أسوان": 120,
-  "أسيوط": 120,
-  "سوهاج": 120,
-  "شمال سيناء": 120,
-  "جنوب سيناء": 120,
-  "قنا": 120,
-  "الوادي الجديد": 120,
-  "البحر الأحمر": 120,
-  "مطروح": 120
-};
-
 /**
  * Returns standard shipping fee for an Egyptian governorate (in English or Arabic).
- * Defaults to 120 EGP if governorate is unrecognized or empty.
+ * Delegates to the centralized store policy (`src/config/store-policy.ts`),
+ * which defaults to 120 EGP if the governorate is unrecognized or empty.
  */
 export function getShippingFeeForGov(govName?: string): number {
-  if (!govName) return 120;
-  const trimmed = String(govName).trim();
-  if (EGYPT_SHIPPING_RATES[trimmed] !== undefined) {
-    return EGYPT_SHIPPING_RATES[trimmed];
-  }
-  const lower = trimmed.toLowerCase();
-  for (const [key, fee] of Object.entries(EGYPT_SHIPPING_RATES)) {
-    if (key.toLowerCase() === lower) {
-      return fee;
-    }
-  }
-  return 120;
+  return getShippingFeeForGovernorate(govName);
 }
 
 /**
@@ -197,12 +381,25 @@ export function formatEGP(amount: number | string | null | undefined): string {
  * Order financial calculation model ensuring exact financial integrity:
  * - Reads exact saved financial fields from the order when present.
  * - Safely recalculates missing or 0 values from line items.
- * - Strictly enforces Cairo / governorate shipping rules (free shipping ONLY if subtotal > 2000).
+ * - Delegates governorate shipping rates and free-shipping eligibility to `src/config/store-policy.ts`.
  */
+export interface CalculatedCouponSummary {
+  code: string;
+  discountType: string | null;
+  discountValue: number | null;
+  scope: string | null;
+  categorySlug: string | null;
+  eligibleSubtotal: number | null;
+  discountAmount: number;
+}
+
 export interface CalculatedFinancials {
   products: any[];
   calculatedSubtotal: number;
   subtotal: number;
+  couponCode: string | null;
+  couponDiscountAmount: number;
+  coupon: CalculatedCouponSummary | null;
   shippingFee: number;
   totalAmount: number;
   isFreeShipping: boolean;
@@ -215,6 +412,9 @@ export function calculateOrderFinancials(order: any): CalculatedFinancials {
       products: [],
       calculatedSubtotal: 0,
       subtotal: 0,
+      couponCode: null,
+      couponDiscountAmount: 0,
+      coupon: null,
       shippingFee: 0,
       totalAmount: 0,
       isFreeShipping: false,
@@ -309,32 +509,55 @@ export function calculateOrderFinancials(order: any): CalculatedFinancials {
     isIncomplete = true;
   }
 
-  // 2. Resolve shipping fee:
+  // 2. Resolve coupon snapshot (strictly from order.coupon, never legacy order.discount)
+  let couponCode: string | null = null;
+  let couponDiscountAmount = 0;
+  let couponSummary: CalculatedCouponSummary | null = null;
+  const rawCoupon = order.coupon && typeof order.coupon === 'object' && !Array.isArray(order.coupon)
+    ? order.coupon
+    : null;
+  if (rawCoupon) {
+    const parsedCode = typeof rawCoupon.code === 'string' && rawCoupon.code.trim()
+      ? rawCoupon.code.trim().toUpperCase()
+      : null;
+    const parsedDiscount = parseNumOrNull(rawCoupon.discountAmount);
+    if (parsedCode && parsedDiscount !== null && parsedDiscount > 0) {
+      couponCode = parsedCode;
+      couponDiscountAmount = parseFloat(parsedDiscount.toFixed(2));
+      couponSummary = {
+        code: parsedCode,
+        discountType: typeof rawCoupon.discountType === 'string' ? rawCoupon.discountType : null,
+        discountValue: parseNumOrNull(rawCoupon.discountValue),
+        scope: typeof rawCoupon.scope === 'string' ? rawCoupon.scope : null,
+        categorySlug: typeof rawCoupon.categorySlug === 'string' ? rawCoupon.categorySlug : null,
+        eligibleSubtotal: parseNumOrNull(rawCoupon.eligibleSubtotal),
+        discountAmount: couponDiscountAmount
+      };
+    }
+  }
+
+  // 3. Resolve shipping fee:
   // If explicitly specified in order, preserve it.
-  // Otherwise apply the standard business rule: Free shipping ONLY if subtotal > 2000, else governorate rate.
+  // Otherwise apply the centralized shipping policy from `src/config/store-policy.ts` on pre-coupon subtotal.
   const rawShipping = parseNumOrNull(order.shippingFee);
   let shippingFee = 0;
 
   if (rawShipping !== null) {
     shippingFee = rawShipping;
   } else {
-    if (subtotal > 2000) {
-      shippingFee = 0;
-    } else {
-      shippingFee = getShippingFeeForGov(order.governorate);
-    }
+    shippingFee = calculateShippingFee(order.governorate, subtotal);
   }
 
-  // 3. Resolve totalAmount:
+  // 4. Resolve totalAmount:
   // If order.totalAmount is present and > 0, use it.
-  // Otherwise fall back to (subtotal + shippingFee).
+  // Otherwise fall back to Math.max(0, subtotal - couponDiscountAmount + shippingFee).
   const rawTotal = parseNumOrNull(order.totalAmount);
   let totalAmount = 0;
 
   if (rawTotal !== null && rawTotal > 0) {
     totalAmount = rawTotal;
   } else if (subtotal > 0 || shippingFee > 0) {
-    totalAmount = parseFloat((subtotal + shippingFee).toFixed(2));
+    totalAmount = parseFloat(Math.max(0, subtotal - couponDiscountAmount + shippingFee).toFixed(2));
   } else {
     totalAmount = 0;
     if (hasValidProducts) isIncomplete = true;
@@ -344,6 +567,9 @@ export function calculateOrderFinancials(order: any): CalculatedFinancials {
     products: sanitizedProducts,
     calculatedSubtotal,
     subtotal: parseFloat(subtotal.toFixed(2)),
+    couponCode,
+    couponDiscountAmount,
+    coupon: couponSummary,
     shippingFee: parseFloat(shippingFee.toFixed(2)),
     totalAmount: parseFloat(totalAmount.toFixed(2)),
     isFreeShipping: shippingFee === 0,
@@ -682,6 +908,10 @@ export function generateOrderConfirmationText(
     return `• ${name} (الكمية: ${qty}) - ${total}`;
   }).join('\n');
 
+  const couponTextLine = financials.couponCode && financials.couponDiscountAmount > 0
+    ? `\n- خصم الكوبون (${financials.couponCode}): -${formatEGP(financials.couponDiscountAmount)}`
+    : '';
+
   return `DANDY COSMETICS - جمالكِ الطبيعي يبدأ من هنا
 ==================================================
 تم تأكيد استلام طلبك بنجاح
@@ -703,7 +933,7 @@ export function generateOrderConfirmationText(
 ${productsList || 'لا توجد منتجات'}
 
 الملخص المالي:
-- إجمالي المنتجات: ${formatEGP(financials.subtotal)}
+- إجمالي المنتجات: ${formatEGP(financials.subtotal)}${couponTextLine}
 - مصاريف الشحن: ${financials.isFreeShipping ? 'شحن مجاني' : formatEGP(financials.shippingFee)}
 - المبلغ المطلوب سداده عند الاستلام (COD): ${formatEGP(financials.totalAmount)}
 * الدفع نقداً عند استلام الشحنة.
@@ -752,6 +982,10 @@ export function generateOrderStatusText(
       statusMsg = 'تم تحديث حالة طلبك لدى داندي.';
   }
 
+  const couponStatusTextLine = financials.couponCode && financials.couponDiscountAmount > 0
+    ? `\n- إجمالي المنتجات: ${formatEGP(financials.subtotal)}\n- خصم الكوبون (${financials.couponCode}): -${formatEGP(financials.couponDiscountAmount)}`
+    : '';
+
   return `DANDY COSMETICS - جمالكِ الطبيعي يبدأ من هنا
 ==================================================
 تحديث حالة الطلب: ${status}
@@ -762,7 +996,7 @@ ${statusMsg}
 ملخص الطلب:
 - رقم الفاتورة: ${invoiceCode}
 - تاريخ الطلب: ${dateStr}
-- الحالة الحالية: ${status}
+- الحالة الحالية: ${status}${couponStatusTextLine}
 - المبلغ المطلوب سداده عند الاستلام (COD): ${formatEGP(financials.totalAmount)}
 
 ${isDiag ? 'ملاحظة: هذا البريد فحص تشغيلي تجريبي للإدارة.' : `عرض فاتورتك وتتبع طلبك:\n${trackingUrl}`}
@@ -842,6 +1076,12 @@ export function generateOrderConfirmationEmail(
         <td style="padding:4px 0;color:#595050;font-size:13px;text-align:right;">إجمالي المنتجات:</td>
         <td style="padding:4px 0;color:#2c2828;font-size:14px;font-weight:700;text-align:left;">${formatEGP(financials.subtotal)}</td>
       </tr>
+      ${financials.couponCode && financials.couponDiscountAmount > 0 ? `
+      <tr>
+        <td style="padding:4px 0;color:#059669;font-size:13px;text-align:right;font-weight:700;">خصم الكوبون (<span dir="ltr">${escapeHtml(financials.couponCode)}</span>):</td>
+        <td style="padding:4px 0;color:#059669;font-size:14px;font-weight:800;text-align:left;" dir="ltr">-${formatEGP(financials.couponDiscountAmount)}</td>
+      </tr>
+      ` : ''}
       <tr>
         <td style="padding:4px 0;color:#595050;font-size:13px;text-align:right;">مصاريف الشحن${gov ? ` (${escapeHtml(gov)})` : ''}:</td>
         <td style="padding:4px 0;color:#2c2828;font-size:14px;font-weight:700;text-align:left;">
@@ -1041,6 +1281,16 @@ export function generateOrderStatusEmail(
 
           <div style="border-top:1px solid #ebdbe3;margin:8px 0;padding-top:8px;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              ${financials.couponCode && financials.couponDiscountAmount > 0 ? `
+              <tr>
+                <td style="padding:2px 0;color:#595050;font-size:12px;text-align:right;">إجمالي المنتجات:</td>
+                <td style="padding:2px 0;color:#2c2828;font-size:12px;font-weight:700;text-align:left;">${formatEGP(financials.subtotal)}</td>
+              </tr>
+              <tr>
+                <td style="padding:2px 0 6px 0;color:#059669;font-size:12px;text-align:right;font-weight:700;">خصم الكوبون (<span dir="ltr">${escapeHtml(financials.couponCode)}</span>):</td>
+                <td style="padding:2px 0 6px 0;color:#059669;font-size:12px;font-weight:800;text-align:left;" dir="ltr">-${formatEGP(financials.couponDiscountAmount)}</td>
+              </tr>
+              ` : ''}
               <tr>
                 <td style="font-weight:800;color:#2c2828;font-size:13px;text-align:right;">
                   ${newStatus === 'ملغي' ? 'إجمالي الطلب الملغي:' : 'المبلغ المطلوب سداده عند الاستلام (COD):'}
@@ -1274,23 +1524,51 @@ export async function sendOrderNotification(params: {
   newStatus?: unknown;
   oldStatus?: unknown;
   retryNotificationId?: string;
+  allowRetryFailed?: boolean;
   invoiceAccessToken?: string;
+  adminDb?: any;
+  encryptionKey?: string;
+  nowMs?: number;
+  getNowMs?: () => number;
+  leaseMs?: number;
 }): Promise<{
   success: boolean;
   status: NotificationStatus;
   notificationId: string;
   message?: string;
   deduplicated?: boolean;
+  providerOutcome?: OutboxProviderOutcome;
+  providerStatus?: NotificationStatus | string;
+  outboxFinalized?: boolean;
+  persistenceOutcome?: OutboxPersistenceOutcome;
+  outboxStatus?: string;
 }> {
   const { order, orderId, eventType, newStatus, oldStatus, retryNotificationId } = params;
-
-  const invoiceCode = order.invoiceCode || orderId;
-  const rawEmail = order.email;
-  const canonicalEmail = isValidEmail(rawEmail) ? String(rawEmail).trim().toLowerCase() : '';
+  const effectiveNowMs =
+    typeof params.nowMs === 'number' && Number.isFinite(params.nowMs)
+      ? params.nowMs
+      : typeof params.getNowMs === 'function' && Number.isFinite(params.getNowMs())
+        ? params.getNowMs()
+        : Date.now();
+  const effectiveAllowRetryFailed =
+    params.allowRetryFailed !== undefined
+      ? Boolean(params.allowRetryFailed)
+      : Boolean(retryNotificationId);
 
   // 1. Determine canonical status & check if status actually changed
   let targetStatus: CanonicalStatus = 'جديد';
   if (eventType === 'ORDER_STATUS_CHANGED') {
+    if (newStatus !== undefined && newStatus !== null && !isValidOrderStatusValue(newStatus)) {
+      return {
+        success: false,
+        status: 'failed',
+        notificationId: retryNotificationId || '',
+        providerOutcome: 'not_attempted',
+        outboxFinalized: false,
+        persistenceOutcome: 'not_attempted',
+        message: 'Skipped: Invalid target order status'
+      };
+    }
     targetStatus = normalizeOrderStatus(newStatus);
     const prevNormalized = normalizeOrderStatus(oldStatus);
     if (!retryNotificationId && prevNormalized === targetStatus) {
@@ -1299,10 +1577,36 @@ export async function sendOrderNotification(params: {
         success: true,
         status: 'accepted_by_mailapp',
         notificationId: '',
+        providerOutcome: 'skipped',
+        outboxFinalized: true,
+        persistenceOutcome: 'not_attempted',
         message: 'Status unchanged; skipped notification generation'
       };
     }
   }
+
+  // Enforce strict core order shape validation before reading tombstones, generating tokens, or enqueueing outbox
+  if (!hasCoreOrderFieldsForNotif(order, { requireStatus: eventType !== 'ORDER_CONFIRMATION' })) {
+    return {
+      success: false,
+      status: 'failed',
+      notificationId: retryNotificationId || '',
+      providerOutcome: 'not_attempted',
+      outboxFinalized: false,
+      persistenceOutcome: 'not_attempted',
+      message: 'Skipped: Order record has incomplete or invalid core shape'
+    };
+  }
+
+  const invoiceCode = String(order.invoiceCode).trim();
+  const rawEmail = order.email ?? (isPlainRecord(order.customer) ? order.customer.email : undefined);
+  const canonicalEmail = isValidEmail(rawEmail) ? String(rawEmail).trim().toLowerCase() : '';
+  const customerName =
+    typeof order.name === 'string' && order.name.trim()
+      ? order.name.trim()
+      : isPlainRecord(order.customer) && typeof order.customer.name === 'string'
+        ? order.customer.name.trim()
+        : '';
 
   // 2. Generate unique notification ID (Idempotency key)
   const statusSlug = targetStatus === 'قيد التجهيز' ? 'processing'
@@ -1317,35 +1621,256 @@ export async function sendOrderNotification(params: {
       : `notif_order_${orderId}_status_${statusSlug}`
   );
 
-  const adminDb = getAdminDb();
+  if (
+    retryNotificationId &&
+    (!orderId ||
+      (!orderId.startsWith('diag_') &&
+        !isDeterministicOutboxIdForOrder(notificationId, orderId, 'email', eventType)))
+  ) {
+    return {
+      success: false,
+      status: 'failed',
+      notificationId,
+      providerOutcome: 'not_attempted',
+      outboxFinalized: false,
+      persistenceOutcome: 'identity_mismatch',
+      message: 'Invalid deterministic email notification identity'
+    };
+  }
 
-  // Retrieve or generate secure invoice access token if not explicitly provided and not diagnostic
-  let invoiceAccessToken = params.invoiceAccessToken;
-  if (!invoiceAccessToken && adminDb && orderId && !orderId.startsWith('diag_')) {
+  const adminDb = params.adminDb !== undefined ? params.adminDb : getAdminDb();
+
+  // Fail-closed: NEVER dispatch external notification without an atomic Outbox store
+  if (!adminDb || typeof adminDb.ref !== 'function') {
+    return {
+      success: false,
+      status: 'unavailable',
+      outboxStatus: 'unavailable',
+      notificationId,
+      providerOutcome: 'not_attempted',
+      outboxFinalized: false,
+      persistenceOutcome: 'claim_unavailable',
+      message: 'Notification outbox store is unavailable; blocked before external dispatch'
+    };
+  }
+
+  // Check privateDeletedOrders BEFORE touching token or outbox (fail-closed on DB read errors)
+  if (orderId && !orderId.startsWith('diag_')) {
     try {
-      invoiceAccessToken = await getOrCreateInvoiceToken(orderId, adminDb);
-    } catch (tokenErr) {
-      console.warn(`[EmailService] Could not resolve invoice access token for order ${orderId}:`, tokenErr);
+      const preDelSnap = await adminDb.ref(`privateDeletedOrders/${orderId}`).once('value');
+      const preDelVal = preDelSnap?.val?.() ?? null;
+      if (isOrderDeletionTombstone(preDelVal)) {
+        return {
+          success: false,
+          status: 'cancelled_order_deleted',
+          outboxStatus: 'cancelled_order_deleted',
+          notificationId,
+          providerOutcome: 'skipped',
+          outboxFinalized: false,
+          persistenceOutcome: 'order_deleted',
+          message: 'Skipped: Order is being deleted or has been deleted'
+        };
+      }
+    } catch (delCheckErr: any) {
+      console.warn(
+        `[EmailService] Fail-closed abort checking deletion status for order ${orderId}:`,
+        delCheckErr?.code || delCheckErr?.message || 'deleted_check_error'
+      );
+      return {
+        success: false,
+        status: 'unavailable',
+        outboxStatus: 'unavailable',
+        notificationId,
+        providerOutcome: 'not_attempted',
+        outboxFinalized: false,
+        persistenceOutcome: 'claim_unavailable',
+        message: 'Could not verify order deletion status'
+      };
     }
   }
 
-  // 3. Check existing outbox record to prevent double-send
-  if (adminDb) {
+  // Retrieve or generate secure invoice access token if not explicitly provided and not diagnostic
+  let invoiceAccessToken = params.invoiceAccessToken;
+  if (!invoiceAccessToken && orderId && !orderId.startsWith('diag_')) {
     try {
-      const snap = await adminDb.ref(`notifications_outbox/${notificationId}`).once('value');
-      const existing = snap.val();
-      if (existing && existing.status === 'accepted_by_mailapp' && !retryNotificationId) {
-        return {
-          success: true,
-          status: 'accepted_by_mailapp',
-          notificationId,
-          deduplicated: true,
-          message: 'Notification already accepted by MailApp previously'
-        };
-      }
-    } catch (e) {
-      // Non-blocking
+      invoiceAccessToken = await getOrCreateInvoiceToken(
+        orderId,
+        adminDb,
+        params.encryptionKey !== undefined ? { encryptionKey: params.encryptionKey } : {}
+      );
+    } catch (tokenErr: any) {
+      console.warn(
+        `[EmailService] Could not resolve invoice access token for order ${orderId}:`,
+        tokenErr?.code || tokenErr?.message || 'token_error'
+      );
     }
+  }
+
+  // 3. Build deterministic outbox payload & atomically claim via RTDB .transaction() BEFORE calling relay
+  const nowIso = new Date(effectiveNowMs).toISOString();
+  const hasValidCanonicalEmail = isValidEmail(canonicalEmail);
+  const outboxData: any = {
+    notificationId,
+    orderId,
+    invoiceCode,
+    channel: 'email',
+    recipientEmail: canonicalEmail || 'N/A',
+    recipientName: customerName || 'N/A',
+    eventType,
+    orderStatus: targetStatus,
+    status: hasValidCanonicalEmail ? 'pending' : 'skipped_no_valid_email',
+    attempts: 0,
+    createdAt: nowIso,
+    lastAttemptAt: nowIso
+  };
+
+  const claim = await claimOutboxNotification({
+    adminDb,
+    notificationId,
+    orderId,
+    channel: 'email',
+    eventType,
+    initialRecord: outboxData,
+    allowRetryFailed: effectiveAllowRetryFailed,
+    allowSkipIfNoValidEmail: true,
+    hasValidEmail: hasValidCanonicalEmail,
+    nowMs: params.nowMs,
+    getNowMs: params.getNowMs,
+    leaseMs: params.leaseMs
+  });
+
+  if (!claim.claimed || !claim.claimId) {
+    if (claim.reason === 'ALREADY_SENT') {
+      return {
+        success: true,
+        status: 'accepted_by_mailapp',
+        outboxStatus: 'accepted_by_mailapp',
+        notificationId,
+        deduplicated: true,
+        providerOutcome: 'accepted',
+        providerStatus: 'accepted_by_mailapp',
+        outboxFinalized: true,
+        persistenceOutcome: 'committed',
+        message: 'Notification already accepted by MailApp previously'
+      };
+    }
+    if (claim.reason === 'ORDER_DELETED') {
+      return {
+        success: false,
+        status: (claim.status as NotificationStatus) || 'cancelled_order_deleted',
+        outboxStatus: claim.status || 'cancelled_order_deleted',
+        notificationId,
+        providerOutcome: 'skipped',
+        outboxFinalized: false,
+        persistenceOutcome: 'order_deleted',
+        message: 'Notification skipped because order is being deleted or has been deleted'
+      };
+    }
+    if (claim.status === 'skipped_no_valid_email') {
+      return {
+        success: false,
+        status: 'skipped_no_valid_email',
+        outboxStatus: 'skipped_no_valid_email',
+        notificationId,
+        providerOutcome: 'skipped',
+        outboxFinalized: true,
+        persistenceOutcome: 'committed',
+        message: 'Skipped: Order has no valid email address'
+      };
+    }
+    if (claim.reason === 'IN_FLIGHT') {
+      return {
+        success: false,
+        status: 'processing',
+        outboxStatus: 'processing',
+        notificationId,
+        deduplicated: true,
+        providerOutcome: 'not_attempted',
+        outboxFinalized: false,
+        persistenceOutcome: 'claim_blocked',
+        message: 'Notification dispatch is already in progress by another worker'
+      };
+    }
+    if (claim.reason === 'AMBIGUOUS_UNKNOWN') {
+      return {
+        success: false,
+        status: 'unknown',
+        outboxStatus: 'unknown',
+        notificationId,
+        providerOutcome: 'ambiguous',
+        outboxFinalized: false,
+        persistenceOutcome: 'claim_blocked',
+        message: 'Notification status is unknown after timeout; automatic retry blocked to prevent duplicates'
+      };
+    }
+    if (
+      claim.reason === 'STORE_UNAVAILABLE' ||
+      claim.reason === 'CLAIM_ERROR' ||
+      claim.reason === 'NOT_COMMITTED'
+    ) {
+      return {
+        success: false,
+        status: 'unavailable',
+        outboxStatus: 'unavailable',
+        notificationId,
+        providerOutcome: 'not_attempted',
+        outboxFinalized: false,
+        persistenceOutcome: 'claim_unavailable',
+        message: 'Outbox claim failed or store unavailable; blocked before external dispatch'
+      };
+    }
+    if (claim.reason === 'OWNERSHIP_MISMATCH' || claim.reason === 'IDENTITY_MISMATCH') {
+      return {
+        success: false,
+        status: 'unavailable',
+        outboxStatus: claim.status || 'unavailable',
+        notificationId,
+        providerOutcome: 'not_attempted',
+        outboxFinalized: false,
+        persistenceOutcome:
+          claim.reason === 'OWNERSHIP_MISMATCH' ? 'ownership_mismatch' : 'identity_mismatch',
+        message: 'Notification claim ownership or identity validation failed'
+      };
+    }
+    return {
+      success: false,
+      status: (claim.status as NotificationStatus) || 'failed',
+      outboxStatus: claim.status || 'failed',
+      notificationId,
+      providerOutcome: 'not_attempted',
+      outboxFinalized: false,
+      persistenceOutcome: 'claim_blocked',
+      message: 'Notification could not be claimed for dispatch'
+    };
+  }
+
+  const claimId = claim.claimId;
+
+  if (!hasValidCanonicalEmail) {
+    await finalizeOutboxNotification({
+      adminDb,
+      notificationId,
+      claimId,
+      status: 'skipped_no_valid_email',
+      error: null,
+      message: null,
+      extra: {
+        providerOutcome: 'skipped',
+        persistenceOutcome: 'committed'
+      },
+      nowMs: params.nowMs,
+      getNowMs: params.getNowMs
+    });
+    return {
+      success: false,
+      status: 'skipped_no_valid_email',
+      outboxStatus: 'skipped_no_valid_email',
+      notificationId,
+      providerOutcome: 'skipped',
+      outboxFinalized: true,
+      persistenceOutcome: 'committed',
+      message: 'Skipped: Order has no valid email address'
+    };
   }
 
   // 4. Generate email content
@@ -1355,41 +1880,7 @@ export async function sendOrderNotification(params: {
 
   const { subject, htmlBody, textBody } = emailContent;
 
-  // 5. Initial outbox record creation
-  const nowIso = new Date().toISOString();
-  const outboxData: any = {
-    notificationId,
-    orderId,
-    invoiceCode,
-    recipientEmail: canonicalEmail || 'N/A',
-    recipientName: order.name || 'N/A',
-    eventType,
-    orderStatus: targetStatus,
-    status: isValidEmail(canonicalEmail) ? 'pending' : 'skipped_no_valid_email',
-    attempts: 0,
-    createdAt: nowIso,
-    lastAttemptAt: nowIso
-  };
-
-  if (adminDb) {
-    try {
-      await adminDb.ref(`notifications_outbox/${notificationId}`).update(outboxData);
-    } catch (e) {
-      console.warn('[EmailService] Failed to initialize outbox record:', e);
-    }
-  }
-
-  // If no valid email, skip dispatch immediately
-  if (!isValidEmail(canonicalEmail)) {
-    return {
-      success: false,
-      status: 'skipped_no_valid_email',
-      notificationId,
-      message: 'Skipped: Order has no valid email address'
-    };
-  }
-
-  // 6. Dispatch to relay
+  // 5. Dispatch to relay (strictly one owner per claim transaction)
   const dispatchResult = await dispatchToAppsScriptRelay({
     notificationId,
     recipientEmail: canonicalEmail,
@@ -1401,41 +1892,114 @@ export async function sendOrderNotification(params: {
     invoiceCode
   });
 
-  // 7. Update Firebase Outbox & Order metadata with results
-  if (adminDb) {
-    try {
-      const outboxRef = adminDb.ref(`notifications_outbox/${notificationId}`);
-      await outboxRef.transaction((current: any) => {
-        const cur = current || outboxData;
-        const attempts = (cur.attempts || 0) + 1;
-        return {
-          ...cur,
-          status: dispatchResult.status,
-          attempts,
-          lastAttemptAt: new Date().toISOString(),
-          error: dispatchResult.error || null,
-          message: dispatchResult.message || null
-        };
-      });
+  const providerStatus = dispatchResult.status;
+  const providerOutcome: OutboxProviderOutcome =
+    dispatchResult.status === 'accepted_by_mailapp'
+      ? 'accepted'
+      : dispatchResult.status === 'unknown'
+        ? 'timeout'
+        : 'rejected';
 
-      // Update order latest notification status for dashboard visibility
-      await adminDb.ref(`orders/${orderId}/latestNotification`).set({
-        notificationId,
-        status: dispatchResult.status,
-        eventType,
-        updatedAt: new Date().toISOString()
-      });
-    } catch (err) {
-      console.warn('[EmailService] Failed to update outbox record after dispatch:', err);
-    }
+  // 6. Finalize Firebase Outbox & conditionally update Order metadata ONLY when finalization commits
+  let finRes: { finalized: boolean; status?: string; reason?: string } = {
+    finalized: false,
+    reason: 'FINALIZE_TRANSACTION_ERROR'
+  };
+
+  try {
+    finRes = await finalizeOutboxNotification({
+      adminDb,
+      notificationId,
+      claimId,
+      status: dispatchResult.status,
+      error: sanitizeOutboxErrorCode(dispatchResult.error),
+      message: null,
+      extra: {
+        providerOutcome,
+        persistenceOutcome: 'committed'
+      },
+      nowMs: params.nowMs,
+      getNowMs: params.getNowMs
+    });
+  } catch (err) {
+    console.warn('[EmailService] Failed to update outbox record after dispatch:', err);
+    finRes = { finalized: false, reason: 'FINALIZE_TRANSACTION_ERROR' };
   }
 
+  if (finRes.finalized) {
+    if (orderId && !orderId.startsWith('diag_')) {
+      try {
+        let isDeletedNow = false;
+        try {
+          const postDelSnap = await adminDb.ref(`privateDeletedOrders/${orderId}`).once('value');
+          isDeletedNow = isOrderDeletionTombstone(postDelSnap?.val?.() ?? null);
+        } catch {
+          // Fail-closed: do not write orders/{orderId} if deletion verification fails
+          isDeletedNow = true;
+        }
+
+        const orderRef = adminDb.ref(`orders/${orderId}`);
+        if (!isDeletedNow && typeof orderRef.transaction === 'function') {
+          await orderRef.transaction((currentOrder: any) => {
+            if (!hasCoreOrderFieldsForNotif(currentOrder)) {
+              return undefined;
+            }
+            return {
+              ...currentOrder,
+              latestNotification: {
+                notificationId,
+                status: dispatchResult.status,
+                eventType,
+                updatedAt: new Date(
+                  typeof params.getNowMs === 'function' && Number.isFinite(params.getNowMs())
+                    ? params.getNowMs()
+                    : effectiveNowMs
+                ).toISOString()
+              }
+            };
+          });
+        }
+      } catch (orderTxErr) {
+        console.warn('[EmailService] Failed to update latestNotification after outbox finalize:', orderTxErr);
+      }
+    }
+
+    return {
+      success: dispatchResult.success,
+      status: dispatchResult.status,
+      outboxStatus: dispatchResult.status,
+      notificationId,
+      message: dispatchResult.message,
+      deduplicated: dispatchResult.deduplicated,
+      providerOutcome,
+      providerStatus,
+      outboxFinalized: true,
+      persistenceOutcome: 'committed'
+    };
+  }
+
+  const isDeleted =
+    finRes.status === 'cancelled_order_deleted' ||
+    finRes.status === 'unknown_deleted_during_dispatch';
+  const persistenceOutcome: OutboxPersistenceOutcome = isDeleted
+    ? 'order_deleted'
+    : finRes.reason === 'OWNERSHIP_MISMATCH'
+      ? 'ownership_mismatch'
+      : 'finalization_failed';
+
   return {
-    success: dispatchResult.success,
-    status: dispatchResult.status,
+    success: false,
+    status: isDeleted ? (finRes.status as NotificationStatus) : 'unfinalized',
+    outboxStatus: finRes.status || 'processing',
     notificationId,
-    message: dispatchResult.message,
-    deduplicated: dispatchResult.deduplicated
+    message: isDeleted
+      ? 'Order deleted during email notification dispatch'
+      : 'Email provider dispatch completed but outbox finalization failed',
+    deduplicated: dispatchResult.deduplicated,
+    providerOutcome,
+    providerStatus,
+    outboxFinalized: false,
+    persistenceOutcome
   };
 }
 

@@ -1,165 +1,290 @@
 export const prerender = false;
 
 // src/pages/api/link-customer-orders.js
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getDatabase } from 'firebase-admin/database';
+// Links unclaimed guest orders strictly by Firebase-verified account email (never phone alone).
+import { getAdminDb, getAdminAuth } from '../../utils/firebase-admin.ts';
 import { getClientIp, getLinkOrdersRateLimiter } from '../../utils/rate-limit.js';
+import { isValidEmail } from '../../utils/email-service.ts';
 
-function getAdminApp() {
-  if (getApps().length > 0) {
-    return getApps()[0];
-  }
+const SECURITY_HEADERS = {
+  'Content-Type': 'application/json',
+  'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+  'Pragma': 'no-cache',
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff'
+};
 
-  const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (!saEnv) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is missing');
-  }
+function isPlainObject(val) {
+  return Boolean(val) && typeof val === 'object' && !Array.isArray(val);
+}
 
-  const serviceAccount = typeof saEnv === 'string' ? JSON.parse(saEnv) : saEnv;
-
-  return initializeApp({
-    credential: cert(serviceAccount),
-    databaseURL: 'https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app'
+function jsonResponse(payload, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      ...SECURITY_HEADERS,
+      ...extraHeaders
+    }
   });
 }
 
-export async function POST({ request }) {
+function extractBearerToken(request) {
+  const authHeader =
+    request?.headers?.get?.('authorization') ||
+    request?.headers?.get?.('Authorization') ||
+    '';
+  if (typeof authHeader !== 'string') return null;
+  const match = authHeader.trim().match(/^Bearer\s+([^\s]+)$/i);
+  return match && match[1] ? match[1].trim() : null;
+}
+
+function normalizeEmailForMatch(rawEmail) {
+  if (typeof rawEmail !== 'string') return '';
+  return rawEmail.trim().toLowerCase();
+}
+
+export async function POST({ request, _deps = undefined }) {
   try {
     const clientIp = getClientIp(request);
 
-    // تطبيق Rate Limiting عبر Upstash Redis (5 محاولات في الدقيقة لكل IP) بمبدأ Fail Open
-    try {
-      const linkLimiter = getLinkOrdersRateLimiter();
-      if (linkLimiter) {
-        const { success, limit, remaining, reset } = await linkLimiter.limit(clientIp);
-        if (!success) {
-          return new Response(JSON.stringify({
-            success: false,
-            error: 'RATE_LIMIT_EXCEEDED',
-            message: 'تم تجاوز الحد المسموح من طلبات ربط الحساب. يرجى الانتظار دقيقة والمحاولة لاحقًا.'
-          }), {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              'X-RateLimit-Limit': String(limit),
-              'X-RateLimit-Remaining': String(remaining),
-              'X-RateLimit-Reset': String(reset)
-            }
-          });
+    // Rate limiting (Fail Open to avoid locking legitimate users if Redis is degraded)
+    if (!_deps?.skipRateLimit) {
+      try {
+        const linkLimiter = _deps?.linkLimiter !== undefined ? _deps.linkLimiter : getLinkOrdersRateLimiter();
+        if (linkLimiter) {
+          const { success, limit, remaining, reset } = await linkLimiter.limit(clientIp);
+          if (!success) {
+            return jsonResponse(
+              {
+                success: false,
+                error: 'RATE_LIMIT_EXCEEDED',
+                message: 'تم تجاوز الحد المسموح من طلبات ربط الحساب. يرجى الانتظار دقيقة والمحاولة لاحقًا.'
+              },
+              429,
+              {
+                'X-RateLimit-Limit': String(limit),
+                'X-RateLimit-Remaining': String(remaining),
+                'X-RateLimit-Reset': String(reset)
+              }
+            );
+          }
         }
+      } catch (redisErr) {
+        console.warn('[LinkCustomerOrders] Rate limiter fallback (fail open):', redisErr?.code || 'redis_err');
       }
-    } catch (redisErr) {
-      console.warn(`[RATE-LIMIT WARNING - FAIL OPEN] Upstash Redis check failed in link-customer-orders for IP ${clientIp}:`, redisErr?.message || redisErr);
     }
 
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-      console.warn('FIREBASE_SERVICE_ACCOUNT not configured in environment. Operation simulated.');
-      return new Response(JSON.stringify({
-        success: true,
-        simulated: true,
-        linkedCount: 0,
-        message: 'FIREBASE_SERVICE_ACCOUNT is not configured in environment'
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    let adminAuth = _deps?.adminAuth !== undefined ? _deps.adminAuth : null;
+    let adminDb = _deps?.adminDb !== undefined ? _deps.adminDb : null;
+
+    if (!adminAuth && !_deps?.simulateMissingAuth) {
+      try {
+        adminAuth = getAdminAuth();
+      } catch {
+        adminAuth = null;
+      }
+    }
+    if (!adminDb && !_deps?.simulateMissingDb) {
+      try {
+        adminDb = getAdminDb();
+      } catch {
+        adminDb = null;
+      }
     }
 
-    const body = await request.json().catch(() => ({}));
-    const { idToken } = body;
+    if (!adminAuth || !adminDb) {
+      return jsonResponse(
+        {
+          success: false,
+          error: 'SERVICE_TEMPORARILY_UNAVAILABLE',
+          message: 'خدمة ربط الطلبات غير متاحة مؤقتاً.'
+        },
+        503
+      );
+    }
+
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      body = {};
+    }
+    if (!isPlainObject(body)) {
+      body = {};
+    }
+
+    // Never accept uid or email from body; extract idToken from body or Bearer header
+    const idToken =
+      typeof body.idToken === 'string' && body.idToken.trim()
+        ? body.idToken.trim()
+        : extractBearerToken(request);
 
     if (!idToken) {
-      return new Response(JSON.stringify({ error: 'Missing idToken' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return jsonResponse(
+        {
+          success: false,
+          error: 'UNAUTHORIZED',
+          message: 'رمز التحقق مطلوب لربط الطلبات.'
+        },
+        401
+      );
     }
 
-    const app = getAdminApp();
-    const adminAuth = getAuth(app);
-    const adminDb = getDatabase(app);
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch (authErr) {
+      console.warn('[LinkCustomerOrders] Invalid or expired token:', authErr?.code || 'invalid_token');
+      return jsonResponse(
+        {
+          success: false,
+          error: 'UNAUTHORIZED',
+          message: 'انتهت جلسة تسجيل الدخول أو الرمز غير صالح.'
+        },
+        401
+      );
+    }
 
-    // التحقق الصارم من صحة توكن المستخدم واستخراج uid الآمن
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-
+    const uid = typeof decodedToken?.uid === 'string' ? decodedToken.uid.trim() : '';
     if (!uid) {
-      return new Response(JSON.stringify({ error: 'Invalid token or missing uid' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return jsonResponse(
+        {
+          success: false,
+          error: 'UNAUTHORIZED',
+          message: 'تعذر التحقق من هوية الحساب.'
+        },
+        401
+      );
     }
 
-    // سد ثغرة IDOR: جلب رقم الهاتف من السجل الموثق للعميل حصراً وتجاهل أي رقم قادم في الطلب
-    const custPhoneSnap = await adminDb.ref(`customers/${uid}/phone`).once('value');
-    const registeredPhone = custPhoneSnap.val();
-
-    if (!registeredPhone || typeof registeredPhone !== 'string' || registeredPhone.trim().length < 10) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'PHONE_NOT_REGISTERED',
-        message: 'لا يوجد رقم هاتف مسجل ومؤكد في ملف العميل لربط الطلبات به'
-      }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    // Strict verified-email requirement for guest order linking ONLY
+    if (decodedToken.email_verified !== true) {
+      return jsonResponse(
+        {
+          success: false,
+          linked: false,
+          linkedCount: 0,
+          error: 'EMAIL_VERIFICATION_REQUIRED',
+          message: 'ربط الطلبات السابقة بالحساب يتطلب توثيق البريد الإلكتروني أولاً. يمكنكِ متابعة استخدام حسابكِ بشكل طبيعي.'
+        },
+        403
+      );
     }
 
-    // تنظيف وتجهيز صيغ أرقام الهاتف المختلفة (01xxxxxxxxx أو +201xxxxxxxxx)
-    const phoneStr = String(registeredPhone).trim();
-    const cleanDigits = phoneStr.replace(/\D/g, '');
-    const phoneVariants = new Set();
-    phoneVariants.add(phoneStr);
-    if (phoneStr.startsWith('+20')) {
-      phoneVariants.add('0' + phoneStr.slice(3));
-      phoneVariants.add(phoneStr.slice(3));
-    } else if (phoneStr.startsWith('0')) {
-      phoneVariants.add('+2' + phoneStr);
-      phoneVariants.add('+20' + phoneStr.slice(1));
-      phoneVariants.add(phoneStr.slice(1));
-    } else if (cleanDigits.length === 10) {
-      phoneVariants.add('0' + cleanDigits);
-      phoneVariants.add('+20' + cleanDigits);
+    const rawTokenEmail = typeof decodedToken.email === 'string' ? decodedToken.email.trim() : '';
+    const verifiedEmail = normalizeEmailForMatch(rawTokenEmail);
+    if (!verifiedEmail || !isValidEmail(verifiedEmail)) {
+      return jsonResponse(
+        {
+          success: false,
+          linked: false,
+          linkedCount: 0,
+          error: 'VERIFIED_EMAIL_INVALID',
+          message: 'لا يوجد بريد إلكتروني صالح موثق على الحساب لربط الطلبات السابقة.'
+        },
+        400
+      );
     }
 
-    let linkedCount = 0;
-    const processedOrderIds = new Set();
+    // Query candidate guest orders matching verified email (check normalized lowercase and exact trimmed casing)
+    const emailQueryTargets = new Set([verifiedEmail]);
+    if (rawTokenEmail && rawTokenEmail !== verifiedEmail) {
+      emailQueryTargets.add(rawTokenEmail);
+    }
 
-    for (const variant of phoneVariants) {
-      const snap = await adminDb.ref('orders').orderByChild('phone').equalTo(variant).once('value');
+    const candidateOrderIds = new Set();
+    for (const targetEmail of emailQueryTargets) {
+      const snap = await adminDb
+        .ref('orders')
+        .orderByChild('email')
+        .equalTo(targetEmail)
+        .once('value');
       if (snap.exists()) {
-        const orders = snap.val();
-        for (const [orderId, orderData] of Object.entries(orders)) {
-          if (!processedOrderIds.has(orderId)) {
-            processedOrderIds.add(orderId);
-            // ربط الطلب فقط إذا لم يكن يملك customerId بالفعل
-            if (!orderData?.customerId) {
-              await adminDb.ref(`orders/${orderId}/customerId`).set(uid);
-              linkedCount++;
+        const ordersObj = snap.val();
+        if (isPlainObject(ordersObj)) {
+          for (const [orderId, orderData] of Object.entries(ordersObj)) {
+            if (!isPlainObject(orderData)) continue;
+            const orderEmail = normalizeEmailForMatch(orderData.email);
+            if (!orderEmail || !isValidEmail(orderEmail) || orderEmail !== verifiedEmail) continue;
+            if (!orderData.customerId) {
+              candidateOrderIds.add(orderId);
             }
           }
         }
       }
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      linkedCount,
-      message: `تم ربط ${linkedCount} طلب/طلبات بحساب العميل بنجاح`
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    let linkedCount = 0;
+    let skippedOwnedByOther = 0;
 
-  } catch (error) {
-    console.error('Error in link-customer-orders endpoint:', error);
-    return new Response(JSON.stringify({
-      error: 'Failed to link customer orders',
-      message: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    for (const orderId of candidateOrderIds) {
+      const orderRef = adminDb.ref(`orders/${orderId}`);
+      let txOutcome = 'skipped';
+
+      const tx = await orderRef.transaction((current) => {
+        txOutcome = 'skipped';
+        if (!isPlainObject(current)) return undefined;
+
+        const currentEmail = normalizeEmailForMatch(current.email);
+        if (!currentEmail || !isValidEmail(currentEmail) || currentEmail !== verifiedEmail) {
+          return undefined;
+        }
+
+        // Never overwrite an existing owner (even if racing with another account)
+        if (current.customerId) {
+          txOutcome = current.customerId === uid ? 'already_mine' : 'owned_by_other';
+          return undefined;
+        }
+
+        txOutcome = 'linked';
+        return {
+          ...current,
+          customerId: uid,
+          linkedAt: new Date().toISOString(),
+          linkedByMethod: 'verified_email'
+        };
+      });
+
+      if (tx?.committed && txOutcome === 'linked') {
+        linkedCount++;
+      } else if (txOutcome === 'owned_by_other') {
+        skippedOwnedByOther++;
+      }
+    }
+
+    return jsonResponse(
+      {
+        success: true,
+        linkedCount,
+        skippedOwnedByOther,
+        message:
+          linkedCount > 0
+            ? `تم ربط ${linkedCount} طلب/طلبات سابقة بحسابكِ عبر البريد الإلكتروني الموثق بنجاح.`
+            : 'لا توجد طلبات ضيوف جديدة مطابقة للبريد الموثق للربط.'
+      },
+      200
+    );
+  } catch (err) {
+    console.error('[LinkCustomerOrders Error]:', err?.code || 'link_orders_failed');
+    return jsonResponse(
+      {
+        success: false,
+        error: 'SERVER_ERROR',
+        message: 'حدث خطأ أثناء محاولة ربط الطلبات السابقة.'
+      },
+      500
+    );
   }
+}
+
+export async function ALL() {
+  return jsonResponse(
+    {
+      success: false,
+      error: 'METHOD_NOT_ALLOWED',
+      message: 'الطريقة غير مسموح بها'
+    },
+    405,
+    { Allow: 'POST' }
+  );
 }

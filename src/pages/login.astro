@@ -98,7 +98,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <div id="adminOnlyNotice" style="display:none; margin-bottom:20px; padding:12px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; color:#991b1b; font-size:0.88rem; text-align:right; line-height:1.6;">
         <i class="fas fa-exclamation-triangle" style="margin-left:6px; color:#dc2626;"></i>
-        <strong>تنبيه للمستخدم:</strong> هذه البوابة مخصصة لإدارة المتجر فقط. لعملاء داندي، يرجى <a href="/account-login" style="color:#b91c1c; text-decoration:underline; font-weight:700;">تسجيل الدخول من بوابة حساب العميل هنا</a>.
+        <span id="adminNoticeText"><strong>تنبيه للمستخدم:</strong> هذه البوابة مخصصة لإدارة المتجر فقط. لعملاء داندي، يرجى <a href="/account-login" style="color:#b91c1c; text-decoration:underline; font-weight:700;">تسجيل الدخول من بوابة حساب العميل هنا</a>.</span>
       </div>
 
       <form id="loginForm">
@@ -120,12 +120,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <script is:inline>
     const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
 
+    function showAdminLoginNotice(htmlMessage) {
+      const notice = document.getElementById('adminOnlyNotice');
+      const noticeText = document.getElementById('adminNoticeText');
+      if (noticeText && htmlMessage) {
+        noticeText.innerHTML = htmlMessage;
+      }
+      if (notice) {
+        notice.style.display = 'block';
+      }
+    }
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('reason') === 'email_not_verified') {
+        showAdminLoginNotice('<strong>بريد الإدارة غير مفعّل:</strong> يجب تفعيل البريد الإلكتروني لحساب الإدارة (emailVerified) قبل الوصول إلى لوحة التحكم.');
+      }
+    } catch (e) {}
+
     if (auth) {
       // Active check redirect if already signed in
       auth.onAuthStateChanged(async user => {
         if (user) {
           if (user.email && user.email.toLowerCase() === 'admin@dandy.com') {
-            window.location.href = '/dashboard';
+            if (user.emailVerified === true) {
+              window.location.href = '/dashboard';
+            } else {
+              try {
+                await auth.signOut();
+              } catch (e) {
+                console.warn('Sign-out notice:', e);
+              }
+              showAdminLoginNotice('<strong>بريد الإدارة غير مفعّل:</strong> يجب تفعيل البريد الإلكتروني لحساب الإدارة (emailVerified) قبل الوصول إلى لوحة التحكم.');
+            }
           } else {
             // Non-admin user detected: sign out immediately and show warning
             try {
@@ -133,10 +160,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             } catch (e) {
               console.warn('Sign-out notice:', e);
             }
-            const notice = document.getElementById('adminOnlyNotice');
-            if (notice) {
-              notice.style.display = 'block';
-            }
+            showAdminLoginNotice('<strong>تنبيه للمستخدم:</strong> هذه البوابة مخصصة لإدارة المتجر فقط. لعملاء داندي، يرجى <a href="/account-login" style="color:#b91c1c; text-decoration:underline; font-weight:700;">تسجيل الدخول من بوابة حساب العميل هنا</a>.');
           }
         }
       });
@@ -150,10 +174,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const submitBtn = document.getElementById('adminLoginBtn');
 
         if (email.toLowerCase() !== 'admin@dandy.com') {
-          const notice = document.getElementById('adminOnlyNotice');
-          if (notice) {
-            notice.style.display = 'block';
-          }
+          showAdminLoginNotice('<strong>تنبيه للمستخدم:</strong> هذه البوابة مخصصة لإدارة المتجر فقط. لعملاء داندي، يرجى <a href="/account-login" style="color:#b91c1c; text-decoration:underline; font-weight:700;">تسجيل الدخول من بوابة حساب العميل هنا</a>.');
           alert('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور.');
           return;
         }
@@ -182,7 +203,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           }
 
           // 2. تسجيل الدخول عبر Firebase Auth
-          await auth.signInWithEmailAndPassword(email, password);
+          const cred = await auth.signInWithEmailAndPassword(email, password);
+          if (!cred?.user?.emailVerified) {
+            try {
+              await auth.signOut();
+            } catch (signOutErr) {
+              console.warn('Sign-out notice:', signOutErr);
+            }
+            showAdminLoginNotice('<strong>بريد الإدارة غير مفعّل:</strong> يجب تفعيل البريد الإلكتروني لحساب الإدارة (emailVerified) قبل الوصول إلى لوحة التحكم.');
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'تسجيل الدخول الآمن';
+            }
+            return;
+          }
 
           // 3. تسجيل نجاح عملية الدخول بالسيرفر
           fetch('/api/verify-turnstile', {

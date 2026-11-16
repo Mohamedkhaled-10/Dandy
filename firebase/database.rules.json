@@ -1,100 +1,60 @@
 {
   "rules": {
+    ".read": false,
+    ".write": false,
     "homepage": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true"
     },
     "categories": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true"
     },
     "products": {
       ".read": true,
       ".indexOn": ["slug"],
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'",
-      "$productId": {
-        "stockQuantity": {
-          ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || (data.exists() && newData.isNumber())",
-          ".validate": "(auth != null && auth.token.email == 'admin@dandy.com') || (newData.isNumber() && data.exists() && newData.val() <= data.val() && newData.val() >= 0)"
-        },
-        "isSoldOut": {
-          ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || (newData.isBoolean() && newData.val() == true)",
-          ".validate": "newData.isBoolean() && ((auth != null && auth.token.email == 'admin@dandy.com') || (newData.val() == true))"
-        },
-        "avgRating": {
-          ".write": "auth != null"
-        },
-        "reviewCount": {
-          ".write": "auth != null"
-        }
-      }
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true"
     },
     "orders": {
-      ".read": "(auth != null && auth.token.email == 'admin@dandy.com') || (auth != null && query.orderByChild == 'customerId' && query.equalTo == auth.uid) || (query.orderByChild == 'invoiceCode' && query.equalTo != null)",
+      ".read": "(auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true) || (auth != null && query.orderByChild == 'customerId' && query.equalTo == auth.uid)",
       ".indexOn": ["phone", "customerId", "invoiceCode"],
-      ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || !data.exists()",
-      "$orderId": {
-        ".read": true,
-        ".write": "(auth != null && auth.token.email == 'admin@dandy.com') || !data.exists()",
-        ".validate": "newData.hasChildren(['name','phone','governorate','city','address','totalAmount','invoiceCode','products','status'])",
-        "name": { ".validate": "newData.isString() && newData.val().length >= 2" },
-        "phone": { ".validate": "newData.isString() && newData.val().length >= 10" },
-        "governorate": { ".validate": "newData.isString() && newData.val().length >= 2" },
-        "city": { ".validate": "newData.isString()" },
-        "address": { ".validate": "newData.isString() && newData.val().length >= 3" },
-        "invoiceCode": { ".validate": "newData.isString() && newData.val().beginsWith('DNY-')" },
-        "totalAmount": { ".validate": "newData.isNumber() && newData.val() > 0" },
-        "products": {
-          ".validate": "newData.exists()",
-          "$itemIndex": {
-            "selectedVariant": {
-              ".validate": "!newData.exists() || newData.hasChildren(['name']) || newData.isString()",
-              "id": { ".validate": "!newData.exists() || newData.isString()" },
-              "name": { ".validate": "!newData.exists() || newData.isString()" }
-            },
-            "variantName": {
-              ".validate": "!newData.exists() || newData.isString()"
-            }
-          }
-        },
-        "status": { ".validate": "newData.isString()" }
-      }
+      ".write": false
     },
     "settings": {
-      ".read": true,
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+      ".read": false,
+      ".write": false
     },
     "testimonials": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true"
     },
     "customers": {
       "$uid": {
-        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
-        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
+        ".read": "auth != null && (auth.uid == $uid || (auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && ((auth.uid == $uid && newData.exists()) || (auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true))",
         "phone": {
-          ".validate": "newData.isString() && newData.val().length >= 10 && (!data.exists() || (auth != null && auth.token.email == 'admin@dandy.com') || newData.val() == data.val())"
+          ".validate": "newData.isString() && newData.val().length >= 10 && (!data.exists() || (auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true) || newData.val() == data.val())"
         }
       }
     },
     "wishlists": {
       "$uid": {
-        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')",
-        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'admin@dandy.com')"
+        ".read": "auth != null && (auth.uid == $uid || (auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && (auth.uid == $uid || (auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true))"
       }
     },
     "reviews": {
       "$productId": {
         ".read": true,
         "$customerId": {
-          ".write": "auth != null && auth.uid == $customerId",
-          ".validate": "newData.hasChildren(['rating','comment','customerName','orderId','createdAt']) && newData.child('rating').isNumber() && newData.child('rating').val() >= 1 && newData.child('rating').val() <= 5"
+          ".write": false
         }
-      }
+      },
+      ".write": false
     },
     "_archive": {
-      ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'"
+      ".read": "auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true",
+      ".write": "auth != null && auth.token.email == 'admin@dandy.com' && auth.token.email_verified == true"
     },
     "privateOrderAccess": {
       ".read": false,
@@ -104,10 +64,26 @@
       ".read": false,
       ".write": false
     },
+    "privateOrderIdempotency": {
+      ".read": false,
+      ".write": false
+    },
+    "privateRateLimits": {
+      ".read": false,
+      ".write": false
+    },
+    "privateDeletedOrders": {
+      ".read": false,
+      ".write": false
+    },
     "notifications_outbox": {
-      ".read": "auth != null && auth.token.email == 'admin@dandy.com'",
-      ".write": "auth != null && auth.token.email == 'admin@dandy.com'",
+      ".read": false,
+      ".write": false,
       ".indexOn": ["orderId", "timestamp"]
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
     }
   }
 }

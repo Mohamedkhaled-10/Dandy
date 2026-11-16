@@ -8,11 +8,11 @@
     "build": "node -r ./patch-env.cjs ./node_modules/astro/bin/astro.mjs build",
     "preview": "node -r ./patch-env.cjs ./node_modules/astro/bin/astro.mjs preview --host 0.0.0.0 --port 3000",
     "start": "node server.js",
-    "lint": "node -r ./patch-env.cjs ./node_modules/astro/bin/astro.mjs sync"
+    "lint": "node -r ./patch-env.cjs ./node_modules/astro/bin/astro.mjs sync",
+    "test:rules": "firebase emulators:exec --project demo-dandy-rules-test --only database,firestore \"node --test test/firebase-rules-emulator.test.mjs\""
   },
   "dependencies": {
     "@astrojs/node": "^11.1.5",
-    "@astrojs/vercel": "^11.0.20",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
     "astro": "^7.3.1",
@@ -29,7 +29,9 @@
     "@rolldown/binding-win32-x64-msvc": "^1.2.8"
   },
   "devDependencies": {
-    "@types/sortablejs": "^1.15.9"
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "@types/sortablejs": "^1.15.9",
+    "firebase": "^13.3.0"
   },
   "overrides": {
     "jose": "^5.9.6"
