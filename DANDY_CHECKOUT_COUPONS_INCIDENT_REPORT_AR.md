@@ -59,18 +59,22 @@
    - كان الضغط على `#btnResetOrderAttempt` يمسح `clientRequestId` محلياً من `sessionStorage` مباشرةً دون سؤال السيرفر! فإذا كان الطلب الأول قد نُفّذ بالفعل على السيرفر لكن الاتصال انقطع قبل وصول الرد، سيحصل العميل على معرف UUID جديد وينشئ **طلباً مكرراً**.
 
 ### الإصلاحات المنفذة محلياً
-- **تسريع `src/pages/api/create-order.js` وتحديد مهلة البريد:**
+- **تسريع `src/pages/api/create-order.js` وتحديد مهلة البريد والتحقق:**
   - جلب بيانات الحملة وإعدادات الكوبون والمنتجات والمكونات بالتوازي (`Promise.all`) مع الحفاظ الدقيق على ترتيب رسائل التحقق (Validation Order).
   - تنفيذ خصم المخزون عبر `Promise.allSettled` بالتوازي.
+  - إضافة مهلة صارمة `5000ms` عبر `AbortController` لطلب `siteverify` في `src/utils/turnstile.js` لمنع تعليق طلب `/api/create-order` وحجز قفل `PENDING` إذا تباطأ اتصال Cloudflare.
   - إضافة معامل `timeoutMs` اختياري في `sendOrderNotification` (`src/utils/email-service.ts`) وتحديد سقف انتظار البريد في مسار Checkout بـ `4500ms` (مع بقاء القيمة الافتراضية `12000ms` لأدوات التشخيص الإدارية، وبقاء `notifications_outbox` ضامناً لإعادة المحاولة إذا تأخر الرد عن 4.5 ثانية).
+- **تقليص مهلة قفل `PENDING` وإصلاح حلقات التعليق في `src/utils/order-idempotency.ts`:**
+  - تقليص `DEFAULT_IDEMPOTENCY_LEASE_MS` من `30000ms` إلى `15000ms` (يتجاوز حد تنفيذ Vercel البالغ 10 ثوانٍ لحماية الطلبات الحية، ويتعافى تلقائياً بنصف المدة في حال انقطاع أو انهيار الوظيفة) مع الإبقاء على `DEFAULT_COMMIT_LEASE_MS = 30000ms`.
+  - تمكين الاستحواذ على قفل `PENDING` المنتهي (`txTakeover`) حتى عند غياب `reservedOrderId`، وإرجاع `{ outcome: 'UNAVAILABLE' }` (`503`) بدلاً من اصطناع `IN_PROGRESS` (`409`) عند فشل التحديث الذري بسبب التزاحم.
 - **إنشاء نقطة الفحص والاسترجاع الآمن `POST /api/order-attempt-status`:**
   - محمية بحد معدل الطلبات (`30 req / 60s` لكل IP موثوق عبر `checkServerRateLimit` بصيغة fail-closed)، وتتحقق من صحة UUID v4، وبصمة الطلب `computeOrderRequestFingerprint`، وهوية Firebase الاختيارية، ولا تنشئ مطلقاً قفل `PENDING` جديد أو طلباً جديداً.
   - تعيد النتيجة الدقيقة عبر الدالة الجديدة `inspectOrRecoverOrderAttempt()` في `src/utils/order-idempotency.ts`.
-- **تحديث `src/pages/cart.astro`:**
+- **تحديث `src/pages/cart.astro` و`public/assets/js/order-flow-helpers.js`:**
   - إضافة حارس `isSubmittingOrder` لمنع الطلبات المتزامنة من المتصفح.
   - فحص صلاحية `idToken` وتجديده استباقياً (`getIdTokenResult` + `getIdToken(true)` إذا تبقى أقل من 120 ثانية) قبل قراءة `customerUid` وإرسال الطلب.
-  - عند استلام `409 ORDER_IN_PROGRESS` أو خطأ شبكة/`502+`: استطلاع تلقائي محدود لـ `POST /api/order-attempt-status` لعرض تقدم المعالجة وإعادة التوجيه فوراً إلى `/invoice#access=...` فور اكتمال أو استرجاع الطلب.
-  - ربط زر `#btnResetOrderAttempt` باستشارة إلزامية لـ `POST /api/order-attempt-status` قبل مسح `sessionStorage`: إذا كان الطلب `COMPLETED` يوجه للفاتورة فوراً، وإذا كان `IN_PROGRESS` يرفض التصفير (`canResetAttempt: false`) لمنع الطلبات المكررة، ولا يصفر المحاولة إلا عندما يؤكد السيرفر `canResetAttempt: true`.
+  - عند استلام `409 ORDER_IN_PROGRESS` أو خطأ شبكة/`502+`: استطلاع تلقائي محدود (حتى 6 محاولات بمجموع ~18 ثانية متوافقة مع قفل 15s) عبر `POST /api/order-attempt-status` لعرض تقدم المعالجة وإعادة التوجيه فوراً إلى `/invoice#access=...` فور اكتمال أو استرجاع الطلب.
+  - فك أي علقان نهائي لحالات `409` (`IDEMPOTENCY_CONFLICT`, `IDEMPOTENCY_KEY_EXPIRED`, و`ORDER_DELETED`): تصنيف صريح في `classifyCreateOrderOutcome()` ومسح المعرف التالف/المنتهي من `sessionStorage` بعد عرض الرسالة الواضحة دون إعادة إرسال تلقائية، وإظهار `#btnResetOrderAttempt` فوراً مع السماح بالتصفير ما لم يؤكد السيرفر وجود طلب حيّ `IN_PROGRESS` أو `COMPLETED`.
 
 ---
 
@@ -127,8 +131,10 @@
      - `/account-login`،
      - `/account-signup`.
    - تم التحقق من بوابة التحقق السيرفري الصارمة عبر `/api/create-order` و`/api/verify-turnstile`.
-3. **تحسينات دورة حياة Turnstile المضافة محلياً في الصفحات الثلاث:**
-   - إضافة دوال الاستدعاء `data-callback`, `data-expired-callback`, و`data-error-callback` وعناصر الحالة المضمنة (`#cartTurnstileStatusMsg`, `#loginTurnstileStatusMsg`, `#signupTurnstileStatusMsg`) مع إعادة تعيين ذكية في `cart.astro` عند فتح الخطوة 3 إذا انتهت صلاحية التوكن أثناء تعبئة البيانات.
+3. **إزالة خطأ `api.js:2 postMessage` من صفحة السلة وتحسين دورة حياة Turnstile في الصفحات الثلاث:**
+   - **سبب خطأ `api.js:2 Failed to execute 'postMessage' on 'DOMWindow'` في `/cart`:** كان سكربت Turnstile يُحمَّل تلقائياً ويُنشئ الـ iframe داخل `#step-panel-3` وهي لا تزال مخفية (`display: none`) في الخطوة الأولى، مما يسبب أخطاء تخاطب وإعادة ضبط على إطار مخفي.
+   - **الإصلاح النهائي في `src/pages/cart.astro`:** التحويل إلى التهيئة الصريحة (`https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onDandyCartTurnstileLoad`) وإنشاء الـ widget داخل `#cartTurnstileWidget` عبر `ensureCartTurnstileRendered()` **فقط عندما يصبح المستخدم في الخطوة 3 المرئية**، مع ربط `turnstile.getResponse(cartTurnstileWidgetId)` و`turnstile.reset(cartTurnstileWidgetId)` بالمعرف الصريح.
+   - إضافة دوال الاستدعاء وعناصر الحالة المضمنة (`#cartTurnstileStatusMsg`, `#loginTurnstileStatusMsg`, `#signupTurnstileStatusMsg`) مع معالجة انتهاء الصلاحية والأخطاء في الصفحات الثلاث.
 
 ---
 
@@ -137,17 +143,18 @@
 ### أ. الملفات المعدّلة والمضافة لهذا التحقيق
 | المسار | نوع التغيير | SHA-256 قبل التعديل | SHA-256 بعد التعديل |
 | :--- | :--- | :--- | :--- |
-| `public/assets/js/order-flow-helpers.js` | تعديل (توحيد الهاتف والأرقام الفارسية وترتيب `selectedVariants`) | `3bf0dbc028f28f619e5f8a9c31cbac49585ad3fe21f08d60cffe06d62a34362b` | `723623017a2bd56ff4a62ff3c312591f061d0080fad29d3f2d6290da663bf3a9` |
+| `public/assets/js/order-flow-helpers.js` | تعديل (توحيد الهاتف والفارسية + `selectedVariants` + تصنيف `ORDER_DELETED`) | `3bf0dbc028f28f619e5f8a9c31cbac49585ad3fe21f08d60cffe06d62a34362b` | `b2286e9043b16c7813b5a54d883d4f6d33b227acf750818be15250a6420cc7fa` |
 | `src/utils/email-service.ts` | تعديل (دعم `timeoutMs` اختياري للبريد) | `4712c7fd7ca0582b22b754a2af3e4c07559762b22f706c48de29767421db7a78` | `ecd2bc1fbb5135b313c5260e1ad2f3fe1da127cb608b470249a2ae30cfe788ab` |
-| `src/utils/order-idempotency.ts` | تعديل (`inspectOrRecoverOrderAttempt` وحماية `UNAVAILABLE` للسجل التالف) | `a32c795158a6b92b6a85d4d6049e71947729a6dfa74aa3ff93224a22d722c2dc` | `b9e8555c7c4182539155c77c1b3cc43581b539622885922a35a7043d077fe66d` |
+| `src/utils/turnstile.js` | تعديل (مهلة `5000ms` عبر `AbortController` لطلب `siteverify`) | *(ملف سابق)* | `a1cc7c46a8168aeeacfeb1982ccee2c3364d9b3b173242f098d611678692821c` |
+| `src/utils/order-idempotency.ts` | تعديل (`inspectOrRecoverOrderAttempt` + قفل 15s + استحواذ `PENDING` + `UNAVAILABLE`) | `a32c795158a6b92b6a85d4d6049e71947729a6dfa74aa3ff93224a22d722c2dc` | `0f6637a57aa7d0297f9878700f344d05d372712abb4391cff3aa47f46b229df4` |
 | `src/pages/api/create-order.js` | تعديل (جلب وخصم متوازٍ + سقف مهلة بريد 4.5s + معالجة `UNAVAILABLE`) | `673f982b2454f476703a0433ca26c2a108f9bc695bd01804953c37fca2f0cd66` | `83c53ef9d1ae56bba89d6d32f85b7659bea297e77e30ad8be7798df2363d5db2` |
 | `src/pages/api/order-attempt-status.js` | **جديد** (فحص واسترجاع آمن بدون تكرار + معدل طلبات 30/دقيقة) | *(ملف جديد)* | `5ab92c07f16a29ac09bcddf45ac8636347357df0235186f9fc7dbf349a1fa354` |
-| `src/pages/cart.astro` | تعديل (قفل إرسال + تجديد التوكن + استطلاع الاسترجاع + حماية Reset + Turnstile) | `1ac643dd872748c63afcf678f731f5e1c346c60b16f3f10db5ea8ee1bbf2927d` | `ea05b3ce350907a7b91d08ab99d649d2af564ee568f8ab2887ab06e406bef8aa` |
+| `src/pages/cart.astro` | تعديل (Turnstile صريح عند الخطوة 3 + استطلاع 18s + فك علقان 409 + حماية Reset) | `1ac643dd872748c63afcf678f731f5e1c346c60b16f3f10db5ea8ee1bbf2927d` | `ac9518a54ce5b939f705b68388ff2e5ef52ab53c3a8014042fc31c4fbf5b8bd2` |
 | `src/pages/dashboard-coupons.astro` | تعديل (إعادة تجديد `401` + قراءة JSON آمنة + رسائل `403/404/5xx`) | `dd88a597...` *(بادئة قبل التعديل)* | `d138a9712e3b553f6b2608e5b8edd0f6c6ff419810f57e4a1c5c28ced5205e1c` |
 | `src/pages/dashboard-coupon-analytics.astro` | تعديل (إعادة تجديد `401` + قراءة JSON آمنة + رسائل `403/404/5xx` + CSV) | `eb7587ed...` *(بادئة قبل التعديل)* | `e5075793f47280a2e77cba2e53c889b2171ab17fd09007944c95f9d8a2731497` |
 | `src/pages/account-login.astro` | تعديل (دورة حياة `Turnstile` ورسائل خطأ/انتهاء صلاحية) | `1b43db7c...` *(بادئة قبل التعديل)* | `63533dc1a74df1ee20cfd9ac7711991cecf6a2f2b541f87526badbec4d34d15a` |
 | `src/pages/account-signup.astro` | تعديل (دورة حياة `Turnstile` ورسائل خطأ/انتهاء صلاحية) | `abf2962d...` *(بادئة قبل التعديل)* | `e21e8527a18b507c28f17baf79dab0e9cc41649e28abf80852955cd7f5ceb944` |
-| `test/incident-checkout-coupons.test.mjs` | **جديد** (اختبارات البصمة والاسترجاع و`create-order` والـ UI) | *(ملف جديد)* | `6abd9fee41b656e1326a34af44cf4dec2fd63285372464944ce86f0b124a1b02` |
+| `test/incident-checkout-coupons.test.mjs` | **جديد** (اختبارات البصمة والاسترجاع و`create-order` والـ UI) | *(ملف جديد)* | `77732c52e716a392272e7939c901fe41f89f8164a07a8ab10bbcfc65aa114780` |
 
 ---
 
@@ -160,8 +167,8 @@
 | تسريع `POST /api/create-order` وتحديد مهلة البريد (4.5s) | **FIXED LOCALLY, NOT DEPLOYED** | اجتاز اختبار المحاكاة والوقت + اختبارات السلة والخصم والـ Outbox. |
 | تجربة العميل في `/cart` (سطح المكتب `1440x900` والجوال `390x844`) | **FIXED & VERIFIED** *(محلياً)* | تم التحقق عبر Playwright على `http://localhost:3000/cart`: تحقق الخطوة 2، تطبيع `+20 ٠١٠١٢٣٤٥٦٧٨` -> `01012345678`، ظهور زر `#btnResetOrderAttempt`، عدم وجود فيض أفقي على الجوال، صفر أخطاء JS. |
 | تحصين لوحة الكوبونات والتحليلات (`401` refresh, HTML `404/502`, `403`) | **FIXED LOCALLY, NOT DEPLOYED** | اجتاز اختبارات `group2a5`, `group2a7`, و`incident-checkout-coupons` بنجاح كامل. |
-| دورة حياة Cloudflare Turnstile في `/cart`, `/account-login`, `/account-signup` | **FIXED LOCALLY, NOT DEPLOYED** | دوال `on*TurnstileVerified/Expired/Error` مثبتة وتعمل بلا أخطاء في Playwright محلياً. |
-| اختبارات الوحدة الأساسية والانحدار (9 ملفات حاسمة — 87 اختباراً) | **FIXED & VERIFIED** *(محلياً)* | `87 / 87 PASSED` عبر `npx --yes tsx --test` (بما فيها `qa-audit-regressions`, `order-submission`, `order-idempotency-encryption`, `group2a5`, `group2a6`, `group2a7`, `group3a`, `incident-checkout-coupons`). |
+| دورة حياة Cloudflare Turnstile في `/cart`, `/account-login`, `/account-signup` | **FIXED LOCALLY, NOT DEPLOYED** | التهيئة الصريحة عند الخطوة 3 في `/cart` (`render=explicit`) + دوال الاستدعاء في `/account-login` و`/account-signup` مثبتة وتعمل بلا أخطاء في Playwright محلياً. |
+| اختبارات الوحدة الأساسية والانحدار (9 ملفات حاسمة — 88 اختباراً) | **FIXED & VERIFIED** *(محلياً)* | `88 / 88 PASSED` عبر `npx --yes tsx --test` (بما فيها `qa-audit-regressions`, `order-submission`, `order-idempotency-encryption`, `group2a5`, `group2a6`, `group2a7`, `group3a`, `incident-checkout-coupons`). |
 | فحص حزم الاختبارات التراثية بالكامل (30 ملفاً — 408 اختبارات) | **PARTIALLY FIXED** *(تعارض قديم فقط)* | نجح `405 / 408`. الإخفاقان الوحيدان في `group2b11` و`group2b111` سببهما اختبار قديم يقارن بصمة `.env.example` بتاريخ `3ff3cf31` قبل إضافة متغيرات Turnstile (لم نمس `.env.example`). |
 | التحقق الفعلي للكتابة على الإنتاج (`dandy-ebon.vercel.app` وRTDB الحية واختبار `admin@dandy.com` حيّاً) | **BLOCKED BY ENVIRONMENT** | محظور بالسياسة والبيئة (لا دفع لـ GitHub ولا نشر لـ Vercel ولا كتابة على قاعدة البيانات الحية ولا كلمة مرور الإدارة ولا ملف `FIREBASE_SERVICE_ACCOUNT` محلياً). |
 
@@ -180,8 +187,8 @@
    ```bash
    git status
    git diff --stat
-   git add public/assets/js/order-flow-helpers.js src/utils/email-service.ts src/utils/order-idempotency.ts src/pages/api/create-order.js src/pages/api/order-attempt-status.js src/pages/cart.astro src/pages/dashboard-coupons.astro src/pages/dashboard-coupon-analytics.astro src/pages/account-login.astro src/pages/account-signup.astro test/incident-checkout-coupons.test.mjs DANDY_CHECKOUT_COUPONS_INCIDENT_REPORT_AR.md
-   git commit -m "fix(checkout,coupons): add non-duplicating order recovery, align fingerprints, and harden coupon admin auth"
+   git add public/assets/js/order-flow-helpers.js src/utils/email-service.ts src/utils/turnstile.js src/utils/order-idempotency.ts src/pages/api/create-order.js src/pages/api/order-attempt-status.js src/pages/cart.astro src/pages/dashboard-coupons.astro src/pages/dashboard-coupon-analytics.astro src/pages/account-login.astro src/pages/account-signup.astro test/incident-checkout-coupons.test.mjs DANDY_CHECKOUT_COUPONS_INCIDENT_REPORT_AR.md
+   git commit -m "fix(checkout,coupons): remove 409 lock loops, defer Step-3 Turnstile render, and harden coupon admin auth"
    git push origin main
    ```
 3. **التحقق بعد نشر Vercel (Post-Deploy Smoke Test):**

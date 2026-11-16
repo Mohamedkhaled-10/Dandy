@@ -7,7 +7,7 @@ import {
   isValidInvoiceTokenFormat
 } from './invoice-token.ts';
 
-export const DEFAULT_IDEMPOTENCY_LEASE_MS = 30_000;
+export const DEFAULT_IDEMPOTENCY_LEASE_MS = 15_000;
 export const DEFAULT_COMMIT_LEASE_MS = 30_000;
 export const DEFAULT_IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000;
 export const MAX_COMMIT_PAYLOAD_BYTES = 128 * 1024; // 128 KiB safety ceiling
@@ -540,23 +540,25 @@ export async function acquireOrderIdempotencyLock(params: {
     }
 
     // Stale PENDING lock (lease expired): perform crash recovery check before taking over
-    if (snap1.status === 'PENDING' && snap1.reservedOrderId) {
-      const existingOrderSnap = await adminDb.ref(`orders/${snap1.reservedOrderId}`).once('value');
-      const existingOrder = existingOrderSnap.val();
-      if (isPlainObject(existingOrder)) {
-        const promoted = await promoteExistingOrderToCompleted({
-          idemRef,
-          orderId: snap1.reservedOrderId,
-          orderData: existingOrder,
-          requestKeyHash,
-          requestFingerprint,
-          nowIso,
-          ttlMs
-        });
-        if (promoted && promoted.status === 'COMPLETED') {
-          const classifiedPromoted = classifyExistingRecord(promoted, requestFingerprint, nowMs);
-          if (classifiedPromoted) return classifiedPromoted;
-          return { outcome: 'COMPLETED', record: promoted };
+    if (snap1.status === 'PENDING') {
+      if (snap1.reservedOrderId) {
+        const existingOrderSnap = await adminDb.ref(`orders/${snap1.reservedOrderId}`).once('value');
+        const existingOrder = existingOrderSnap.val();
+        if (isPlainObject(existingOrder)) {
+          const promoted = await promoteExistingOrderToCompleted({
+            idemRef,
+            orderId: snap1.reservedOrderId,
+            orderData: existingOrder,
+            requestKeyHash,
+            requestFingerprint,
+            nowIso,
+            ttlMs
+          });
+          if (promoted && promoted.status === 'COMPLETED') {
+            const classifiedPromoted = classifyExistingRecord(promoted, requestFingerprint, nowMs);
+            if (classifiedPromoted) return classifiedPromoted;
+            return { outcome: 'COMPLETED', record: promoted };
+          }
         }
       }
 
@@ -582,7 +584,10 @@ export async function acquireOrderIdempotencyLock(params: {
           requestKeyHash,
           requestFingerprint,
           status: 'PENDING',
-          reservedOrderId: current.reservedOrderId || snap1.reservedOrderId,
+          reservedOrderId:
+            typeof current.reservedOrderId === 'string' && current.reservedOrderId.trim()
+              ? current.reservedOrderId
+              : (snap1.reservedOrderId || candidateOrderId),
           attemptId: takeoverAttemptId,
           createdAt: current.createdAt || takeoverNowIso,
           updatedAt: takeoverNowIso,
@@ -630,11 +635,16 @@ export async function acquireOrderIdempotencyLock(params: {
         record: latestSnap
       };
     }
+    return {
+      outcome: 'UNAVAILABLE',
+      reason: 'LOCK_CONTENTION',
+      record: latestSnap
+    };
   }
 
   return {
-    outcome: 'IN_PROGRESS',
-    retryAfterSeconds: Math.max(1, Math.ceil(leaseMs / 1000)),
+    outcome: 'UNAVAILABLE',
+    reason: 'LOCK_ACQUISITION_CONTENTION',
     record: {
       requestKeyHash,
       requestFingerprint,

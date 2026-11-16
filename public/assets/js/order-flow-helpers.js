@@ -592,6 +592,21 @@
             'انتهت صلاحية محاولة الطلب الحالية. قد يكون طلبكِ السابق قد اكتمل بالفعل؛ يرجى التحقق من بريدكِ الإلكتروني أو صفحة تتبع الطلب قبل إنشاء طلب جديد.'
         };
       }
+
+      if (errCode === 'ORDER_DELETED') {
+        return {
+          action: 'ORDER_DELETED',
+          clearCart: false,
+          clearAttempt: false,
+          keepClientRequestId: false,
+          resetTurnstile: true,
+          allowAutoRetry: false,
+          requireNewAttempt: true,
+          message:
+            result.message ||
+            'تم حذف الطلب المرتبط بهذه المحاولة إدارياً. تم تجهيز الصفحة لبدء محاولة طلب جديدة عند الضغط على تأكيد الطلب.'
+        };
+      }
     }
 
     if (status === 503) {

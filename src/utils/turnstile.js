@@ -11,6 +11,9 @@ export async function verifyTurnstileToken(token, clientIp = null) {
     return { success: false, error: 'MISSING_CAPTCHA_TOKEN', message: 'رمز التحقق (CAPTCHA) مفقود أو غير صالح' };
   }
 
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutHandle = controller ? setTimeout(() => controller.abort(), 5000) : null;
+
   try {
     const formData = new URLSearchParams();
     formData.append('secret', secretKey);
@@ -24,7 +27,8 @@ export async function verifyTurnstileToken(token, clientIp = null) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: formData.toString()
+      body: formData.toString(),
+      ...(controller ? { signal: controller.signal } : {})
     });
 
     const data = await res.json();
@@ -42,5 +46,7 @@ export async function verifyTurnstileToken(token, clientIp = null) {
   } catch (err) {
     console.error('Error verifying Turnstile token:', err);
     return { success: false, error: 'VERIFY_REQUEST_FAILED', message: 'تعذر الاتصال بخدمة التحقق الأمني.' };
+  } finally {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
   }
 }

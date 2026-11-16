@@ -13,7 +13,7 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
   canonical="https://dandy-ebon.vercel.app/cart"
 >
   <slot name="head" slot="head">
-    {turnstileSiteKey && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+    {turnstileSiteKey && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onDandyCartTurnstileLoad" async defer></script>}
     <script is:inline src="/assets/js/order-flow-helpers.js"></script>
     <script is:inline src="/assets/js/cart-shipping-progress.js"></script>
     <meta name="robots" content="noindex, nofollow" />
@@ -1382,12 +1382,9 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
               <div class="cart-turnstile-wrap" style="margin: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
                 {turnstileSiteKey ? (
                   <div
-                    class="cf-turnstile"
+                    id="cartTurnstileWidget"
                     data-sitekey={turnstileSiteKey}
                     data-theme="light"
-                    data-callback="dandyCartTurnstileSuccess"
-                    data-expired-callback="dandyCartTurnstileExpired"
-                    data-error-callback="dandyCartTurnstileError"
                   ></div>
                 ) : (
                   <div id="turnstileUnavailableNotice" role="status" style="padding:10px 14px; border-radius:8px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.82rem; font-weight:600; text-align:center;">
@@ -2476,10 +2473,13 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       document.getElementById('stepperLineProgress').style.width = pct + '%';
       document.getElementById(`step-panel-${step}`).classList.add('active');
       syncAllShippingAndOrderSummaries();
-      if (step === 3 && cartTurnstileNeedsReset) {
-        cartTurnstileNeedsReset = false;
-        resetTurnstileWidgetSafely();
-        setCartTurnstileStatus('');
+      if (step === 3) {
+        ensureCartTurnstileRendered();
+        if (cartTurnstileNeedsReset) {
+          cartTurnstileNeedsReset = false;
+          resetTurnstileWidgetSafely();
+          setCartTurnstileStatus('');
+        }
       }
       
       window.scrollTo({ top: 40, behavior: 'smooth' });
@@ -2644,6 +2644,7 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
     }
 
     let cartTurnstileNeedsReset = false;
+    let cartTurnstileWidgetId = null;
 
     function setCartTurnstileStatus(message, isError) {
       const el = document.getElementById('cartTurnstileStatusMsg');
@@ -2673,11 +2674,43 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       setCartTurnstileStatus('تعذر تحميل التحقق الأمني مؤقتاً؛ جاري إعادة المحاولة أو يرجى تحديث الصفحة.', true);
     };
 
+    function ensureCartTurnstileRendered() {
+      const container = document.getElementById('cartTurnstileWidget');
+      if (!container || currentStep !== 3) return false;
+      if (cartTurnstileWidgetId !== null) return true;
+      if (typeof turnstile === 'undefined' || typeof turnstile.render !== 'function') return false;
+      const sitekey = container.getAttribute('data-sitekey') || '';
+      if (!sitekey) return false;
+      try {
+        container.innerHTML = '';
+        cartTurnstileWidgetId = turnstile.render(container, {
+          sitekey: sitekey,
+          theme: container.getAttribute('data-theme') || 'light',
+          callback: window.dandyCartTurnstileSuccess,
+          'expired-callback': window.dandyCartTurnstileExpired,
+          'error-callback': window.dandyCartTurnstileError
+        });
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    window.onDandyCartTurnstileLoad = function () {
+      if (currentStep === 3) {
+        ensureCartTurnstileRendered();
+      }
+    };
+
     function resetTurnstileWidgetSafely() {
+      if (currentStep !== 3 || cartTurnstileWidgetId === null) {
+        cartTurnstileNeedsReset = true;
+        return;
+      }
       cartTurnstileNeedsReset = false;
       if (typeof turnstile !== 'undefined' && typeof turnstile.reset === 'function') {
         try {
-          turnstile.reset();
+          turnstile.reset(cartTurnstileWidgetId);
         } catch (_) {}
       }
     }
@@ -2742,16 +2775,16 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
         const checkRes = await checkOrderAttemptStatusWithServer(lastAttemptStatusPayload);
         if (resetBtn) resetBtn.disabled = false;
 
-        if (checkRes && checkRes.ok && checkRes.data) {
-          if (checkRes.data.state === 'COMPLETED' && finalizeSuccessfulOrderRedirect(flow, checkRes.data)) {
+        if (checkRes && checkRes.data) {
+          if (checkRes.ok && checkRes.data.state === 'COMPLETED' && finalizeSuccessfulOrderRedirect(flow, checkRes.data)) {
             return;
           }
-          if (checkRes.data.canResetAttempt !== true) {
+          if (checkRes.data.state === 'IN_PROGRESS') {
             resetTurnstileWidgetSafely();
             showCheckoutBanner(
-              checkRes.data.message || 'الطلب السابق لا يزال قيد الاستكمال أو محجوزاً حالياً؛ تم الحفاظ على المعرف منعاً للتكرار.',
-              checkRes.data.state === 'DELETED' ? 'error' : 'warning',
-              { showNewAttemptAction: false }
+              checkRes.data.message || 'الطلب السابق لا يزال قيد التنفيذ الفعلي على الخادم الآن؛ يرجى الانتظار بضع ثوانٍ ثم المحاولة منعاً للتكرار.',
+              'warning',
+              { showNewAttemptAction: true }
             );
             return;
           }
@@ -2864,14 +2897,17 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
         }
 
         // جلب توكن التحقق الأمني من كابتشا Cloudflare Turnstile (مرة واحدة لكل محاولة إرسال فعلية)
+        ensureCartTurnstileRendered();
         let turnstileToken = '';
         if (typeof turnstile !== 'undefined') {
           try {
-            turnstileToken = turnstile.getResponse() || '';
+            turnstileToken = (cartTurnstileWidgetId !== null
+              ? turnstile.getResponse(cartTurnstileWidgetId)
+              : turnstile.getResponse()) || '';
           } catch(e) {}
         }
         if (!turnstileToken) {
-          const turnstileInput = document.querySelector('[name="cf-turnstile-response"]');
+          const turnstileInput = document.querySelector('#cartTurnstileWidget [name="cf-turnstile-response"], [name="cf-turnstile-response"]');
           if (turnstileInput) turnstileToken = turnstileInput.value;
         }
 
@@ -3025,25 +3061,39 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
 
         // Bounded non-duplicating reconciliation poll on 409 ORDER_IN_PROGRESS or network/504 drop
         if (outcome.action === 'ORDER_IN_PROGRESS' || networkError || (response && response.status >= 502)) {
-          const maxPolls = outcome.action === 'ORDER_IN_PROGRESS' ? 3 : 1;
-          const retryDelayMs = Math.min(Math.max(Number(retryAfterHeader) || 2, 1), 3) * 1000;
+          const maxPolls = outcome.action === 'ORDER_IN_PROGRESS' ? 6 : 2;
+          const retryDelaysMs = [1500, 2500, 3000, 3500, 3500, 4000];
           if (savingTextLoader) {
-            savingTextLoader.innerHTML = '<span style="color:#92400e; font-weight:700;"><i class="fas fa-sync fa-spin"></i> جاري التحقق من إتمام الطلب بأمان دون تكرار...</span>';
+            savingTextLoader.innerHTML = '<span style="color:#92400e; font-weight:700;"><i class="fas fa-sync fa-spin"></i> جاري متابعة حالة تأكيد الطلب بأمان دون تكرار...</span>';
           }
           for (let p = 0; p < maxPolls; p++) {
-            await waitCheckoutDelay(p === 0 ? 1200 : retryDelayMs);
+            const fallbackDelay = retryDelaysMs[p] || 3000;
+            const stepDelayMs = (p === 0)
+              ? 1500
+              : Math.min(Math.max(Number(retryAfterHeader) ? Math.min(Number(retryAfterHeader), 4) * 1000 : fallbackDelay, 1500), 4000);
+            await waitCheckoutDelay(stepDelayMs);
             const statusCheck = await checkOrderAttemptStatusWithServer(attemptStatusPayload);
             if (!statusCheck || !statusCheck.data) break;
-            if (statusCheck.data.state === 'COMPLETED' && finalizeSuccessfulOrderRedirect(flow, statusCheck.data)) {
+            if (statusCheck.ok && statusCheck.data.state === 'COMPLETED' && finalizeSuccessfulOrderRedirect(flow, statusCheck.data)) {
               return;
             }
-            if (statusCheck.data.state === 'SAFE_TO_RESET') {
+            if (
+              statusCheck.data.state === 'SAFE_TO_RESET' ||
+              statusCheck.data.state === 'CONFLICT' ||
+              statusCheck.data.state === 'EXPIRED' ||
+              statusCheck.data.state === 'DELETED'
+            ) {
               orderInProgressRetryCount = 0;
               lastInProgressRequestId = '';
+              if (statusCheck.data.state !== 'SAFE_TO_RESET' && flow) {
+                flow.clearCheckoutAttemptState(window.sessionStorage);
+              }
               resetTurnstileWidgetSafely();
               showCheckoutBanner(
-                'لم يكتمل تنفيذ المحاولة السابقة؛ تم الحفاظ على سلتكِ ويمكنكِ إعادة التحقق الأمني وتأكيد الطلب الآن.',
-                'warning',
+                statusCheck.data.state === 'SAFE_TO_RESET'
+                  ? 'لم يكتمل تنفيذ المحاولة السابقة؛ تم الحفاظ على سلتكِ ويمكنكِ إعادة التحقق الأمني وتأكيد الطلب الآن.'
+                  : (statusCheck.data.message || 'يمكنكِ الآن تأكيد الطلب مرة أخرى بمحاولة جديدة بأمان.'),
+                statusCheck.data.state === 'DELETED' ? 'error' : 'warning',
                 { showNewAttemptAction: false }
               );
               restoreSubmitBtn();
@@ -3086,7 +3136,17 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
           resetTurnstileWidgetSafely();
         }
 
-        let showNewAttemptAction = Boolean(outcome.requireNewAttempt);
+        // Clear dead/conflicted/expired/deleted idempotency keys AFTER showing explicit error (never auto-retry)
+        if (
+          flow &&
+          (outcome.action === 'IDEMPOTENCY_CONFLICT' ||
+            outcome.action === 'IDEMPOTENCY_KEY_EXPIRED' ||
+            outcome.action === 'ORDER_DELETED')
+        ) {
+          flow.clearCheckoutAttemptState(window.sessionStorage);
+        }
+
+        let showNewAttemptAction = Boolean(outcome.requireNewAttempt || outcome.requireManualVerification);
         if (outcome.action === 'ORDER_IN_PROGRESS') {
           if (lastInProgressRequestId !== clientRequestId) {
             lastInProgressRequestId = clientRequestId;
@@ -3094,7 +3154,7 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
           } else {
             orderInProgressRetryCount += 1;
           }
-          if (orderInProgressRetryCount >= 2) {
+          if (orderInProgressRetryCount >= 2 || true) {
             showNewAttemptAction = true;
           }
         } else {

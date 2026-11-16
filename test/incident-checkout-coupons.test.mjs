@@ -672,7 +672,6 @@ test('6. Turnstile pages register explicit verification, expiration, and error l
   ]);
 
   for (const [name, src] of [
-    ['cart.astro', cartSrc],
     ['account-login.astro', loginSrc],
     ['account-signup.astro', signupSrc]
   ]) {
@@ -681,8 +680,65 @@ test('6. Turnstile pages register explicit verification, expiration, and error l
     assert.match(src, /data-error-callback=/, `${name} missing data-error-callback`);
   }
 
+  // cart.astro renders Turnstile explicitly only when Step 3 is visible to avoid hidden-iframe postMessage errors
+  assert.match(cartSrc, /render=explicit&onload=onDandyCartTurnstileLoad/);
+  assert.match(cartSrc, /function ensureCartTurnstileRendered\(/);
+  assert.match(cartSrc, /'expired-callback':\s*window\.dandyCartTurnstileExpired/);
+  assert.match(cartSrc, /'error-callback':\s*window\.dandyCartTurnstileError/);
+
   assert.match(cartSrc, /id="cartTurnstileStatusMsg"/);
   assert.match(cartSrc, /\/api\/order-attempt-status/);
   assert.match(loginSrc, /id="loginTurnstileStatusMsg"/);
   assert.match(signupSrc, /id="signupTurnstileStatusMsg"/);
+});
+
+// ============================================================================
+// 7. 409 ORDER_DELETED handling, 15s PENDING lease, and stale PENDING takeover without reservedOrderId
+// ============================================================================
+test('7. classifyCreateOrderOutcome handles ORDER_DELETED and stale PENDING without reservedOrderId recovers cleanly', async () => {
+  const delOutcome = orderFlowHelpers.classifyCreateOrderOutcome({
+    ok: false,
+    status: 409,
+    result: {
+      success: false,
+      error: 'ORDER_DELETED',
+      message: 'تم حذف هذا الطلب إدارياً.'
+    }
+  });
+  assert.equal(delOutcome.action, 'ORDER_DELETED');
+  assert.equal(delOutcome.clearCart, false);
+  assert.equal(delOutcome.allowAutoRetry, false);
+  assert.equal(delOutcome.requireNewAttempt, true);
+
+  const {
+    DEFAULT_IDEMPOTENCY_LEASE_MS,
+    acquireOrderIdempotencyLock
+  } = await import('../src/utils/order-idempotency.ts');
+  assert.equal(DEFAULT_IDEMPOTENCY_LEASE_MS, 15_000);
+
+  const uuid = '77777777-7777-4777-8777-777777777777';
+  const keyHash = hashClientRequestId(uuid);
+  const fp = 'a'.repeat(64);
+  const db = createMockAdminDb({
+    privateOrderIdempotency: {
+      [keyHash]: {
+        requestKeyHash: keyHash,
+        requestFingerprint: fp,
+        status: 'PENDING',
+        attemptId: 'stale-attempt-no-order-id',
+        createdAt: new Date(Date.now() - 60_000).toISOString(),
+        updatedAt: new Date(Date.now() - 60_000).toISOString(),
+        leaseExpiresAt: new Date(Date.now() - 20_000).toISOString(),
+        expiresAt: new Date(Date.now() + 86_400_000).toISOString()
+      }
+    }
+  });
+
+  const takeover = await acquireOrderIdempotencyLock({
+    clientRequestId: uuid,
+    requestFingerprint: fp,
+    adminDb: db
+  });
+  assert.equal(takeover.outcome, 'ACQUIRED');
+  assert.ok(takeover.lock && takeover.lock.reservedOrderId);
 });
