@@ -8,7 +8,7 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
   description="انضمي إلى عائلة داندي وتابعي طلباتك السابقة، عناوينك المحفوظة، وقائمتك المفضلة بكل سهولة."
 >
   <slot name="head" slot="head">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    {turnstileSiteKey && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
     <style is:global>
       .account-auth-container {
         min-height: calc(85vh - 120px);
@@ -198,7 +198,13 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
         <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
         <div class="signup-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
-          <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+          {turnstileSiteKey ? (
+            <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+          ) : (
+            <div role="status" style="padding:10px 14px; border-radius:8px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.82rem; font-weight:600; text-align:center;">
+              خدمة التحقق الأمني (Turnstile) غير مهيأة في هذه البيئة حالياً.
+            </div>
+          )}
         </div>
 
         <button type="submit" id="signupSubmitBtn" class="btn-auth-submit">
@@ -215,8 +221,12 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
   <script is:inline>
     (function() {
-      const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-      const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+      const auth = (typeof window.getSafeFirebaseAuth === 'function' ? window.getSafeFirebaseAuth() : null) ||
+        window.auth ||
+        (() => { try { return typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null; } catch (_) { return null; } })();
+      const db = (typeof window.getSafeFirebaseDb === 'function' ? window.getSafeFirebaseDb() : null) ||
+        window.db ||
+        (() => { try { return typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null; } catch (_) { return null; } })();
 
       const form = document.getElementById('signupForm');
       const submitBtn = document.getElementById('signupSubmitBtn');
@@ -225,7 +235,11 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       function showAlert(text, type = 'error') {
         if (!alertBox) return;
         alertBox.className = 'auth-alert-msg ' + type;
-        alertBox.innerHTML = (type === 'error' ? '<i class="fas fa-exclamation-circle"></i> ' : '<i class="fas fa-check-circle"></i> ') + text;
+        alertBox.innerHTML = '';
+        const icon = document.createElement('i');
+        icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+        alertBox.appendChild(icon);
+        alertBox.appendChild(document.createTextNode(' ' + String(text || '')));
       }
 
       function clearAlert() {

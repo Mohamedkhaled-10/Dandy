@@ -443,13 +443,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .replace(/'/g, '&#039;');
     }
 
-    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-    const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+    function getSafeOrderAuth() {
+      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+      if (window.auth) return window.auth;
+      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
+    }
+    function getSafeOrderDb() {
+      if (typeof window.getSafeFirebaseDb === 'function') return window.getSafeFirebaseDb();
+      if (window.db) return window.db;
+      try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; }
+    }
+    function getSafeOrderFirestore() {
+      if (typeof window.getSafeFirebaseFirestore === 'function') return window.getSafeFirebaseFirestore();
+      if (window.firestore) return window.firestore;
+      try { return (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null; } catch (_) { return null; }
+    }
+
+    const auth = getSafeOrderAuth();
+    const db = getSafeOrderDb();
 
     async function logAdminAction(actionText) {
       try {
-        const user = firebase.auth().currentUser;
-        await firebase.firestore().collection('change_logs').add({
+        const a = getSafeOrderAuth();
+        const fs = getSafeOrderFirestore();
+        const user = a ? a.currentUser : null;
+        if (!fs) return;
+        await fs.collection('change_logs').add({
           adminEmail: user ? user.email : 'غير معروف',
           action: actionText,
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -514,7 +533,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return;
       }
       if (user.emailVerified !== true) {
-        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const a = getSafeOrderAuth();
         Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
           window.location.replace('/login?reason=email_not_verified');
         });
@@ -529,7 +548,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       let attempts = 0;
       const pollInterval = setInterval(() => {
         attempts++;
-        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const a = getSafeOrderAuth();
         if (a && typeof a.onAuthStateChanged === 'function') {
           clearInterval(pollInterval);
           a.onAuthStateChanged(handleOrderAuth);
@@ -820,7 +839,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       try {
-        const user = firebase.auth().currentUser;
+        const a = getSafeOrderAuth();
+        const user = a ? a.currentUser : null;
         if (!user) {
           alert("يجب تسجيل الدخول كمسؤول أولاً.");
           return;
@@ -946,10 +966,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       };
 
+      let serverCommitted = false;
+
       try {
         let idToken = null;
-        if (window.auth && window.auth.currentUser) {
-          idToken = await window.auth.currentUser.getIdToken();
+        const a = getSafeOrderAuth();
+        if (a && a.currentUser) {
+          idToken = await a.currentUser.getIdToken();
         }
 
         if (!idToken) {
@@ -975,7 +998,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (el) el.disabled = false;
 
-        let serverCommitted = false;
         const resData = await res.json().catch(() => null);
         if (!res.ok || !resData || !resData.success) {
           revertDropdown();
@@ -1018,7 +1040,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const origHtml = btnEl ? btnEl.innerHTML : '';
 
       try {
-        const authObj = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const authObj = getSafeOrderAuth();
         const currentUser = authObj?.currentUser || null;
         if (!currentUser || !currentUser.email || currentUser.email.toLowerCase() !== 'admin@dandy.com' || currentUser.emailVerified !== true) {
           alert('يجب تسجيل الدخول بحساب الإدارة المفعّل لتنفيذ حذف الطلب.');
@@ -1367,7 +1389,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!orderObj) return;
 
       try {
-        const authObj = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const authObj = getSafeOrderAuth();
         const currentUser = authObj?.currentUser || null;
         if (!currentUser || typeof currentUser.getIdToken !== 'function') return;
 
@@ -1411,7 +1433,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       try {
-        const authObj = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const authObj = getSafeOrderAuth();
         const currentUser = authObj?.currentUser || null;
         if (!currentUser || typeof currentUser.getIdToken !== 'function') {
           if (resultBox) {

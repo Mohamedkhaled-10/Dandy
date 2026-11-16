@@ -1410,8 +1410,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return match ? match.arabicName : slug;
       }
 
+      function getAnalyticsAdminAuth() {
+        if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+        if (window.auth) return window.auth;
+        try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
+      }
+
       async function getAuthToken() {
-        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const auth = getAnalyticsAdminAuth();
         if (!auth || !auth.currentUser || typeof auth.currentUser.getIdToken !== 'function') {
           return '';
         }
@@ -2265,7 +2271,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             return;
           }
           if (user.emailVerified !== true) {
-            const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+            const a = getAnalyticsAdminAuth();
             Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null)
               .catch(() => {})
               .finally(() => {
@@ -2276,14 +2282,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           loadAnalytics();
         }
 
-        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const auth = getAnalyticsAdminAuth();
         if (auth && typeof auth.onAuthStateChanged === 'function') {
           auth.onAuthStateChanged(check);
         } else {
           let attempts = 0;
           const interval = setInterval(() => {
             attempts++;
-            const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+            const a = getAnalyticsAdminAuth();
             if (a && typeof a.onAuthStateChanged === 'function') {
               clearInterval(interval);
               a.onAuthStateChanged(check);

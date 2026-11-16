@@ -3365,9 +3365,21 @@ const initialBatchPreviewCount = Math.min(PAGE_SIZE, ssrCatalogProducts.length);
       });
     }
 
+    function getSafeAllProductsAuth() {
+      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+      if (window.auth) return window.auth;
+      try { return (typeof firebase !== 'undefined' && typeof firebase.auth === 'function') ? firebase.auth() : null; } catch (_) { return null; }
+    }
+
+    function getSafeAllProductsDb() {
+      if (typeof window.getSafeFirebaseDb === 'function') return window.getSafeFirebaseDb();
+      if (window.db) return window.db;
+      try { return (typeof firebase !== 'undefined' && typeof firebase.database === 'function') ? firebase.database() : null; } catch (_) { return null; }
+    }
+
     function initWishlistTracking() {
-      const auth = window.auth || (typeof firebase !== 'undefined' && typeof firebase.auth === 'function' ? firebase.auth() : null);
-      const dbRef = window.db || (typeof firebase !== 'undefined' && typeof firebase.database === 'function' ? firebase.database() : null);
+      const auth = getSafeAllProductsAuth();
+      const dbRef = getSafeAllProductsDb();
       if (!auth || typeof auth.onAuthStateChanged !== 'function') return;
 
       auth.onAuthStateChanged(async (user) => {
@@ -3393,8 +3405,8 @@ const initialBatchPreviewCount = Math.min(PAGE_SIZE, ssrCatalogProducts.length);
 
     window.toggleCardWishlist = async function(productId, btnEl) {
       if (!productId) return;
-      const auth = window.auth || (typeof firebase !== 'undefined' && typeof firebase.auth === 'function' ? firebase.auth() : null);
-      const dbRef = window.db || (typeof firebase !== 'undefined' && typeof firebase.database === 'function' ? firebase.database() : null);
+      const auth = getSafeAllProductsAuth();
+      const dbRef = getSafeAllProductsDb();
       const user = auth ? auth.currentUser : null;
 
       if (!user) {
@@ -3663,7 +3675,7 @@ const initialBatchPreviewCount = Math.min(PAGE_SIZE, ssrCatalogProducts.length);
     }
 
     function startFirebaseCatalogSync() {
-      const db = window.db || (typeof firebase !== 'undefined' && typeof firebase.database === 'function' ? firebase.database() : null);
+      const db = getSafeAllProductsDb();
 
       if (!db || typeof db.ref !== 'function') {
         // Keep SSR cards visible and show non-blocking notice

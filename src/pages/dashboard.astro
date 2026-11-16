@@ -470,11 +470,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // Dynamic resolution of Firebase Auth and Firestore to avoid stale null references
     function getFirebaseAuth() {
-      return window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+      if (window.auth) return window.auth;
+      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
     }
 
     function getFirebaseDb() {
-      return window.firestore || (typeof firebase !== 'undefined' && firebase.firestore ? firebase.firestore() : null);
+      if (typeof window.getSafeFirebaseFirestore === 'function') return window.getSafeFirebaseFirestore();
+      if (window.firestore) return window.firestore;
+      try { return (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null; } catch (_) { return null; }
     }
 
     // Strict Admin Auth Guard

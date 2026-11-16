@@ -13,7 +13,7 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
   canonical="https://dandy-ebon.vercel.app/cart"
 >
   <slot name="head" slot="head">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    {turnstileSiteKey && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
     <script is:inline src="/assets/js/order-flow-helpers.js"></script>
     <script is:inline src="/assets/js/cart-shipping-progress.js"></script>
     <meta name="robots" content="noindex, nofollow" />
@@ -1299,6 +1299,8 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
                 </div>
               </form>
 
+              <div id="step2ValidationAlert" role="alert" aria-live="polite" style="display:none; margin-top:14px; padding:12px 14px; border-radius:10px; font-size:0.86rem; font-weight:700; line-height:1.5; border:1px solid #fecdd3; background:#fff1f2; color:#9f1239;"></div>
+
               <div class="checkout-nav-row">
                 <button class="btn-checkout-secondary" onclick="goToStep(1)">
                   <i class="fas fa-arrow-right"></i>
@@ -1378,7 +1380,13 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
 
               <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
               <div class="cart-turnstile-wrap" style="margin: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
-                <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+                {turnstileSiteKey ? (
+                  <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+                ) : (
+                  <div id="turnstileUnavailableNotice" role="status" style="padding:10px 14px; border-radius:8px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.82rem; font-weight:600; text-align:center;">
+                    خدمة التحقق الأمني (Turnstile) غير مهيأة في هذه البيئة حالياً.
+                  </div>
+                )}
                 <small style="color:var(--color-muted); font-size:0.75rem;">حماية أمنية مشددة لمنع الطلبات الوهمية</small>
               </div>
 
@@ -1460,7 +1468,9 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
   <script type="application/json" id="dandy-store-shipping-policy" set:html={serializedStoreShippingPolicy}></script>
 
   <script is:inline>
-    const db = firebase.database();
+    const db = typeof window.getSafeFirebaseDb === 'function'
+      ? window.getSafeFirebaseDb()
+      : (window.db || null);
 
     function escapeCartHtml(str) {
       if (str === undefined || str === null) return '';
@@ -2303,19 +2313,23 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
     // --- تكامل حساب العميل والعناوين المحفوظة في الـ Checkout ---
     let customerSavedAddresses = {};
 
-    function initCustomerCheckoutAddresses() {
-      let auth = null;
+    function getSafeCartAuth() {
+      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+      if (window.auth) return window.auth;
       try {
-        auth = window.auth || (typeof firebase !== 'undefined' && typeof firebase.auth === 'function' ? firebase.auth() : null);
-      } catch (authInitErr) {
-        console.warn('Firebase auth unavailable in cart checkout:', authInitErr?.code || authInitErr?.message || authInitErr);
-        return;
+        return (typeof firebase !== 'undefined' && typeof firebase.auth === 'function') ? firebase.auth() : null;
+      } catch (_) {
+        return null;
       }
+    }
+
+    function initCustomerCheckoutAddresses() {
+      const auth = getSafeCartAuth();
       if (!auth) return;
 
       auth.onAuthStateChanged(async (user) => {
         const sec = document.getElementById('savedAddressesSection');
-        if (!user) {
+        if (!user || !db) {
           if (sec) sec.style.display = 'none';
           return;
         }
@@ -2458,33 +2472,71 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       window.scrollTo({ top: 40, behavior: 'smooth' });
     };
 
-    window.validateAndGoToReview = function() {
-      const name = document.getElementById('f-name').value.trim();
-      const phone = document.getElementById('f-phone').value.trim();
-      const email = document.getElementById('f-email').value.trim();
-      
-      const govSelect = document.getElementById('f-gov');
-      const governorate = govSelect.value;
-      const govText = governorate ? govSelect.options[govSelect.selectedIndex].text : '';
-      
-      const city = document.getElementById('f-city').value.trim();
-      const address = document.getElementById('f-address').value.trim();
+    function showStep2ValidationError(message) {
+      const alertEl = document.getElementById('step2ValidationAlert');
+      if (alertEl) {
+        alertEl.textContent = message;
+        alertEl.style.display = 'block';
+        if (typeof alertEl.scrollIntoView === 'function') {
+          alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
 
-      if (!name || name.length < 5) {
-        alert('يرجى إدخال الاسم بالكامل (كلمتين على الأقل) لضمان دقة الشحن.');
+    function clearStep2ValidationError() {
+      const alertEl = document.getElementById('step2ValidationAlert');
+      if (alertEl) {
+        alertEl.style.display = 'none';
+        alertEl.textContent = '';
+      }
+    }
+
+    function normalizeCartPhone(rawPhone) {
+      if (window.DandyOrderFlow && typeof window.DandyOrderFlow.normalizeEgyptianPhoneClient === 'function') {
+        return window.DandyOrderFlow.normalizeEgyptianPhoneClient(rawPhone);
+      }
+      const clean = String(rawPhone || '').trim();
+      return /^01[0125][0-9]{8}$/.test(clean) ? clean : null;
+    }
+
+    window.validateAndGoToReview = function() {
+      clearStep2ValidationError();
+      const nameEl = document.getElementById('f-name');
+      const phoneEl = document.getElementById('f-phone');
+      const emailEl = document.getElementById('f-email');
+      const govSelect = document.getElementById('f-gov');
+      const cityEl = document.getElementById('f-city');
+      const addressEl = document.getElementById('f-address');
+
+      const name = nameEl ? nameEl.value.trim() : '';
+      const rawPhone = phoneEl ? phoneEl.value.trim() : '';
+      const normalizedPhone = normalizeCartPhone(rawPhone);
+      const email = emailEl ? emailEl.value.trim() : '';
+
+      const governorate = govSelect ? govSelect.value : '';
+      const govText = governorate && govSelect.options[govSelect.selectedIndex] ? govSelect.options[govSelect.selectedIndex].text : '';
+
+      const city = cityEl ? cityEl.value.trim() : '';
+      const address = addressEl ? addressEl.value.trim() : '';
+
+      if (!name || name.length < 2) {
+        showStep2ValidationError('يرجى إدخال اسم المستلم (حرفين على الأقل) لضمان دقة الشحن.');
         return;
       }
-      if (!/^01[0125][0-9]{8}$/.test(phone)) {
-        alert('يرجى كتابة رقم هاتف مصري صحيح (11 رقم، يبدأ بـ 010, 011, 012, أو 015)');
+      if (!normalizedPhone) {
+        showStep2ValidationError('يرجى كتابة رقم هاتف مصري صحيح (11 رقم، يبدأ بـ 010 أو 011 أو 012 أو 015).');
         return;
+      }
+      if (phoneEl && normalizedPhone !== rawPhone) {
+        phoneEl.value = normalizedPhone;
       }
       if (!governorate || !city || !address) {
-        alert('يرجى ملء جميع التفاصيل، واختيار المحافظة، والمدينة، وعنوان الشارع بدقة.');
+        showStep2ValidationError('يرجى ملء جميع التفاصيل، واختيار المحافظة، والمدينة، وعنوان الشارع بدقة.');
         return;
       }
 
       revCustName.textContent = name;
-      revCustPhone.textContent = phone;
+      revCustPhone.textContent = normalizedPhone;
       revCustEmail.textContent = email || 'لا يوجد';
       revCustLocation.textContent = city + '، محافظة ' + govText;
       revCustAddress.textContent = address;
@@ -2586,7 +2638,12 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       }
     }
 
+    let orderInProgressRetryCount = 0;
+    let lastInProgressRequestId = '';
+
     document.getElementById('btnResetOrderAttempt')?.addEventListener('click', function () {
+      orderInProgressRetryCount = 0;
+      lastInProgressRequestId = '';
       if (window.DandyOrderFlow) {
         window.DandyOrderFlow.clearCheckoutAttemptState(window.sessionStorage);
       }
@@ -2618,7 +2675,8 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع تفاصيل الفاتورة وحجز منتجاتك...</span>';
 
       const name = document.getElementById('f-name').value.trim();
-      const phone = document.getElementById('f-phone').value.trim();
+      const rawPhoneVal = document.getElementById('f-phone').value.trim();
+      const phone = normalizeCartPhone(rawPhoneVal) || rawPhoneVal;
       const email = document.getElementById('f-email').value.trim();
       const governorate = document.getElementById('f-gov').value;
       const city = document.getElementById('f-city').value.trim();
@@ -2657,7 +2715,8 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
 
       // جلب توكن العميل إن كان مسجل دخول لربط الطلب بحسابه بأمان عبر السيرفر
       let idToken = null;
-      const currentAuthUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+      const cartAuth = getSafeCartAuth();
+      const currentAuthUser = cartAuth ? cartAuth.currentUser : null;
       if (currentAuthUser) {
         try {
           idToken = await currentAuthUser.getIdToken();
@@ -2709,7 +2768,7 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
         ? normalizeClientCouponCode(activeCouponState.code)
         : null;
 
-      const customerUid = currentAuthUser && currentAuthUser.uid ? currentAuthUser.uid : null;
+      const customerUid = (idToken && currentAuthUser && currentAuthUser.uid) ? currentAuthUser.uid : null;
       let idempotencyPrep = null;
       try {
         idempotencyPrep = await flow.prepareCheckoutIdempotency({
@@ -2782,12 +2841,14 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
         networkError = true;
       }
 
+      const retryAfterHeader = response && response.headers ? response.headers.get('Retry-After') : null;
       const outcome = flow
         ? flow.classifyCreateOrderOutcome({
             ok: Boolean(response && response.ok),
             status: response ? response.status : 0,
             result,
-            networkError
+            networkError,
+            retryAfter: retryAfterHeader
           })
         : {
             action: (response && response.ok && result && result.success && result.invoiceAccessToken) ? 'SUCCESS_REDIRECT' : 'ERROR_KEEP_STATE',
@@ -2842,7 +2903,22 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
         resetTurnstileWidgetSafely();
       }
 
-      const showNewAttemptAction = Boolean(outcome.requireNewAttempt);
+      let showNewAttemptAction = Boolean(outcome.requireNewAttempt);
+      if (outcome.action === 'ORDER_IN_PROGRESS') {
+        if (lastInProgressRequestId !== clientRequestId) {
+          lastInProgressRequestId = clientRequestId;
+          orderInProgressRetryCount = 1;
+        } else {
+          orderInProgressRetryCount += 1;
+        }
+        if (orderInProgressRetryCount >= 2) {
+          showNewAttemptAction = true;
+        }
+      } else {
+        orderInProgressRetryCount = 0;
+        lastInProgressRequestId = '';
+      }
+
       const tone =
         outcome.action === 'ORDER_IN_PROGRESS' ||
         outcome.action === 'RATE_LIMITED_KEEP_ID' ||

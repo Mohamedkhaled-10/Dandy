@@ -167,7 +167,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <script is:inline src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
 
   <script is:inline>
-    const db = window.db || (window.firebase && firebase.database ? firebase.database() : null);
+    const db = (typeof window.getSafeFirebaseDb === 'function' ? window.getSafeFirebaseDb() : null) ||
+      window.db ||
+      (() => { try { return (window.firebase && firebase.database) ? firebase.database() : null; } catch (_) { return null; } })();
     const imageSection = document.getElementById("testimonial-images");
     const videoSection = document.getElementById("testimonial-videos");
 

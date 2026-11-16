@@ -118,7 +118,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </main>
 
   <script is:inline>
-    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    const auth = (typeof window.getSafeFirebaseAuth === 'function' ? window.getSafeFirebaseAuth() : null) ||
+      window.auth ||
+      (() => { try { return typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null; } catch (_) { return null; } })();
 
     function showAdminLoginNotice(htmlMessage) {
       const notice = document.getElementById('adminOnlyNotice');
@@ -165,89 +167,94 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
       });
 
-      // Handle secure submit login credentials
-      document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    }
 
-        const email = document.getElementById('l-email').value.trim();
-        const password = document.getElementById('l-pass').value.trim();
-        const submitBtn = document.getElementById('adminLoginBtn');
+    // Handle secure submit login credentials
+    document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-        if (email.toLowerCase() !== 'admin@dandy.com') {
-          showAdminLoginNotice('<strong>تنبيه للمستخدم:</strong> هذه البوابة مخصصة لإدارة المتجر فقط. لعملاء داندي، يرجى <a href="/account-login" style="color:#b91c1c; text-decoration:underline; font-weight:700;">تسجيل الدخول من بوابة حساب العميل هنا</a>.');
-          alert('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور.');
-          return;
-        }
+      if (!auth) {
+        showAdminLoginNotice('<strong>تعذر الاتصال بخدمة المصادقة:</strong> خدمة تسجيل الدخول غير مهيأة في هذه البيئة حالياً.');
+        return;
+      }
 
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'جاري التحقق...';
-        }
+      const email = document.getElementById('l-email').value.trim();
+      const password = document.getElementById('l-pass').value.trim();
+      const submitBtn = document.getElementById('adminLoginBtn');
 
-        try {
-          // 1. التحقق من قيود معدل المحاولات وسجل الأمان للمشرف بالسيرفر (بدون كابتشا)
-          const verifyRes = await fetch('/api/verify-turnstile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'admin-login', email })
-          });
+      if (email.toLowerCase() !== 'admin@dandy.com') {
+        showAdminLoginNotice('<strong>تنبيه للمستخدم:</strong> هذه البوابة مخصصة لإدارة المتجر فقط. لعملاء داندي، يرجى <a href="/account-login" style="color:#b91c1c; text-decoration:underline; font-weight:700;">تسجيل الدخول من بوابة حساب العميل هنا</a>.');
+        return;
+      }
 
-          const verifyData = await verifyRes.json().catch(() => ({}));
-          if (!verifyRes.ok || !verifyData.success) {
-            alert(verifyData.message || 'تم تجاوز حد محاولات الدخول المسموح بها. يرجى الانتظار بضع دقائق ثم المحاولة مجددًا.');
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'تسجيل الدخول الآمن';
-            }
-            return;
-          }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جاري التحقق...';
+      }
 
-          // 2. تسجيل الدخول عبر Firebase Auth
-          const cred = await auth.signInWithEmailAndPassword(email, password);
-          if (!cred?.user?.emailVerified) {
-            try {
-              await auth.signOut();
-            } catch (signOutErr) {
-              console.warn('Sign-out notice:', signOutErr);
-            }
-            showAdminLoginNotice('<strong>بريد الإدارة غير مفعّل:</strong> يجب تفعيل البريد الإلكتروني لحساب الإدارة (emailVerified) قبل الوصول إلى لوحة التحكم.');
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'تسجيل الدخول الآمن';
-            }
-            return;
-          }
+      try {
+        // 1. التحقق من قيود معدل المحاولات وسجل الأمان للمشرف بالسيرفر (بدون كابتشا)
+        const verifyRes = await fetch('/api/verify-turnstile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'admin-login', email })
+        });
 
-          // 3. تسجيل نجاح عملية الدخول بالسيرفر
-          fetch('/api/verify-turnstile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'report-successful-login', email })
-          }).catch(() => {});
-
-        } catch (err) {
-          console.error('Admin login error:', err);
-
-          // 4. تسجيل المحاولة الفاشلة في السيرفر دون كشف وجود البريد الإلكتروني
-          fetch('/api/verify-turnstile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'report-failed-login',
-              email,
-              reason: err.code || 'invalid_admin_credentials'
-            })
-          }).catch(() => {});
-
+        const verifyData = await verifyRes.json().catch(() => ({}));
+        if (!verifyRes.ok || !verifyData.success) {
+          showAdminLoginNotice('<strong>تم تجاوز الحد المسموح:</strong> ' + String(verifyData.message || 'يرجى الانتظار بضع دقائق ثم المحاولة مجددًا.').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = 'تسجيل الدخول الآمن';
           }
-
-          // رسالة موحدة غير كاشفة لهوية الحساب (Prevent Email Enumeration)
-          alert('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور أو التواصل مع الدعم الفني.');
+          return;
         }
-      });
-    }
+
+        // 2. تسجيل الدخول عبر Firebase Auth
+        const cred = await auth.signInWithEmailAndPassword(email, password);
+        if (!cred?.user?.emailVerified) {
+          try {
+            await auth.signOut();
+          } catch (signOutErr) {
+            console.warn('Sign-out notice:', signOutErr);
+          }
+          showAdminLoginNotice('<strong>بريد الإدارة غير مفعّل:</strong> يجب تفعيل البريد الإلكتروني لحساب الإدارة (emailVerified) قبل الوصول إلى لوحة التحكم.');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'تسجيل الدخول الآمن';
+          }
+          return;
+        }
+
+        // 3. تسجيل نجاح عملية الدخول بالسيرفر
+        fetch('/api/verify-turnstile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'report-successful-login', email })
+        }).catch(() => {});
+
+      } catch (err) {
+        console.error('Admin login error:', err);
+
+        // 4. تسجيل المحاولة الفاشلة في السيرفر دون كشف وجود البريد الإلكتروني
+        fetch('/api/verify-turnstile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'report-failed-login',
+            email,
+            reason: err.code || 'invalid_admin_credentials'
+          })
+        }).catch(() => {});
+
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'تسجيل الدخول الآمن';
+        }
+
+        // رسالة موحدة غير كاشفة لهوية الحساب (Prevent Email Enumeration)
+        showAdminLoginNotice('<strong>بيانات الدخول غير صحيحة:</strong> يرجى التأكد من البريد الإلكتروني وكلمة المرور أو التواصل مع الدعم الفني.');
+      }
+    });
   </script>
 </BaseLayout>

@@ -181,7 +181,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <label for="p-image">رابط صورة المستحضر الثابتة</label>
             <div class="img-preview-wrapper">
               <input type="url" id="p-image" placeholder="https://unsplash.com/... أو رابط مباشر آخر" required style="flex: 1;" />
-              <img loading="lazy" id="imagePreview" class="img-preview-box" alt="Preview" />
+              <img loading="lazy" id="imagePreview" class="img-preview-box" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Preview" />
             </div>
           </div>
 
@@ -301,13 +301,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         .replace(/'/g, '&#039;');
     }
 
-    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-    const db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+    function getSafeProdAuth() {
+      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+      if (window.auth) return window.auth;
+      try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
+    }
+    function getSafeProdDb() {
+      if (typeof window.getSafeFirebaseDb === 'function') return window.getSafeFirebaseDb();
+      if (window.db) return window.db;
+      try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; }
+    }
+    function getSafeProdFirestore() {
+      if (typeof window.getSafeFirebaseFirestore === 'function') return window.getSafeFirebaseFirestore();
+      if (window.firestore) return window.firestore;
+      try { return (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null; } catch (_) { return null; }
+    }
+
+    const auth = getSafeProdAuth();
+    const db = getSafeProdDb();
 
     async function logAdminAction(actionText) {
       try {
-        const user = firebase.auth().currentUser;
-        await firebase.firestore().collection('change_logs').add({
+        const a = getSafeProdAuth();
+        const fs = getSafeProdFirestore();
+        const user = a ? a.currentUser : null;
+        if (!fs) return;
+        await fs.collection('change_logs').add({
           adminEmail: user ? user.email : 'غير معروف',
           action: actionText,
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -494,7 +513,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         return;
       }
       if (user.emailVerified !== true) {
-        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const a = getSafeProdAuth();
         Promise.resolve(a && typeof a.signOut === 'function' ? a.signOut() : null).catch(() => {}).finally(() => {
           window.location.replace('/login?reason=email_not_verified');
         });
@@ -509,7 +528,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       let attempts = 0;
       const pollInterval = setInterval(() => {
         attempts++;
-        const a = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const a = getSafeProdAuth();
         if (a && typeof a.onAuthStateChanged === 'function') {
           clearInterval(pollInterval);
           a.onAuthStateChanged(handleProductAuth);

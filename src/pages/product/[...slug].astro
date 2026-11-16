@@ -2208,7 +2208,14 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
   <!-- Client-side Interactive Hydration -->
   {!isNotFound && (
     <script is:inline define:vars={{ serverProduct: product }}>
-      const db = firebase.database();
+      const db = (typeof window.getSafeFirebaseDb === 'function' ? window.getSafeFirebaseDb() : null) ||
+        window.db ||
+        (() => { try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; } })();
+      function getSafeProductAuth() {
+        if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+        if (window.auth) return window.auth;
+        try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
+      }
       const loadedProduct = serverProduct;
       const id = loadedProduct ? loadedProduct.id : null;
       let selectedVariants = [];
@@ -2886,7 +2893,7 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
       async function loadProductReviews(prodId) {
         const wrapper = document.getElementById('reviews-list-wrapper');
         const badge = document.getElementById('reviews-header-badge');
-        if (!wrapper || !prodId) return;
+        if (!wrapper || !prodId || !db) return;
 
         try {
           const snap = await db.ref(`reviews/${prodId}`).once('value');
@@ -3111,7 +3118,7 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
       }
 
       function fetchRelatedProducts(category, currentProductId) {
-        if (!category) return;
+        if (!category || !db) return;
         db.ref('products').once('value').then(snap => {
           if (!snap.exists()) return;
           const products = [];
@@ -3139,8 +3146,8 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
 
       function setupProductWishlist(currentProdId) {
         if (!currentProdId) return;
-        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-        if (!auth) return;
+        const auth = getSafeProductAuth();
+        if (!auth || !db) return;
 
         const detailBtn = document.getElementById('detailWishlistBtn');
         const actionBtn = document.getElementById('actionWishlistBtn');
@@ -3217,13 +3224,14 @@ const productArticle = (product && !product.isHidden && product.resolvedSlug)
       }
 
       window.toggleWishlist = async function(productId, btnEl) {
-        const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        const auth = getSafeProductAuth();
         const user = auth ? auth.currentUser : null;
         if (!user) {
           showProductCartToast('سجّلي دخولكِ لحفظ المنتجات في المفضلة', { isError: false });
           window.location.href = '/account-login';
           return;
         }
+        if (!db) return;
         const isFav = btnEl.classList.contains('active');
         const icon = btnEl.querySelector('i');
         try {

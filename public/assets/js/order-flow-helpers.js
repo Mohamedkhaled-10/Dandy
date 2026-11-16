@@ -491,6 +491,14 @@
 
     if (status === 409) {
       if (errCode === 'ORDER_IN_PROGRESS') {
+        var rawRetryAfter = params && params.retryAfter !== undefined && params.retryAfter !== null ? Number(params.retryAfter) : NaN;
+        var retryAfterSeconds = Number.isFinite(rawRetryAfter) && rawRetryAfter > 0 ? Math.min(120, Math.ceil(rawRetryAfter)) : null;
+        var baseInProgressMsg =
+          result.message ||
+          'جاري معالجة نفس الطلب حالياً. يرجى الانتظار بضع ثوانٍ ثم إعادة التحقق الأمني والمحاولة مرة أخرى لتأكيد الفاتورة.';
+        var inProgressMsg = retryAfterSeconds
+          ? baseInProgressMsg + ' (الانتظار الموصى به: ' + retryAfterSeconds + ' ثوانٍ).'
+          : baseInProgressMsg;
         return {
           action: 'ORDER_IN_PROGRESS',
           clearCart: false,
@@ -498,9 +506,8 @@
           keepClientRequestId: true,
           resetTurnstile: true,
           allowAutoRetry: false,
-          message:
-            result.message ||
-            'جاري معالجة نفس الطلب حالياً. يرجى الانتظار بضع ثوانٍ ثم إعادة التحقق الأمني والمحاولة مرة أخرى لتأكيد الفاتورة.'
+          retryAfterSeconds: retryAfterSeconds,
+          message: inProgressMsg
         };
       }
 

@@ -1479,18 +1479,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       initStudio();
     });
 
+    function getStudioSafeAuth() {
+      if (typeof (window as any).getSafeFirebaseAuth === 'function') return (window as any).getSafeFirebaseAuth();
+      if ((window as any).auth) return (window as any).auth;
+      try {
+        return (typeof (window as any).firebase !== 'undefined' && (window as any).firebase.auth) ? (window as any).firebase.auth() : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function getStudioSafeDb() {
+      if (typeof (window as any).getSafeFirebaseDb === 'function') return (window as any).getSafeFirebaseDb();
+      if ((window as any).db) return (window as any).db;
+      try {
+        return (typeof (window as any).firebase !== 'undefined' && (window as any).firebase.database) ? (window as any).firebase.database() : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
     async function initStudio() {
       // Helper function to reliably resolve auth even if Firebase scripts are still loading
       function waitForAuth(): Promise<any> {
         return new Promise((resolve) => {
-          const immediateAuth = (window as any).auth || (typeof (window as any).firebase !== 'undefined' && (window as any).firebase.auth ? (window as any).firebase.auth() : null);
+          const immediateAuth = getStudioSafeAuth();
           if (immediateAuth) return resolve(immediateAuth);
 
           let attempts = 0;
           const maxAttempts = 40; // 40 * 100ms = 4 seconds
           const interval = setInterval(() => {
             attempts++;
-            const a = (window as any).auth || (typeof (window as any).firebase !== 'undefined' && (window as any).firebase.auth ? (window as any).firebase.auth() : null);
+            const a = getStudioSafeAuth();
             if (a) {
               clearInterval(interval);
               resolve(a);
@@ -1536,7 +1556,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     async function loadProductsCatalog() {
-      const db = (window as any).db || (typeof (window as any).firebase !== 'undefined' ? (window as any).firebase.database() : null);
+      const db = getStudioSafeDb();
       if (!db) return;
       try {
         const snap = await db.ref('products').once('value');
@@ -1549,7 +1569,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     async function loadStudioFirebaseData() {
-      const db = (window as any).db || (typeof (window as any).firebase !== 'undefined' ? (window as any).firebase.database() : null);
+      const db = getStudioSafeDb();
       if (!db) return;
 
       try {
@@ -3072,7 +3092,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     // 7. GLOBAL SAVE & FIREBASE PERSISTENCE
     async function saveAllChanges() {
-      const db = (window as any).db || (typeof (window as any).firebase !== 'undefined' ? (window as any).firebase.database() : null);
+      const db = getStudioSafeDb();
       if (!db) {
         showStudioToast('قاعدة البيانات غير مهيأة', true);
         return;

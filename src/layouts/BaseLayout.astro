@@ -116,7 +116,7 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
         console.warn('Firebase database initialization notice:', err);
       }
       try {
-        if (typeof firebase.auth === 'function') {
+        if (firebaseConfig.apiKey && String(firebaseConfig.apiKey).trim() && typeof firebase.auth === 'function') {
           window.auth = firebase.auth();
         }
       } catch (err) {
@@ -136,7 +136,53 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
         console.warn('Firestore initialization notice:', err);
       }
     }
+
+    window.getSafeFirebaseDb = function() {
+      if (window.db) return window.db;
+      if (typeof firebase !== 'undefined' && typeof firebase.database === 'function') {
+        try {
+          if (firebase.apps && firebase.apps.length > 0) {
+            window.db = firebase.database();
+            return window.db;
+          }
+        } catch (_) {}
+      }
+      return null;
+    };
+
+    window.getSafeFirebaseAuth = function() {
+      if (window.auth) return window.auth;
+      if (typeof firebase !== 'undefined' && typeof firebase.auth === 'function') {
+        try {
+          if (firebase.apps && firebase.apps.length > 0 && firebaseConfig && firebaseConfig.apiKey && String(firebaseConfig.apiKey).trim()) {
+            window.auth = firebase.auth();
+            return window.auth;
+          }
+        } catch (_) {}
+      }
+      return null;
+    };
+
+    window.getSafeFirebaseFirestore = function() {
+      if (window.firestore) return window.firestore;
+      if (typeof firebase !== 'undefined' && typeof firebase.firestore === 'function') {
+        try {
+          if (firebase.apps && firebase.apps.length > 0) {
+            window.firestore = firebase.firestore();
+            return window.firestore;
+          }
+        } catch (_) {}
+      }
+      return null;
+    };
   </script>
+
+  <style is:global>
+    html,
+    body {
+      overflow-x: clip;
+    }
+  </style>
 
   <slot name="head" />
 </head>

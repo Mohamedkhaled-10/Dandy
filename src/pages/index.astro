@@ -1779,7 +1779,7 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
       <button type="button" class="lightbox-close-btn" onclick="closeLightbox(event)" aria-label="إغلاق">
         &times;
       </button>
-      <img id="homeLightboxImg" src="" alt="عرض صورة التجربة" />
+      <img id="homeLightboxImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="عرض صورة التجربة" />
     </div>
   </div>
 
@@ -1804,7 +1804,9 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
        SCRIPTS: Preserving all Business Logic, Cart, Firebase & Pixel Tracking
        ========================================================================== -->
   <script is:inline>
-    const db = window.db || (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null);
+    const db = (typeof window.getSafeFirebaseDb === 'function' ? window.getSafeFirebaseDb() : null) ||
+      window.db ||
+      (() => { try { return (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null; } catch (_) { return null; } })();
     let globalProductsCache = {};
 
     function applyHomepageData(data) {
@@ -2233,8 +2235,18 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
     // Wishlist Tracking
     window.userWishlistSet = window.userWishlistSet || new Set();
 
+    function getSafeIndexAuth() {
+      if (typeof window.getSafeFirebaseAuth === 'function') return window.getSafeFirebaseAuth();
+      if (window.auth) return window.auth;
+      try {
+        return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
     function initWishlistTracking() {
-      const auth = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+      const auth = getSafeIndexAuth();
       if (!auth) return;
 
       auth.onAuthStateChanged(async (user) => {
@@ -2274,7 +2286,7 @@ const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
     }
 
     window.toggleCardWishlist = async function(productId, btnEl) {
-      const auth = window.auth || (typeof firebase !== 'undefined' && firebase.auth ? firebase.auth() : null);
+      const auth = getSafeIndexAuth();
       const user = auth ? auth.currentUser : null;
 
       if (!user) {

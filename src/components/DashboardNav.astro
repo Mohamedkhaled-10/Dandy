@@ -70,7 +70,10 @@ function isItemActive(itemHref: string) {
 
 <script is:inline>
   document.getElementById('dashGlobalLogoutBtn')?.addEventListener('click', async () => {
-    const auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+    let auth = typeof window.getSafeFirebaseAuth === 'function' ? window.getSafeFirebaseAuth() : (window.auth || null);
+    if (!auth && typeof firebase !== 'undefined' && typeof firebase.auth === 'function') {
+      try { auth = firebase.auth(); } catch (_) { auth = null; }
+    }
     if (auth) {
       try {
         await auth.signOut();
@@ -140,6 +143,7 @@ function isItemActive(itemHref: string) {
 
   .admin-nav-tabs-wrap {
     flex: 1;
+    min-width: 0;
     overflow-x: auto;
     scrollbar-width: none;
     display: flex;
