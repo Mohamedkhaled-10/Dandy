@@ -60,27 +60,50 @@
   }
 
   function normalizeArabicDigits(raw) {
-    return String(raw).replace(/[٠-٩]/g, function (d) {
-      return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d));
-    });
+    return String(raw)
+      .replace(/[\u0660-\u0669]/g, function (d) {
+        return String(d.charCodeAt(0) - 0x0660);
+      })
+      .replace(/[\u06F0-\u06F9]/g, function (d) {
+        return String(d.charCodeAt(0) - 0x06F0);
+      });
   }
 
   function normalizeEgyptianPhoneClient(rawPhone) {
     if (typeof rawPhone !== 'string') return null;
-    var converted = normalizeArabicDigits(rawPhone).trim();
-    if (!converted) return null;
-    var digits = converted.replace(/[^0-9]/g, '');
-    if (digits.indexOf('0020') === 0) {
-      digits = '0' + digits.slice(4);
-    } else if (digits.indexOf('20') === 0 && digits.length === 12) {
-      digits = '0' + digits.slice(2);
-    } else if (digits.length === 10 && digits.charAt(0) === '1') {
-      digits = '0' + digits;
+    var trimmed = rawPhone.trim();
+    if (!trimmed || trimmed.length > 32) return null;
+    var ascii = normalizeArabicDigits(trimmed);
+    if (!/^[0-9+\-\s().]+$/.test(ascii)) return null;
+
+    var hasPlusPrefix = ascii.charAt(0) === '+';
+    var digits = ascii.replace(/[^0-9]/g, '');
+    if (digits.length < 10 || digits.length > 15) return null;
+
+    var national = digits;
+    if (national.indexOf('0020') === 0) {
+      national = national.slice(4);
+    } else if (hasPlusPrefix && national.indexOf('20') === 0) {
+      national = national.slice(2);
+    } else if (national.indexOf('20') === 0 && national.length >= 12) {
+      national = national.slice(2);
     }
-    if (!/^01[0125][0-9]{8}$/.test(digits)) {
-      return null;
+
+    if (national.indexOf('01') === 0 && national.length === 11) {
+      // Canonical 01xxxxxxxxx
+    } else if (national.charAt(0) === '1' && national.length === 10) {
+      national = '0' + national;
+    } else if (national.charAt(0) !== '0' && /^[2-9][0-9]{7,8}$/.test(national)) {
+      national = '0' + national;
     }
-    return digits;
+
+    if (national.indexOf('01') === 0) {
+      return /^01[0125][0-9]{8}$/.test(national) ? national : null;
+    }
+    if (/^0[2-9][0-9]{7,8}$/.test(national)) {
+      return national;
+    }
+    return null;
   }
 
   function canonicalizeJsonValue(val) {
@@ -106,6 +129,33 @@
     return val;
   }
 
+  function canonicalizeSelectedVariantsForFingerprint(raw) {
+    var canonicalEntries = [];
+    for (var i = 0; i < raw.length; i++) {
+      canonicalEntries.push(canonicalizeJsonValue(raw[i]));
+    }
+    canonicalEntries.sort(function (a, b) {
+      var aKey =
+        isPlainObject(a) && typeof a.id === 'string' && a.id.trim()
+          ? a.id.trim()
+          : isPlainObject(a) && typeof a.name === 'string' && a.name.trim()
+            ? a.name.trim()
+            : JSON.stringify(a);
+      var bKey =
+        isPlainObject(b) && typeof b.id === 'string' && b.id.trim()
+          ? b.id.trim()
+          : isPlainObject(b) && typeof b.name === 'string' && b.name.trim()
+            ? b.name.trim()
+            : JSON.stringify(b);
+      if (aKey < bKey) return -1;
+      if (aKey > bKey) return 1;
+      var aJson = JSON.stringify(a);
+      var bJson = JSON.stringify(b);
+      return aJson < bJson ? -1 : aJson > bJson ? 1 : 0;
+    });
+    return canonicalEntries;
+  }
+
   function canonicalizeItemForFingerprint(item) {
     if (!isPlainObject(item)) return {};
     var copy = {};
@@ -115,7 +165,11 @@
       if (k === 'timestamp' || k === 'turnstileToken') continue;
       copy[k] = item[k];
     }
-    return canonicalizeJsonValue(copy);
+    var canonicalized = canonicalizeJsonValue(copy);
+    if (Array.isArray(item.selectedVariants)) {
+      canonicalized.selectedVariants = canonicalizeSelectedVariantsForFingerprint(item.selectedVariants);
+    }
+    return canonicalized;
   }
 
   function buildCanonicalOrderFingerprintInput(input) {

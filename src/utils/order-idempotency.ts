@@ -104,6 +104,11 @@ export type AcquireIdempotencyOutcome =
       outcome: 'IN_PROGRESS';
       retryAfterSeconds: number;
       record: OrderIdempotencyRecord;
+    }
+  | {
+      outcome: 'UNAVAILABLE';
+      reason: string;
+      record: OrderIdempotencyRecord;
     };
 
 function isPlainObject(val: unknown): val is Record<string, any> {
@@ -340,7 +345,7 @@ function classifyExistingRecord(
   record: OrderIdempotencyRecord,
   requestFingerprint: string,
   nowMs: number
-): Exclude<AcquireIdempotencyOutcome, { outcome: 'ACQUIRED' | 'RECOVER_COMMITTING' }> | null {
+): Exclude<AcquireIdempotencyOutcome, { outcome: 'ACQUIRED' | 'RECOVER_COMMITTING' | 'UNAVAILABLE' }> | null {
   if (record.status === 'DELETED' || record.status === 'DELETING') {
     return { outcome: 'DELETED', record };
   }
@@ -476,6 +481,14 @@ export async function acquireOrderIdempotencyLock(params: {
 
     // Expired COMMITTING record: atomically take recovery lease preserving EXACT commitId & commitPayload
     if (snap1.status === 'COMMITTING') {
+      if (!isPlainObject(snap1.commitPayload)) {
+        return {
+          outcome: 'UNAVAILABLE',
+          reason: 'MISSING_COMMIT_PAYLOAD',
+          record: snap1
+        };
+      }
+
       const recoveryAttemptId = crypto.randomUUID();
       const recoveryNowMs = Date.now();
       const recoveryNowIso = new Date(recoveryNowMs).toISOString();
@@ -485,6 +498,7 @@ export async function acquireOrderIdempotencyLock(params: {
         if (!isPlainObject(current)) return undefined;
         if (current.requestFingerprint !== requestFingerprint) return undefined;
         if (current.status !== 'COMMITTING') return undefined;
+        if (!isPlainObject(current.commitPayload)) return undefined;
 
         const curCommitLease = Date.parse(current.committingLeaseExpiresAt || current.leaseExpiresAt);
         if (Number.isFinite(curCommitLease) && curCommitLease > recoveryNowMs) {
@@ -515,6 +529,13 @@ export async function acquireOrderIdempotencyLock(params: {
       if (isPlainObject(snapRecover)) {
         const reClassified = classifyExistingRecord(snapRecover, requestFingerprint, Date.now());
         if (reClassified) return reClassified;
+        if (snapRecover.status === 'COMMITTING' && !isPlainObject(snapRecover.commitPayload)) {
+          return {
+            outcome: 'UNAVAILABLE',
+            reason: 'MISSING_COMMIT_PAYLOAD',
+            record: snapRecover
+          };
+        }
       }
     }
 
@@ -602,6 +623,13 @@ export async function acquireOrderIdempotencyLock(params: {
   if (isPlainObject(latestSnap)) {
     const classified = classifyExistingRecord(latestSnap, requestFingerprint, Date.now());
     if (classified) return classified;
+    if (latestSnap.status === 'COMMITTING' && !isPlainObject(latestSnap.commitPayload)) {
+      return {
+        outcome: 'UNAVAILABLE',
+        reason: 'MISSING_COMMIT_PAYLOAD',
+        record: latestSnap
+      };
+    }
   }
 
   return {
@@ -1155,5 +1183,350 @@ export async function resolveCompletedReplayPayload(params: {
     invoiceAccessToken: token,
     replayed: true,
     message: 'تم تأكيد طلبك بنجاح'
+  };
+}
+
+export type InspectOrRecoverAttemptResult =
+  | {
+      state: 'SAFE_TO_RESET';
+      canResetAttempt: true;
+      reason: 'NOT_FOUND' | 'FAILED' | 'EXPIRED_PENDING_NO_ORDER';
+    }
+  | {
+      state: 'CONFLICT';
+      canResetAttempt: true;
+      previousOrderExists: boolean;
+    }
+  | {
+      state: 'EXPIRED';
+      canResetAttempt: false;
+    }
+  | {
+      state: 'DELETED';
+      canResetAttempt: false;
+    }
+  | {
+      state: 'IN_PROGRESS';
+      canResetAttempt: false;
+      stage: 'PENDING' | 'COMMITTING';
+      retryAfterSeconds: number;
+    }
+  | {
+      state: 'COMPLETED';
+      canResetAttempt: false;
+      recovered: boolean;
+      payload: Awaited<ReturnType<typeof resolveCompletedReplayPayload>>;
+    }
+  | {
+      state: 'RECOVERED_COMMITTING';
+      canResetAttempt: false;
+      commitRecord: OrderIdempotencyRecord;
+      invoiceAccessToken: string;
+    }
+  | {
+      state: 'UNAVAILABLE';
+      canResetAttempt: false;
+      reason: string;
+    };
+
+/**
+ * Safely inspects an existing `clientRequestId` without ever creating a new PENDING lock or duplicate order.
+ * - If COMPLETED -> replays invoice access token.
+ * - If expired COMMITTING -> recovers materialization + transition to COMPLETED.
+ * - If expired PENDING with existing `orders/{reservedOrderId}` -> promotes to COMPLETED & replays token.
+ * - If active PENDING / COMMITTING -> returns `IN_PROGRESS` (`canResetAttempt: false`).
+ * - Only returns `canResetAttempt: true` when no order exists or payload changed.
+ */
+export async function inspectOrRecoverOrderAttempt(params: {
+  clientRequestId: string;
+  requestFingerprint: string;
+  adminDb: any;
+  encryptionKey?: string;
+  commitLeaseMs?: number;
+  ttlMs?: number;
+  nowMs?: number;
+  beforeVerifyMaterialization?: (ctx: { commitRecord: OrderIdempotencyRecord; adminDb: any }) => Promise<void> | void;
+}): Promise<InspectOrRecoverAttemptResult> {
+  const {
+    clientRequestId,
+    requestFingerprint,
+    adminDb,
+    encryptionKey,
+    commitLeaseMs = DEFAULT_COMMIT_LEASE_MS,
+    ttlMs = DEFAULT_IDEMPOTENCY_TTL_MS,
+    nowMs = Date.now(),
+    beforeVerifyMaterialization
+  } = params;
+
+  const requestKeyHash = hashClientRequestId(clientRequestId);
+  const idemRef = adminDb.ref(`privateOrderIdempotency/${requestKeyHash}`);
+  const snap = await idemRef.once('value');
+  const record = snap?.val?.() as OrderIdempotencyRecord | null;
+
+  if (!isPlainObject(record)) {
+    return {
+      state: 'SAFE_TO_RESET',
+      canResetAttempt: true,
+      reason: 'NOT_FOUND'
+    };
+  }
+
+  if (record.status === 'DELETED' || record.status === 'DELETING') {
+    return {
+      state: 'DELETED',
+      canResetAttempt: false
+    };
+  }
+
+  if (record.requestFingerprint !== requestFingerprint) {
+    return {
+      state: 'CONFLICT',
+      canResetAttempt: true,
+      previousOrderExists: record.status === 'COMPLETED' || record.status === 'COMMITTING'
+    };
+  }
+
+  if (record.status === 'FAILED') {
+    return {
+      state: 'SAFE_TO_RESET',
+      canResetAttempt: true,
+      reason: 'FAILED'
+    };
+  }
+
+  if (record.status === 'COMPLETED') {
+    const expiresAtMs = Date.parse(record.expiresAt);
+    if (Number.isFinite(expiresAtMs) && expiresAtMs <= nowMs) {
+      return {
+        state: 'EXPIRED',
+        canResetAttempt: false
+      };
+    }
+    try {
+      const payload = await resolveCompletedReplayPayload({
+        record,
+        adminDb,
+        encryptionKey
+      });
+      return {
+        state: 'COMPLETED',
+        canResetAttempt: false,
+        recovered: false,
+        payload
+      };
+    } catch (err: any) {
+      if (err?.code === 'ORDER_DELETED') {
+        return { state: 'DELETED', canResetAttempt: false };
+      }
+      return {
+        state: 'UNAVAILABLE',
+        canResetAttempt: false,
+        reason: err?.message || 'REPLAY_UNAVAILABLE'
+      };
+    }
+  }
+
+  if (record.status === 'PENDING') {
+    const leaseMs = Date.parse(record.leaseExpiresAt);
+    if (Number.isFinite(leaseMs) && leaseMs > nowMs) {
+      return {
+        state: 'IN_PROGRESS',
+        canResetAttempt: false,
+        stage: 'PENDING',
+        retryAfterSeconds: Math.max(1, Math.ceil((leaseMs - nowMs) / 1000))
+      };
+    }
+
+    if (record.reservedOrderId) {
+      const orderSnap = await adminDb.ref(`orders/${record.reservedOrderId}`).once('value');
+      const existingOrder = orderSnap?.val?.();
+      if (isPlainObject(existingOrder)) {
+        const promoted = await promoteExistingOrderToCompleted({
+          idemRef,
+          orderId: record.reservedOrderId,
+          orderData: existingOrder,
+          requestKeyHash,
+          requestFingerprint,
+          nowIso: new Date(nowMs).toISOString(),
+          ttlMs
+        });
+        if (promoted && promoted.status === 'COMPLETED') {
+          try {
+            const payload = await resolveCompletedReplayPayload({
+              record: promoted,
+              adminDb,
+              encryptionKey
+            });
+            return {
+              state: 'COMPLETED',
+              canResetAttempt: false,
+              recovered: true,
+              payload
+            };
+          } catch (err: any) {
+            if (err?.code === 'ORDER_DELETED') {
+              return { state: 'DELETED', canResetAttempt: false };
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      state: 'SAFE_TO_RESET',
+      canResetAttempt: true,
+      reason: 'EXPIRED_PENDING_NO_ORDER'
+    };
+  }
+
+  if (record.status === 'COMMITTING') {
+    const commitLeaseMsVal = Date.parse(record.committingLeaseExpiresAt || record.leaseExpiresAt);
+    if (Number.isFinite(commitLeaseMsVal) && commitLeaseMsVal > nowMs) {
+      return {
+        state: 'IN_PROGRESS',
+        canResetAttempt: false,
+        stage: 'COMMITTING',
+        retryAfterSeconds: Math.max(1, Math.ceil((commitLeaseMsVal - nowMs) / 1000))
+      };
+    }
+
+    if (!isPlainObject(record.commitPayload)) {
+      return {
+        state: 'UNAVAILABLE',
+        canResetAttempt: false,
+        reason: 'MISSING_COMMIT_PAYLOAD'
+      };
+    }
+
+    const recoveryAttemptId = crypto.randomUUID();
+    const recoveryNowMs = Date.now();
+    const recoveryNowIso = new Date(recoveryNowMs).toISOString();
+    const recoveryLeaseIso = new Date(recoveryNowMs + commitLeaseMs).toISOString();
+
+    const txRecoverCommit = await idemRef.transaction((current: any) => {
+      if (!isPlainObject(current)) return undefined;
+      if (current.requestFingerprint !== requestFingerprint) return undefined;
+      if (current.status !== 'COMMITTING') return undefined;
+      if (!isPlainObject(current.commitPayload)) return undefined;
+
+      const curCommitLease = Date.parse(current.committingLeaseExpiresAt || current.leaseExpiresAt);
+      if (Number.isFinite(curCommitLease) && curCommitLease > recoveryNowMs) {
+        return undefined;
+      }
+
+      return {
+        ...current,
+        attemptId: recoveryAttemptId,
+        updatedAt: recoveryNowIso,
+        committingLeaseExpiresAt: recoveryLeaseIso
+      } satisfies OrderIdempotencyRecord;
+    });
+
+    const snapRecover = txRecoverCommit?.snapshot?.val?.() as OrderIdempotencyRecord | null;
+    if (isPlainObject(snapRecover) && snapRecover.status === 'COMPLETED') {
+      try {
+        const payload = await resolveCompletedReplayPayload({
+          record: snapRecover,
+          adminDb,
+          encryptionKey
+        });
+        return {
+          state: 'COMPLETED',
+          canResetAttempt: false,
+          recovered: true,
+          payload
+        };
+      } catch (err: any) {
+        if (err?.code === 'ORDER_DELETED') {
+          return { state: 'DELETED', canResetAttempt: false };
+        }
+      }
+    }
+
+    if (
+      !isPlainObject(snapRecover) ||
+      snapRecover.status !== 'COMMITTING' ||
+      snapRecover.attemptId !== recoveryAttemptId ||
+      !isPlainObject(snapRecover.commitPayload)
+    ) {
+      const latestSnap = await idemRef.once('value');
+      const latestRec = latestSnap?.val?.() as OrderIdempotencyRecord | null;
+      if (isPlainObject(latestRec) && latestRec.status === 'COMMITTING') {
+        const latestLease = Date.parse(latestRec.committingLeaseExpiresAt || latestRec.leaseExpiresAt);
+        return {
+          state: 'IN_PROGRESS',
+          canResetAttempt: false,
+          stage: 'COMMITTING',
+          retryAfterSeconds: Number.isFinite(latestLease)
+            ? Math.max(1, Math.ceil((latestLease - Date.now()) / 1000))
+            : 5
+        };
+      }
+      return {
+        state: 'UNAVAILABLE',
+        canResetAttempt: false,
+        reason: 'RECOVERY_CONTENTION'
+      };
+    }
+
+    const matRes = await materializeCommitPayload({
+      commitRecord: snapRecover,
+      adminDb,
+      hooks: { beforeVerify: beforeVerifyMaterialization }
+    });
+    if (!matRes.ok) {
+      if (matRes.reason === 'ORDER_ADMINISTRATIVELY_DELETED') {
+        return { state: 'DELETED', canResetAttempt: false };
+      }
+      return {
+        state: 'UNAVAILABLE',
+        canResetAttempt: false,
+        reason: matRes.reason || 'MATERIALIZE_FAILED'
+      };
+    }
+
+    const compRes = await transitionCommittingToCompleted({
+      requestKeyHash,
+      commitId: String(snapRecover.commitId || ''),
+      adminDb,
+      ttlMs
+    });
+
+    if (!compRes.ok) {
+      const latestSnap = await idemRef.once('value');
+      const latestRec = latestSnap?.val?.() as OrderIdempotencyRecord | null;
+      if (isPlainObject(latestRec) && latestRec.status === 'COMPLETED') {
+        const payload = await resolveCompletedReplayPayload({
+          record: latestRec,
+          adminDb,
+          encryptionKey
+        });
+        return {
+          state: 'COMPLETED',
+          canResetAttempt: false,
+          recovered: true,
+          payload
+        };
+      }
+      return {
+        state: 'UNAVAILABLE',
+        canResetAttempt: false,
+        reason: compRes.reason || 'FINALIZE_FAILED'
+      };
+    }
+
+    const recoveredToken = decryptTokenFromCommitPayload(snapRecover.commitPayload, encryptionKey);
+    return {
+      state: 'RECOVERED_COMMITTING',
+      canResetAttempt: false,
+      commitRecord: snapRecover,
+      invoiceAccessToken: recoveredToken
+    };
+  }
+
+  return {
+    state: 'UNAVAILABLE',
+    canResetAttempt: false,
+    reason: 'UNEXPECTED_STATUS'
   };
 }

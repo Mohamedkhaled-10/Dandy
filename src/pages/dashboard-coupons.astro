@@ -986,10 +986,79 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
       }
 
-      async function getAuthToken() {
+      async function getAuthToken(forceRefresh = false) {
         const auth = getCouponAdminAuth();
-        if (!auth || !auth.currentUser) return '';
-        return await auth.currentUser.getIdToken();
+        if (!auth || !auth.currentUser || typeof auth.currentUser.getIdToken !== 'function') return '';
+        return forceRefresh
+          ? await auth.currentUser.getIdToken(true)
+          : await auth.currentUser.getIdToken();
+      }
+
+      async function readAdminJsonSafely(res) {
+        let rawText = '';
+        try {
+          if (typeof res.text === 'function') {
+            rawText = await res.text();
+          } else if (typeof res.json === 'function') {
+            const direct = await res.json();
+            return { parsed: direct, isJson: true, rawText: '' };
+          }
+        } catch {
+          return { parsed: null, isJson: false, rawText: '' };
+        }
+
+        if (!rawText || !rawText.trim()) {
+          return { parsed: {}, isJson: false, rawText: '' };
+        }
+        try {
+          return { parsed: JSON.parse(rawText), isJson: true, rawText };
+        } catch {
+          return { parsed: null, isJson: false, rawText };
+        }
+      }
+
+      function buildAdminHttpErrorMessage(res, parsedResult, fallbackMsg) {
+        const parsed = parsedResult?.parsed;
+        if (parsed && typeof parsed.message === 'string' && parsed.message.trim()) {
+          return parsed.message.trim();
+        }
+        if (res.status === 404) {
+          return 'نقطة خدمة إدارة الكوبونات (/api/coupons/admin) غير متاحة على الخادم (HTTP 404). يرجى التحقق من نشر أحدث نسخة.';
+        }
+        if (res.status === 403) {
+          return 'غير مصرح بالوصول: يجب تسجيل الدخول بحساب الإدارة الموثّق (admin@dandy.com).';
+        }
+        if (res.status >= 500) {
+          return `حدث خطأ في خادم إدارة الكوبونات (HTTP ${res.status}). يرجى المحاولة مرة أخرى بعد قليل.`;
+        }
+        if (!parsedResult?.isJson) {
+          return `استجاب الخادم بصيغة غير متوقعة (HTTP ${res.status}). يرجى تحديث الصفحة والمحاولة مجدداً.`;
+        }
+        return fallbackMsg;
+      }
+
+      async function fetchAdminWithAuthRetry(url, init = {}) {
+        let token = await getAuthToken(false);
+        if (!token) {
+          return { authMissing: true, res: null };
+        }
+
+        const buildInit = (token) => ({
+          ...init,
+          headers: {
+            ...(init.headers || {}),
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        let res = await fetch(url, buildInit(token));
+        if (res.status === 401) {
+          const refreshedToken = await getAuthToken(true).catch(() => '');
+          if (refreshedToken && refreshedToken !== token) {
+            res = await fetch(url, buildInit(refreshedToken));
+          }
+        }
+        return { authMissing: false, res };
       }
 
       function deriveCouponStatus(coupon, nowMs = Date.now()) {
@@ -1328,20 +1397,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         renderCouponsTable();
 
         try {
-          const token = await getAuthToken();
-          const res = await fetch(COUPONS_API_URL, {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
+          const { authMissing, res } = await fetchAdminWithAuthRetry(COUPONS_API_URL, {
+            method: 'GET'
           });
 
-          if (res.status === 401 || res.status === 403) {
-            window.location.href = '/login';
+          if (authMissing || res.status === 401) {
+            window.location.href = '/login?reason=session_expired';
             return;
           }
 
-          const data = await res.json();
+          const parsedResult = await readAdminJsonSafely(res);
+          const data = parsedResult.parsed || {};
+
+          if (res.status === 403) {
+            loadErrorMessage = buildAdminHttpErrorMessage(
+              res,
+              parsedResult,
+              'غير مصرح بالوصول إلى بيانات الكوبونات.'
+            );
+            isLoading = false;
+            renderCouponsTable();
+            showToast(loadErrorMessage, 'error');
+            return;
+          }
+
           if (!res.ok || !data.success) {
-            loadErrorMessage = data.message || 'فشل تحميل قائمة الكوبونات من السيرفر.';
+            loadErrorMessage = buildAdminHttpErrorMessage(
+              res,
+              parsedResult,
+              'فشل تحميل قائمة الكوبونات من السيرفر.'
+            );
             isLoading = false;
             renderCouponsTable();
             showToast(loadErrorMessage, 'error');
@@ -1589,31 +1674,46 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         clearFormError();
 
         try {
-          const token = await getAuthToken();
           const bodyPayload = editingCouponId
             ? { action: 'update', id: editingCouponId, coupon: couponPayload }
             : { action: 'create', coupon: couponPayload };
 
-          const res = await fetch(COUPONS_API_URL, {
+          const { authMissing, res } = await fetchAdminWithAuthRetry(COUPONS_API_URL, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify(bodyPayload)
           });
 
-          if (res.status === 401 || res.status === 403) {
-            window.location.href = '/login';
+          if (authMissing || res.status === 401) {
+            window.location.href = '/login?reason=session_expired';
             return;
           }
 
-          const data = await res.json();
+          const parsedResult = await readAdminJsonSafely(res);
+          const data = parsedResult.parsed || {};
+
+          if (res.status === 403) {
+            const forbiddenMsg = buildAdminHttpErrorMessage(
+              res,
+              parsedResult,
+              'غير مصرح بتنفيذ هذا الإجراء. يرجى التأكد من صلاحيات حساب الإدارة.'
+            );
+            showFormError(forbiddenMsg);
+            showToast(forbiddenMsg, 'error');
+            return;
+          }
+
           if (!res.ok || !data.success) {
             const errMsg =
               data.error === 'COUPON_CODE_EXISTS'
                 ? data.message || 'كود الكوبون مستخدم بالفعل. يرجى اختيار كود مختلف.'
-                : data.message || 'تعذر حفظ الكوبون. يرجى مراجعة البيانات.';
+                : buildAdminHttpErrorMessage(
+                    res,
+                    parsedResult,
+                    'تعذر حفظ الكوبون. يرجى مراجعة البيانات.'
+                  );
             showFormError(errMsg);
             showToast(errMsg, 'error');
             return;
@@ -1633,12 +1733,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       async function executeSetActive(coupon, nextActive) {
         try {
-          const token = await getAuthToken();
-          const res = await fetch(COUPONS_API_URL, {
+          const { authMissing, res } = await fetchAdminWithAuthRetry(COUPONS_API_URL, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({
               action: 'set_active',
@@ -1647,14 +1745,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             })
           });
 
-          if (res.status === 401 || res.status === 403) {
-            window.location.href = '/login';
+          if (authMissing || res.status === 401) {
+            window.location.href = '/login?reason=session_expired';
             return;
           }
 
-          const data = await res.json();
+          const parsedResult = await readAdminJsonSafely(res);
+          const data = parsedResult.parsed || {};
+
+          if (res.status === 403) {
+            const forbiddenMsg = buildAdminHttpErrorMessage(
+              res,
+              parsedResult,
+              'غير مصرح بتغيير حالة الكوبون.'
+            );
+            showToast(forbiddenMsg, 'error');
+            return;
+          }
+
           if (!res.ok || !data.success) {
-            showToast(data.message || 'تعذر تحديث حالة الكوبون.', 'error');
+            showToast(
+              buildAdminHttpErrorMessage(res, parsedResult, 'تعذر تحديث حالة الكوبون.'),
+              'error'
+            );
             return;
           }
 

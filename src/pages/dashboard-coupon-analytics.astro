@@ -1416,12 +1416,77 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         try { return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null; } catch (_) { return null; }
       }
 
-      async function getAuthToken() {
+      async function getAuthToken(forceRefresh = false) {
         const auth = getAnalyticsAdminAuth();
         if (!auth || !auth.currentUser || typeof auth.currentUser.getIdToken !== 'function') {
           return '';
         }
-        return await auth.currentUser.getIdToken();
+        return forceRefresh
+          ? await auth.currentUser.getIdToken(true)
+          : await auth.currentUser.getIdToken();
+      }
+
+      async function readAnalyticsJsonSafely(res) {
+        let rawText = '';
+        try {
+          if (typeof res.text === 'function') {
+            rawText = await res.text();
+          } else if (typeof res.json === 'function') {
+            const direct = await res.json();
+            return { parsed: direct, isJson: true };
+          }
+        } catch {
+          return { parsed: null, isJson: false };
+        }
+        if (!rawText || !rawText.trim()) {
+          return { parsed: {}, isJson: false };
+        }
+        try {
+          return { parsed: JSON.parse(rawText), isJson: true };
+        } catch {
+          return { parsed: null, isJson: false };
+        }
+      }
+
+      async function fetchAnalyticsWithAuthRetry(url) {
+        const token = await getAuthToken(false);
+        if (!token) {
+          return { authMissing: true, res: null };
+        }
+        let res = await fetch(url, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 401) {
+          const refreshedToken = await getAuthToken(true).catch(() => '');
+          if (refreshedToken && refreshedToken !== token) {
+            res = await fetch(url, {
+              method: 'GET',
+              headers: { Authorization: `Bearer ${refreshedToken}` }
+            });
+          }
+        }
+        return { authMissing: false, res };
+      }
+
+      function buildAnalyticsHttpErrorMessage(res, parsedResult, fallbackMsg) {
+        const parsed = parsedResult?.parsed;
+        if (parsed && typeof parsed.message === 'string' && parsed.message.trim()) {
+          return parsed.message.trim();
+        }
+        if (res.status === 404) {
+          return 'نقطة خدمة تحليلات الكوبونات (/api/coupons/analytics) غير متاحة على الخادم (HTTP 404).';
+        }
+        if (res.status === 403) {
+          return 'غير مصرح بالوصول: يجب تسجيل الدخول بحساب الإدارة الموثّق (admin@dandy.com).';
+        }
+        if (res.status >= 500) {
+          return `حدث خطأ في خادم التحليلات (HTTP ${res.status}). يرجى المحاولة مرة أخرى.`;
+        }
+        if (!parsedResult?.isJson) {
+          return `استجاب خادم التحليلات بصيغة غير متوقعة (HTTP ${res.status}).`;
+        }
+        return fallbackMsg;
       }
 
       function readFilterQueryObject() {
@@ -2103,32 +2168,40 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         setLoadingState(true);
 
         try {
-          const token = await getAuthToken();
-          if (!token) {
-            window.location.href = '/login';
-            return;
-          }
-
           const { params } = readFilterQueryObject();
           const queryString = params.toString();
           const url = queryString ? `${ANALYTICS_API_URL}?${queryString}` : ANALYTICS_API_URL;
 
-          const res = await fetch(url, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-
-          if (res.status === 401 || res.status === 403) {
-            window.location.href = '/login';
+          const { authMissing, res } = await fetchAnalyticsWithAuthRetry(url);
+          if (authMissing || res.status === 401) {
+            window.location.href = '/login?reason=session_expired';
             return;
           }
 
-          const data = await res.json();
+          const parsedResult = await readAnalyticsJsonSafely(res);
+          const data = parsedResult.parsed || {};
+
+          if (res.status === 403) {
+            setLoadingState(false);
+            showErrorBanner(
+              buildAnalyticsHttpErrorMessage(
+                res,
+                parsedResult,
+                'غير مصرح بالوصول إلى تحليلات الكوبونات.'
+              )
+            );
+            return;
+          }
+
           if (!res.ok || !data.success) {
             setLoadingState(false);
-            showErrorBanner(data.message || 'تعذر تحميل تحليلات الكوبونات من السيرفر.');
+            showErrorBanner(
+              buildAnalyticsHttpErrorMessage(
+                res,
+                parsedResult,
+                'تعذر تحميل تحليلات الكوبونات من السيرفر.'
+              )
+            );
             return;
           }
 
@@ -2159,26 +2232,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (toggle) toggle.setAttribute('aria-expanded', 'false');
 
         try {
-          const token = await getAuthToken();
-          if (!token) {
-            window.location.href = '/login';
-            return;
-          }
           const { params } = readFilterQueryObject();
           params.set('format', 'csv');
           params.set('dataset', dataset);
 
-          const res = await fetch(`${ANALYTICS_API_URL}?${params.toString()}`, {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const { authMissing, res } = await fetchAnalyticsWithAuthRetry(
+            `${ANALYTICS_API_URL}?${params.toString()}`
+          );
 
-          if (res.status === 401 || res.status === 403) {
-            window.location.href = '/login';
+          if (authMissing || res.status === 401) {
+            window.location.href = '/login?reason=session_expired';
+            return;
+          }
+          if (res.status === 403) {
+            const parsedResult = await readAnalyticsJsonSafely(res);
+            showErrorBanner(
+              buildAnalyticsHttpErrorMessage(res, parsedResult, 'غير مصرح بتصدير ملفات التحليلات.')
+            );
             return;
           }
           if (!res.ok) {
-            showErrorBanner('تعذر تصدير ملف CSV المطلوب.');
+            const parsedResult = await readAnalyticsJsonSafely(res);
+            showErrorBanner(
+              buildAnalyticsHttpErrorMessage(res, parsedResult, 'تعذر تصدير ملف CSV المطلوب.')
+            );
             return;
           }
 

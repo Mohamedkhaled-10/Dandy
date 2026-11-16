@@ -1531,6 +1531,7 @@ export async function sendOrderNotification(params: {
   nowMs?: number;
   getNowMs?: () => number;
   leaseMs?: number;
+  timeoutMs?: number;
 }): Promise<{
   success: boolean;
   status: NotificationStatus;
@@ -1889,7 +1890,10 @@ export async function sendOrderNotification(params: {
     textBody,
     eventType,
     orderId,
-    invoiceCode
+    invoiceCode,
+    ...(typeof params.timeoutMs === 'number' && Number.isFinite(params.timeoutMs) && params.timeoutMs > 0
+      ? { timeoutMs: Math.trunc(params.timeoutMs) }
+      : {})
   });
 
   const providerStatus = dispatchResult.status;

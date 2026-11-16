@@ -130,12 +130,15 @@ async function runPostCommitSideEffectsSafely({
   _deps = null
 }) {
   try {
-    // 1. Preserve legacy best-effort stock deduction ONLY after fresh commit
+    // 1. Preserve legacy best-effort stock deduction ONLY after fresh commit (parallelized across items)
     const lowStockAlerts = [];
     if (stockDeductionMap && typeof stockDeductionMap.entries === 'function') {
-      for (const [prodId, stockInfo] of stockDeductionMap.entries()) {
-        const orderedQty = stockInfo?.quantityNeeded || 0;
-        if (prodId && orderedQty > 0) {
+      const stockEntries = [...stockDeductionMap.entries()].filter(
+        ([prodId, stockInfo]) => Boolean(prodId) && (stockInfo?.quantityNeeded || 0) > 0
+      );
+      await Promise.allSettled(
+        stockEntries.map(async ([prodId, stockInfo]) => {
+          const orderedQty = stockInfo.quantityNeeded;
           try {
             const stockRef = adminDb.ref(`products/${prodId}/stockQuantity`);
             await stockRef.transaction((current) => {
@@ -162,13 +165,17 @@ async function runPostCommitSideEffectsSafely({
           } catch (stockErr) {
             console.error(`Error updating stock for product ${prodId}:`, stockErr?.message || stockErr);
           }
-        }
-      }
+        })
+      );
     }
 
     // 2. Outbox-fenced outbound notifications (safe even if functions throw synchronously)
     const sendEmailFn = _deps?.sendOrderNotification || sendOrderNotification;
     const sendTgFn = _deps?.sendTelegramNotification || sendTelegramNotification;
+    const emailTimeoutMs =
+      typeof _deps?.emailTimeoutMs === 'number' && _deps.emailTimeoutMs > 0
+        ? _deps.emailTimeoutMs
+        : 4500;
 
     const emailPromise = Promise.resolve()
       .then(() =>
@@ -178,6 +185,7 @@ async function runPostCommitSideEffectsSafely({
           eventType: 'ORDER_CONFIRMATION',
           invoiceAccessToken,
           adminDb,
+          timeoutMs: emailTimeoutMs,
           ...(_deps?.encryptionKey !== undefined ? { encryptionKey: _deps.encryptionKey } : {})
         })
       )
@@ -557,6 +565,10 @@ export async function POST(context) {
         );
       }
 
+      if (idemOutcome.outcome === 'UNAVAILABLE') {
+        return serviceUnavailableResponse();
+      }
+
       if (idemOutcome.outcome === 'COMPLETED') {
         try {
           const replayPayload = await resolveCompletedReplayPayload({
@@ -689,11 +701,38 @@ export async function POST(context) {
     const nowDate = new Date(nowMs);
 
     let activeCampaign = null;
-    try {
-      const campSnap = await adminDb.ref('settings/pinkFriday/publishedActiveCampaign').once('value');
-      activeCampaign = campSnap.val();
-    } catch (campErr) {
-      console.warn('[CreateOrder] Could not fetch publishedActiveCampaign from RTDB:', campErr?.message || campErr);
+    const prefetchedCouponsPromise = requestedCouponCode
+      ? adminDb.ref('settings/coupons').once('value')
+      : Promise.resolve(null);
+
+    const uniqueProductIdsToPrefetch = [];
+    const seenPrefetchIds = new Set();
+    for (const item of items) {
+      if (!item || typeof item !== 'object') continue;
+      if (item.type === 'collection' || item.isCollection || item.collectionId) continue;
+      const pid = String(item.productId || (item.id ? String(item.id).split('::')[0] : '') || '').trim();
+      if (pid && !/[.#$\[\]/]/.test(pid) && !seenPrefetchIds.has(pid)) {
+        seenPrefetchIds.add(pid);
+        uniqueProductIdsToPrefetch.push(pid);
+      }
+    }
+
+    const prefetchedProductSnaps = new Map();
+    const [campaignRes, couponsPrefetchSnap, ...productSnapsList] = await Promise.all([
+      adminDb
+        .ref('settings/pinkFriday/publishedActiveCampaign')
+        .once('value')
+        .then((s) => s.val())
+        .catch((campErr) => {
+          console.warn('[CreateOrder] Could not fetch publishedActiveCampaign from RTDB:', campErr?.message || campErr);
+          return null;
+        }),
+      prefetchedCouponsPromise,
+      ...uniqueProductIdsToPrefetch.map((pid) => adminDb.ref(`products/${pid}`).once('value'))
+    ]);
+    activeCampaign = campaignRes;
+    for (let i = 0; i < uniqueProductIdsToPrefetch.length; i++) {
+      prefetchedProductSnaps.set(uniqueProductIdsToPrefetch[i], productSnapsList[i]);
     }
     if (!activeCampaign && !_deps?.skipPublishedCampaignFallback) {
       activeCampaign = await getPublishedPinkFridayCampaign(false, { adminDb });
@@ -797,6 +836,7 @@ export async function POST(context) {
         let totalBasePrice = 0;
         const resolvedCollectionItems = [];
 
+        const collectionComponentIds = [];
         for (const cItem of collectionItemsList) {
           if (!cItem || typeof cItem !== 'object' || !cItem.productId || /[.#$\[\]/]/.test(String(cItem.productId))) {
             return await failBusinessOrConfig(
@@ -809,8 +849,21 @@ export async function POST(context) {
               'INVALID_COLLECTION'
             );
           }
+          if (!prefetchedProductSnaps.has(cItem.productId) && !collectionComponentIds.includes(cItem.productId)) {
+            collectionComponentIds.push(cItem.productId);
+          }
+        }
+        if (collectionComponentIds.length > 0) {
+          const compSnaps = await Promise.all(
+            collectionComponentIds.map((pid) => adminDb.ref(`products/${pid}`).once('value'))
+          );
+          for (let ci = 0; ci < collectionComponentIds.length; ci++) {
+            prefetchedProductSnaps.set(collectionComponentIds[ci], compSnaps[ci]);
+          }
+        }
 
-          const pSnap = await adminDb.ref(`products/${cItem.productId}`).once('value');
+        for (const cItem of collectionItemsList) {
+          const pSnap = prefetchedProductSnaps.get(cItem.productId) || await adminDb.ref(`products/${cItem.productId}`).once('value');
           if (!pSnap.exists()) {
             return await failBusinessOrConfig(
               {
@@ -970,7 +1023,7 @@ export async function POST(context) {
         quantity = parsedQty;
       }
 
-      const productSnap = await adminDb.ref(`products/${rawId}`).once('value');
+      const productSnap = prefetchedProductSnaps.get(rawId) || await adminDb.ref(`products/${rawId}`).once('value');
       if (!productSnap.exists()) {
         return await failBusinessOrConfig(
           {
@@ -1128,7 +1181,7 @@ export async function POST(context) {
     let couponDiscountAmount = 0;
 
     if (requestedCouponCode) {
-      const couponsSnap = await adminDb.ref('settings/coupons').once('value');
+      const couponsSnap = couponsPrefetchSnap || await adminDb.ref('settings/coupons').once('value');
       const rawCouponsVal = couponsSnap && typeof couponsSnap.val === 'function' ? couponsSnap.val() : null;
       let matchedCoupon = null;
       let matchedCouponId = null;

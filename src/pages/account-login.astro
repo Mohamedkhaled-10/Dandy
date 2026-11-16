@@ -492,9 +492,19 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
           </div>
 
           <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
-          <div class="login-turnstile-wrap" style="margin: 16px 0; display: flex; justify-content: center;">
+          <div class="login-turnstile-wrap" style="margin: 16px 0; display: flex; flex-direction: column; align-items: center; gap: 6px;">
             {turnstileSiteKey ? (
-              <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+              <>
+                <div
+                  class="cf-turnstile"
+                  data-sitekey={turnstileSiteKey}
+                  data-theme="light"
+                  data-callback="onLoginTurnstileVerified"
+                  data-expired-callback="onLoginTurnstileExpired"
+                  data-error-callback="onLoginTurnstileError"
+                ></div>
+                <p id="loginTurnstileStatusMsg" style="display: none; margin: 0; font-size: 0.78rem; color: #b45309; font-weight: 600; text-align: center;"></p>
+              </>
             ) : (
               <div role="status" style="padding:10px 14px; border-radius:8px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.82rem; font-weight:600; text-align:center;">
                 خدمة التحقق الأمني (Turnstile) غير مهيأة في هذه البيئة حالياً.
@@ -571,6 +581,31 @@ const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         alertBox.appendChild(icon);
         alertBox.appendChild(document.createTextNode(' ' + String(text || '')));
       }
+
+      function setLoginTurnstileStatus(message) {
+        const statusEl = document.getElementById('loginTurnstileStatusMsg');
+        if (!statusEl) return;
+        if (!message) {
+          statusEl.style.display = 'none';
+          statusEl.textContent = '';
+          return;
+        }
+        statusEl.textContent = message;
+        statusEl.style.display = 'block';
+      }
+
+      window.onLoginTurnstileVerified = function() {
+        setLoginTurnstileStatus('');
+      };
+      window.onLoginTurnstileExpired = function() {
+        setLoginTurnstileStatus('انتهت صلاحية رمز التحقق الأمني (Turnstile). يرجى إعادة التحقق قبل تسجيل الدخول.');
+        if (typeof turnstile !== 'undefined') {
+          try { turnstile.reset(); } catch (_) {}
+        }
+      };
+      window.onLoginTurnstileError = function() {
+        setLoginTurnstileStatus('تعذر تحميل أو إتمام التحقق الأمني (Turnstile). يرجى تعطيل مانع الإعلانات إن وجد أو إعادة المحاولة.');
+      };
 
       function clearAlert() {
         if (!alertBox) return;

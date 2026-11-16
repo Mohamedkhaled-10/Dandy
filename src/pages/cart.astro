@@ -1381,12 +1381,20 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
               <!-- التحقق الأمني التلقائي عبر Cloudflare Turnstile -->
               <div class="cart-turnstile-wrap" style="margin: 20px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
                 {turnstileSiteKey ? (
-                  <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+                  <div
+                    class="cf-turnstile"
+                    data-sitekey={turnstileSiteKey}
+                    data-theme="light"
+                    data-callback="dandyCartTurnstileSuccess"
+                    data-expired-callback="dandyCartTurnstileExpired"
+                    data-error-callback="dandyCartTurnstileError"
+                  ></div>
                 ) : (
                   <div id="turnstileUnavailableNotice" role="status" style="padding:10px 14px; border-radius:8px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.82rem; font-weight:600; text-align:center;">
                     خدمة التحقق الأمني (Turnstile) غير مهيأة في هذه البيئة حالياً.
                   </div>
                 )}
+                <div id="cartTurnstileStatusMsg" role="status" aria-live="polite" style="display:none; font-size:0.8rem; font-weight:600; color:#92400e; text-align:center;"></div>
                 <small style="color:var(--color-muted); font-size:0.75rem;">حماية أمنية مشددة لمنع الطلبات الوهمية</small>
               </div>
 
@@ -2468,6 +2476,11 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       document.getElementById('stepperLineProgress').style.width = pct + '%';
       document.getElementById(`step-panel-${step}`).classList.add('active');
       syncAllShippingAndOrderSummaries();
+      if (step === 3 && cartTurnstileNeedsReset) {
+        cartTurnstileNeedsReset = false;
+        resetTurnstileWidgetSafely();
+        setCartTurnstileStatus('');
+      }
       
       window.scrollTo({ top: 40, behavior: 'smooth' });
     };
@@ -2630,7 +2643,38 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       if (actionsEl) actionsEl.style.display = 'none';
     }
 
+    let cartTurnstileNeedsReset = false;
+
+    function setCartTurnstileStatus(message, isError) {
+      const el = document.getElementById('cartTurnstileStatusMsg');
+      if (!el) return;
+      if (!message) {
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+      }
+      el.style.color = isError ? '#b91c1c' : '#92400e';
+      el.textContent = message;
+      el.style.display = 'block';
+    }
+
+    window.dandyCartTurnstileSuccess = function () {
+      cartTurnstileNeedsReset = false;
+      setCartTurnstileStatus('');
+    };
+
+    window.dandyCartTurnstileExpired = function () {
+      cartTurnstileNeedsReset = true;
+      setCartTurnstileStatus('انتهت صلاحية التحقق الأمني؛ يرجى إكمال التحقق مرة أخرى قبل التأكيد.', false);
+    };
+
+    window.dandyCartTurnstileError = function () {
+      cartTurnstileNeedsReset = true;
+      setCartTurnstileStatus('تعذر تحميل التحقق الأمني مؤقتاً؛ جاري إعادة المحاولة أو يرجى تحديث الصفحة.', true);
+    };
+
     function resetTurnstileWidgetSafely() {
+      cartTurnstileNeedsReset = false;
       if (typeof turnstile !== 'undefined' && typeof turnstile.reset === 'function') {
         try {
           turnstile.reset();
@@ -2638,14 +2682,87 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
       }
     }
 
+    function waitCheckoutDelay(ms) {
+      if (typeof setTimeout === 'function' && ms > 0) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+      return Promise.resolve();
+    }
+
+    function finalizeSuccessfulOrderRedirect(flow, payload) {
+      const token = payload && typeof payload.invoiceAccessToken === 'string' ? payload.invoiceAccessToken.trim() : '';
+      if (!flow || !flow.isValidInvoiceToken || !flow.isValidInvoiceToken(token)) {
+        return false;
+      }
+      flow.clearCheckoutAttemptState(window.sessionStorage);
+      if (payload.invoiceCode) {
+        flow.saveRecentLookupCode(window.localStorage, payload.invoiceCode);
+      }
+      clearStoredCouponCode();
+      activeCouponState = null;
+      pendingCouponCode = null;
+      localStorage.removeItem('cart');
+      window.location.href = '/invoice#access=' + encodeURIComponent(token);
+      return true;
+    }
+
+    async function checkOrderAttemptStatusWithServer(attemptBody) {
+      if (!attemptBody || !attemptBody.clientRequestId || typeof fetch !== 'function') {
+        return null;
+      }
+      try {
+        const statusRes = await fetch('/api/order-attempt-status', {
+          method: 'POST',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(attemptBody)
+        });
+        const statusData = await statusRes.json().catch(() => null);
+        if (!statusData || typeof statusData !== 'object') return null;
+        return { httpStatus: statusRes.status, ok: statusRes.ok, data: statusData };
+      } catch (_) {
+        return null;
+      }
+    }
+
+    let isSubmittingOrder = false;
     let orderInProgressRetryCount = 0;
     let lastInProgressRequestId = '';
+    let lastAttemptStatusPayload = null;
 
-    document.getElementById('btnResetOrderAttempt')?.addEventListener('click', function () {
+    document.getElementById('btnResetOrderAttempt')?.addEventListener('click', async function () {
+      const resetBtn = document.getElementById('btnResetOrderAttempt');
+      const flow = window.DandyOrderFlow;
+      const savingTextLoader = document.getElementById('savingTextLoader');
+
+      if (lastAttemptStatusPayload) {
+        if (resetBtn) resetBtn.disabled = true;
+        showCheckoutBanner('جاري التحقق من حالة الطلب السابقة قبل بدء محاولة جديدة...', 'warning', { showNewAttemptAction: false });
+
+        const checkRes = await checkOrderAttemptStatusWithServer(lastAttemptStatusPayload);
+        if (resetBtn) resetBtn.disabled = false;
+
+        if (checkRes && checkRes.ok && checkRes.data) {
+          if (checkRes.data.state === 'COMPLETED' && finalizeSuccessfulOrderRedirect(flow, checkRes.data)) {
+            return;
+          }
+          if (checkRes.data.canResetAttempt !== true) {
+            resetTurnstileWidgetSafely();
+            showCheckoutBanner(
+              checkRes.data.message || 'الطلب السابق لا يزال قيد الاستكمال أو محجوزاً حالياً؛ تم الحفاظ على المعرف منعاً للتكرار.',
+              checkRes.data.state === 'DELETED' ? 'error' : 'warning',
+              { showNewAttemptAction: false }
+            );
+            return;
+          }
+        }
+      }
+
       orderInProgressRetryCount = 0;
       lastInProgressRequestId = '';
-      if (window.DandyOrderFlow) {
-        window.DandyOrderFlow.clearCheckoutAttemptState(window.sessionStorage);
+      lastAttemptStatusPayload = null;
+      if (flow) {
+        flow.clearCheckoutAttemptState(window.sessionStorage);
       }
       resetTurnstileWidgetSafely();
       showCheckoutBanner(
@@ -2653,163 +2770,186 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
         'warning',
         { showNewAttemptAction: false }
       );
-      const savingTextLoader = document.getElementById('savingTextLoader');
       if (savingTextLoader) {
         savingTextLoader.innerHTML = '<i class="fas fa-lock" style="color:#059669; margin-left:4px;"></i> تأكيد الطلب يسجله بأمان ويوفر لك كود تتبع فوري.';
       }
     });
 
     window.submitFinalOrder = async function() {
+      if (isSubmittingOrder) {
+        return;
+      }
+      isSubmittingOrder = true;
+
       const finalBtn = document.getElementById('finalPlaceOrderBtn');
       const savingTextLoader = document.getElementById('savingTextLoader');
       const restoreSubmitBtn = () => {
+        isSubmittingOrder = false;
         if (finalBtn) {
           finalBtn.disabled = false;
           finalBtn.innerHTML = '<i class="fas fa-check"></i> تأكيد وإتمام الطلب';
         }
       };
 
-      hideCheckoutBanner();
-      finalBtn.disabled = true;
-      finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ طلبك...';
-      savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع تفاصيل الفاتورة وحجز منتجاتك...</span>';
+      try {
+        hideCheckoutBanner();
+        if (finalBtn) {
+          finalBtn.disabled = true;
+          finalBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ طلبك...';
+        }
+        if (savingTextLoader) {
+          savingTextLoader.innerHTML = '<span style="color:var(--color-blush); font-weight:700;"><i class="fas fa-cloud-upload-alt"></i> جاري رفع تفاصيل الفاتورة وحجز منتجاتك...</span>';
+        }
 
-      const name = document.getElementById('f-name').value.trim();
-      const rawPhoneVal = document.getElementById('f-phone').value.trim();
-      const phone = normalizeCartPhone(rawPhoneVal) || rawPhoneVal;
-      const email = document.getElementById('f-email').value.trim();
-      const governorate = document.getElementById('f-gov').value;
-      const city = document.getElementById('f-city').value.trim();
-      const address = document.getElementById('f-address').value.trim();
+        const name = document.getElementById('f-name').value.trim();
+        const rawPhoneVal = document.getElementById('f-phone').value.trim();
+        const phone = normalizeCartPhone(rawPhoneVal) || rawPhoneVal;
+        const email = document.getElementById('f-email').value.trim();
+        const governorate = document.getElementById('f-gov').value;
+        const city = document.getElementById('f-city').value.trim();
+        const address = document.getElementById('f-address').value.trim();
 
-      // تجهيز قائمة المنتجات والكميات والروائح فقط دون إرسال أي أسعار من المتصفح
-      const items = cart.map(item => {
-        if (item.type === 'collection' || item.isCollection || item.collectionId) {
+        // تجهيز قائمة المنتجات والكميات والروائح فقط دون إرسال أي أسعار من المتصفح
+        const items = cart.map(item => {
+          if (item.type === 'collection' || item.isCollection || item.collectionId) {
+            return {
+              type: 'collection',
+              isCollection: true,
+              isPinkFriday: true,
+              collectionId: item.collectionId || item.id,
+              name: item.name,
+              image: item.image || '',
+              quantity: parseInt(item.quantity) || 1,
+              selectedItems: Array.isArray(item.selectedItems) ? item.selectedItems : []
+            };
+          }
+
+          const rawVariants = (Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0)
+            ? item.selectedVariants
+            : (item.selectedVariant ? [item.selectedVariant] : (item.variantName ? [{ id: item.variantId || 'scent-variant', name: item.variantName }] : []));
+
           return {
-            type: 'collection',
-            isCollection: true,
-            isPinkFriday: true,
-            collectionId: item.collectionId || item.id,
+            productId: item.productId || String(item.id).split('::')[0],
             name: item.name,
             image: item.image || '',
             quantity: parseInt(item.quantity) || 1,
-            selectedItems: Array.isArray(item.selectedItems) ? item.selectedItems : []
+            selectedVariants: rawVariants.map(v => ({
+              id: v.id || 'scent-variant',
+              name: v.name || String(v)
+            }))
           };
-        }
-
-        const rawVariants = (Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0)
-          ? item.selectedVariants
-          : (item.selectedVariant ? [item.selectedVariant] : (item.variantName ? [{ id: item.variantId || 'scent-variant', name: item.variantName }] : []));
-
-        return {
-          productId: item.productId || String(item.id).split('::')[0],
-          name: item.name,
-          image: item.image || '',
-          quantity: parseInt(item.quantity) || 1,
-          selectedVariants: rawVariants.map(v => ({
-            id: v.id || 'scent-variant',
-            name: v.name || String(v)
-          }))
-        };
-      });
-
-      // جلب توكن العميل إن كان مسجل دخول لربط الطلب بحسابه بأمان عبر السيرفر
-      let idToken = null;
-      const cartAuth = getSafeCartAuth();
-      const currentAuthUser = cartAuth ? cartAuth.currentUser : null;
-      if (currentAuthUser) {
-        try {
-          idToken = await currentAuthUser.getIdToken();
-        } catch(e) {
-          console.warn('Could not retrieve idToken:', e);
-        }
-      }
-
-      // جلب توكن التحقق الأمني من كابتشا Cloudflare Turnstile (مرة واحدة لكل محاولة إرسال فعلية)
-      let turnstileToken = '';
-      if (typeof turnstile !== 'undefined') {
-        try {
-          turnstileToken = turnstile.getResponse() || '';
-        } catch(e) {}
-      }
-      if (!turnstileToken) {
-        const turnstileInput = document.querySelector('[name="cf-turnstile-response"]');
-        if (turnstileInput) turnstileToken = turnstileInput.value;
-      }
-
-      if (!turnstileToken) {
-        showCheckoutBanner('يرجى إكمال اختبار التحقق الأمني (CAPTCHA) قبل تأكيد الطلب.', 'warning');
-        restoreSubmitBtn();
-        savingTextLoader.innerHTML = '<i class="fas fa-shield-alt" style="color:var(--color-blush);"></i> يرجى إكمال التحقق الأمني أولاً.';
-        return;
-      }
-
-      const flow = window.DandyOrderFlow;
-      if (!flow || typeof flow.prepareCheckoutIdempotency !== 'function' || typeof flow.isValidUuidV4 !== 'function') {
-        showCheckoutBanner(
-          'تعذر تحميل وحدة حماية الطلب من التكرار. تم الحفاظ على سلتكِ بأمان؛ يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.',
-          'error',
-          { showNewAttemptAction: false }
-        );
-        restoreSubmitBtn();
-        savingTextLoader.innerHTML =
-          '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> تعذر التحقق من حماية الطلب؛ سلتكِ محفوظة كما هي.';
-        return;
-      }
-
-      if (isValidatingCoupon) {
-        showCheckoutBanner('جاري التحقق من كود الخصم؛ يرجى الانتظار لحظة ثم المحاولة مرة أخرى.', 'warning');
-        restoreSubmitBtn();
-        savingTextLoader.innerHTML = '<i class="fas fa-clock" style="color:var(--color-blush);"></i> يرجى الانتظار حتى يكتمل التحقق من الكوبون.';
-        return;
-      }
-
-      const appliedCouponCode = activeCouponState && activeCouponState.code
-        ? normalizeClientCouponCode(activeCouponState.code)
-        : null;
-
-      const customerUid = (idToken && currentAuthUser && currentAuthUser.uid) ? currentAuthUser.uid : null;
-      let idempotencyPrep = null;
-      try {
-        idempotencyPrep = await flow.prepareCheckoutIdempotency({
-          orderInput: {
-            name,
-            phone,
-            email: email || 'N/A',
-            governorate,
-            city,
-            address,
-            customerId: customerUid,
-            couponCode: appliedCouponCode,
-            items
-          },
-          sessionStorage: window.sessionStorage
         });
-      } catch (_) {
-        idempotencyPrep = { ok: false, clientRequestId: null };
-      }
 
-      if (!idempotencyPrep || !idempotencyPrep.ok || !flow.isValidUuidV4(idempotencyPrep.clientRequestId)) {
-        showCheckoutBanner(
-          (idempotencyPrep && idempotencyPrep.message) ||
-            'تعذر حفظ معرّف تأكيد الطلب في تخزين الجلسة بالمتصفح. تم الحفاظ على سلتكِ بأمان ولم يتم إرسال الطلب؛ يرجى السماح بتخزين الجلسة ثم المحاولة مرة أخرى.',
-          'error',
-          { showNewAttemptAction: false }
-        );
-        restoreSubmitBtn();
-        savingTextLoader.innerHTML =
-          '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> لم يتم إرسال الطلب حفاظاً على عدم التكرار؛ سلتكِ محفوظة كما هي.';
-        return;
-      }
+        // جلب توكن العميل إن كان مسجل دخول لربط الطلب بحسابه بأمان عبر السيرفر (مع تحديثه إن قارب على الانتهاء)
+        let idToken = null;
+        const cartAuth = getSafeCartAuth();
+        const currentAuthUser = cartAuth ? cartAuth.currentUser : null;
+        if (currentAuthUser && typeof currentAuthUser.getIdToken === 'function') {
+          try {
+            let forceRefresh = false;
+            if (typeof currentAuthUser.getIdTokenResult === 'function') {
+              try {
+                const tokenResult = await currentAuthUser.getIdTokenResult();
+                const expMs = tokenResult && tokenResult.expirationTime ? Date.parse(tokenResult.expirationTime) : NaN;
+                if (Number.isFinite(expMs) && expMs - Date.now() < 120_000) {
+                  forceRefresh = true;
+                }
+              } catch (_) {}
+            }
+            idToken = await currentAuthUser.getIdToken(forceRefresh);
+          } catch (e) {
+            idToken = null;
+            console.warn('Could not retrieve idToken:', e);
+          }
+        }
 
-      const clientRequestId = idempotencyPrep.clientRequestId;
+        // جلب توكن التحقق الأمني من كابتشا Cloudflare Turnstile (مرة واحدة لكل محاولة إرسال فعلية)
+        let turnstileToken = '';
+        if (typeof turnstile !== 'undefined') {
+          try {
+            turnstileToken = turnstile.getResponse() || '';
+          } catch(e) {}
+        }
+        if (!turnstileToken) {
+          const turnstileInput = document.querySelector('[name="cf-turnstile-response"]');
+          if (turnstileInput) turnstileToken = turnstileInput.value;
+        }
 
-      let response = null;
-      let result = {};
-      let networkError = false;
+        if (!turnstileToken) {
+          showCheckoutBanner('يرجى إكمال اختبار التحقق الأمني (CAPTCHA) قبل تأكيد الطلب.', 'warning');
+          restoreSubmitBtn();
+          if (savingTextLoader) {
+            savingTextLoader.innerHTML = '<i class="fas fa-shield-alt" style="color:var(--color-blush);"></i> يرجى إكمال التحقق الأمني أولاً.';
+          }
+          return;
+        }
 
-      try {
-        const orderRequestBody = {
+        const flow = window.DandyOrderFlow;
+        if (!flow || typeof flow.prepareCheckoutIdempotency !== 'function' || typeof flow.isValidUuidV4 !== 'function') {
+          showCheckoutBanner(
+            'تعذر تحميل وحدة حماية الطلب من التكرار. تم الحفاظ على سلتكِ بأمان؛ يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.',
+            'error',
+            { showNewAttemptAction: false }
+          );
+          restoreSubmitBtn();
+          if (savingTextLoader) {
+            savingTextLoader.innerHTML =
+              '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> تعذر التحقق من حماية الطلب؛ سلتكِ محفوظة كما هي.';
+          }
+          return;
+        }
+
+        if (isValidatingCoupon) {
+          showCheckoutBanner('جاري التحقق من كود الخصم؛ يرجى الانتظار لحظة ثم المحاولة مرة أخرى.', 'warning');
+          restoreSubmitBtn();
+          if (savingTextLoader) {
+            savingTextLoader.innerHTML = '<i class="fas fa-clock" style="color:var(--color-blush);"></i> يرجى الانتظار حتى يكتمل التحقق من الكوبون.';
+          }
+          return;
+        }
+
+        const appliedCouponCode = activeCouponState && activeCouponState.code
+          ? normalizeClientCouponCode(activeCouponState.code)
+          : null;
+
+        const customerUid = (idToken && currentAuthUser && currentAuthUser.uid) ? currentAuthUser.uid : null;
+        let idempotencyPrep = null;
+        try {
+          idempotencyPrep = await flow.prepareCheckoutIdempotency({
+            orderInput: {
+              name,
+              phone,
+              email: email || 'N/A',
+              governorate,
+              city,
+              address,
+              customerId: customerUid,
+              couponCode: appliedCouponCode,
+              items
+            },
+            sessionStorage: window.sessionStorage
+          });
+        } catch (_) {
+          idempotencyPrep = { ok: false, clientRequestId: null };
+        }
+
+        if (!idempotencyPrep || !idempotencyPrep.ok || !flow.isValidUuidV4(idempotencyPrep.clientRequestId)) {
+          showCheckoutBanner(
+            (idempotencyPrep && idempotencyPrep.message) ||
+              'تعذر حفظ معرّف تأكيد الطلب في تخزين الجلسة بالمتصفح. تم الحفاظ على سلتكِ بأمان ولم يتم إرسال الطلب؛ يرجى السماح بتخزين الجلسة ثم المحاولة مرة أخرى.',
+            'error',
+            { showNewAttemptAction: false }
+          );
+          restoreSubmitBtn();
+          if (savingTextLoader) {
+            savingTextLoader.innerHTML =
+              '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> لم يتم إرسال الطلب حفاظاً على عدم التكرار؛ سلتكِ محفوظة كما هي.';
+          }
+          return;
+        }
+
+        const clientRequestId = idempotencyPrep.clientRequestId;
+        const attemptStatusPayload = {
           customer: {
             name,
             phone,
@@ -2820,116 +2960,164 @@ const serializedStoreShippingPolicy = JSON.stringify(publicStoreShippingPolicy).
           },
           items,
           idToken,
-          turnstileToken,
-          clientRequestId
+          clientRequestId,
+          ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {})
         };
-        if (appliedCouponCode) {
-          orderRequestBody.couponCode = appliedCouponCode;
-        }
+        lastAttemptStatusPayload = attemptStatusPayload;
 
-        response = await fetch('/api/create-order', {
-          method: 'POST',
-          cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(orderRequestBody)
-        });
+        let response = null;
+        let result = {};
+        let networkError = false;
 
-        result = await response.json().catch(() => ({}));
-      } catch (fetchErr) {
-        networkError = true;
-      }
-
-      const retryAfterHeader = response && response.headers ? response.headers.get('Retry-After') : null;
-      const outcome = flow
-        ? flow.classifyCreateOrderOutcome({
-            ok: Boolean(response && response.ok),
-            status: response ? response.status : 0,
-            result,
-            networkError,
-            retryAfter: retryAfterHeader
-          })
-        : {
-            action: (response && response.ok && result && result.success && result.invoiceAccessToken) ? 'SUCCESS_REDIRECT' : 'ERROR_KEEP_STATE',
-            clearCart: Boolean(response && response.ok && result && result.success && result.invoiceAccessToken),
-            clearAttempt: Boolean(response && response.ok && result && result.success && result.invoiceAccessToken),
-            resetTurnstile: !(response && response.ok && result && result.success && result.invoiceAccessToken),
-            redirectUrl: result && result.invoiceAccessToken ? '/invoice#access=' + encodeURIComponent(result.invoiceAccessToken) : '',
-            invoiceCode: result && result.invoiceCode ? result.invoiceCode : '',
-            message: (result && result.message) || 'حدث خطأ أثناء معالجة الطلب.'
+        try {
+          const orderRequestBody = {
+            ...attemptStatusPayload,
+            turnstileToken
           };
 
-      if (outcome.action === 'SUCCESS_REDIRECT') {
-        if (flow) {
-          flow.clearCheckoutAttemptState(window.sessionStorage);
-          if (outcome.invoiceCode) {
-            flow.saveRecentLookupCode(window.localStorage, outcome.invoiceCode);
+          response = await fetch('/api/create-order', {
+            method: 'POST',
+            cache: 'no-store',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderRequestBody)
+          });
+
+          result = await response.json().catch(() => ({}));
+        } catch (fetchErr) {
+          networkError = true;
+        }
+
+        const retryAfterHeader = response && response.headers ? response.headers.get('Retry-After') : null;
+        const outcome = flow
+          ? flow.classifyCreateOrderOutcome({
+              ok: Boolean(response && response.ok),
+              status: response ? response.status : 0,
+              result,
+              networkError,
+              retryAfter: retryAfterHeader
+            })
+          : {
+              action: (response && response.ok && result && result.success && result.invoiceAccessToken) ? 'SUCCESS_REDIRECT' : 'ERROR_KEEP_STATE',
+              clearCart: Boolean(response && response.ok && result && result.success && result.invoiceAccessToken),
+              clearAttempt: Boolean(response && response.ok && result && result.success && result.invoiceAccessToken),
+              resetTurnstile: !(response && response.ok && result && result.success && result.invoiceAccessToken),
+              redirectUrl: result && result.invoiceAccessToken ? '/invoice#access=' + encodeURIComponent(result.invoiceAccessToken) : '',
+              invoiceCode: result && result.invoiceCode ? result.invoiceCode : '',
+              message: (result && result.message) || 'حدث خطأ أثناء معالجة الطلب.'
+            };
+
+        if (outcome.action === 'SUCCESS_REDIRECT') {
+          if (flow) {
+            flow.clearCheckoutAttemptState(window.sessionStorage);
+            if (outcome.invoiceCode) {
+              flow.saveRecentLookupCode(window.localStorage, outcome.invoiceCode);
+            }
+          }
+          clearStoredCouponCode();
+          activeCouponState = null;
+          pendingCouponCode = null;
+          localStorage.removeItem('cart');
+          window.location.href = outcome.redirectUrl;
+          return;
+        }
+
+        // Bounded non-duplicating reconciliation poll on 409 ORDER_IN_PROGRESS or network/504 drop
+        if (outcome.action === 'ORDER_IN_PROGRESS' || networkError || (response && response.status >= 502)) {
+          const maxPolls = outcome.action === 'ORDER_IN_PROGRESS' ? 3 : 1;
+          const retryDelayMs = Math.min(Math.max(Number(retryAfterHeader) || 2, 1), 3) * 1000;
+          if (savingTextLoader) {
+            savingTextLoader.innerHTML = '<span style="color:#92400e; font-weight:700;"><i class="fas fa-sync fa-spin"></i> جاري التحقق من إتمام الطلب بأمان دون تكرار...</span>';
+          }
+          for (let p = 0; p < maxPolls; p++) {
+            await waitCheckoutDelay(p === 0 ? 1200 : retryDelayMs);
+            const statusCheck = await checkOrderAttemptStatusWithServer(attemptStatusPayload);
+            if (!statusCheck || !statusCheck.data) break;
+            if (statusCheck.data.state === 'COMPLETED' && finalizeSuccessfulOrderRedirect(flow, statusCheck.data)) {
+              return;
+            }
+            if (statusCheck.data.state === 'SAFE_TO_RESET') {
+              orderInProgressRetryCount = 0;
+              lastInProgressRequestId = '';
+              resetTurnstileWidgetSafely();
+              showCheckoutBanner(
+                'لم يكتمل تنفيذ المحاولة السابقة؛ تم الحفاظ على سلتكِ ويمكنكِ إعادة التحقق الأمني وتأكيد الطلب الآن.',
+                'warning',
+                { showNewAttemptAction: false }
+              );
+              restoreSubmitBtn();
+              if (savingTextLoader) {
+                savingTextLoader.innerHTML = '<i class="fas fa-info-circle" style="color:#92400e;"></i> سلتكِ محفوظة؛ يرجى إعادة تأكيد الطلب.';
+              }
+              return;
+            }
+            if (statusCheck.data.state !== 'IN_PROGRESS') {
+              break;
+            }
           }
         }
-        clearStoredCouponCode();
-        activeCouponState = null;
-        pendingCouponCode = null;
-        localStorage.removeItem('cart');
-        window.location.href = outcome.redirectUrl;
-        return;
-      }
 
-      // If final submission rejected coupon, clear applied coupon state so stale discount is never shown
-      const serverErrCode = result && typeof result.error === 'string' ? result.error : '';
-      if (
-        appliedCouponCode &&
-        (serverErrCode.startsWith('COUPON_') ||
-          serverErrCode === 'PINK_FRIDAY_NOT_COMBINABLE' ||
-          serverErrCode === 'NO_ELIGIBLE_CATEGORY_ITEMS' ||
-          serverErrCode === 'EMPTY_ELIGIBLE_SUBTOTAL' ||
-          serverErrCode === 'MINIMUM_SUBTOTAL_NOT_MET' ||
-          serverErrCode === 'INVALID_COUPON_TOTAL')
-      ) {
-        activeCouponState = null;
-        pendingCouponCode = null;
-        clearStoredCouponCode();
-        renderCouponUiState({
-          loading: false,
-          preserveInput: true,
-          feedbackType: 'error',
-          feedbackMessage: outcome.message
-        });
-        syncAllShippingAndOrderSummaries();
-      }
+        // If final submission rejected coupon, clear applied coupon state so stale discount is never shown
+        const serverErrCode = result && typeof result.error === 'string' ? result.error : '';
+        if (
+          appliedCouponCode &&
+          (serverErrCode.startsWith('COUPON_') ||
+            serverErrCode === 'PINK_FRIDAY_NOT_COMBINABLE' ||
+            serverErrCode === 'NO_ELIGIBLE_CATEGORY_ITEMS' ||
+            serverErrCode === 'EMPTY_ELIGIBLE_SUBTOTAL' ||
+            serverErrCode === 'MINIMUM_SUBTOTAL_NOT_MET' ||
+            serverErrCode === 'INVALID_COUPON_TOTAL')
+        ) {
+          activeCouponState = null;
+          pendingCouponCode = null;
+          clearStoredCouponCode();
+          renderCouponUiState({
+            loading: false,
+            preserveInput: true,
+            feedbackType: 'error',
+            feedbackMessage: outcome.message
+          });
+          syncAllShippingAndOrderSummaries();
+        }
 
-      // Any non-redirect outcome: NEVER clear cart, NEVER auto-retry silently, reset one-time Turnstile token
-      if (outcome.resetTurnstile) {
-        resetTurnstileWidgetSafely();
-      }
+        // Any non-redirect outcome: NEVER clear cart, NEVER auto-retry silently, reset one-time Turnstile token
+        if (outcome.resetTurnstile) {
+          resetTurnstileWidgetSafely();
+        }
 
-      let showNewAttemptAction = Boolean(outcome.requireNewAttempt);
-      if (outcome.action === 'ORDER_IN_PROGRESS') {
-        if (lastInProgressRequestId !== clientRequestId) {
-          lastInProgressRequestId = clientRequestId;
-          orderInProgressRetryCount = 1;
+        let showNewAttemptAction = Boolean(outcome.requireNewAttempt);
+        if (outcome.action === 'ORDER_IN_PROGRESS') {
+          if (lastInProgressRequestId !== clientRequestId) {
+            lastInProgressRequestId = clientRequestId;
+            orderInProgressRetryCount = 1;
+          } else {
+            orderInProgressRetryCount += 1;
+          }
+          if (orderInProgressRetryCount >= 2) {
+            showNewAttemptAction = true;
+          }
         } else {
-          orderInProgressRetryCount += 1;
+          orderInProgressRetryCount = 0;
+          lastInProgressRequestId = '';
         }
-        if (orderInProgressRetryCount >= 2) {
-          showNewAttemptAction = true;
+
+        const tone =
+          outcome.action === 'ORDER_IN_PROGRESS' ||
+          outcome.action === 'RATE_LIMITED_KEEP_ID' ||
+          outcome.action === 'CAPTCHA_FAILED_KEEP_ID'
+            ? 'warning'
+            : 'error';
+
+        showCheckoutBanner(outcome.message, tone, { showNewAttemptAction });
+        restoreSubmitBtn();
+        if (savingTextLoader) {
+          savingTextLoader.innerHTML =
+            '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> لم يتم استلام تأكيد نهائي للطلب بعد؛ سلتكِ محفوظة كما هي.';
         }
-      } else {
-        orderInProgressRetryCount = 0;
-        lastInProgressRequestId = '';
+      } catch (_) {
+        restoreSubmitBtn();
       }
-
-      const tone =
-        outcome.action === 'ORDER_IN_PROGRESS' ||
-        outcome.action === 'RATE_LIMITED_KEEP_ID' ||
-        outcome.action === 'CAPTCHA_FAILED_KEEP_ID'
-          ? 'warning'
-          : 'error';
-
-      showCheckoutBanner(outcome.message, tone, { showNewAttemptAction });
-      restoreSubmitBtn();
-      savingTextLoader.innerHTML =
-        '<i class="fas fa-exclamation-circle" style="color:var(--color-danger);"></i> لم يتم استلام تأكيد نهائي للطلب بعد؛ سلتكِ محفوظة كما هي.';
     };
 
     renderStep1CartItems();
