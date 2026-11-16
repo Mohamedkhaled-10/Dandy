@@ -1,0 +1,1003 @@
+# DANDY — Comprehensive Transactional Email, Secure Invoice Access & Order Lifecycle Upgrade
+
+## Project Context
+
+You are working directly inside the existing DANDY e-commerce repository.
+
+Your task is to perform a comprehensive reliability, security, customer-experience, and email-deliverability upgrade to the existing order notification system.
+
+This is an enhancement of a working system, not a complete rewrite.
+
+The store currently uses:
+
+- Astro
+- Vanilla JavaScript
+- Firebase Realtime Database
+- Firebase Admin SDK
+- Vercel
+- Google Apps Script Mail Relay
+- Gmail `MailApp`
+
+The current sender account is:
+
+`dandybeauty4@gmail.com`
+
+The existing email architecture is:
+
+`DANDY Vercel Server → Firebase Realtime Database → HMAC-SHA256 → Google Apps Script → MailApp → Customer Email`
+
+The Apps Script integration is already operational. The owner has successfully received diagnostic emails, including the redesigned invoice and all four remaining status templates.
+
+The current production email feature flag has already been enabled by the owner. Preserve its current production value. Do not change it automatically.
+
+The owner has reported the following new issues:
+
+1. The initial invoice/confirmation email does not reliably send automatically when a customer places a new order. The administrator has to open the dashboard and manually retry the first email.
+2. Subsequent status-update emails are sent automatically, but the browser sometimes reports:
+   `ReferenceError: renderOrders is not defined`
+3. Historical orders created before Gmail Relay activation do not have actual notification records, causing misleading `pending` indicators and failed manual retry attempts.
+4. The owner wants customers to open their invoice and track the order directly from the email without manually entering an invoice code or phone number.
+5. Some DANDY transactional emails arrive in Gmail Spam.
+6. The owner wants a discreet and reassuring Spam-folder notice on the successful purchase/invoice page.
+
+The owner also wants the current premium DANDY email experience preserved and improved.
+
+---
+
+# PHASE 1 — AUDIT THE ACTUAL CURRENT IMPLEMENTATION
+
+Before modifying anything, inspect the actual current working tree.
+
+Do not assume that previous implementation reports exactly match the current source.
+
+Inspect at minimum:
+
+### Order creation and email
+
+- `src/pages/api/create-order.js`
+- `src/utils/email-service.ts`
+- `google-apps-script/Code.gs`
+- `google-apps-script/appsscript.json`
+- `google-apps-script/README.md`
+- `scripts/generate-relay-secret.cjs`
+- `.env.example`
+
+### Order management and invoice
+
+- `src/pages/api/order-status.js`
+- `src/pages/dashboard-order.astro`
+- `src/pages/invoice.astro`
+- `src/pages/track-order.astro`
+- Existing checkout and order-success redirect code
+- Any existing shared invoice utilities or components
+
+### Security and deployment
+
+- `firebase/database.rules.json`
+- Firebase Admin initialization
+- Existing rate-limiting utilities
+- `vercel.json`
+- `astro.config.mjs`
+- `.gitignore`
+- Existing tests, especially `test/email-relay.test.mjs` and order-submission tests
+
+### Deliver an audit before implementation
+
+Identify:
+
+- Why initial confirmation emails are not reliably completed.
+- Whether the initial send Promise is awaited.
+- How and when the Firebase outbox record is created.
+- How order creation handles a failed or timed-out email.
+- Why `renderOrders` is undefined.
+- How historical order notification states are determined.
+- How the invoice page currently resolves order IDs and invoice codes.
+- How the tracking page validates invoice codes and phone numbers.
+- The exact current Firebase read/write rules.
+- Whether any third-party scripts or analytics can receive an invoice access token.
+- How Make/Brevo email suppression currently works.
+
+Do not stop after the audit. Continue with the implementation.
+
+---
+
+# PHASE 2 — FIX AUTOMATIC INITIAL ORDER CONFIRMATION EMAILS
+
+## 2.1 Observed problem
+
+When a customer creates a new order:
+
+- Firebase saves the order successfully.
+- The initial confirmation/invoice email does not reliably complete automatically.
+- The administrator often has to open the dashboard and manually retry the first email.
+- Subsequent status-change notifications are normally sent automatically.
+
+### Suspected current issue
+
+The existing `src/pages/api/create-order.js` appears to initiate the initial notification using a fire-and-forget Promise resembling:
+
+```js
+sendOrderNotification({
+  order: orderData,
+  orderId,
+  eventType: 'ORDER_CONFIRMATION'
+}).catch(mailErr => {
+  console.error('Order confirmation email failed:', mailErr);
+});
+```
+
+This does not await completion before returning the successful order-creation response.
+
+In a Vercel serverless environment, relying on an unawaited Promise after the response has returned is unsafe.
+
+Inspect the actual current implementation and confirm the root cause before changing it.
+
+## 2.2 Required behavior
+
+For every eligible new order with a valid email:
+
+1. Validate the order normally.
+2. Calculate prices using the existing trusted server-side pricing logic.
+3. Save the order to Firebase successfully.
+4. Generate or retrieve its private invoice-access token.
+5. Create the initial confirmation notification in the Firebase outbox.
+6. Persist the outbox record before attempting external email delivery.
+7. If Gmail notifications are enabled, await the immediate email dispatch attempt.
+8. Use the existing bounded timeout in the relay transport.
+9. Persist the actual notification result to:
+   - `notifications_outbox/{notificationId}`
+   - `orders/{orderId}/latestNotification`
+10. Return the normal successful checkout response regardless of a mail-delivery failure, provided the order itself was saved successfully.
+
+The initial confirmation must be attempted automatically. The owner must never need to enter the dashboard and press Retry for the first attempt of every new order.
+
+## 2.3 Reliability requirements
+
+- Do not allow a missing or invalid customer email to fail order creation.
+- Do not allow an unavailable Google Apps Script relay to fail order creation.
+- Do not block checkout indefinitely.
+- Do not launch an unawaited Promise and assume Vercel will finish it after returning the response.
+- Use an explicit, bounded network timeout.
+- Persist the initial outbox record before dispatch.
+- Persist the outcome before returning when possible.
+- Preserve `pending`, `failed`, `unknown`, `accepted_by_mailapp`, and `skipped_no_valid_email` semantics.
+- Treat network timeouts as ambiguous when the message may already have been accepted.
+- Do not blindly resend ambiguous notifications.
+- Do not create duplicate confirmation notifications for the same order.
+- Reuse the existing deterministic notification ID:
+  `notif_order_{orderId}_confirmation`
+- Respect Apps Script deduplication and existing Firebase transaction/claim logic.
+- Ensure repeated API requests cannot send the invoice twice.
+
+If an invoice-access token cannot be generated or persisted, do not send an email with a broken direct invoice link. Keep the order saved and the notification in an explicit safe pending/failure state that can be recovered by the administrator.
+
+## 2.4 Preserve all existing order functionality
+
+The following must remain unchanged:
+
+- Turnstile verification
+- Rate limiting
+- Server-side price validation
+- Pink Friday campaign pricing
+- Collection and bundle logic
+- Shipping calculation
+- Free-shipping threshold (`subtotal > 2000`)
+- Stock deduction
+- Low-stock Telegram alerts
+- New-order Telegram alerts
+- Existing invoice data
+- Existing customer data
+- Existing order creation response contract where possible
+
+The only intended change is making the initial email dispatch reliable and automatically attempted.
+
+---
+
+# PHASE 3 — FIX THE DASHBOARD `renderOrders` REFERENCE ERROR
+
+## 3.1 Observed error
+
+The owner reports this browser console error after an order status update:
+
+```text
+Status Update Error:
+ReferenceError: renderOrders is not defined
+    at window.changeOrderStatus
+```
+
+The email may already have been sent and the order status may already have been committed server-side before this browser-side error happens.
+
+This can make the administrator believe the update failed even when the backend operation succeeded.
+
+## 3.2 Audit actual rendering logic
+
+Inspect `src/pages/dashboard-order.astro`.
+
+Find:
+
+- The actual table-rendering function.
+- Its declaration and lexical scope.
+- All references to `renderOrders()`.
+- Individual status update logic.
+- Bulk status update logic.
+- The details modal and notification card.
+- The page initialization and event listener lifecycle.
+
+Do not invent a second rendering function if a suitable one already exists.
+
+## 3.3 Required correction
+
+- Replace all undefined rendering references with the actual existing rendering function or a safe row-update method.
+- Preserve filters, search, sorting, pagination, bulk selection, status dropdowns, and responsive behavior.
+- Preserve the server-authoritative status update flow through `/api/order-status`.
+- Never reintroduce direct browser Firebase status writes.
+- After a successful server response, update the local order model using the server-confirmed result.
+- Ensure the table reflects the persisted status.
+- Ensure notification status updates are reflected correctly.
+- Do not revert a successfully committed status because of a frontend rendering issue.
+
+### Separate backend and frontend errors
+
+Restructure the flow so a UI rendering exception cannot be misclassified as a failed server request.
+
+The code must distinguish:
+
+1. API request failed before a successful response.
+2. API request succeeded and the server committed the status.
+3. UI refresh/render failed after the successful API operation.
+
+When the backend succeeded but the UI rendering failed:
+
+- Do not claim the server update was rolled back.
+- Do not show the generic "status update failed" alert.
+- Record a UI-specific console diagnostic.
+- Refresh the order list safely or update the affected row.
+- Keep the server-confirmed status.
+
+Test both individual and bulk status updates.
+
+---
+
+# PHASE 4 — HANDLE HISTORICAL ORDERS WITHOUT NOTIFICATION RECORDS
+
+## 4.1 Confirmed issue
+
+Historical orders created before Gmail Relay activation may contain a valid customer email but have no record in:
+
+`notifications_outbox`
+
+The current dashboard may display `pending` simply because an email exists.
+
+It may also fabricate the following fallback notification ID:
+
+`notif_order_${orderId}_confirmation`
+
+The existing retry endpoint then searches for a real outbox record and returns `NOTIFICATION_NOT_FOUND`.
+
+This is misleading.
+
+## 4.2 Correct dashboard states
+
+In `src/pages/dashboard-order.astro`:
+
+- If a real `latestNotification` or outbox record exists, display its actual status.
+- If a valid email exists but no notification record exists, show:
+
+  `لم يُسجل إرسال إشعار سابق`
+
+- If no valid email exists, show:
+
+  `بدون بريد إلكتروني صالح`
+
+- Never infer `pending` merely because an email address exists.
+- Never fabricate an outbox notification ID.
+- Only show the ordinary Retry button for a real notification record.
+- Distinguish historical orders without prior notification history from genuine queued messages.
+
+## 4.3 Add a separate manual action for historical orders
+
+Implement a new protected action:
+
+`SEND_CURRENT_STATUS_NOTIFICATION`
+
+Show a separate button in the order details modal:
+
+`إرسال تحديث الحالة الحالية`
+
+When clicked:
+
+1. Show a clear confirmation dialog explaining that an email will be sent to the saved customer email describing the order's current status.
+2. Authenticate the admin using Firebase ID token verification.
+3. Confirm the authenticated email is exactly `admin@dandy.com`.
+4. Fetch the actual order from Firebase using Firebase Admin.
+5. Validate the stored email.
+6. Read the actual saved order status.
+7. Normalize it to one of the existing five statuses.
+8. Generate or retrieve the order's secure invoice-access token.
+9. Use the existing production email template matching the current status.
+10. Create a real Firebase outbox record before dispatch.
+11. Dispatch through the same Gmail Relay pipeline.
+12. Update `orders/{orderId}/latestNotification`.
+13. Display the real resulting notification state and ID.
+
+Examples:
+
+| Current saved status | Email sent |
+|---|---|
+| جديد | Confirmation and invoice |
+| قيد التجهيز | Preparation update |
+| تم الشحن | Shipped update |
+| تم التوصيل | Delivered update |
+| ملغي | Cancellation update |
+
+Do not invent status transitions.
+
+Do not change:
+- Order status
+- Order timestamps
+- Product stock
+- Invoice totals
+- Shipping fee
+- Customer details
+- Existing order history
+
+Do not invoke Telegram, Make, Brevo, or unrelated integrations.
+
+## 4.4 Legacy idempotency
+
+- Use a deterministic notification ID based on order ID, event type, and current canonical status.
+- Prevent duplicate clicks and concurrent sends.
+- Reuse an existing matching record where appropriate.
+- Block repeat sending when Apps Script has already accepted the same notification ID.
+- Respect the existing `processing`, `accepted_by_mailapp`, and `unknown` states.
+- Never blindly retry an ambiguous notification.
+- Preserve attempt count, timestamps, and sanitized errors.
+
+Historical-order emails must only be sent after an explicit administrator action. Do not bulk-email old customers automatically.
+
+---
+
+# PHASE 5 — SECURE DIRECT INVOICE ACCESS FOR CUSTOMERS
+
+## 5.1 Current customer experience problem
+
+The current email uses a tracking link resembling:
+
+`/track-order?code={invoiceCode}`
+
+However, `track-order.astro` requires BOTH the invoice code and customer phone number to retrieve a matching order.
+
+The owner wants a one-click experience:
+
+- Customer clicks the invoice button in the email.
+- Their own invoice opens immediately.
+- The current order status is visible.
+- The customer does not have to enter an invoice code.
+- The customer does not have to enter a phone number.
+- The customer does not have to search manually.
+
+The existing `src/pages/invoice.astro` supports legacy `id` and `invoice` query parameters. Inspect its behavior and current Firebase access rules before changing it.
+
+## 5.2 Do not expose raw Firebase order IDs as authorization
+
+Inspect `firebase/database.rules.json`.
+
+The current order read rules may allow public queries or access by order identifier. Do not assume that a raw Firebase order ID is a secure bearer credential.
+
+New transactional invoice emails must use a private, high-entropy, per-order access token.
+
+## 5.3 Token generation
+
+For each order, generate a cryptographically secure token containing at least 256 bits of randomness.
+
+Use Node.js `crypto.randomBytes(32)` or an equally secure method.
+
+Encode it using Base64URL.
+
+Calculate a SHA-256 hash of the token.
+
+### Private storage
+
+Use private Firebase Realtime Database nodes accessible only through Firebase Admin.
+
+Suggested structure:
+
+`privateOrderAccess/{orderId}`
+
+Contains the private server-side access record, such as:
+
+- Raw token or securely encrypted token
+- Token hash
+- Created timestamp
+- Active/revoked state
+
+`privateInvoiceAccess/{tokenHash}`
+
+Contains a private mapping to:
+
+- Order ID
+- Access state
+- Creation timestamp
+
+These nodes must be denied to all Firebase client reads and writes through explicit restrictive RTDB rules.
+
+Firebase Admin server-side access must continue to work.
+
+Never store the raw access token inside:
+
+- Public order records
+- `notifications_outbox`
+- Dashboard HTML
+- Browser JavaScript
+- Analytics events
+- Logs
+- Error responses
+- Third-party URLs or image requests
+
+The server must be able to retrieve the token securely when generating later status-update emails.
+
+If raw token storage is used in the private node, ensure only Firebase Admin has access. If encrypted token storage is used, keep the encryption key in a Vercel server-only environment variable and document the setup.
+
+Use atomic creation or a Firebase transaction to prevent multiple simultaneous token generations for the same order.
+
+## 5.4 Generate and reuse the token
+
+For new orders:
+
+1. Save the order and obtain its Firebase order ID.
+2. Generate the access token.
+3. Persist the private token record and hash mapping.
+4. Make the token available to the server-side initial email template.
+5. Send the initial email with the direct invoice link.
+
+For subsequent status notifications:
+
+- Retrieve the same token through Firebase Admin.
+- Reuse the same invoice URL.
+- Never generate a new token on every status update unless the previous one was explicitly revoked.
+
+For historical orders:
+
+- Generate the token only during the administrator's explicit `SEND_CURRENT_STATUS_NOTIFICATION` action if none exists.
+- Do not generate tokens or send emails merely when an administrator opens the dashboard.
+
+## 5.5 Use URL fragments to reduce access-token leakage
+
+Prefer a direct invoice URL using the URL fragment:
+
+`https://dandy-ebon.vercel.app/invoice#access={opaqueToken}`
+
+The browser fragment is not sent to the server in the initial HTTP request.
+
+The invoice page should:
+
+1. Read the token from `window.location.hash`.
+2. Keep it in memory or a carefully scoped same-origin session mechanism.
+3. Immediately remove the token from the visible browser URL using `history.replaceState` after securely capturing it.
+4. Submit the token to the public invoice API in the POST body.
+5. Never include the token in a GET query string or external request.
+6. Never send the token to analytics or third-party scripts.
+
+If using session storage to support refreshes, document the trade-off and clear the token when the invoice session ends. Prefer the safest practical method.
+
+For token-bearing invoice pages:
+
+- Set `Referrer-Policy: no-referrer`.
+- Use `Cache-Control: no-store` on sensitive API responses.
+- Avoid third-party scripts, analytics, remote images, or external assets receiving the token.
+- Sanitize the URL before any analytics or external code can inspect it.
+- Do not include access tokens in `DandyMeta`, Meta Pixel events, URLs sent to external services, or console logs.
+
+## 5.6 Create a secure public invoice API
+
+Create a read-only public server endpoint, for example:
+
+`POST /api/public-invoice`
+
+The customer-facing invoice page sends the access token in the POST JSON body.
+
+The endpoint must:
+
+1. Validate token format and expected length.
+2. Calculate its SHA-256 hash.
+3. Look up the token mapping using Firebase Admin.
+4. Reject invalid, malformed, revoked, or missing tokens.
+5. Fetch only the corresponding order using Firebase Admin.
+6. Return a strict whitelist of invoice fields required by the customer page.
+7. Never return internal admin metadata, Firebase credentials, private tokens, or unrelated customer records.
+8. Set `Cache-Control: no-store, private`.
+9. Apply sensible rate limiting using existing infrastructure where appropriate.
+10. Return generic safe errors without revealing whether an order ID exists.
+11. Avoid logging tokens or private invoice payloads.
+12. Do not introduce a new paid API or service.
+
+Do not require customer Firebase login for this unguessable bearer-token invoice access flow.
+
+The token itself is the authorization credential. Treat it as sensitive.
+
+## 5.7 Update `src/pages/invoice.astro`
+
+When the page opens with a secure fragment token:
+
+- Automatically load the correct invoice from `/api/public-invoice`.
+- Display invoice number and date.
+- Display product rows, quantities, variants, bundles, and prices.
+- Display correct subtotal, discounts, shipping, and final amount.
+- Display COD wording only where the actual order's payment model supports it.
+- Display current status.
+- Display a tracking timeline for the existing five statuses.
+- Show delivery details required for the customer's invoice.
+- Preserve print and existing WhatsApp support features where appropriate.
+- Display a clear error state for invalid or revoked access.
+- Do not ask for invoice code or phone number.
+
+Preserve existing legacy invoice routes where needed for backward compatibility with checkout redirects and old email links.
+
+New emails must use the secure direct access URL.
+
+Do not weaken Firebase security rules to make the new flow work.
+
+---
+
+# PHASE 6 — UPDATE ALL TRANSACTIONAL EMAIL LINKS AND TEMPLATES
+
+The primary action in every real customer transactional email must become:
+
+`عرض فاتورتك وتتبع طلبك`
+
+Use the secure direct invoice URL:
+
+`https://dandy-ebon.vercel.app/invoice#access={opaqueToken}`
+
+The link must open the customer's specific invoice and current order status immediately.
+
+Apply this to:
+
+- Initial order confirmation and invoice email
+- قيد التجهيز
+- تم الشحن
+- تم التوصيل
+- ملغي
+- Historical-order current-status email
+
+The full URL must also appear in the plain-text email alternative.
+
+Do not use raw Firebase IDs or manually entered invoice-code links in new customer emails.
+
+Do not generate synthetic diagnostic access links for nonexistent orders.
+
+For diagnostic emails, either omit the direct invoice CTA or clearly identify it as a demonstration-only preview.
+
+Preserve the existing premium DANDY email identity and financial accuracy.
+
+---
+
+# PHASE 7 — CUSTOMER-FACING SPAM FOLDER NOTICE
+
+## 7.1 Requested behavior
+
+The owner wants a short and reassuring message on the successful purchase/invoice page explaining that DANDY transactional emails may sometimes arrive in Gmail's Spam folder.
+
+The message must help customers locate legitimate order emails and understand how to mark them as "Not spam" after verifying the sender.
+
+## 7.2 Placement
+
+Inspect the actual successful checkout redirect and `src/pages/invoice.astro`.
+
+Place the notice:
+
+- Immediately after the successful order-confirmation hero/header.
+- Before the main invoice details or product table.
+- Clearly separated from the invoice financial summary.
+- Visible on mobile without requiring scrolling through the entire invoice.
+- Integrated into the existing Modern Premium DANDY aesthetic.
+
+Do not create a popup, modal, blocking alert, or browser notification.
+
+Keep the notice compact and non-intrusive on later visits to the invoice page.
+
+## 7.3 Exact Arabic copy
+
+Heading:
+
+`تنبيه بخصوص تحديثات طلبك`
+
+Body:
+
+`قد تصل رسائل تأكيد الطلب وتحديثات الشحن من DANDY إلى مجلد الرسائل غير المرغوب فيها (Spam) في Gmail.`
+
+`إذا وجدت رسالة متوقعة من عنواننا الرسمي dandybeauty4@gmail.com، وبعد التأكد من عنوان المرسل، يمكنك اختيار «ليست رسالة غير مرغوب فيها» (Not spam)، ليسهل عليك العثور على تحديثات طلبك القادمة في صندوق الوارد.`
+
+### Design requirements
+
+Use:
+
+- Soft blush or warm neutral background.
+- Subtle premium border.
+- Small mail/check icon using the existing icon library.
+- Existing DANDY typography and color tokens.
+- Readable Arabic typography.
+- Comfortable spacing.
+- Responsive layout.
+- Accessible color contrast.
+
+Do not use a red danger alert or wording that suggests the store is unsafe.
+
+Display the sender address exactly:
+
+`dandybeauty4@gmail.com`
+
+The wording must tell customers to verify the sender before marking a message as Not spam.
+
+Do not claim that DANDY controls Gmail filtering or can guarantee future Inbox placement.
+
+The Spam notice belongs on the customer invoice/confirmation page, not in every transactional email.
+
+---
+
+# PHASE 8 — EMAIL DELIVERABILITY: REDUCE SPAM CLASSIFICATION HONESTLY
+
+The owner currently uses a free personal Gmail sender without a custom DANDY domain.
+
+Do not require purchasing a custom domain or paying for Google Workspace in this task.
+
+Do not promise guaranteed Inbox placement.
+
+Do not impersonate a domain or spoof sender identity.
+
+## 8.1 Audit the existing message construction
+
+Inspect the real Apps Script `MailApp.sendEmail` options and the Vercel email templates.
+
+Verify:
+
+- Sender display name is consistently `DANDY`.
+- Reply-To is the actual sender account where appropriate.
+- From identity is not spoofed.
+- Subject lines are accurate, concise, and status-specific.
+- HTML is clean and standards-compatible.
+- Plain-text alternative is complete.
+- Links use HTTPS and valid DANDY destinations.
+- No URL shorteners are used.
+- No broken or misleading redirects are included.
+- No unnecessary remote emoji image URLs remain.
+- No open-tracking pixels have been added.
+- No unnecessary external resources are loaded.
+- No hidden text or spam-filter manipulation exists.
+
+Do not add unsupported custom headers or unsupported From-address fields to `MailApp`.
+
+Do not set `noReply: true` for this personal Gmail account unless the actual Apps Script API and account support it; do not assume this option is available for ordinary Gmail senders.
+
+## 8.2 Keep transactional messages strictly transactional
+
+Do not mix invoice and order status emails with unrelated promotional content.
+
+Inspect the current delivered-status email, including its review/WhatsApp solicitation.
+
+Remove promotional or review-request language from the transactional delivery notification. Keep a genuine customer-support contact link where appropriate, but do not turn the status message into a marketing campaign.
+
+Use concise subjects and relevant content only.
+
+Preserve the premium design, readable layout, genuine logo, and complete plain-text alternative.
+
+## 8.3 Gmail message-header diagnostics
+
+The application must not request mailbox-reading permission.
+
+Do not add Gmail inbox access.
+
+Add owner-facing documentation explaining how to inspect the authentication results of a real received message manually:
+
+1. Open a DANDY email in Gmail, including Spam if applicable.
+2. Open the message's three-dot menu.
+3. Choose "Show original".
+4. Inspect:
+   - SPF
+   - DKIM
+   - DMARC
+   - From
+   - Reply-To
+   - Return-Path
+   - Message-ID
+   - Subject
+   - Link destinations
+
+Explain how to interpret PASS, FAIL, and missing authentication results.
+
+The owner may share only the non-sensitive authentication result lines for analysis. Do not request message body, customer information, credentials, or private email data.
+
+## 8.4 Honest limitations of free Gmail
+
+Document explicitly:
+
+- The owner does not control the DNS records for `gmail.com`.
+- The owner cannot publish custom SPF, DKIM, or DMARC records for Google's shared Gmail domain.
+- Google manages authentication for its Gmail sending infrastructure.
+- MailApp accepting the send request does not prove Inbox delivery.
+- The application cannot force other Gmail users to classify messages as Inbox.
+- A future custom DANDY domain with properly configured SPF, DKIM, and DMARC would provide more control over branded email identity and long-term deliverability, but is not required for this current free setup.
+
+For the owner's own Gmail account, document the safe steps:
+
+- Open a legitimate DANDY message in Spam.
+- Verify the sender address.
+- Select "Not spam".
+- Add `dandybeauty4@gmail.com` to Google Contacts.
+- Optionally create a personal filter for that sender.
+
+Explain that a personal Gmail filter affects only the owner's account and does not control other customers' accounts.
+
+---
+
+# PHASE 9 — PRESERVE THE PREMIUM EMAIL DESIGN
+
+The existing DANDY email design has already been redesigned into a Modern Premium Beauty / Minimal Luxury style.
+
+Preserve the successful design and refine it only where required by the direct invoice action or deliverability improvements.
+
+Maintain:
+
+- Official DANDY logo.
+- Text wordmark fallback.
+- Existing brand tagline.
+- Warm off-white/blush background.
+- White invoice card.
+- Dark readable typography.
+- Premium pink accents.
+- 600px maximum email width.
+- Fluid, responsive table-based HTML.
+- Inline CSS.
+- Arabic RTL structure.
+- Product thumbnails with safe fallbacks.
+- Correct collection/bundle breakdown.
+- Discounted and original price presentation.
+- Accurate EGP formatting.
+- Clear financial summary.
+- COD wording only when appropriate.
+- Complete plain-text alternative.
+- Email-safe layout for Gmail and Outlook.
+
+Remove decorative remote emoji images.
+
+Avoid excessive emojis and unnecessary decorative elements.
+
+Status update messages should remain shorter than the initial invoice.
+
+Preserve all existing five statuses and their established Arabic copy.
+
+Do not add "خارج للتوصيل" or any other new status.
+
+---
+
+# PHASE 10 — FIREBASE SECURITY AND DATA INTEGRITY
+
+For all new private token paths:
+
+- Add explicit restrictive Firebase Realtime Database rules.
+- Deny browser client reads and writes.
+- Use Firebase Admin for the server operations.
+- Do not weaken existing `orders` rules to make token access work.
+- Do not accidentally remove existing customer/admin permissions.
+- Preserve existing indexes.
+- Preserve existing data schema unless a documented addition is essential.
+
+All order status changes must continue to use the protected server endpoint.
+
+Never restore client-side Firebase write fallbacks.
+
+Never place private tokens in public database records.
+
+Never expose tokens in analytics events, logs, or third-party requests.
+
+All order financial amounts must remain based on the existing saved server-calculated values.
+
+Do not recalculate historical order shipping from today's shipping rates when the actual saved `shippingFee` exists.
+
+---
+
+# PHASE 11 — MAKE/BREVO MIGRATION SAFETY
+
+The owner has deactivated the Make scenario during migration.
+
+Keep it deactivated.
+
+Preserve existing Make webhook integration flags and unrelated automation data if still present.
+
+Do not activate Make or Brevo.
+
+Do not delete Make webhook credentials.
+
+Ensure a new order cannot trigger duplicate invoice emails from both Gmail Relay and Brevo.
+
+Preserve the current email-suppression logic:
+
+- When Gmail Relay is active, Make/Brevo must not send a duplicate invoice.
+- Preserve unrelated integrations only if they remain intentionally configured.
+- Do not assume adding payload flags alone disables a Make action; the actual scenario remains deactivated by the owner.
+
+Do not reactivate or delete any external scenario automatically.
+
+---
+
+# PHASE 12 — TESTING REQUIREMENTS
+
+Use synthetic data and mocked email transport for automated tests.
+
+Never send automated tests to actual customers.
+
+Do not create actual orders or deduct real stock during diagnostics.
+
+## 12.1 Initial order email tests
+
+Verify:
+
+- New order with a valid email triggers an immediate awaited dispatch attempt.
+- Outbox record is created before dispatch.
+- The API does not return before the bounded dispatch attempt completes.
+- The email uses the actual saved order details.
+- The secure invoice token is available to the email template.
+- Missing email is skipped safely.
+- Invalid email is skipped safely.
+- Gmail Relay outage does not fail order creation.
+- Failed send is persisted.
+- Timeout is classified as unknown.
+- Duplicate order requests cannot send duplicate confirmation messages.
+- Make/Brevo cannot send a duplicate invoice.
+
+## 12.2 Dashboard tests
+
+Verify:
+
+- Individual status update.
+- Bulk status update.
+- Correct rendering function references.
+- No `renderOrders is not defined`.
+- Backend success is not misclassified by a frontend rendering error.
+- UI reflects the server-confirmed state.
+- API failure preserves the previous displayed state.
+- No browser-side direct Firebase status write exists.
+
+## 12.3 Historical-order tests
+
+Verify:
+
+- Old order with no outbox record is not falsely labeled pending.
+- Historical order with no email is correctly skipped.
+- Each of the five statuses generates its matching current-status template when explicitly requested.
+- Repeated request does not send duplicates.
+- Existing accepted notification is not resent.
+- Existing unknown notification is not blindly retried.
+- Order status, timestamps, inventory, and financial data remain unchanged.
+
+## 12.4 Invoice access tests
+
+Verify:
+
+- New order gets a unique random token.
+- Same order reuses the same token for status messages.
+- Raw token is not stored in the public order record.
+- Private token nodes cannot be accessed by browser Firebase clients.
+- Correct token retrieves the correct invoice.
+- Invalid token is rejected.
+- Revoked token is rejected.
+- Token for order A cannot retrieve order B.
+- Public endpoint returns only whitelisted fields.
+- No token appears in logs or analytics.
+- Invoice page opens without asking for invoice code or phone.
+- Old invoice and tracking routes remain compatible where required.
+- Tokenized invoice page uses `no-store` and safe referrer handling.
+
+## 12.5 Spam notice tests
+
+Verify:
+
+- Notice appears on successful purchase/invoice page.
+- Correct sender email is shown.
+- Exact Arabic message is present.
+- It appears immediately after the confirmation hero and before invoice details.
+- It looks good on mobile and desktop.
+- It is non-blocking and accessible.
+- It does not change order data.
+- It does not make unsupported claims about Inbox delivery.
+
+## 12.6 Email deliverability hygiene tests
+
+Verify:
+
+- Sender identity remains consistent.
+- Reply-To is correct.
+- Subject line is accurate.
+- HTML and plain-text versions agree.
+- No remote emoji image URLs remain.
+- No tracking pixels exist.
+- No promotional language appears in transactional templates.
+- All direct invoice URLs use the correct HTTPS DANDY destination.
+- Email template remains responsive and accessible.
+
+## 12.7 Existing regression tests
+
+Run all existing suites, including:
+
+- `test/email-relay.test.mjs`
+- Order submission tests
+- Pink Friday tests
+- Meta Pixel tests
+- Any new invoice token/access tests
+- Any new dashboard/status tests
+
+Run:
+- `npm run build`
+- Existing lint/syntax checks
+- Relevant unit and integration tests
+
+Use mocked external calls.
+
+---
+
+# PHASE 13 — DOCUMENTATION AND REPORTING
+
+Update the existing documentation rather than creating unnecessary duplicate guides.
+
+At minimum update:
+
+- `EMAIL_RELAY_INTEGRATION_REPORT.md`
+- `EMAIL_NOTIFICATIONS_SETUP.md` or the existing equivalent
+- `google-apps-script/README.md` only if Apps Script deployment/configuration changes are necessary
+
+The report must explain:
+
+1. Root cause of unreliable initial order confirmation dispatch.
+2. How the new awaited dispatch behaves in Vercel.
+3. How order creation remains independent of email failure.
+4. Root cause and fix for `renderOrders is not defined`.
+5. Historical order notification status behavior.
+6. New manual current-status notification action.
+7. Private invoice token generation and storage.
+8. Secure public invoice endpoint.
+9. New email invoice URL format.
+10. Spam notice placement and exact copy.
+11. Deliverability hygiene improvements.
+12. Realistic free-Gmail limitations.
+13. Gmail "Show original" diagnostics instructions.
+14. All files added or modified.
+15. Test results.
+16. Remaining manual owner actions.
+17. Any unresolved limitations.
+
+Do not report Inbox placement as guaranteed.
+
+Do not report real customer delivery success based only on mocked tests or MailApp acceptance.
+
+---
+
+# PHASE 14 — STRICT PROJECT BOUNDARIES
+
+These boundaries are mandatory:
+
+- Do not deploy to Vercel.
+- Do not push to GitHub.
+- Do not commit changes.
+- Preserve all current uncommitted work, particularly the analytics dashboard improvements.
+- Do not reset, stash, revert, or overwrite unrelated changes.
+- Do not change the existing five order statuses.
+- Do not change order pricing rules.
+- Do not change shipping rates or free-shipping threshold.
+- Do not change Firebase authentication.
+- Do not remove stock or Telegram functions.
+- Do not disable Turnstile or rate limiting.
+- Do not introduce paid services.
+- Do not add new email providers.
+- Do not add third-party automation services.
+- Do not send real customer emails during tests.
+- Do not email historical customers automatically.
+- Do not change the current `GMAIL_NOTIFICATIONS_ENABLED` production value.
+- Do not reactivate Make.
+- Do not remove Brevo credentials or Make webhook configuration.
+- Do not expose any secrets.
+- Do not weaken Firebase security rules.
+- Do not claim success for any test that was not actually run.
+
+Work directly in the existing repository.
+
+Audit the current code, implement carefully, test thoroughly, and provide a factual final report identifying exactly what is complete and what still requires owner action.

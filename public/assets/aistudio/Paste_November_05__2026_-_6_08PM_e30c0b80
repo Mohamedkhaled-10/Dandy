@@ -1,0 +1,1018 @@
+# DANDY COSMETICS — PINK FRIDAY CAMPAIGN IMPLEMENTATION
+
+## Temporary E-commerce Campaign / Astro / Firebase / Vercel
+
+You are working on the existing Dandy Cosmetics production e-commerce website.
+
+Your task is to implement a professional, temporary Black Friday-inspired campaign named:
+
+# PINK FRIDAY
+
+The campaign must integrate naturally with the current Dandy Cosmetics website, preserve its original identity, and remain fully compatible with the existing Astro + Firebase + Vercel architecture.
+
+This is an implementation task, not a redesign or framework migration.
+
+The highest priorities are:
+
+1. Preserve the currently working build.
+2. Preserve Vercel deployment compatibility.
+3. Implement accurate campaign pricing across the full purchase journey.
+4. Preserve existing security and stock-management logic.
+5. Create an elegant, premium Pink Friday visual experience.
+6. Keep all campaign behavior temporary and easy to disable after the event.
+
+Do not deploy to Production.
+
+---
+
+# 1. CURRENT PROJECT BASELINE — MANDATORY
+
+GitHub reference:
+
+https://github.com/Mohamedkhaled-10/Dandy
+
+The current Google AI Studio workspace is the primary source of truth.
+
+IMPORTANT:
+
+The current workspace has recently undergone Vercel build stabilization.
+
+The last verified report confirmed:
+
+- `@astrojs/vercel` is selected when `VERCEL` or `VERCEL_ENV` is present.
+- `@astrojs/node` standalone is selected outside Vercel.
+- `npm run build` passed.
+- `npm run lint` passed.
+- `VERCEL=1 npm run build` passed.
+- Vercel build output was generated under `.vercel/output/`.
+- Local route checks returned HTTP 200.
+- No Production deployment was performed.
+
+The project uses:
+
+- Astro.js
+- JavaScript / TypeScript
+- Firebase Realtime Database
+- Firebase Authentication
+- Firebase Admin SDK
+- Firestore REST API for articles
+- Upstash Redis / Rate Limiting
+- Cloudflare Turnstile
+- Cloudinary
+- Astro Vercel Adapter
+- Astro Node Standalone Adapter
+
+Before modifying anything:
+
+1. Inspect the current workspace.
+2. Inspect the latest actual file contents.
+3. Inspect uncommitted changes.
+4. Verify the current build baseline.
+5. Verify the current Vercel build path.
+6. Identify existing Pink Friday-related code, if any.
+7. Preserve all existing modifications from previous work.
+
+Do not overwrite the current workspace with an older GitHub version.
+
+Do not reset Git.
+
+Do not delete existing files.
+
+Do not regenerate the entire project.
+
+---
+
+# 2. BUILD AND DEPLOYMENT PROTECTION
+
+The current dual-adapter architecture must remain intact.
+
+In `astro.config.mjs`, preserve the existing conditional adapter selection:
+
+- Vercel environment → `@astrojs/vercel`
+- Non-Vercel environment → `@astrojs/node` with standalone mode
+
+Do not:
+
+- Change `output: 'server'` casually.
+- Convert the whole website to static output.
+- Replace either adapter.
+- Change the Node standalone entry point.
+- Change `server.js`.
+- Rewrite `vercel.json`.
+- Change middleware redirect behavior.
+- Change Vercel deployment settings.
+- Remove `patch-env.cjs` without examining its current purpose and usage.
+
+Protect these files from unrelated changes:
+
+- `astro.config.mjs`
+- `vercel.json`
+- `src/middleware.js`
+- `server.js`
+- `package.json`
+- `package-lock.json`
+- `bun.lock`
+- `patch-env.cjs`
+
+Only modify a deployment-critical file if the campaign genuinely requires it and the reason is technically demonstrated.
+
+Never delete or regenerate lockfiles just to resolve an unrelated issue.
+
+---
+
+# 3. CAMPAIGN ARCHITECTURE — SINGLE SOURCE OF TRUTH
+
+Create a centralized Pink Friday campaign configuration.
+
+Preferred location:
+
+`src/config/pink-friday.ts`
+
+However, inspect the existing project structure first and use the most appropriate existing convention.
+
+The campaign configuration must be the single source of truth for:
+
+- Campaign enabled/disabled state.
+- Campaign name.
+- Campaign start date.
+- Campaign end date.
+- Display timezone.
+- Participating product IDs.
+- Expected regular product prices.
+- Campaign prices.
+- Optional campaign-specific labels.
+
+Use a typed, validated configuration.
+
+Suggested structure:
+
+```ts
+export const PINK_FRIDAY_CONFIG = {
+  enabled: false,
+
+  campaignId: 'pink-friday',
+  title: 'Pink Friday',
+
+  timezone: 'Africa/Cairo',
+
+  startAt: null,
+  endAt: null,
+
+  offers: [
+    /*
+      Add only real, explicitly approved offers.
+
+      {
+        productId: 'REAL_FIREBASE_PRODUCT_ID',
+        expectedBasePrice: 500,
+        campaignPrice: 425,
+        active: true
+      }
+    */
+  ]
+};
+```
+
+This is a schema example only.
+
+Do not create fake product IDs.
+
+Do not create fake prices.
+
+Do not invent discounts.
+
+Do not choose products automatically based on generic `onSale` or `discount` properties.
+
+Regular promotions and Pink Friday promotions are different business concepts.
+
+A product must participate in Pink Friday only when it has a valid explicit entry in the Pink Friday campaign configuration.
+
+## Configuration validation
+
+An offer is valid only when:
+
+1. The product ID is non-empty and matches a real Firebase product ID.
+2. The product exists.
+3. The product is not hidden.
+4. The product is not sold out.
+5. The regular price is greater than zero.
+6. `expectedBasePrice` matches the current authoritative product price.
+7. `campaignPrice` is greater than zero.
+8. `campaignPrice` is strictly lower than `expectedBasePrice`.
+9. The offer is marked active.
+10. The campaign itself is enabled.
+11. The current date/time is inside the configured campaign window, if dates are configured.
+
+Use explicit ISO 8601 timestamps with timezone offsets.
+
+Do not guess the campaign start or end date.
+
+Do not assume a default discount percentage.
+
+Do not display a countdown unless a valid end date is configured.
+
+The campaign must remain disabled until valid dates and offer data have been entered.
+
+If no valid offers exist, display a professional "قريبًا" / "يتم تجهيز عروض Pink Friday" empty state.
+
+Never display generic products as Pink Friday deals.
+
+---
+
+# 4. CAMPAIGN PRICING ENGINE
+
+The pricing system is the most important part of this implementation.
+
+Pink Friday discounts must be real, consistent, and secure.
+
+The discount must work across:
+
+- Pink Friday campaign page.
+- Homepage campaign section.
+- Product detail pages.
+- Product cards where applicable.
+- Cart.
+- Checkout.
+- Server-side order creation.
+- Order records and invoice display.
+
+Use one shared campaign pricing utility.
+
+It must calculate:
+
+- Regular price.
+- Campaign price.
+- Actual discount amount.
+- Actual discount percentage.
+- Whether the offer is currently active.
+- Whether the product is eligible.
+
+Do not duplicate discount calculation logic in multiple page scripts.
+
+## No discount stacking by default
+
+Do not automatically combine Pink Friday discounts with existing generic discounts.
+
+A product that already has a normal promotional price must not receive another discount unless that combination is explicitly approved in its campaign configuration.
+
+The campaign price must be validated against the authoritative current Firebase product price.
+
+If the actual database price no longer matches `expectedBasePrice`:
+
+- Do not silently apply the configured campaign price.
+- Mark the campaign offer invalid or unavailable.
+- Prevent an outdated campaign price from being charged.
+- Return a clear, safe error where appropriate.
+
+Do not mutate Firebase product base prices to apply campaign discounts.
+
+Do not overwrite `price`, `originalPrice`, `discount`, `onSale`, or other existing product fields merely to create the campaign.
+
+Campaign pricing must be independent of regular product pricing.
+
+---
+
+# 5. SERVER-SIDE ORDER VALIDATION — CRITICAL
+
+The existing order endpoint:
+
+`src/pages/api/create-order.js`
+
+currently retrieves authoritative product prices from Firebase Admin and recalculates order totals server-side.
+
+This protection must remain.
+
+A frontend-supplied price is never authoritative.
+
+The client must never be able to choose its own campaign discount.
+
+## Narrowly authorized pricing exception
+
+Although `create-order.js` belongs to the protected security baseline, a narrowly scoped pricing integration is necessary if real Pink Friday discounts are to be charged correctly.
+
+This is the only security-baseline exception authorized by this campaign request.
+
+Before editing it:
+
+1. Inspect the entire existing order flow.
+2. Identify exact price calculation and validation locations.
+3. Inspect all consumers of the saved order product-price fields.
+4. Document the exact changes.
+5. Preserve every unrelated part of the endpoint.
+
+The campaign integration must:
+
+- Read the current product price from Firebase Admin.
+- Look up the product in the centralized campaign configuration.
+- Verify campaign activation and dates on the server.
+- Verify the expected base price.
+- Verify the campaign price.
+- Apply the campaign price only to eligible products.
+- Ignore client-submitted price and discount amounts.
+- Reject stale campaign checkout requests safely.
+- Recalculate line totals using the server-authoritative effective price.
+- Recalculate the subtotal using effective campaign prices.
+- Preserve the existing shipping fee logic.
+- Preserve free-shipping threshold behavior.
+- Preserve existing order total validation.
+- Preserve all existing stock transaction logic.
+- Preserve existing order persistence logic.
+- Preserve existing customer authentication behavior.
+- Preserve existing rate limiting.
+- Preserve Turnstile verification.
+- Preserve Telegram internal authorization.
+- Preserve Make webhook behavior.
+
+If a client cart contains an item explicitly marked as a Pink Friday item but its offer has expired, become invalid, or no longer matches the database price, return an appropriate conflict response such as HTTP 409 before creating the order or modifying stock.
+
+The customer should be told to refresh the cart and review the updated price.
+
+Do not silently charge a higher regular price than the campaign price shown during checkout.
+
+If a request contains no campaign offer, use the normal authoritative product price.
+
+Do not allow campaign prices for products that are not listed in the campaign configuration.
+
+## Order data compatibility
+
+Inspect:
+
+- `src/pages/invoice.astro`
+- `src/pages/cart.astro`
+- `src/pages/dashboard-order.astro`
+- `src/pages/track-order.astro`
+- Relevant dashboard order rendering logic.
+
+Ensure existing orders remain readable.
+
+Preserve backward compatibility with old orders.
+
+If new campaign metadata is required, add it without breaking the existing order data structure.
+
+Make sure the displayed invoice amount, order subtotal, and actual charged amount agree.
+
+Do not modify stock deduction sequencing or Telegram notification behavior.
+
+---
+
+# 6. NEW CAMPAIGN PAGE
+
+Create a new route:
+
+`src/pages/pink-friday.astro`
+
+Public URL:
+
+`/pink-friday`
+
+The page must integrate with the existing BaseLayout and the established Dandy component/CSS conventions.
+
+It must be:
+
+- Fully responsive.
+- Arabic-first.
+- RTL-compatible.
+- Mobile-friendly.
+- Fast.
+- SEO-aware.
+- Accessible.
+- Consistent with the existing Dandy visual identity.
+
+## Page composition
+
+### A. Hero section
+
+Create a premium Pink Friday campaign hero.
+
+Main title:
+
+"Pink Friday"
+
+Suggested Arabic supporting text:
+
+"استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."
+
+The text should be elegant, short, and commercially attractive.
+
+Do not add unsupported claims such as "أكبر خصم في مصر" or guaranteed savings.
+
+Include one primary CTA:
+
+"اكتشفي العروض"
+
+The CTA scrolls to the campaign products section.
+
+### B. Campaign status
+
+Show the correct campaign state:
+
+- Upcoming.
+- Active.
+- Ended.
+- Temporarily unavailable.
+
+The state must derive from the centralized campaign configuration and current server time.
+
+Never show an active countdown after the end date.
+
+Never fabricate countdown values.
+
+### C. Campaign products grid
+
+Show only valid, explicitly configured Pink Friday products.
+
+Each card should include:
+
+- Product image.
+- Accurate product name.
+- Campaign badge.
+- Regular price with strikethrough.
+- Campaign price.
+- Calculated discount percentage.
+- Calculated amount saved.
+- Existing rating information when available.
+- Existing product details CTA.
+- Existing add-to-cart behavior where appropriate.
+
+Maintain existing product imagery and image SEO rules.
+
+Use accurate alt text.
+
+Preserve width/height attributes and responsive image behavior.
+
+Do not create new product images unnecessarily.
+
+Do not display sold-out or hidden products as available offers.
+
+Do not create artificial scarcity or fake stock counters.
+
+### D. Empty state
+
+If no valid offers are configured, show an elegant empty state.
+
+Example:
+
+"نجهّز لكِ عروض Pink Friday المميزة."
+
+Do not render placeholder products or invented sale prices.
+
+### E. Ended campaign state
+
+After the campaign expires:
+
+- Keep `/pink-friday` accessible.
+- Show a tasteful "انتهت عروض Pink Friday" message.
+- Offer a link to `/all-products` or `/special-offers`.
+- Do not delete the route.
+- Do not return a 404 merely because the campaign has ended.
+
+---
+
+# 7. SITEWIDE DESIGN MODIFICATIONS
+
+The campaign should be visible across the store without replacing the existing Dandy design.
+
+The visual direction:
+
+**Premium Pink Friday — Elegant Beauty Commerce**
+
+Use the existing brand identity as the foundation.
+
+The existing Dandy blush color is approximately:
+
+`#fe5d9f`
+
+Build a restrained campaign palette around:
+
+- Dandy pink.
+- Deep rose.
+- Soft pink.
+- Black / near-black.
+- White / warm cream.
+- Subtle gradients and elegant highlights.
+
+Do not turn the whole website into a generic black-and-pink discount template.
+
+Do not modify the Dandy logo or replace the brand identity.
+
+Do not redesign all components.
+
+## A. Announcement bar
+
+Add a temporary announcement bar above the existing main header.
+
+Suggested copy:
+
+"Pink Friday من داندي — اكتشفي العروض الخاصة الآن"
+
+Include a clear CTA linking to `/pink-friday`.
+
+Requirements:
+
+- Elegant, compact, and responsive.
+- Does not increase the header excessively.
+- Does not overlap mobile content.
+- Does not cause CLS.
+- Visible only when the campaign is enabled and upcoming or active.
+- Hidden automatically when the campaign is disabled or ended.
+
+## B. Header navigation
+
+Update:
+
+`src/components/Header.astro`
+
+Add a Pink Friday link to:
+
+- Desktop primary navigation.
+- Mobile drawer navigation.
+
+Suggested label:
+
+"Pink Friday"
+
+Use a small, tasteful campaign badge.
+
+Do not break:
+
+- Mobile menu.
+- Search panel.
+- Account buttons.
+- Authentication state.
+- Cart badge.
+- Existing navigation links.
+
+Show the campaign link only when the campaign is enabled and relevant.
+
+## C. Homepage campaign section
+
+Update:
+
+`src/pages/index.astro`
+
+Add a dedicated Pink Friday promotional section in a safe location.
+
+Prefer a location after the existing hero section and before the next main content section, if the current structure allows a clean insertion.
+
+The section should include:
+
+- Campaign headline.
+- Short supporting text.
+- Elegant CTA.
+- Optional preview of a small number of valid campaign products.
+- Link to `/pink-friday`.
+
+Do not rewrite the homepage.
+
+The homepage is a large, complex file. Make a surgical insertion only.
+
+Preserve all existing dynamic sections and the Homepage Studio Preview Bridge.
+
+Do not break the page-builder functionality.
+
+If the exact insertion point cannot be safely identified, choose a simpler isolated insertion or report the blocker.
+
+## D. Product cards
+
+For products explicitly participating in Pink Friday:
+
+- Display the Pink Friday badge.
+- Show the valid campaign price.
+- Show the original price.
+- Preserve existing generic sale behavior for all other products.
+- Prevent double-discount presentation.
+
+Do not apply campaign visual treatment to every product indiscriminately.
+
+Preserve wishlist, product links, variants, and add-to-cart behavior.
+
+## E. Product detail page
+
+For a campaign-eligible product during the active period:
+
+- Display the campaign price.
+- Display the regular current price.
+- Show the Pink Friday badge.
+- Show the actual calculated savings.
+- Preserve product variants and selection behavior.
+- Ensure add-to-cart stores the campaign identity correctly.
+
+Do not change products outside the campaign.
+
+---
+
+# 8. CART AND CHECKOUT EXPERIENCE
+
+Update `src/pages/cart.astro` only as much as necessary.
+
+For eligible campaign items:
+
+- Show the regular price.
+- Show the campaign price.
+- Show a clear Pink Friday label.
+- Calculate line totals from the campaign price.
+- Display campaign savings separately.
+- Keep the subtotal accurate.
+- Keep shipping calculations accurate.
+- Keep the final total consistent with the server-side order calculation.
+
+The campaign discount must not be applied twice.
+
+Do not rely on the value saved in localStorage as the trusted order price.
+
+When the user refreshes the cart:
+
+- Reconcile campaign item data with the current active campaign.
+- Detect expired or invalid offers.
+- Inform the user when a campaign price is no longer valid.
+- Prevent a stale displayed campaign price from being charged.
+
+Preserve:
+
+- Cart quantities.
+- Variants.
+- Remove item functionality.
+- Checkout steps.
+- Governorate selection.
+- Turnstile.
+- Existing order validation.
+- Existing customer account behavior.
+
+Do not submit real orders during testing.
+
+---
+
+# 9. CAMPAIGN LIFECYCLE AND TEMPORARY DESIGN CONTROL
+
+Campaign functionality must be easy to disable.
+
+The campaign configuration must control:
+
+- Announcement bar visibility.
+- Header campaign link.
+- Homepage campaign section.
+- Pink Friday product badges.
+- Campaign product prices.
+- Product-page promotional labels.
+- Cart campaign presentation.
+- Campaign countdown.
+- Campaign page state.
+- Sitemap inclusion.
+
+When `enabled` is false:
+
+- Hide campaign announcement UI.
+- Hide campaign navigation links.
+- Hide campaign homepage section.
+- Remove campaign badges.
+- Use normal product prices.
+- Disable campaign pricing.
+- Keep the route available with a neutral "الحملة غير متاحة حاليًا" state or an appropriate inactive page.
+
+When the end date has passed:
+
+- Stop applying campaign prices server-side.
+- Stop displaying active campaign pricing.
+- Remove the active campaign links from global UI.
+- Keep the campaign URL functional with an ended state.
+- Do not automatically delete campaign data.
+- Do not modify product database records.
+
+The feature must be reversible by changing the centralized configuration, not by manually undoing dozens of unrelated files.
+
+---
+
+# 10. SEO REQUIREMENTS
+
+Preserve existing SEO work.
+
+For `/pink-friday`:
+
+- Add a unique, accurate title.
+- Add a unique meta description.
+- Use a canonical URL:
+  `https://dandy-ebon.vercel.app/pink-friday`
+- Add appropriate Open Graph metadata.
+- Add accurate structured data only when supported by actual campaign data.
+- Do not invent prices or availability in JSON-LD.
+- Do not create duplicate canonical URLs.
+- Do not change existing product canonical URLs.
+
+Inspect:
+
+`src/pages/sitemap.xml.ts`
+
+Add the Pink Friday URL conditionally when the campaign is enabled and relevant.
+
+Preserve all existing sitemap URLs and generation logic.
+
+Do not remove current canonical product or article URLs.
+
+After the campaign ends, remove the route from the active campaign sitemap list without deleting the page itself.
+
+Do not modify robots.txt unnecessarily.
+
+Preserve all previous internal-linking and image SEO work.
+
+---
+
+# 11. RESPONSIVE DESIGN AND VISUAL QUALITY
+
+Inspect the actual current design before implementation.
+
+Test at least:
+
+- Desktop: 1440px.
+- Laptop: 1280px.
+- Tablet: 768px.
+- Mobile: 390px.
+- Narrow mobile: 360px.
+
+Verify:
+
+- No horizontal overflow.
+- No broken RTL alignment.
+- No overlapping campaign banner.
+- No oversized hero section on mobile.
+- No clipped prices.
+- No broken product card buttons.
+- No distorted images.
+- No layout shift.
+- No hidden mobile navigation links.
+- No inaccessible CTA buttons.
+
+Keep the design elegant and consistent with the current Dandy website.
+
+Avoid excessive animations.
+
+Respect `prefers-reduced-motion`.
+
+Do not add heavy animation libraries.
+
+---
+
+# 12. PROTECTED FILES AND SECURITY BASELINE
+
+The following files remain protected:
+
+1. `src/pages/api/create-order.js`
+2. `src/pages/api/link-customer-orders.js`
+3. `src/pages/api/submit-review.js`
+4. `src/pages/api/send-telegram.js`
+5. `src/pages/api/verify-turnstile.js`
+6. `src/utils/rate-limit.js`
+7. `src/utils/turnstile.js`
+8. `firebase/database.rules.json`
+
+The only narrowly authorized exception is the exact server-side campaign-price integration in `create-order.js`, as described in Section 5.
+
+Do not modify any other protected security behavior.
+
+Never weaken:
+
+- Firebase Admin authorization.
+- Server-side price verification.
+- Stock transactions.
+- Rate limiting.
+- Turnstile verification.
+- Internal API authorization.
+- Telegram authentication.
+- Firebase database rules.
+
+Never expose:
+
+- FIREBASE_SERVICE_ACCOUNT
+- INTERNAL_API_SECRET
+- UPSTASH_REDIS_REST_TOKEN
+- UPSTASH_REDIS_REST_URL
+- TURNSTILE_SECRET_KEY
+- TELEGRAM_TOKEN
+- TELEGRAM_CHAT_ID
+- MAKE_WEBHOOK_URL
+
+Do not add any server secret to browser-side configuration.
+
+The Pink Friday campaign configuration contains public promotional information only.
+
+---
+
+# 13. IMPLEMENTATION WORKFLOW
+
+Use this exact workflow.
+
+## STEP 1 — READ-ONLY AUDIT
+
+Inspect:
+
+- Existing product service.
+- Existing product card rendering.
+- Existing product detail price calculation.
+- Existing cart state and rendering.
+- Existing add-to-cart functions.
+- Existing create-order pricing logic.
+- Existing invoices and dashboard order display.
+- Existing header and mobile drawer.
+- Existing homepage structure.
+- Existing sitemap generator.
+- Existing global layout.
+
+Provide a concise file-impact map before editing.
+
+## STEP 2 — BASELINE BUILD
+
+Run the current baseline checks.
+
+Do not proceed if a new baseline failure appears without understanding its cause.
+
+Record:
+
+- Local build.
+- Astro sync.
+- Vercel-specific build.
+- Existing route responses.
+
+## STEP 3 — CAMPAIGN CONFIGURATION
+
+Create the centralized configuration and pricing utility.
+
+Keep the campaign disabled and the offer list empty until real approved campaign data is provided.
+
+## STEP 4 — CAMPAIGN PAGE
+
+Implement `/pink-friday`.
+
+## STEP 5 — GLOBAL VISUAL INTEGRATION
+
+Implement the temporary announcement bar, navigation link, homepage section, and eligible-product promotional presentation.
+
+## STEP 6 — CART AND ORDER PRICING
+
+Integrate the campaign with the customer cart and server-side order validation.
+
+Preserve existing pricing, shipping, stock, and security behavior.
+
+## STEP 7 — SEO AND LIFECYCLE
+
+Integrate canonical metadata and conditional sitemap inclusion.
+
+Implement active, upcoming, inactive, and ended states.
+
+## STEP 8 — TESTING
+
+Perform functional, visual, pricing, and deployment regression tests.
+
+## STEP 9 — FINAL REPORT
+
+Return a complete implementation report.
+
+---
+
+# 14. REQUIRED TEST CASES
+
+At minimum, test the shared campaign pricing utility with mocked data.
+
+Tests must include:
+
+1. Valid campaign product during active dates.
+2. Non-campaign product.
+3. Campaign disabled.
+4. Campaign before start date.
+5. Campaign after end date.
+6. Expired offer.
+7. Invalid product ID.
+8. Hidden product.
+9. Sold-out product.
+10. Zero or negative product price.
+11. Campaign price equal to regular price.
+12. Campaign price higher than regular price.
+13. Database base price different from expectedBasePrice.
+14. Product with an existing generic promotion.
+15. Invalid or missing campaign dates.
+16. Product with variants.
+17. Multiple eligible products in one cart.
+18. Mixed eligible and non-eligible products.
+19. Cart loaded from stale localStorage campaign data.
+
+Verify that no invalid offer results in an accidental discount.
+
+Verify that server-side calculation overrides any client-supplied price.
+
+Verify that an expired campaign item cannot be charged using an old campaign price.
+
+Verify that invalid campaign checkout requests fail before order creation and stock modification.
+
+Use fixtures and mocks.
+
+Do not create production database records.
+
+Do not write test offers into Firebase production.
+
+Do not submit actual checkout orders.
+
+---
+
+# 15. BUILD AND VERCEL VALIDATION
+
+Preserve the current dual-target setup.
+
+Run:
+
+`npm run lint`
+
+`npm run build`
+
+Then validate the Vercel-specific path:
+
+`VERCEL=1 npm run build`
+
+If the Vercel CLI is installed and available, also run `vercel build` using the existing authenticated project configuration where appropriate.
+
+Inspect:
+
+- `.vercel/output/`
+- Generated serverless function output.
+- Static asset output.
+- Route manifests.
+- Missing assets.
+- Import failures.
+- Runtime-specific dependency issues.
+
+Also run local route checks for:
+
+- `/`
+- `/pink-friday`
+- `/all-products`
+- `/special-offers`
+- `/category/hair-care`
+- `/category/skin-care`
+- `/product/laser-replacement-cream-60gm`
+- `/cart`
+- `/account-login`
+- `/account`
+- `/dashboard`
+- `/dashboard-order`
+- `/dashboard-product`
+- `/sitemap.xml`
+- `/merchant-feed.xml`
+- `/api/health`
+
+Do not confuse HTTP 200 with a fully tested purchase flow.
+
+Do not claim a successful Production test.
+
+Do not deploy or push to the production branch.
+
+---
+
+# 16. FINAL REPORT FORMAT
+
+Return a detailed report with:
+
+1. Campaign architecture.
+2. Files created.
+3. Files modified.
+4. Files intentionally untouched.
+5. Central campaign configuration structure.
+6. How product eligibility is determined.
+7. How campaign pricing is calculated.
+8. How server-side pricing is validated.
+9. Cart and checkout integration.
+10. Homepage changes.
+11. Header and mobile menu changes.
+12. Pink Friday page implementation.
+13. Product page / card changes.
+14. SEO / sitemap integration.
+15. Temporary campaign disable behavior.
+16. Responsive test results.
+17. Pricing test results.
+18. Security non-regression report.
+19. Local build result.
+20. Vercel-specific build result.
+21. Tests not performed.
+22. Remaining risks.
+23. Production deployment status.
+
+Use one of these final statuses:
+
+✅ PINK FRIDAY IMPLEMENTED — LOCAL & VERCEL BUILDS VERIFIED
+
+🟡 PINK FRIDAY IMPLEMENTED — CAMPAIGN DATA OR FINAL VALIDATION REQUIRED
+
+🟠 PINK FRIDAY PARTIAL — VISUAL IMPLEMENTATION COMPLETE, PRICING INTEGRATION BLOCKED
+
+🔴 PINK FRIDAY BLOCKED — NO SAFE IMPLEMENTATION
+
+IMPORTANT:
+
+- Do not invent products.
+- Do not invent prices.
+- Do not invent discount percentages.
+- Do not invent campaign dates.
+- Do not modify Firebase product records.
+- Do not replace the website design.
+- Do not rewrite large existing files.
+- Do not weaken the security baseline.
+- Do not change the deployment architecture.
+- Do not deploy to Production.
+
+The result must feel like a professionally designed, temporary Dandy Cosmetics Pink Friday event, not a separate website or an unrelated template.
