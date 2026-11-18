@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.1.5",
+    "@astrojs/vercel": "^11.0.22",
     "@lucide/astro": "^1.74.0",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
