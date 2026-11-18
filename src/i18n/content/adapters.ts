@@ -17,7 +17,10 @@ import { getCategoryBySlug, getCategorySlugForProduct, type CategoryTaxonomy } f
 import type { Product, VariantItem } from '../../utils/products';
 import type { Article } from '../../utils/articles';
 import type { PinkFridayCampaignData } from '../../utils/pink-friday-server';
-import type { HomepageStudioState } from '../../scripts/homepage-studio';
+import {
+  matchCanonicalCategorySlug,
+  type HomepageStudioState,
+} from '../../scripts/homepage-studio';
 import { normalizeProductVariants } from '../../scripts/product-card';
 import { GOVERNORATES, normalizeOrderStatusMeta } from '../../scripts/purchase-flow';
 import { t } from '../translator';
@@ -310,127 +313,234 @@ export function resolveLocalizedArticle(
   };
 }
 
+function pickNonEmptyString(...vals: Array<string | undefined | null>): string | undefined {
+  for (const val of vals) {
+    if (typeof val === 'string' && val.trim() !== '') {
+      return val.trim();
+    }
+  }
+  return undefined;
+}
+
 /**
  * Pure non-mutating presentation adapter for Homepage Studio state.
  * Preserves `sectionOrder`, `sectionsVisibility`, `manualProducts`, `limit`, `image`, `videoUrl`
- * untouched while overlaying optional localized copy for Phase 11 English homepage rendering.
+ * untouched while deep-merging dynamic `state.enOverlay` (saved in Admin Studio) over
+ * the static `HomepageStudioLocalizedOverlay` for complete AR/EN independence.
  */
 export function resolveLocalizedHomepageStudioState(
   state: HomepageStudioState,
   locale: Locale,
   overlay?: HomepageStudioLocalizedOverlay | null
 ): HomepageStudioState {
-  if (locale === 'ar' || !overlay) {
+  if (locale === 'ar') {
     return state;
   }
 
+  const dyn = state.enOverlay || null;
+  if (!overlay && !dyn) {
+    return state;
+  }
+
+  const staticOv = overlay || null;
+
   return {
     ...state,
+    heroMeta: {
+      ...(state.heroMeta || {}),
+      kicker: pickNonEmptyString(dyn?.heroMeta?.kicker, staticOv?.heroMeta?.kicker),
+      secondaryCtaLabel: pickNonEmptyString(
+        dyn?.heroMeta?.secondaryCtaLabel,
+        staticOv?.heroMeta?.secondaryCtaLabel
+      ),
+      secondaryCtaHref: pickNonEmptyString(
+        dyn?.heroMeta?.secondaryCtaHref,
+        staticOv?.heroMeta?.secondaryCtaHref,
+        state.heroMeta?.secondaryCtaHref
+      ),
+    },
     hero: state.hero.map((slide, idx) => {
-      const ov = overlay.heroSlides?.[idx];
-      if (!ov) return { ...slide };
+      const sOv = staticOv?.heroSlides?.[idx];
+      const dOv = dyn?.heroSlides?.[idx];
+      if (!sOv && !dOv) return { ...slide };
       return {
         ...slide,
-        title: ov.title ?? slide.title,
-        subtitle: ov.subtitle ?? slide.subtitle,
-        buttonText: ov.buttonText ?? slide.buttonText,
-        link: ov.link ?? slide.link,
-        desktopImage: ov.desktopImage ?? slide.desktopImage,
-        mobileImage: ov.mobileImage ?? slide.mobileImage,
+        title: pickNonEmptyString(dOv?.title, sOv?.title) ?? slide.title,
+        subtitle: pickNonEmptyString(dOv?.subtitle, sOv?.subtitle) ?? slide.subtitle,
+        buttonText: pickNonEmptyString(dOv?.buttonText, sOv?.buttonText) ?? slide.buttonText,
+        link: pickNonEmptyString(dOv?.link, sOv?.link, slide.link) ?? slide.link,
+        desktopImage: pickNonEmptyString(dOv?.desktopImage, sOv?.desktopImage, slide.desktopImage) ?? slide.desktopImage,
+        mobileImage: pickNonEmptyString(dOv?.mobileImage, sOv?.mobileImage, slide.mobileImage) ?? slide.mobileImage,
       };
     }),
     sections: state.sections.map((sec) => {
-      const ov = overlay.sections?.[sec.id];
-      if (!ov) return { ...sec };
+      const altKey =
+        sec.id === 'sec-special-offers'
+          ? 'offers'
+          : sec.id === 'sec-new-arrivals'
+            ? 'newArrivals'
+            : undefined;
+      const dOv = dyn?.sections?.[sec.id] || (altKey ? dyn?.sections?.[altKey] : undefined);
+      const sOv = staticOv?.sections?.[sec.id] || (altKey ? staticOv?.sections?.[altKey] : undefined);
+      if (!dOv && !sOv) return { ...sec };
       return {
         ...sec,
-        title: ov.title ?? sec.title,
-        subtitle: ov.subtitle ?? sec.subtitle,
+        title: pickNonEmptyString(dOv?.title, sOv?.title) ?? sec.title,
+        subtitle: pickNonEmptyString(dOv?.subtitle, sOv?.subtitle) ?? sec.subtitle,
+        viewAllLabel: pickNonEmptyString(dOv?.viewAllLabel, sOv?.viewAllLabel, sec.viewAllLabel),
+        viewAllHref: pickNonEmptyString(dOv?.viewAllHref, sOv?.viewAllHref, sec.viewAllHref),
       };
     }),
+    trustSection: {
+      ...(state.trustSection || {}),
+      kicker: pickNonEmptyString(dyn?.trustSection?.kicker, staticOv?.trustSection?.kicker),
+      title: pickNonEmptyString(dyn?.trustSection?.title, staticOv?.trustSection?.title),
+    },
     trust: {
       item1: state.trust?.item1
         ? {
             ...state.trust.item1,
-            title: overlay.trustItems?.item1?.title ?? state.trust.item1.title,
-            desc: overlay.trustItems?.item1?.desc ?? state.trust.item1.desc,
+            title:
+              pickNonEmptyString(dyn?.trustItems?.item1?.title, staticOv?.trustItems?.item1?.title) ??
+              state.trust.item1.title,
+            desc:
+              pickNonEmptyString(dyn?.trustItems?.item1?.desc, staticOv?.trustItems?.item1?.desc) ??
+              state.trust.item1.desc,
           }
         : undefined,
       item2: state.trust?.item2
         ? {
             ...state.trust.item2,
-            title: overlay.trustItems?.item2?.title ?? state.trust.item2.title,
-            desc: overlay.trustItems?.item2?.desc ?? state.trust.item2.desc,
+            title:
+              pickNonEmptyString(dyn?.trustItems?.item2?.title, staticOv?.trustItems?.item2?.title) ??
+              state.trust.item2.title,
+            desc:
+              pickNonEmptyString(dyn?.trustItems?.item2?.desc, staticOv?.trustItems?.item2?.desc) ??
+              state.trust.item2.desc,
           }
         : undefined,
       item3: state.trust?.item3
         ? {
             ...state.trust.item3,
-            title: overlay.trustItems?.item3?.title ?? state.trust.item3.title,
-            desc: overlay.trustItems?.item3?.desc ?? state.trust.item3.desc,
+            title:
+              pickNonEmptyString(dyn?.trustItems?.item3?.title, staticOv?.trustItems?.item3?.title) ??
+              state.trust.item3.title,
+            desc:
+              pickNonEmptyString(dyn?.trustItems?.item3?.desc, staticOv?.trustItems?.item3?.desc) ??
+              state.trust.item3.desc,
+          }
+        : undefined,
+      item4: state.trust?.item4
+        ? {
+            ...state.trust.item4,
+            title:
+              pickNonEmptyString(dyn?.trustItems?.item4?.title, staticOv?.trustItems?.item4?.title) ??
+              state.trust.item4.title,
+            desc:
+              pickNonEmptyString(dyn?.trustItems?.item4?.desc, staticOv?.trustItems?.item4?.desc) ??
+              state.trust.item4.desc,
           }
         : undefined,
     },
+    categoriesSection: {
+      ...(state.categoriesSection || {}),
+      kicker: pickNonEmptyString(dyn?.categoriesSection?.kicker, staticOv?.categoriesSection?.kicker),
+      title: pickNonEmptyString(dyn?.categoriesSection?.title, staticOv?.categoriesSection?.title),
+      ctaLabel: pickNonEmptyString(dyn?.categoriesSection?.ctaLabel, staticOv?.categoriesSection?.ctaLabel),
+      ctaHref: pickNonEmptyString(
+        dyn?.categoriesSection?.ctaHref,
+        staticOv?.categoriesSection?.ctaHref,
+        state.categoriesSection?.ctaHref
+      ),
+    },
+    blogSection: {
+      ...(state.blogSection || {}),
+      kicker: pickNonEmptyString(dyn?.blogSection?.kicker, staticOv?.blogSection?.kicker),
+      title: pickNonEmptyString(dyn?.blogSection?.title, staticOv?.blogSection?.title),
+      viewAllLabel: pickNonEmptyString(
+        dyn?.blogSection?.viewAllLabel,
+        staticOv?.blogSection?.viewAllLabel
+      ),
+    },
+    reviewsSection: {
+      ...(state.reviewsSection || {}),
+      kicker: pickNonEmptyString(dyn?.reviewsSection?.kicker, staticOv?.reviewsSection?.kicker),
+      title: pickNonEmptyString(dyn?.reviewsSection?.title, staticOv?.reviewsSection?.title),
+    },
     reviews: state.reviews.map((rev, idx) => {
-      const ov = overlay.reviews?.[idx];
-      if (!ov) return { ...rev };
+      const dOv = dyn?.reviews?.[idx];
+      const sOv = staticOv?.reviews?.[idx];
+      if (!dOv && !sOv) return { ...rev };
       return {
         ...rev,
-        author: ov.author ?? rev.author,
-        text: ov.text ?? rev.text,
+        author: pickNonEmptyString(dOv?.author, sOv?.author) ?? rev.author,
+        text: pickNonEmptyString(dOv?.text, sOv?.text) ?? rev.text,
       };
     }),
-    promoBanner: state.promoBanner
-      ? {
-          ...state.promoBanner,
-          eyebrow: overlay.promoBanner?.eyebrow ?? state.promoBanner.eyebrow,
-          title: overlay.promoBanner?.title ?? state.promoBanner.title,
-          desc: overlay.promoBanner?.desc ?? state.promoBanner.desc,
-          ctaText: overlay.promoBanner?.ctaText ?? state.promoBanner.ctaText,
-          ctaLink: overlay.promoBanner?.ctaLink ?? state.promoBanner.ctaLink,
-        }
-      : undefined,
+    promoBanner:
+      state.promoBanner || dyn?.promoBanner || staticOv?.promoBanner
+        ? {
+            ...(state.promoBanner || {}),
+            eyebrow: pickNonEmptyString(dyn?.promoBanner?.eyebrow, staticOv?.promoBanner?.eyebrow),
+            title: pickNonEmptyString(dyn?.promoBanner?.title, staticOv?.promoBanner?.title),
+            desc: pickNonEmptyString(dyn?.promoBanner?.desc, staticOv?.promoBanner?.desc),
+            ctaText: pickNonEmptyString(dyn?.promoBanner?.ctaText, staticOv?.promoBanner?.ctaText),
+            ctaLink: pickNonEmptyString(
+              dyn?.promoBanner?.ctaLink,
+              staticOv?.promoBanner?.ctaLink,
+              state.promoBanner?.ctaLink
+            ),
+          }
+        : undefined,
     categories: Object.fromEntries(
       Object.entries(state.categories || {}).map(([key, catItem]) => {
-        const ov = overlay.categories?.[key];
+        const canonicalSlug = matchCanonicalCategorySlug(catItem?.name, catItem?.id || key);
+        const dOv = dyn?.categories?.[key] || (canonicalSlug ? dyn?.categories?.[canonicalSlug] : undefined);
+        const sOv =
+          staticOv?.categories?.[key] || (canonicalSlug ? staticOv?.categories?.[canonicalSlug] : undefined);
+        const enTaxonomyDesc = canonicalSlug
+          ? EN_CATEGORY_CONTENT[canonicalSlug]?.shortTagline || EN_CATEGORY_CONTENT[canonicalSlug]?.introText
+          : undefined;
+
         return [
           key,
-          ov
-            ? {
-                ...catItem,
-                name: ov.name ?? catItem.name,
-                tagline: ov.tagline ?? catItem.tagline,
-                count: ov.count ?? catItem.count,
-              }
-            : { ...catItem },
+          {
+            ...catItem,
+            name: pickNonEmptyString(dOv?.name, sOv?.name) ?? catItem.name,
+            tagline: pickNonEmptyString(dOv?.tagline, sOv?.tagline) ?? '',
+            count: pickNonEmptyString(dOv?.count, sOv?.count) ?? catItem.count,
+            description: pickNonEmptyString(dOv?.description, sOv?.description, enTaxonomyDesc) ?? '',
+          },
         ];
       })
     ),
     customSections: state.customSections?.map((cs) => {
-      const ov = overlay.customSections?.[cs.id];
-      if (!ov) return { ...cs };
+      const dOv = dyn?.customSections?.[cs.id];
+      const sOv = staticOv?.customSections?.[cs.id];
+      if (!dOv && !sOv) return { ...cs };
       return {
         ...cs,
-        title: ov.title ?? cs.title,
-        subtitle: ov.subtitle ?? cs.subtitle,
-        content: ov.content ?? cs.content,
-        eyebrow: ov.eyebrow ?? cs.eyebrow,
-        desc: ov.desc ?? cs.desc,
-        ctaText: ov.ctaText ?? cs.ctaText,
-        ctaLink: ov.ctaLink ?? cs.ctaLink,
-        linkText: ov.linkText ?? cs.linkText,
-        linkUrl: ov.linkUrl ?? cs.linkUrl,
+        title: pickNonEmptyString(dOv?.title, sOv?.title) ?? cs.title,
+        subtitle: pickNonEmptyString(dOv?.subtitle, sOv?.subtitle) ?? cs.subtitle,
+        content: pickNonEmptyString(dOv?.content, sOv?.content) ?? cs.content,
+        eyebrow: pickNonEmptyString(dOv?.eyebrow, sOv?.eyebrow) ?? cs.eyebrow,
+        desc: pickNonEmptyString(dOv?.desc, sOv?.desc) ?? cs.desc,
+        ctaText: pickNonEmptyString(dOv?.ctaText, sOv?.ctaText) ?? cs.ctaText,
+        ctaLink: pickNonEmptyString(dOv?.ctaLink, sOv?.ctaLink, cs.ctaLink) ?? cs.ctaLink,
+        linkText: pickNonEmptyString(dOv?.linkText, sOv?.linkText) ?? cs.linkText,
+        linkUrl: pickNonEmptyString(dOv?.linkUrl, sOv?.linkUrl, cs.linkUrl) ?? cs.linkUrl,
         items: Array.isArray(cs.items)
           ? cs.items.map((item, idx) => {
-              const itemOv = ov.items?.[idx];
-              if (!itemOv) return { ...item };
+              const itemDOv = dOv?.items?.[idx];
+              const itemSOv = sOv?.items?.[idx];
+              if (!itemDOv && !itemSOv) return { ...item };
               return {
                 ...item,
-                title: itemOv.title ?? item.title,
-                desc: itemOv.desc ?? item.desc,
-                q: itemOv.q ?? item.q,
-                a: itemOv.a ?? item.a,
-                link: itemOv.link ?? item.link,
+                title: pickNonEmptyString(itemDOv?.title, itemSOv?.title) ?? item.title,
+                desc: pickNonEmptyString(itemDOv?.desc, itemSOv?.desc) ?? item.desc,
+                q: pickNonEmptyString(itemDOv?.q, itemSOv?.q) ?? item.q,
+                a: pickNonEmptyString(itemDOv?.a, itemSOv?.a) ?? item.a,
+                link: pickNonEmptyString(itemDOv?.link, itemSOv?.link, item.link) ?? item.link,
               };
             })
           : cs.items,
@@ -447,32 +557,65 @@ export function resolveLocalizedPinkFridayCampaign(
   locale: Locale,
   overlay?: PinkFridayLocalizedOverlay | null
 ): PinkFridayCampaignData {
-  if (locale === 'ar' || !overlay || overlay.campaignId !== campaign.id) {
+  if (locale === 'ar') {
     return campaign;
   }
 
+  const staticOverlay =
+    overlay &&
+    (!overlay.campaignId ||
+      overlay.campaignId === campaign.id ||
+      String(campaign.id || '').startsWith('pink-friday'))
+      ? overlay
+      : null;
+
+  const dynamicEn = campaign.i18n?.en || null;
+  if (!staticOverlay && !dynamicEn) {
+    return campaign;
+  }
+
+  const pick = (...vals: Array<string | undefined>): string | undefined => {
+    for (const v of vals) {
+      if (typeof v === 'string' && v.trim() !== '') return v;
+    }
+    return undefined;
+  };
+
+  const mergedSubtitle = pick(dynamicEn?.subtitle, staticOverlay?.subtitle, campaign.visuals?.subtitle, campaign.subtitleAr);
+  const mergedHeadline = pick(dynamicEn?.headline, staticOverlay?.headline, campaign.visuals?.headline);
+  const mergedCtaText = pick(dynamicEn?.ctaText, staticOverlay?.ctaText, campaign.visuals?.ctaText);
+  const mergedBadgeText = pick(dynamicEn?.badgeText, staticOverlay?.badgeText, campaign.visuals?.badgeText);
+  const mergedHeroImage = pick(dynamicEn?.heroImageOverride, staticOverlay?.heroImageOverride, campaign.visuals?.heroImageUrl);
+
   return {
     ...campaign,
-    title: overlay.title || campaign.title,
-    subtitleAr: overlay.subtitle || campaign.subtitleAr,
+    title: pick(dynamicEn?.title, staticOverlay?.title, campaign.title) || campaign.title,
+    subtitleAr: mergedSubtitle || campaign.subtitleAr,
     visuals: campaign.visuals
       ? {
           ...campaign.visuals,
-          subtitle: overlay.subtitle || campaign.visuals.subtitle,
-          ctaText: overlay.ctaText || campaign.visuals.ctaText,
-          badgeText: overlay.badgeText || campaign.visuals.badgeText,
-          headline: overlay.headline || campaign.visuals.headline,
-          heroImageUrl: overlay.heroImageOverride || campaign.visuals.heroImageUrl,
+          ...(mergedSubtitle ? { subtitle: mergedSubtitle } : {}),
+          ...(mergedCtaText ? { ctaText: mergedCtaText } : {}),
+          ...(mergedBadgeText ? { badgeText: mergedBadgeText } : {}),
+          ...(mergedHeadline ? { headline: mergedHeadline } : {}),
+          ...(mergedHeroImage ? { heroImageUrl: mergedHeroImage } : {}),
         }
-      : campaign.visuals,
+      : {
+          ...(mergedSubtitle ? { subtitle: mergedSubtitle } : {}),
+          ...(mergedCtaText ? { ctaText: mergedCtaText } : {}),
+          ...(mergedBadgeText ? { badgeText: mergedBadgeText } : {}),
+          ...(mergedHeadline ? { headline: mergedHeadline } : {}),
+          ...(mergedHeroImage ? { heroImageUrl: mergedHeroImage } : {}),
+        },
     collections: campaign.collections?.map((col) => {
-      const colOv = overlay.collectionTextOverrides?.[col.id];
-      if (!colOv) return { ...col };
+      const staticColOv = staticOverlay?.collectionTextOverrides?.[col.id];
+      const dynamicColOv = dynamicEn?.collectionTextOverrides?.[col.id];
+      if (!staticColOv && !dynamicColOv) return { ...col };
       return {
         ...col,
-        name: colOv.name ?? col.name,
-        description: colOv.description ?? col.description,
-        badgeText: colOv.badgeText ?? col.badgeText,
+        name: pick(dynamicColOv?.name, staticColOv?.name, col.name) || col.name,
+        description: pick(dynamicColOv?.description, staticColOv?.description, col.description) ?? col.description,
+        badgeText: pick(dynamicColOv?.badgeText, staticColOv?.badgeText, col.badgeText) ?? col.badgeText,
       };
     }),
   };

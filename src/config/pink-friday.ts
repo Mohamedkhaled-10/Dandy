@@ -57,7 +57,7 @@ export function getCampaignStatus(
   config: PinkFridayConfig = PINK_FRIDAY_CONFIG,
   now: Date = new Date()
 ): CampaignStatus {
-  if (!config.enabled) {
+  if (!config || config.enabled !== true) {
     return 'disabled';
   }
 
@@ -125,7 +125,7 @@ export function validateOffer(
   config: PinkFridayConfig = PINK_FRIDAY_CONFIG,
   now: Date = new Date()
 ): OfferValidationResult {
-  if (!config.enabled) {
+  if (!config || config.enabled !== true) {
     return { isValid: false, reason: 'CAMPAIGN_DISABLED' };
   }
 
@@ -138,7 +138,7 @@ export function validateOffer(
     return { isValid: false, reason: 'OFFER_NOT_FOUND' };
   }
 
-  if (!offer.active) {
+  if (offer.active !== true) {
     return { isValid: false, reason: 'OFFER_INACTIVE' };
   }
 
@@ -207,7 +207,7 @@ export function calculatePinkFridayPricing(
 ): CampaignPricingResult {
   const regularPrice = Number(product.price) || 0;
 
-  if (!config.enabled) {
+  if (!config || config.enabled !== true) {
     return {
       isEligible: false,
       regularPrice,

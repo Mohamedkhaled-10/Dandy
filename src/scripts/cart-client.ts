@@ -193,12 +193,24 @@ export function initCartCheckoutPage(): void {
     cart.forEach((item) => {
       if (item.type === 'collection' || item.isCollection || item.collectionId) {
         if (window.DandyPinkFriday && typeof window.DandyPinkFriday.isActive === 'function') {
-          if (!window.DandyPinkFriday.isActive()) {
-            if (item.isPinkFriday) modified = true;
+          const colId = item.collectionId || item.id;
+          const isCampActive = window.DandyPinkFriday.isActive();
+          const hasValidCol =
+            isCampActive &&
+            (typeof window.DandyPinkFriday.getCollectionById === 'function'
+              ? Boolean(window.DandyPinkFriday.getCollectionById(colId))
+              : true);
+
+          if (!hasValidCol) {
+            if (item.isPinkFriday || !item.campaignUnavailable) modified = true;
             item.isPinkFriday = false;
+            item.campaignUnavailable = true;
             if (item.regularPrice) item.price = item.regularPrice;
+            delete item.badgeText;
           } else {
+            if (!item.isPinkFriday || item.campaignUnavailable) modified = true;
             item.isPinkFriday = true;
+            delete item.campaignUnavailable;
             if (!item.badgeText) {
               item.badgeText = isEn ? 'Pink Friday Collection' : 'كوليكشن Pink Friday';
             }

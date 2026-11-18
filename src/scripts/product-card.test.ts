@@ -162,3 +162,24 @@ test('selectFeaturedProducts excludes hidden items and provides balanced categor
   const ids = featured.map((p) => p.id);
   assert.deepEqual(new Set(ids), new Set(['2', '3', '4', '5']));
 });
+
+test('resolveProductPricing preserves non-campaign onSale discount when Pink Friday pricing is ineligible', () => {
+  const ineligiblePf: CampaignPricingResult = {
+    isEligible: false,
+    regularPrice: 200,
+    campaignPrice: 200,
+    discountAmount: 0,
+    discountPercentage: 0,
+    reason: 'CAMPAIGN_DISABLED',
+  };
+  const vm = resolveProductCardViewModel(
+    makeProduct({ price: 200, originalPrice: 250, discount: 20, onSale: true }),
+    ineligiblePf
+  );
+  assert.equal(vm.isPinkFriday, false);
+  assert.equal(vm.currentPrice, 200);
+  assert.equal(vm.oldPrice, 250);
+  assert.equal(vm.discountPercent, 20);
+  assert.equal(vm.badge?.tone, 'discount');
+});
+

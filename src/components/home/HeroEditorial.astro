@@ -11,17 +11,21 @@ import { buildLocalizedPath } from '../../i18n/routes';
 import {
   DEFAULT_HERO_SLIDE,
   DEFAULT_HERO_SLIDE_EN,
+  resolveHeroMeta,
+  type HeroMetaConfig,
   type ResolvedHeroSlide,
 } from '../../scripts/homepage-studio';
 
 export interface Props {
   slides?: ResolvedHeroSlide[];
+  heroMeta?: HeroMetaConfig;
   hidden?: boolean;
   locale?: Locale;
 }
 
-const { slides = [], hidden = false, locale = 'ar' } = Astro.props;
+const { slides = [], heroMeta, hidden = false, locale = 'ar' } = Astro.props;
 const isEn = locale === 'en';
+const resolvedMeta = resolveHeroMeta(heroMeta, locale);
 const defaultHeroSlide = isEn ? DEFAULT_HERO_SLIDE_EN : DEFAULT_HERO_SLIDE;
 const activeSlides: ResolvedHeroSlide[] =
   slides.length > 0
@@ -44,16 +48,8 @@ const aboutHref = buildLocalizedPath('/about-us', locale);
 >
   <div class="dandy-container dandy-hero-grid">
     <div class="dandy-hero-copy">
-      <p class="dandy-hero-kicker" data-hero-kicker data-dandy-entrance="0">
-        {isEn ? (
-          <>
-            Dandy Cosmetics <span aria-hidden="true">·</span> Pharmacist-Formulated Botanical Care
-          </>
-        ) : (
-          <>
-            Dandy Cosmetics <span aria-hidden="true">·</span> عناية طبيعية برؤية صيدلانية
-          </>
-        )}
+      <p class="dandy-hero-kicker" data-hero-kicker dir="auto" data-dandy-entrance="0">
+        {resolvedMeta.kicker}
       </p>
 
       <h1 class="dandy-hero-title" data-hero-title dir="auto" data-dandy-entrance="1">
@@ -73,8 +69,12 @@ const aboutHref = buildLocalizedPath('/about-us', locale);
           <span data-hero-cta-label dir="auto">{firstSlide.buttonText}</span>
           <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={16} strokeWidth={1.85} />
         </a>
-        <a href={aboutHref} class="dandy-btn dandy-btn--outline dandy-hero-secondary-cta">
-          <span>{isEn ? 'Our Philosophy' : 'فلسفة داندي'}</span>
+        <a
+          href={resolvedMeta.secondaryCtaHref}
+          class="dandy-btn dandy-btn--outline dandy-hero-secondary-cta"
+          data-hero-secondary-cta
+        >
+          <span data-hero-secondary-label dir="auto">{resolvedMeta.secondaryCtaLabel}</span>
         </a>
       </div>
     </div>
@@ -98,25 +98,30 @@ const aboutHref = buildLocalizedPath('/about-us', locale);
               data-link={slide.link?.startsWith('/') ? buildLocalizedPath(slide.link, locale) : slide.link}
               aria-hidden={idx === 0 ? 'false' : 'true'}
             >
-              <img
-                src={slide.desktopImage}
-                data-desktop-src={slide.desktopImage}
-                data-mobile-src={slide.mobileImage || ''}
-                alt={
-                  slide.title ||
-                  (isEn
-                    ? 'Dandy Cosmetics natural botanical skincare essentials'
-                    : 'مستحضرات داندي للعناية بالبشرة بتركيبات نباتية طبيعية')
-                }
-                width="1376"
-                height="768"
-                loading={idx === 0 ? 'eager' : 'lazy'}
-                decoding={idx === 0 ? 'sync' : 'async'}
-                fetchpriority={idx === 0 ? 'high' : 'auto'}
-                referrerpolicy="no-referrer"
-                class="dandy-hero-img"
-                onerror="this.onerror=null;this.src='/assets/images/editorial/hero-botanical.jpg';"
-              />
+              <picture>
+                {slide.mobileImage && slide.mobileImage !== slide.desktopImage && (
+                  <source media="(max-width: 767px)" srcset={slide.mobileImage} data-hero-mobile-source />
+                )}
+                <img
+                  src={slide.desktopImage}
+                  data-desktop-src={slide.desktopImage}
+                  data-mobile-src={slide.mobileImage || ''}
+                  alt={
+                    slide.title ||
+                    (isEn
+                      ? 'Dandy Cosmetics natural botanical skincare essentials'
+                      : 'مستحضرات داندي للعناية بالبشرة بتركيبات نباتية طبيعية')
+                  }
+                  width="1376"
+                  height="768"
+                  loading={idx === 0 ? 'eager' : 'lazy'}
+                  decoding={idx === 0 ? 'sync' : 'async'}
+                  fetchpriority={idx === 0 ? 'high' : 'auto'}
+                  referrerpolicy="no-referrer"
+                  class="dandy-hero-img"
+                  onerror="this.onerror=null;this.src='/assets/images/hero/hero-1.jpg';"
+                />
+              </picture>
             </figure>
           ))}
         </div>
@@ -335,6 +340,12 @@ const aboutHref = buildLocalizedPath('/about-us', locale);
     opacity: 1;
     pointer-events: auto;
     z-index: 1;
+  }
+
+  .dandy-hero-frame picture {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .dandy-hero-frame img {

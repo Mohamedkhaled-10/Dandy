@@ -9,6 +9,8 @@ import {
   getCampaignStatus,
   calculatePinkFridayPricing,
   validateOffer,
+  isOfferFlagActive,
+  isCollectionFlagActive,
   type PinkFridayCampaign,
   type CampaignPricingResult,
 } from '../../utils/pink-friday-server';
@@ -54,7 +56,7 @@ const validCampaignItems: ValidCampaignItem[] = [];
 
 if (status === 'active' && campaign.offers) {
   for (const offer of campaign.offers) {
-    if (!offer.active) continue;
+    if (!isOfferFlagActive(offer)) continue;
     const prod = allProducts.find((p) => String(p.id) === String(offer.productId));
     if (!prod) continue;
 
@@ -104,7 +106,7 @@ const campaignCollectionsList = Array.isArray(rawCampaignCollections)
 
 if (status === 'active' && campaignCollectionsList.length > 0) {
   for (const col of campaignCollectionsList as any[]) {
-    if (!col || col.active === false) continue;
+    if (!col || !isCollectionFlagActive(col)) continue;
     const colItems = Array.isArray(col.items)
       ? col.items
       : col.items && typeof col.items === 'object'
@@ -193,14 +195,35 @@ const displayMode = resolvePinkFridayDisplayMode(
 );
 
 const visualsAny = (campaign.visuals || {}) as Record<string, any>;
-const badgeLabel = visualsAny.badgeText || 'Pink Friday';
-const heroHeadline = visualsAny.headline || campaign.title || (isEn ? 'Pink Friday Offers' : 'Pink Friday');
-const heroSubtitle =
-  visualsAny.subtitle ||
-  campaign.subtitleAr ||
-  (isEn
-    ? 'Enjoy special savings on all your favorite DANDY botanical essentials for Pink Friday.'
-    : 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.');
+const isDisabledState = status === 'disabled' || displayMode === 'disabled';
+const isEndedState = status === 'ended' || displayMode === 'ended';
+
+const badgeLabel = isDisabledState
+  ? isEn ? 'Campaign Paused' : 'الحملة متوقفة حالياً'
+  : isEndedState
+    ? isEn ? 'Season Concluded' : 'انتهى الموسم'
+    : visualsAny.badgeText || 'Pink Friday';
+
+const heroHeadline = isDisabledState
+  ? isEn ? 'Pink Friday Is Currently Paused' : 'عروض Pink Friday غير مفعّلة حالياً'
+  : isEndedState
+    ? isEn ? 'This Season’s Pink Friday Has Ended' : 'انتهت عروض Pink Friday لهذا الموسم'
+    : visualsAny.headline || campaign.title || (isEn ? 'Pink Friday Offers' : 'Pink Friday');
+
+const heroSubtitle = isDisabledState
+  ? isEn
+      ? 'There are no active Pink Friday discounts running at the moment. Explore our permanent botanical catalog and ongoing special offers below.'
+      : 'لا توجد خصومات Pink Friday نشطة حالياً. يمكنكِ تصفح الكتالوج الدائم والعروض الخاصة المتوفرة في المتجر.'
+  : isEndedState
+    ? isEn
+        ? 'Thank you for shopping with DANDY. Discover our ongoing special offers and permanent botanical essentials below.'
+        : 'شكراً لتسوّقكِ معنا. استكشفي العروض الخاصة الجارية ومنتجات داندي الطبيعية بالأسفل.'
+    : visualsAny.subtitle ||
+      campaign.subtitleAr ||
+      (isEn
+        ? 'Enjoy special savings on all your favorite DANDY botanical essentials for Pink Friday.'
+        : 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.');
+
 const heroCtaText = visualsAny.ctaText || (isEn ? 'Explore Offers' : 'اكتشفي العروض');
 
 const rawHeroArtwork: string = visualsAny.heroImageUrl || visualsAny.bannerImage || '';

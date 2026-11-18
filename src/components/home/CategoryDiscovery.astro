@@ -9,20 +9,23 @@ import type { Locale } from '../../i18n/types';
 import { buildLocalizedPath } from '../../i18n/routes';
 import {
   resolveCategoriesForShowcase,
+  resolveCategoriesSectionMeta,
   type ResolvedCategoryCard,
+  type SectionHeaderConfig,
 } from '../../scripts/homepage-studio';
 
 export interface Props {
   categories?: ResolvedCategoryCard[];
+  sectionMeta?: SectionHeaderConfig;
   hidden?: boolean;
   locale?: Locale;
 }
 
-const { categories, hidden = false, locale = 'ar' } = Astro.props;
+const { categories, sectionMeta, hidden = false, locale = 'ar' } = Astro.props;
 const isEn = locale === 'en';
 const activeCategories =
   categories && categories.length > 0 ? categories : resolveCategoriesForShowcase(undefined, locale);
-const allProductsHref = buildLocalizedPath('/all-products', locale);
+const resolvedHeader = resolveCategoriesSectionMeta(sectionMeta, locale);
 const fallbackCatImg = '/assets/images/index-products/product-2.jpg';
 ---
 
@@ -35,13 +38,13 @@ const fallbackCatImg = '/assets/images/index-products/product-2.jpg';
   <div class="dandy-container">
     <header class="dandy-section-header" data-dandy-reveal>
       <div class="dandy-section-titles">
-        <p class="dandy-section-kicker">{isEn ? 'Primary Categories' : 'الأقسام الرئيسية'}</p>
-        <h2 id="home-categories-heading" class="dandy-section-heading">
-          {isEn ? 'Shop by Routine' : 'تسوقي حسب الروتين'}
+        <p class="dandy-section-kicker" data-cats-kicker dir="auto">{resolvedHeader.kicker}</p>
+        <h2 id="home-categories-heading" class="dandy-section-heading" data-cats-title dir="auto">
+          {resolvedHeader.title}
         </h2>
       </div>
-      <a href={allProductsHref} class="dandy-section-more">
-        <span>{isEn ? 'All Products' : 'كل المنتجات'}</span>
+      <a href={resolvedHeader.ctaHref} class="dandy-section-more" data-cats-more-link>
+        <span data-cats-more-label dir="auto">{resolvedHeader.ctaLabel}</span>
         <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={15} strokeWidth={1.8} />
       </a>
     </header>

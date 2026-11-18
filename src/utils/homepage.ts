@@ -1,7 +1,7 @@
 /**
  * DANDY COSMETICS — SERVER-SIDE HOMEPAGE STUDIO DATA SERVICE
- * Fetches existing Firebase RTDB `/homepage` and `/categories` nodes cleanly on SSR
- * with a short 30-second cache (bypassed immediately when `forceFresh` / `?studio_preview=1` is set).
+ * Fetches Firebase RTDB `/homepage` and `/categories` live on SSR so Admin Studio
+ * publishes take immediate effect (keeping in-memory state strictly as error fallback).
  */
 
 import type {
@@ -16,8 +16,10 @@ import type {
 const RTDB_URL = 'https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app';
 
 let cachedStudioState: HomepageStudioState | null = null;
-let lastFetchTimestamp = 0;
-const CACHE_TTL_MS = 30 * 1000;
+
+export function invalidateHomepageCache(): void {
+  cachedStudioState = null;
+}
 
 function normalizeArray<T>(raw: unknown): T[] {
   if (Array.isArray(raw)) {
@@ -35,12 +37,34 @@ function normalizeReviews(homeData: Record<string, any>): ReviewItem[] {
   return normalizeArray<ReviewItem>(homeData.reviews);
 }
 
+function normalizeSectionsVisibility(safeHome: Record<string, any>): Record<string, boolean> | undefined {
+  const result: Record<string, boolean> = {};
+  if (safeHome.sections && typeof safeHome.sections === 'object') {
+    Object.entries(safeHome.sections).forEach(([key, val]: [string, any]) => {
+      if (val && typeof val === 'object' && typeof val.visible === 'boolean') {
+        result[key] = val.visible;
+      } else if (typeof val === 'boolean') {
+        result[key] = val;
+      }
+    });
+  }
+  if (safeHome.sectionsVisibility && typeof safeHome.sectionsVisibility === 'object') {
+    Object.entries(safeHome.sectionsVisibility).forEach(([key, val]) => {
+      if (typeof val === 'boolean') {
+        result[key] = val;
+      }
+    });
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 async function fetchJsonWithTimeout<T>(url: string, timeoutMs = 4500): Promise<T | null> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
+      cache: 'no-store',
       headers: {
         'User-Agent': 'Dandy-Astro-SSR/1.0',
         Accept: 'application/json',
@@ -56,13 +80,8 @@ async function fetchJsonWithTimeout<T>(url: string, timeoutMs = 4500): Promise<T
 }
 
 export async function getHomepageStudioData(
-  options: { forceFresh?: boolean } = {}
+  _options: { forceFresh?: boolean } = {}
 ): Promise<HomepageStudioState> {
-  const now = Date.now();
-  if (!options.forceFresh && cachedStudioState && now - lastFetchTimestamp < CACHE_TTL_MS) {
-    return cachedStudioState;
-  }
-
   const [homeRes, categoriesRes] = await Promise.allSettled([
     fetchJsonWithTimeout<Record<string, any>>(`${RTDB_URL}/homepage.json`),
     fetchJsonWithTimeout<Record<string, StudioCategoryItem>>(`${RTDB_URL}/categories.json`),
@@ -78,7 +97,7 @@ export async function getHomepageStudioData(
       ? categoriesRes.value
       : null;
 
-  // If RTDB failed completely and stale cache exists, keep storefront resilient
+  // If RTDB failed completely and cached fallback exists, keep storefront resilient
   if (!homeData && !categoriesData && cachedStudioState) {
     return cachedStudioState;
   }
@@ -86,11 +105,29 @@ export async function getHomepageStudioData(
   const safeHome = homeData || {};
   const state: HomepageStudioState = {
     hero: normalizeArray<HeroSlide>(safeHome.dynamicHero),
+    heroMeta:
+      safeHome.heroMeta && typeof safeHome.heroMeta === 'object' ? safeHome.heroMeta : undefined,
     sections: normalizeArray<DynamicSection>(safeHome.dynamicSections),
     trust:
       safeHome.trust && typeof safeHome.trust === 'object'
         ? safeHome.trust
         : {},
+    trustSection:
+      safeHome.trustSection && typeof safeHome.trustSection === 'object'
+        ? safeHome.trustSection
+        : undefined,
+    categoriesSection:
+      safeHome.categoriesSection && typeof safeHome.categoriesSection === 'object'
+        ? safeHome.categoriesSection
+        : undefined,
+    blogSection:
+      safeHome.blogSection && typeof safeHome.blogSection === 'object'
+        ? safeHome.blogSection
+        : undefined,
+    reviewsSection:
+      safeHome.reviewsSection && typeof safeHome.reviewsSection === 'object'
+        ? safeHome.reviewsSection
+        : undefined,
     reviews: normalizeReviews(safeHome),
     categories: categoriesData || {},
     promoBanner:
@@ -101,15 +138,13 @@ export async function getHomepageStudioData(
     sectionOrder: Array.isArray(safeHome.sectionOrder)
       ? safeHome.sectionOrder.filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
       : undefined,
-    sectionsVisibility:
-      safeHome.sectionsVisibility && typeof safeHome.sectionsVisibility === 'object'
-        ? safeHome.sectionsVisibility
-        : undefined,
+    sectionsVisibility: normalizeSectionsVisibility(safeHome),
+    enOverlay:
+      safeHome.enOverlay && typeof safeHome.enOverlay === 'object' ? safeHome.enOverlay : undefined,
   };
 
   if (homeData || categoriesData) {
     cachedStudioState = state;
-    lastFetchTimestamp = now;
   }
 
   return state;

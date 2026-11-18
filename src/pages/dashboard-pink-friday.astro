@@ -269,14 +269,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       /* Main Sections Layout: Controls & Products */
       .pf-layout-grid {
         display: grid;
-        grid-template-columns: 380px 1fr;
+        grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
         gap: 24px;
         align-items: start;
       }
 
+      .pf-layout-grid > * {
+        min-width: 0;
+        max-width: 100%;
+      }
+
       @media (max-width: 1024px) {
         .pf-layout-grid {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
       }
 
@@ -286,6 +291,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 24px;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       .pf-panel-title {
@@ -298,6 +306,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
       }
 
       .pf-form-group {
@@ -761,13 +771,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <!-- Draft & Publish Ribbon -->
     <div class="pf-ribbon-actions">
-      <div class="pf-ribbon-status">
+      <div class="pf-ribbon-status" style="flex-wrap: wrap;">
         <span class="status-pill scheduled" id="campaignStatusPill">
           <i class="fas fa-clock"></i>
-          <span id="campaignStatusText">مجدولة</span>
+          <span id="campaignStatusText">جاري التحميل...</span>
+        </span>
+        <span class="status-pill disabled" id="liveStorefrontPill" title="الحالة المنشورة فعلياً للعملاء الآن">
+          <i class="fas fa-store"></i>
+          <span id="liveStorefrontText">المتجر الآن: غير منشور</span>
         </span>
         <span class="draft-indicator" id="draftStatusBadge">
-          <i class="fas fa-pen"></i> وضع التعديل (مسودة غير منشورة)
+          <i class="fas fa-pen"></i> مسودة العمل
         </span>
         <span style="font-size: 0.78rem; color: #6b7280;" id="lastPublishedText">
           لم يتم النشر بعد
@@ -790,11 +804,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <span>اعتماد ونشر الحملة</span>
         </button>
 
+        <button type="button" class="btn-action" id="btnUnpublishNow" style="background: #991b1b; color: #ffffff; border-color: #991b1b; display: none;">
+          <i class="fas fa-power-off"></i>
+          <span>إيقاف على المتجر فوراً</span>
+        </button>
+
         <button type="button" class="btn-action btn-action-revert" id="btnRestorePublished" title="إلغاء التعديلات غير المنشورة">
           <i class="fas fa-undo"></i>
           <span>استعادة المنشور</span>
         </button>
       </div>
+    </div>
+
+    <!-- Mismatch / Unsynced Warning Banner -->
+    <div id="liveMismatchBanner" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 0.85rem;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 1.1rem;"></i>
+        <span id="liveMismatchText"></span>
+      </div>
+      <button type="button" class="btn-action" id="btnBannerUnpublishNow" style="background: #dc2626; color: #ffffff; border-color: #dc2626; display: none;">
+        <i class="fas fa-power-off"></i>
+        <span>إيقاف الحملة على المتجر فوراً</span>
+      </button>
     </div>
 
     <!-- KPI Stats Counters -->
@@ -853,10 +884,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="pf-toggle-row">
             <div>
               <div class="pf-toggle-label">تفعيل الحملة برمجياً</div>
-              <small style="color: #6b7280; font-size: 0.72rem;">تتطلب وجود عروض صالحة وتواريخ متوافقة للظهور للعملاء</small>
+              <small style="color: #6b7280; font-size: 0.72rem;">تتطلب وجود عروض صالحة وتواريخ متوافقة واعتماد النشر للظهور للعملاء</small>
             </div>
             <label class="pf-switch">
-              <input type="checkbox" id="campaignEnabledToggle" checked>
+              <input type="checkbox" id="campaignEnabledToggle">
               <span class="pf-slider"></span>
             </label>
           </div>
@@ -884,12 +915,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </h3>
 
           <div class="pf-form-group">
-            <label for="visualHeadline">عنوان الحملة الرئيسي</label>
+            <label for="visualHeadline">عنوان الحملة الرئيسي (العربية)</label>
             <input type="text" id="visualHeadline" class="pf-form-input" placeholder="عروض Pink Friday الحصرية">
           </div>
 
           <div class="pf-form-group">
-            <label for="visualSubtitle">الوصف الترويجي القصير</label>
+            <label for="visualSubtitle">الوصف الترويجي القصير (العربية)</label>
             <textarea id="visualSubtitle" class="pf-form-textarea" rows="2" placeholder="استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي."></textarea>
           </div>
 
@@ -897,7 +928,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <label for="visualHeroImg">رابط صورة الهيرو (Cloudinary أو رابط مباشر)</label>
             <input type="url" id="visualHeroImg" class="pf-form-input" placeholder="https://res.cloudinary.com/...">
             <div class="pf-visual-preview-box" id="heroPreviewBox">
-              <img id="heroPreviewImg" src="" alt="Hero Preview" onerror="this.src='https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';">
+              <img id="heroPreviewImg" src="/assets/images/index-products/product-2.jpg" alt="Hero Preview" onerror="this.onerror=null;this.src='/assets/images/index-products/product-2.jpg';">
             </div>
           </div>
 
@@ -918,6 +949,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="pf-form-group">
             <label for="visualBadgeText">نص الشارة الافتراضية</label>
             <input type="text" id="visualBadgeText" class="pf-form-input" placeholder="Pink Friday">
+          </div>
+        </div>
+
+        <!-- English Localization Overlay Customization -->
+        <div class="pf-panel-card">
+          <h3 class="pf-panel-title">
+            <span><i class="fas fa-language"></i> النسخة الإنجليزية للمتجر (/en/pink-friday)</span>
+          </h3>
+
+          <div class="pf-form-group">
+            <label for="enVisualHeadline">العنوان بالإنجليزية (English Headline)</label>
+            <input type="text" id="enVisualHeadline" dir="ltr" class="pf-form-input" placeholder="Pink Friday Offers">
+          </div>
+
+          <div class="pf-form-group">
+            <label for="enVisualSubtitle">الوصف بالإنجليزية (English Subtitle)</label>
+            <textarea id="enVisualSubtitle" dir="ltr" class="pf-form-textarea" rows="2" placeholder="Enjoy special savings on all your favorite DANDY botanical essentials for Pink Friday."></textarea>
+          </div>
+
+          <div class="pf-form-group">
+            <label for="enVisualCtaText">نص الزر بالإنجليزية (English CTA)</label>
+            <input type="text" id="enVisualCtaText" dir="ltr" class="pf-form-input" placeholder="Explore Offers">
+          </div>
+
+          <div class="pf-form-group">
+            <label for="enVisualBadgeText">نص الشارة بالإنجليزية (English Badge)</label>
+            <input type="text" id="enVisualBadgeText" dir="ltr" class="pf-form-input" placeholder="Pink Friday">
           </div>
         </div>
       </div>
@@ -945,19 +1003,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <table class="pf-table">
               <thead>
                 <tr>
-                  <th style="width: 260px;">المستحضر</th>
+                  <th style="width: 240px;">المستحضر</th>
                   <th>السعر الحالي</th>
                   <th>نسبة الخصم %</th>
                   <th>سعر الحملة</th>
                   <th>مقدار الوفر</th>
                   <th>نص الشارة</th>
+                  <th>تراكم الخصم</th>
                   <th>الحالة</th>
                   <th>إجراءات</th>
                 </tr>
               </thead>
               <tbody id="offersTableBody">
                 <tr>
-                  <td colspan="8" style="text-align: center; padding: 40px; color: #9ca3af;">
+                  <td colspan="9" style="text-align: center; padding: 40px; color: #9ca3af;">
                     جاري تحميل المنتجات المشاركة في الحملة...
                   </td>
                 </tr>
@@ -1167,8 +1226,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
 
         <div class="pf-form-group">
-          <label for="colDescInput"><i class="fas fa-align-right"></i> وصف الكوليكشن</label>
+          <label for="colDescInput"><i class="fas fa-align-right"></i> وصف الكوليكشن (العربية)</label>
           <textarea id="colDescInput" class="pf-form-textarea" rows="2" placeholder="وصف قصير لمكونات ومميزات هذا البكج..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="pf-form-group">
+            <label for="colEnNameInput"><i class="fas fa-language"></i> الاسم بالإنجليزية (English Name)</label>
+            <input type="text" id="colEnNameInput" dir="ltr" class="pf-form-input" placeholder="Complete Care Bundle">
+          </div>
+          <div class="pf-form-group">
+            <label for="colEnBadgeInput"><i class="fas fa-tag"></i> الشارة بالإنجليزية (English Badge)</label>
+            <input type="text" id="colEnBadgeInput" dir="ltr" class="pf-form-input" placeholder="Pink Friday Collection">
+          </div>
+        </div>
+
+        <div class="pf-form-group">
+          <label for="colEnDescInput"><i class="fas fa-align-left"></i> الوصف بالإنجليزية (English Description)</label>
+          <textarea id="colEnDescInput" dir="ltr" class="pf-form-textarea" rows="2" placeholder="Short English description for /en/pink-friday..."></textarea>
         </div>
 
         <div class="pf-form-group">
@@ -1271,6 +1346,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </div>
 
+    <!-- Modal 6: Custom Accessible Confirmation Dialog -->
+    <div class="pf-modal-backdrop" id="pfConfirmModal">
+      <div class="pf-modal-dialog" style="max-width: 460px;">
+        <div class="pf-modal-header">
+          <h3 id="pfConfirmTitle">تأكيد الإجراء</h3>
+          <button type="button" class="pf-modal-close" data-close-modal="pfConfirmModal">&times;</button>
+        </div>
+        <p id="pfConfirmMessage" style="font-size: 0.88rem; color: #374151; line-height: 1.7; margin: 0 0 20px;"></p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn-action btn-action-revert" data-close-modal="pfConfirmModal">إلغاء</button>
+          <button type="button" class="btn-action btn-action-publish" id="btnPfConfirmAccept">تأكيد</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="pf-toast" id="pfToast">
       <i class="fas fa-info-circle"></i>
@@ -1285,10 +1375,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     let allYears = [2026];
     let draftCampaign = null;
     let publishedCampaign = null;
+    let publishedActiveCampaign = null;
     let catalogProducts = [];
     let isDraftDirty = false;
     let isDataLoaded = false;
     let hasLoadError = false;
+    let pendingConfirmAction = null;
+
+    function openConfirmModal(title, message, onConfirm, isDanger) {
+      const titleEl = document.getElementById('pfConfirmTitle');
+      const msgEl = document.getElementById('pfConfirmMessage');
+      const acceptBtn = document.getElementById('btnPfConfirmAccept');
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.textContent = message;
+      if (acceptBtn) {
+        acceptBtn.style.background = isDanger ? '#dc2626' : '';
+        acceptBtn.style.borderColor = isDanger ? '#dc2626' : '';
+      }
+      pendingConfirmAction = onConfirm;
+      openModal('pfConfirmModal');
+    }
+
+    document.getElementById('btnPfConfirmAccept')?.addEventListener('click', () => {
+      const fn = pendingConfirmAction;
+      pendingConfirmAction = null;
+      closeModal('pfConfirmModal');
+      if (typeof fn === 'function') fn();
+    });
 
     // Toast helper
     function showToast(msg, type = 'success') {
@@ -1411,11 +1524,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           window.location.href = '/login';
           return;
         }
+        if (!res.ok) {
+          throw new Error(`HTTP_${res.status}`);
+        }
 
         const data = await res.json();
         if (data.success && data.campaigns) {
           const campaignKey = `pink-friday-${currentYear}`;
           const yearCampaignObj = data.campaigns[campaignKey] || null;
+          publishedActiveCampaign = data.publishedActiveCampaign || null;
 
           if (yearCampaignObj) {
             draftCampaign = yearCampaignObj.draft || null;
@@ -1435,6 +1552,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           isDataLoaded = true;
           hasLoadError = false;
+          isDraftDirty = false;
 
           populateYearSelector();
           syncFormWithDraft();
@@ -1442,6 +1560,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         } else {
           draftCampaign = null;
           publishedCampaign = null;
+          publishedActiveCampaign = null;
           isDataLoaded = false;
           hasLoadError = true;
           showToast(data.error || 'تعذر تحميل بيانات الحملة من السيرفر', 'error');
@@ -1462,12 +1581,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             }
             renderOffersTable();
             renderCollectionsTable();
+            updateStatusAndKPIs();
           });
         }
       } catch (err) {
         console.error('Error loading Pink Friday data:', err);
         draftCampaign = null;
         publishedCampaign = null;
+        publishedActiveCampaign = null;
         isDataLoaded = false;
         hasLoadError = true;
         showToast('تعذر تحميل بيانات الحملة من السيرفر', 'error');
@@ -1501,7 +1622,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!draftCampaign) return;
 
       const enabledToggle = document.getElementById('campaignEnabledToggle');
-      if (enabledToggle) enabledToggle.checked = draftCampaign.enabled !== false;
+      if (enabledToggle) {
+        enabledToggle.checked = draftCampaign.enabled === true && draftCampaign.unpublished !== true;
+      }
 
       const startVal = draftCampaign.startAt || draftCampaign.startDate;
       const startDateInput = document.getElementById('campaignStartDate');
@@ -1517,27 +1640,39 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       const visuals = draftCampaign.visuals || {};
       const headlineInput = document.getElementById('visualHeadline');
-      if (headlineInput) headlineInput.value = visuals.headline || 'عروض Pink Friday الحصرية';
+      if (headlineInput) headlineInput.value = visuals.headline ?? '';
 
       const subtitleInput = document.getElementById('visualSubtitle');
-      if (subtitleInput) subtitleInput.value = visuals.subtitle || '';
+      if (subtitleInput) subtitleInput.value = visuals.subtitle ?? '';
 
+      const heroImgVal = visuals.heroImageUrl || visuals.bannerImage || '';
+      const cleanHeroImgVal = heroImgVal.includes('images.unsplash.com') ? '' : heroImgVal;
       const heroImgInput = document.getElementById('visualHeroImg');
-      if (heroImgInput) heroImgInput.value = visuals.heroImageUrl || '';
+      if (heroImgInput) heroImgInput.value = cleanHeroImgVal;
 
       const heroPreviewImg = document.getElementById('heroPreviewImg');
       if (heroPreviewImg) {
-        heroPreviewImg.src = visuals.heroImageUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
+        heroPreviewImg.src = cleanHeroImgVal || '/assets/images/index-products/product-2.jpg';
       }
 
       const bannerPos = document.getElementById('visualBannerPosition');
       if (bannerPos) bannerPos.value = visuals.bannerPosition || 'center';
 
       const ctaInput = document.getElementById('visualCtaText');
-      if (ctaInput) ctaInput.value = visuals.ctaText || 'اكتشفي عروض Pink Friday';
+      if (ctaInput) ctaInput.value = visuals.ctaText ?? 'اكتشفي عروض Pink Friday';
 
       const badgeInput = document.getElementById('visualBadgeText');
-      if (badgeInput) badgeInput.value = visuals.badgeText || 'Pink Friday';
+      if (badgeInput) badgeInput.value = visuals.badgeText ?? 'Pink Friday';
+
+      const enOverlay = (draftCampaign.i18n && draftCampaign.i18n.en) ? draftCampaign.i18n.en : {};
+      const enHeadlineInput = document.getElementById('enVisualHeadline');
+      if (enHeadlineInput) enHeadlineInput.value = enOverlay.headline || '';
+      const enSubtitleInput = document.getElementById('enVisualSubtitle');
+      if (enSubtitleInput) enSubtitleInput.value = enOverlay.subtitle || '';
+      const enCtaInput = document.getElementById('enVisualCtaText');
+      if (enCtaInput) enCtaInput.value = enOverlay.ctaText || '';
+      const enBadgeInput = document.getElementById('enVisualBadgeText');
+      if (enBadgeInput) enBadgeInput.value = enOverlay.badgeText || '';
 
       renderOffersTable();
       renderCollectionsTable();
@@ -1547,9 +1682,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     function updateDraftFromForm() {
       if (!draftCampaign) return;
 
-      draftCampaign.enabled = document.getElementById('campaignEnabledToggle').checked;
-      const sVal = document.getElementById('campaignStartDate').value;
-      const eVal = document.getElementById('campaignEndDate').value;
+      draftCampaign.enabled = Boolean(document.getElementById('campaignEnabledToggle')?.checked);
+      if (draftCampaign.enabled) {
+        draftCampaign.unpublished = false;
+      }
+
+      const sVal = document.getElementById('campaignStartDate')?.value;
+      const eVal = document.getElementById('campaignEndDate')?.value;
       if (sVal) {
         const isoStart = sVal.length === 16 ? sVal + ':00' : sVal;
         draftCampaign.startDate = isoStart;
@@ -1561,13 +1700,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         draftCampaign.endAt = isoEnd;
       }
 
+      const heroUrl = (document.getElementById('visualHeroImg')?.value || '').trim();
       draftCampaign.visuals = {
-        headline: document.getElementById('visualHeadline').value.trim(),
-        subtitle: document.getElementById('visualSubtitle').value.trim(),
-        heroImageUrl: document.getElementById('visualHeroImg').value.trim(),
-        bannerPosition: document.getElementById('visualBannerPosition').value,
-        ctaText: document.getElementById('visualCtaText').value.trim(),
-        badgeText: document.getElementById('visualBadgeText').value.trim()
+        headline: (document.getElementById('visualHeadline')?.value || '').trim(),
+        subtitle: (document.getElementById('visualSubtitle')?.value || '').trim(),
+        heroImageUrl: heroUrl,
+        bannerImage: heroUrl,
+        bannerPosition: document.getElementById('visualBannerPosition')?.value || 'center',
+        ctaText: (document.getElementById('visualCtaText')?.value || '').trim(),
+        badgeText: (document.getElementById('visualBadgeText')?.value || '').trim()
+      };
+
+      const existingColOverrides = draftCampaign.i18n?.en?.collectionTextOverrides || {};
+      draftCampaign.i18n = {
+        en: {
+          headline: (document.getElementById('enVisualHeadline')?.value || '').trim(),
+          subtitle: (document.getElementById('enVisualSubtitle')?.value || '').trim(),
+          ctaText: (document.getElementById('enVisualCtaText')?.value || '').trim(),
+          badgeText: (document.getElementById('enVisualBadgeText')?.value || '').trim(),
+          collectionTextOverrides: existingColOverrides
+        }
       };
 
       isDraftDirty = true;
@@ -1575,14 +1727,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     // Listen to form input changes
-    ['campaignEnabledToggle', 'campaignStartDate', 'campaignEndDate', 'visualHeadline', 'visualSubtitle', 'visualHeroImg', 'visualBannerPosition', 'visualCtaText', 'visualBadgeText'].forEach(id => {
+    [
+      'campaignEnabledToggle',
+      'campaignStartDate',
+      'campaignEndDate',
+      'visualHeadline',
+      'visualSubtitle',
+      'visualHeroImg',
+      'visualBannerPosition',
+      'visualCtaText',
+      'visualBadgeText',
+      'enVisualHeadline',
+      'enVisualSubtitle',
+      'enVisualCtaText',
+      'enVisualBadgeText'
+    ].forEach(id => {
       document.getElementById(id)?.addEventListener('input', updateDraftFromForm);
       document.getElementById(id)?.addEventListener('change', updateDraftFromForm);
     });
 
     document.getElementById('visualHeroImg')?.addEventListener('input', (e) => {
       const img = document.getElementById('heroPreviewImg');
-      if (img) img.src = e.target.value.trim() || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
+      if (img) img.src = e.target.value.trim() || '/assets/images/index-products/product-2.jpg';
     });
 
     // Render Offers Table
@@ -1593,7 +1759,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (hasLoadError) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" style="text-align: center; padding: 40px; color: #b91c1c;">
+            <td colspan="9" style="text-align: center; padding: 40px; color: #b91c1c;">
               <i class="fas fa-exclamation-triangle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
               فشل تحميل بيانات الحملة من السيرفر. يرجى إعادة تنشيط الصفحة أو المحاولة لاحقاً.
             </td>
@@ -1605,7 +1771,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!isDataLoaded) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
+            <td colspan="9" style="text-align: center; padding: 40px; color: #6b7280;">
               <i class="fas fa-spinner fa-spin" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
               جاري تحميل بيانات الحملة...
             </td>
@@ -1617,7 +1783,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!draftCampaign) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" style="text-align: center; padding: 40px; color: #4b5563;">
+            <td colspan="9" style="text-align: center; padding: 40px; color: #4b5563;">
               <i class="fas fa-calendar-times" style="font-size: 2rem; color: #9ca3af; display: block; margin-bottom: 10px;"></i>
               لا توجد مسودة بيانات للحملة لسنة ${currentYear}. انقري على "بدء سنة جديدة" لإنشائها.
             </td>
@@ -1630,7 +1796,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (offers.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
+            <td colspan="9" style="text-align: center; padding: 40px; color: #6b7280;">
               <i class="fas fa-tag" style="font-size: 2rem; color: #d1d5db; display: block; margin-bottom: 10px;"></i>
               لا توجد منتجات مضافة للحملة بعد. انقري على "إضافة منتج من الكتالوج" للبدء.
             </td>
@@ -1646,6 +1812,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const disc = parseFloat(offer.discountPercentage) || 0;
         const campPrice = Math.round(basePrice * (1 - disc / 100));
         const saving = Math.max(0, basePrice - campPrice);
+        const allowStacking = Boolean(offer.allowWithGenericDiscount);
+        const hasPriceMismatch = Boolean(offer.expectedBasePrice && basePrice > 0 && basePrice !== Number(offer.expectedBasePrice));
+        const hasGenericSaleBlock = Boolean(prod && prod.onSale && prod.discount && !allowStacking);
 
         // Validity check
         let statusBadge = '<span class="offer-status-badge valid">صالح</span>';
@@ -1657,13 +1826,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           statusBadge = '<span class="offer-status-badge warning" title="المنتج نافذ الكمية">نفذ</span>';
         } else if (disc <= 0 || disc >= 100) {
           statusBadge = '<span class="offer-status-badge error" title="نسبة الخصم غير صالحة">خصم غير صالح</span>';
+        } else if (hasPriceMismatch) {
+          statusBadge = '<span class="offer-status-badge error" title="تغير سعر المنتج الأساسي عن وقت إضافة العرض">تضارب سعر</span>';
+        } else if (hasGenericSaleBlock) {
+          statusBadge = '<span class="offer-status-badge warning" title="المنتج عليه خصم عام مسبق ولم يتم السماح بتراكم الخصم">محجوب لتراكم الخصم</span>';
         }
 
+        const thumbSrc = (prod && prod.image) ? prod.image : '/assets/images/logo.png';
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
             <div class="prod-cell">
-              <img src="${prod && prod.image ? prod.image : 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" class="prod-thumb" alt="">
+              <img src="${thumbSrc}" class="prod-thumb" alt="">
               <div>
                 <div class="prod-meta-title">${prod ? prod.name : 'منتج غير معروف'}</div>
                 <div class="prod-meta-id">ID: ${offer.productId}</div>
@@ -1682,6 +1856,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <td>
             <input type="text" value="${offer.badgeText || 'Pink Friday'}" style="width: 90px; padding: 4px 6px; font-size: 0.75rem; border: 1px solid #d1d5db; border-radius: 4px;" data-offer-idx="${idx}" onchange="window.updateOfferBadge(${idx}, this.value)">
           </td>
+          <td style="text-align: center;">
+            <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.74rem; cursor:pointer;">
+              <input type="checkbox" ${allowStacking ? 'checked' : ''} onchange="window.toggleOfferStacking(${idx}, this.checked)">
+              <span>السماح</span>
+            </label>
+          </td>
           <td>${statusBadge}</td>
           <td>
             <button type="button" class="btn-del-offer" title="إزالة من الحملة" onclick="window.removeOfferFromCampaign(${idx})">
@@ -1697,7 +1877,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     window.updateOfferDiscount = function(idx, val) {
       if (!draftCampaign || !Array.isArray(draftCampaign.offers) || !draftCampaign.offers[idx]) return;
       const num = Math.min(99, Math.max(1, parseInt(val, 10) || 10));
-      draftCampaign.offers[idx].discountPercentage = num;
+      const offer = draftCampaign.offers[idx];
+      const prod = catalogProducts.find(p => String(p.id) === String(offer.productId));
+      const basePrice = prod ? (parseFloat(prod.price) || 0) : (Number(offer.expectedBasePrice) || 0);
+      offer.discountPercentage = num;
+      if (basePrice > 0) {
+        offer.expectedBasePrice = basePrice;
+        offer.campaignPrice = Math.round(basePrice * (1 - num / 100));
+      }
       isDraftDirty = true;
       renderOffersTable();
       updateStatusAndKPIs();
@@ -1707,6 +1894,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!draftCampaign || !Array.isArray(draftCampaign.offers) || !draftCampaign.offers[idx]) return;
       draftCampaign.offers[idx].badgeText = (val || '').trim();
       isDraftDirty = true;
+    };
+
+    window.toggleOfferStacking = function(idx, checked) {
+      if (!draftCampaign || !Array.isArray(draftCampaign.offers) || !draftCampaign.offers[idx]) return;
+      draftCampaign.offers[idx].allowWithGenericDiscount = Boolean(checked);
+      isDraftDirty = true;
+      renderOffersTable();
+      updateStatusAndKPIs();
     };
 
     window.removeOfferFromCampaign = function(idx) {
@@ -1804,6 +1999,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       document.getElementById('colNameInput').value = '';
       document.getElementById('colBadgeInput').value = 'كوليكشن Pink Friday';
       document.getElementById('colDescInput').value = '';
+      document.getElementById('colEnNameInput').value = '';
+      document.getElementById('colEnBadgeInput').value = '';
+      document.getElementById('colEnDescInput').value = '';
       document.getElementById('colCoverImgInput').value = '';
       document.getElementById('colActiveToggle').checked = true;
       document.getElementById('colDuplicatesToggle').checked = false;
@@ -1832,10 +2030,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         };
       });
 
+      const colEnOv = draftCampaign.i18n?.en?.collectionTextOverrides?.[col.id] || {};
       document.getElementById('colModalTitle').textContent = 'تعديل كوليكشن: ' + (col.name || '');
       document.getElementById('colNameInput').value = col.name || '';
       document.getElementById('colBadgeInput').value = col.badgeText || 'كوليكشن Pink Friday';
       document.getElementById('colDescInput').value = col.description || '';
+      document.getElementById('colEnNameInput').value = colEnOv.name || '';
+      document.getElementById('colEnBadgeInput').value = colEnOv.badgeText || '';
+      document.getElementById('colEnDescInput').value = colEnOv.description || '';
       document.getElementById('colCoverImgInput').value = col.coverImage || '';
       document.getElementById('colActiveToggle').checked = col.active !== false;
       document.getElementById('colDuplicatesToggle').checked = Boolean(col.allowDuplicates);
@@ -1883,7 +2085,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         tr.innerHTML = `
           <td>
             <div style="display:flex; align-items:center; gap:8px;">
-              <img src="${prod?.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
+              <img src="${prod?.image || '/assets/images/logo.png'}" style="width:28px; height:28px; border-radius:4px; object-fit:cover;">
               <strong>${prod?.name || item.productId}</strong>
             </div>
           </td>
@@ -1971,7 +2173,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         div.className = `catalog-item ${isAdded ? 'already-added' : ''}`;
         div.innerHTML = `
           <div style="display: flex; align-items: center; gap: 10px;">
-            <img src="${p.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover;">
+            <img src="${p.image || '/assets/images/logo.png'}" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover;">
             <div>
               <strong style="font-size: 0.82rem; color: #111827;">${p.name || ''}</strong>
               <div style="font-size: 0.72rem; color: #6b7280;">السعر: ${p.price || 0} ج.م</div>
@@ -2003,12 +2205,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     document.getElementById('btnSaveCollectionItem')?.addEventListener('click', () => {
       const name = document.getElementById('colNameInput').value.trim();
       if (!name) {
-        alert('يرجى إدخال اسم الكوليكشن.');
+        showToast('يرجى إدخال اسم الكوليكشن.', 'error');
         return;
       }
 
       if (tempColItems.length === 0) {
-        alert('يرجى إضافة منتج واحد على الأقل داخل الكوليكشن.');
+        showToast('يرجى إضافة منتج واحد على الأقل داخل الكوليكشن.', 'error');
         return;
       }
 
@@ -2021,9 +2223,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const pricingType = document.getElementById('colPricingType').value;
       const packagePrice = parseFloat(document.getElementById('colPackagePriceInput').value) || undefined;
       const discountPercentage = parseFloat(document.getElementById('colDiscountPctInput').value) || undefined;
+      const colId = currentEditingColIndex >= 0 ? draftCampaign.collections[currentEditingColIndex].id : 'col_' + Date.now();
 
       const colData = {
-        id: currentEditingColIndex >= 0 ? draftCampaign.collections[currentEditingColIndex].id : 'col_' + Date.now(),
+        id: colId,
         name,
         description: document.getElementById('colDescInput').value.trim(),
         coverImage: document.getElementById('colCoverImgInput').value.trim(),
@@ -2034,6 +2237,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         packagePrice,
         discountPercentage,
         items: tempColItems
+      };
+
+      const enColName = (document.getElementById('colEnNameInput')?.value || '').trim();
+      const enColDesc = (document.getElementById('colEnDescInput')?.value || '').trim();
+      const enColBadge = (document.getElementById('colEnBadgeInput')?.value || '').trim();
+      if (!draftCampaign.i18n) draftCampaign.i18n = {};
+      if (!draftCampaign.i18n.en) draftCampaign.i18n.en = {};
+      if (!draftCampaign.i18n.en.collectionTextOverrides) draftCampaign.i18n.en.collectionTextOverrides = {};
+      draftCampaign.i18n.en.collectionTextOverrides[colId] = {
+        ...(enColName ? { name: enColName } : {}),
+        ...(enColDesc ? { description: enColDesc } : {}),
+        ...(enColBadge ? { badgeText: enColBadge } : {})
       };
 
       if (currentEditingColIndex >= 0) {
@@ -2051,24 +2266,43 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     window.deleteCollection = function(idx) {
       if (!draftCampaign || !Array.isArray(draftCampaign.collections) || !draftCampaign.collections[idx]) return;
-      if (!confirm('هل أنتِ متأكدة من حذف هذا الكوليكشن؟')) return;
-      draftCampaign.collections.splice(idx, 1);
-      isDraftDirty = true;
-      renderCollectionsTable();
-      updateStatusAndKPIs();
-      showToast('تم حذف الكوليكشن من المسودة');
+      const colName = draftCampaign.collections[idx].name || 'هذا الكوليكشن';
+      openConfirmModal(
+        'حذف الكوليكشن',
+        `هل أنتِ متأكدة من حذف "${colName}" من المسودة؟`,
+        () => {
+          draftCampaign.collections.splice(idx, 1);
+          isDraftDirty = true;
+          renderCollectionsTable();
+          updateStatusAndKPIs();
+          showToast('تم حذف الكوليكشن من المسودة');
+        },
+        true
+      );
     };
 
     // Calculate Campaign Status & KPIs
     function updateStatusAndKPIs() {
       const statusPill = document.getElementById('campaignStatusPill');
       const statusText = document.getElementById('campaignStatusText');
+      const livePill = document.getElementById('liveStorefrontPill');
+      const liveText = document.getElementById('liveStorefrontText');
+      const mismatchBanner = document.getElementById('liveMismatchBanner');
+      const mismatchText = document.getElementById('liveMismatchText');
+      const btnUnpublishNow = document.getElementById('btnUnpublishNow');
+      const btnBannerUnpublish = document.getElementById('btnBannerUnpublishNow');
 
       if (!draftCampaign) {
         if (statusPill && statusText) {
           statusPill.className = 'status-pill disabled';
           statusText.textContent = hasLoadError ? 'خطأ بالتحميل' : 'غير مسجلة';
         }
+        if (livePill && liveText) {
+          livePill.className = 'status-pill disabled';
+          liveText.textContent = 'المتجر الآن: غير متاح';
+        }
+        if (mismatchBanner) mismatchBanner.style.display = 'none';
+        if (btnUnpublishNow) btnUnpublishNow.style.display = 'none';
         document.getElementById('statTotalOffers').textContent = '0';
         document.getElementById('statValidOffers').textContent = '0';
         document.getElementById('statAvgDiscount').textContent = '0%';
@@ -2083,30 +2317,86 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const end = endStr ? new Date(endStr) : null;
 
       let status = 'disabled';
-      let statusLabel = 'غير مفعلة';
+      let statusLabel = 'المسودة: غير مفعلة';
       let statusClass = 'disabled';
 
-      if (!draftCampaign.enabled) {
+      if (draftCampaign.enabled !== true || draftCampaign.unpublished === true) {
         status = 'disabled';
-        statusLabel = 'غير مفعلة';
+        statusLabel = 'المسودة: غير مفعلة';
         statusClass = 'disabled';
       } else if (start && now < start) {
         status = 'scheduled';
-        statusLabel = 'مجدولة (تبدأ قريباً)';
+        statusLabel = 'المسودة: مجدولة';
         statusClass = 'scheduled';
       } else if (end && now > end) {
         status = 'ended';
-        statusLabel = 'انتهت الحملة';
+        statusLabel = 'المسودة: منتهية';
         statusClass = 'ended';
       } else {
         status = 'active';
-        statusLabel = 'مفعلة ونشطة';
+        statusLabel = 'المسودة: مفعلة';
         statusClass = 'active';
       }
 
       if (statusPill && statusText) {
         statusPill.className = `status-pill ${statusClass}`;
         statusText.textContent = statusLabel;
+      }
+
+      // Live Published Active Snapshot Evaluation
+      const liveEnabled = Boolean(
+        publishedActiveCampaign &&
+        publishedActiveCampaign.enabled === true &&
+        publishedActiveCampaign.unpublished !== true
+      );
+      const liveStart = publishedActiveCampaign?.startAt ? new Date(publishedActiveCampaign.startAt) : null;
+      const liveEnd = publishedActiveCampaign?.endAt ? new Date(publishedActiveCampaign.endAt) : null;
+      let liveClass = 'disabled';
+      let liveLabel = 'المتجر الآن: متوقفة / غير منشورة';
+
+      if (liveEnabled) {
+        if (liveStart && now < liveStart) {
+          liveClass = 'scheduled';
+          liveLabel = 'المتجر الآن: مجدولة (منشورة)';
+        } else if (liveEnd && now > liveEnd) {
+          liveClass = 'ended';
+          liveLabel = 'المتجر الآن: منتهية الصلاحية';
+        } else {
+          liveClass = 'active';
+          liveLabel = 'المتجر الآن: مفعلة ومنشورة للعملاء';
+        }
+      }
+
+      if (livePill && liveText) {
+        livePill.className = `status-pill ${liveClass}`;
+        liveText.textContent = liveLabel;
+      }
+
+      if (btnUnpublishNow) {
+        btnUnpublishNow.style.display = liveEnabled ? 'inline-flex' : 'none';
+      }
+
+      // Draft vs Live divergence banner
+      const draftEnabled = draftCampaign.enabled === true && draftCampaign.unpublished !== true;
+      if (mismatchBanner && mismatchText && btnBannerUnpublish) {
+        if (!draftEnabled && liveEnabled) {
+          mismatchBanner.style.display = 'flex';
+          mismatchBanner.style.background = '#fef2f2';
+          mismatchBanner.style.borderColor = '#fecaca';
+          mismatchBanner.style.color = '#991b1b';
+          mismatchText.textContent = 'تنبيه: الحملة معطلة في المسودة ولكنها لا تزال مفعلة للعملاء على المتجر (publishedActiveCampaign). انقري "اعتماد ونشر" أو استخدمي زر الإيقاف الفوري.';
+          btnBannerUnpublish.style.display = 'inline-flex';
+        } else if (isDraftDirty || draftEnabled !== liveEnabled) {
+          mismatchBanner.style.display = 'flex';
+          mismatchBanner.style.background = '#fffbeb';
+          mismatchBanner.style.borderColor = '#fde68a';
+          mismatchBanner.style.color = '#92400e';
+          mismatchText.textContent = 'ملاحظة: لديكِ تعديلات غير منشورة في المسودة. لن تنعكس للعملاء إلا بعد النقر على "اعتماد ونشر الحملة".';
+          btnBannerUnpublish.style.display = 'none';
+        } else {
+          mismatchBanner.style.display = 'none';
+          btnBannerUnpublish.style.display = 'none';
+        }
       }
 
       // KPIs
@@ -2119,10 +2409,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       offers.forEach(o => {
         const prod = catalogProducts.find(p => String(p.id) === String(o.productId));
         const disc = parseFloat(o.discountPercentage) || 0;
-        if (prod && !prod.isHidden && !prod.isSoldOut && disc > 0 && disc < 100) {
+        const basePrice = prod ? (parseFloat(prod.price) || 0) : 0;
+        const hasMismatch = Boolean(o.expectedBasePrice && basePrice > 0 && basePrice !== Number(o.expectedBasePrice));
+        const hasStackBlock = Boolean(prod && prod.onSale && prod.discount && !o.allowWithGenericDiscount);
+        if (prod && !prod.isHidden && !prod.isSoldOut && disc > 0 && disc < 100 && !hasMismatch && !hasStackBlock) {
           validOffers++;
           totalDiscount += disc;
-          const basePrice = parseFloat(prod.price) || 0;
           const campPrice = Math.round(basePrice * (1 - disc / 100));
           const saving = basePrice - campPrice;
           if (saving > maxSaving) maxSaving = saving;
@@ -2172,8 +2464,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       // Last published info
       const lpEl = document.getElementById('lastPublishedText');
       if (lpEl) {
-        if (publishedCampaign && publishedCampaign.updatedAt) {
-          const d = new Date(publishedCampaign.updatedAt);
+        const pubTime = publishedCampaign?.publishedAt || publishedCampaign?.updatedAt || publishedActiveCampaign?.publishedAt;
+        if (pubTime) {
+          const d = new Date(pubTime);
           lpEl.textContent = `آخر اعتماد: ${d.toLocaleDateString('ar-EG')} ${d.toLocaleTimeString('ar-EG')}`;
         } else {
           lpEl.textContent = 'لم يتم النشر بعد';
@@ -2246,7 +2539,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         div.className = `catalog-item ${isAdded ? 'already-added' : ''}`;
         div.innerHTML = `
           <div style="display: flex; align-items: center; gap: 10px;">
-            <img src="${p.image || 'https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=100&q=80'}" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover;">
+            <img src="${p.image || '/assets/images/logo.png'}" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover;">
             <div>
               <strong style="font-size: 0.82rem; color: #111827;">${p.name || ''}</strong>
               <div style="font-size: 0.72rem; color: #6b7280;">السعر: ${p.price || 0} ج.م | ${p.category || 'عام'}</div>
@@ -2266,10 +2559,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             if (!Array.isArray(draftCampaign.offers)) {
               draftCampaign.offers = [];
             }
+            const basePrice = parseFloat(p.price) || 0;
+            const discountPct = 20;
             draftCampaign.offers.push({
               productId: String(p.id),
-              discountPercentage: 20,
+              expectedBasePrice: basePrice,
+              discountPercentage: discountPct,
+              campaignPrice: Math.round(basePrice * (1 - discountPct / 100)),
               badgeText: 'Pink Friday',
+              allowWithGenericDiscount: false,
               active: true
             });
             isDraftDirty = true;
@@ -2283,9 +2581,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
     }
 
-    document.getElementById('catalogSearchInput')?.addEventListener('input', (e) => {
-      renderCatalogSearch(e.target.value);
-    });
+    // Immediate Unpublish Action
+    async function executeUnpublishNow() {
+      const btn = document.getElementById('btnUnpublishNow');
+      if (btn) btn.disabled = true;
+      try {
+        const token = await getAuthToken();
+        const res = await fetch('/api/pink-friday/admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            action: 'unpublish',
+            year: currentYear
+          })
+        });
+        if (!res.ok) throw new Error(`HTTP_${res.status}`);
+        const data = await res.json();
+        if (data.success) {
+          publishedCampaign = data.published;
+          publishedActiveCampaign = data.published;
+          if (data.draft) draftCampaign = data.draft;
+          isDraftDirty = false;
+          syncFormWithDraft();
+          updateStatusAndKPIs();
+          showToast(data.message || 'تم إيقاف الحملة وإلغاء نشرها على المتجر فوراً');
+        } else {
+          showToast(data.message || 'تعذر إيقاف الحملة', 'error');
+        }
+      } catch (err) {
+        showToast('حدث خطأ أثناء إيقاف الحملة على السيرفر', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function requestUnpublishConfirmation() {
+      openConfirmModal(
+        'إيقاف الحملة وإلغاء نشرها فوراً',
+        'سيتم إيقاف جميع عروض وكوليكشنز Pink Friday على المتجر (المصري/الإنجليزي، الشريط الإعلاني، التسعير، والطلبات الجديدة) فوراً. هل تريدين المتابعة؟',
+        executeUnpublishNow,
+        true
+      );
+    }
+
+    document.getElementById('btnUnpublishNow')?.addEventListener('click', requestUnpublishConfirmation);
+    document.getElementById('btnBannerUnpublishNow')?.addEventListener('click', requestUnpublishConfirmation);
 
     // Save Draft
     document.getElementById('btnSaveDraft')?.addEventListener('click', async () => {
@@ -2314,8 +2657,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
 
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
+          if (data.draft) draftCampaign = data.draft;
           isDraftDirty = false;
+          syncFormWithDraft();
+          updateStatusAndKPIs();
           showToast('تم حفظ إعدادات المسودة بنجاح في السيرفر');
         } else {
           showToast(data.message || 'فشل حفظ المسودة', 'error');
@@ -2329,45 +2675,52 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     });
 
     // Restore Last Published
-    document.getElementById('btnRestorePublished')?.addEventListener('click', async () => {
+    document.getElementById('btnRestorePublished')?.addEventListener('click', () => {
       if (!publishedCampaign) {
         showToast('لا توجد نسخة منشورة للاستعادة', 'error');
         return;
       }
-      if (!confirm('هل أنتِ متأكدة من إلغاء تعديلات المسودة واستعادة آخر نسخة معتمدة ومنشورة؟')) return;
-      const btn = document.getElementById('btnRestorePublished');
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاستعادة...';
-      btn.disabled = true;
+      openConfirmModal(
+        'استعادة النسخة المنشورة',
+        'هل أنتِ متأكدة من إلغاء تعديلات المسودة واستعادة آخر نسخة معتمدة ومنشورة؟',
+        async () => {
+          const btn = document.getElementById('btnRestorePublished');
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاستعادة...';
+          btn.disabled = true;
 
-      try {
-        const token = await getAuthToken();
-        const res = await fetch('/api/pink-friday/admin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            action: 'restore_published',
-            year: currentYear
-          })
-        });
+          try {
+            const token = await getAuthToken();
+            const res = await fetch('/api/pink-friday/admin', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                action: 'restore_published',
+                year: currentYear
+              })
+            });
 
-        const data = await res.json();
-        if (data.success) {
-          draftCampaign = data.draft;
-          syncFormWithDraft();
-          updateStatusAndKPIs();
-          showToast('تمت استعادة آخر نسخة معتمدة بنجاح');
-        } else {
-          showToast(data.message || 'لا توجد نسخة منشورة للاستعادة', 'error');
-        }
-      } catch (err) {
-        showToast('تعذر استعادة النسخة المنشورة', 'error');
-      } finally {
-        btn.innerHTML = '<i class="fas fa-undo"></i> <span>استعادة المنشور</span>';
-        btn.disabled = false;
-      }
+            const data = await res.json();
+            if (res.ok && data.success) {
+              draftCampaign = data.draft;
+              isDraftDirty = false;
+              syncFormWithDraft();
+              updateStatusAndKPIs();
+              showToast('تمت استعادة آخر نسخة معتمدة بنجاح');
+            } else {
+              showToast(data.message || 'لا توجد نسخة منشورة للاستعادة', 'error');
+            }
+          } catch (err) {
+            showToast('تعذر استعادة النسخة المنشورة', 'error');
+          } finally {
+            btn.innerHTML = '<i class="fas fa-undo"></i> <span>استعادة المنشور</span>';
+            btn.disabled = false;
+          }
+        },
+        false
+      );
     });
 
     // Publish Workflow & Modal
@@ -2383,7 +2736,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const s = new Date(startStr);
       const e = new Date(endStr);
       if (isNaN(s.getTime()) || isNaN(e.getTime()) || e <= s) {
-        alert('خطأ: يرجى التأكد من صحة تواريخ البداية والنهاية (يجب أن يكون تاريخ النهاية بعد البداية).');
+        showToast('خطأ: يرجى التأكد من صحة تواريخ البداية والنهاية (يجب أن يكون تاريخ النهاية بعد البداية).', 'error');
         return;
       }
 
@@ -2442,11 +2795,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
 
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           publishedCampaign = data.published;
+          publishedActiveCampaign = data.published;
+          if (data.draft) draftCampaign = data.draft;
+          isDraftDirty = false;
           closeModal('publishModal');
+          syncFormWithDraft();
           updateStatusAndKPIs();
-          showToast('تهانينا! تم اعتماد ونشر حملة Pink Friday بنجاح');
+          showToast(data.message || 'تهانينا! تم اعتماد ونشر حملة Pink Friday بنجاح');
         } else {
           showToast(data.message || 'فشل نشر الحملة', 'error');
         }
@@ -2467,7 +2824,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     document.getElementById('btnConfirmCreateYear')?.addEventListener('click', async () => {
       const yVal = parseInt(document.getElementById('newYearInput').value, 10);
       if (!yVal || yVal < 2026 || yVal > 2050) {
-        alert('يرجى إدخال سنة صالحة بين 2026 و 2050.');
+        showToast('يرجى إدخال سنة صالحة بين 2026 و 2050.', 'error');
         return;
       }
 
@@ -2492,7 +2849,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         });
 
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           closeModal('newYearModal');
           currentYear = yVal;
           if (!allYears.includes(yVal)) allYears.push(yVal);
@@ -2560,7 +2917,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const subtitle = visuals.subtitle || 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.';
       const cta = visuals.ctaText || 'اكتشفي عروض Pink Friday';
       const badge = visuals.badgeText || 'Pink Friday';
-      const heroImg = visuals.heroImageUrl || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=80';
+      const rawHero = visuals.heroImageUrl || visuals.bannerImage || '';
+      const heroImg = (rawHero && !rawHero.includes('images.unsplash.com')) ? rawHero : '/assets/images/index-products/product-2.jpg';
 
       const offers = Array.isArray(draftCampaign.offers) ? draftCampaign.offers : [];
       const validOffers = offers.map(o => {

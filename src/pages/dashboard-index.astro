@@ -977,6 +977,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         margin-bottom: 8px;
       }
 
+      .studio-en-banner {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        border-radius: 8px;
+        padding: 9px 11px;
+        font-size: 0.73rem;
+        line-height: 1.5;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .studio-shared-tag {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        background: #f3f4f6;
+        color: #4b5563;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 1px 5px;
+        margin-right: 4px;
+      }
+
       /* Responsive Studio Mobile Layout */
       @media (max-width: 1024px) {
         .studio-workspace {
@@ -990,6 +1016,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         }
         .studio-toolbar {
           padding: 0 10px;
+          overflow-x: auto;
         }
         .studio-brand-logo {
           font-size: 1rem;
@@ -1037,6 +1064,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <span>معاينة</span>
           </button>
         </div>
+
+        <!-- Language Mode Switcher: AR / EN -->
+        <div class="studio-segmented-control" role="radiogroup" aria-label="لغة التحرير والمعاينة" style="margin-right:6px;">
+          <button type="button" class="studio-segment-btn active" id="langArBtn" onclick="switchStudioLang('ar')" title="تحرير ومعاينة النسخة العربية">
+            <span>العربية</span>
+          </button>
+          <button type="button" class="studio-segment-btn" id="langEnBtn" onclick="switchStudioLang('en')" title="تحرير ومعاينة النسخة الإنجليزية">
+            <span>English</span>
+          </button>
+        </div>
       </div>
 
       <!-- Center: Undo/Redo & Save Status -->
@@ -1056,7 +1093,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <!-- Right: Save & Utilities -->
       <div class="studio-toolbar-right">
-        <a href="/" target="_blank" class="btn-studio-outline" title="فتح المتجر الفعلي في نافذة جديدة">
+        <a href="/" target="_blank" id="viewStoreLink" class="btn-studio-outline" title="فتح المتجر الفعلي في نافذة جديدة">
           <i class="fas fa-external-link-alt"></i>
           <span>عرض المتجر</span>
         </a>
@@ -1150,7 +1187,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
           <!-- VIEW 2: Contextual Section Inspector -->
           <div id="sidebarViewInspector" style="display:none;">
-            <div class="inspector-header">
+            <div class="inspector-header" style="flex-wrap:wrap; gap:8px;">
               <div class="inspector-title-group">
                 <div class="nav-section-icon" id="inspectorHeaderIcon">
                   <i class="fas fa-image"></i>
@@ -1160,10 +1197,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                   <span style="font-size:0.72rem; color:#6b7280;" id="inspectorHeaderSubtitle">تخصيص البيانات والمظهر</span>
                 </div>
               </div>
-              <button type="button" class="btn-inspector-back" onclick="switchSidebarTab('nav')">
-                <span>هيكل الصفحة</span>
-                <i class="fas fa-arrow-left"></i>
-              </button>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label id="inspectorVisibilityWrap" class="studio-switch-label" style="padding:3px 8px; background:#f9fafb; border:1px solid var(--studio-border); border-radius:6px; gap:6px;" title="إظهار أو إخفاء القسم">
+                  <input type="checkbox" id="inspectorSectionVisToggle" checked onchange="toggleSectionVisibility(activeSectionId, event)" />
+                  <span style="font-size:0.74rem; font-weight:700; color:#374151;" id="inspectorSectionVisText">ظاهر</span>
+                </label>
+                <button type="button" class="btn-inspector-back" onclick="switchSidebarTab('nav')">
+                  <span>هيكل الصفحة</span>
+                  <i class="fas fa-arrow-left"></i>
+                </button>
+              </div>
             </div>
 
             <!-- Dynamic Inspector Panels Container -->
@@ -1275,6 +1318,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </div>
 
+  <!-- Modal: Studio In-Page Confirmation Dialog -->
+  <div id="studioConfirmModal" class="studio-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="studioConfirmTitle">
+    <div class="studio-modal-box" style="max-width:420px;">
+      <div class="studio-modal-header">
+        <h3 class="studio-modal-title" id="studioConfirmTitle">
+          <i class="fas fa-exclamation-triangle" style="color:#d97706;"></i>
+          <span>تأكيد الإجراء</span>
+        </h3>
+        <button type="button" class="studio-modal-close" id="studioConfirmCloseBtn" aria-label="إغلاق">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="studio-modal-body">
+        <p id="studioConfirmMessage" style="margin:0 0 18px 0; font-size:0.88rem; color:#374151; line-height:1.6;"></p>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button type="button" class="btn-studio-outline" id="studioConfirmCancelBtn">إلغاء</button>
+          <button type="button" class="btn-studio-save" id="studioConfirmOkBtn" style="background:#dc2626; border-color:#dc2626;">تأكيد الحذف</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Global Toast -->
   <div id="studioToast" class="studio-toast" role="alert">
     <i class="fas fa-check-circle" id="studioToastIcon"></i>
@@ -1297,14 +1362,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       link?: string;
     }
 
+    interface HeroMetaConfig {
+      kicker?: string;
+      secondaryCtaLabel?: string;
+      secondaryCtaHref?: string;
+    }
+
+    interface SectionHeaderConfig {
+      kicker?: string;
+      title?: string;
+      ctaLabel?: string;
+      ctaHref?: string;
+    }
+
+    interface BlogSectionConfig {
+      kicker?: string;
+      title?: string;
+      viewAllLabel?: string;
+      limit?: number;
+    }
+
     interface DynamicSection {
       id: string;
       order?: number;
       visible?: boolean;
       title?: string;
       subtitle?: string;
-      type?: 'manual' | 'bestsellers' | 'offers';
+      type?: 'manual' | 'bestsellers' | 'offers' | 'newArrivals' | 'all';
       manualProducts?: Record<string, boolean>;
+      limit?: number;
+      viewAllLabel?: string;
+      viewAllHref?: string;
     }
 
     interface TrustItem {
@@ -1323,7 +1411,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       id?: string;
       name?: string;
       tagline?: string;
+      description?: string;
       count?: string;
+      visible?: boolean;
+      order?: number;
       layoutVariant?: 'auto' | 'wide' | 'large' | 'tall' | 'small';
       desktopImage?: string;
       mobileImage?: string;
@@ -1355,7 +1446,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       ctaText?: string;
       ctaLink?: string;
       image?: string;
-      productSource?: 'all' | 'offers' | 'bestsellers' | 'manual';
+      productSource?: 'all' | 'offers' | 'bestsellers' | 'newArrivals' | 'manual';
       manualProducts?: Record<string, boolean>;
       limit?: number;
       linkText?: string;
@@ -1365,12 +1456,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     interface StudioState {
       hero: HeroSlide[];
+      heroMeta?: HeroMetaConfig;
       sections: DynamicSection[];
       trust: {
         item1: TrustItem;
         item2: TrustItem;
         item3: TrustItem;
+        item4?: TrustItem;
       };
+      trustSection?: SectionHeaderConfig;
+      categoriesSection?: SectionHeaderConfig;
+      blogSection?: BlogSectionConfig;
+      reviewsSection?: SectionHeaderConfig;
       reviews: ReviewItem[];
       categories: Record<string, CategoryItem>;
       promoBanner?: {
@@ -1384,6 +1481,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       customSections?: CustomSection[];
       sectionOrder?: string[];
       sectionsVisibility?: Record<string, boolean>;
+      enOverlay?: Record<string, any>;
     }
 
     // Category Layout Specifications
@@ -1425,30 +1523,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     };
 
+    const TRUST_ICON_PRESETS = [
+      { value: 'fa-leaf', label: 'ورقة نباتية (Leaf)' },
+      { value: 'fa-truck-fast', label: 'شحن سريع (Truck)' },
+      { value: 'fa-shield-alt', label: 'درع جودة وضمان (Shield)' },
+      { value: 'fa-star', label: 'نجمة تميز (Star)' },
+      { value: 'fa-heart', label: 'قلب عناية (Heart)' },
+      { value: 'fa-gift', label: 'هدية (Gift)' },
+      { value: 'fa-check-circle', label: 'علامة توثيق (Check)' },
+      { value: 'fa-box-open', label: 'تغليف آمن (Package)' },
+      { value: 'fa-rotate-left', label: 'استبدال واسترجاع (Return)' },
+      { value: 'fa-tag', label: 'عروض وخصم (Tag)' },
+      { value: 'fa-clock', label: 'سرعة تجهيز (Clock)' },
+      { value: 'fa-phone', label: 'دعم فني (Phone)' },
+      { value: 'fa-comments', label: 'تواصل واتساب (Message)' }
+    ];
+
     // Master Studio State & History Stack
     let studioState: StudioState = {
       hero: [],
+      heroMeta: {},
       sections: [],
       trust: { item1: {}, item2: {}, item3: {} },
+      trustSection: {},
+      categoriesSection: {},
+      blogSection: {},
+      reviewsSection: {},
       reviews: [],
-      categories: {}
+      categories: {},
+      enOverlay: {}
     };
 
+    let studioLang: 'ar' | 'en' = 'ar';
     let historyStack: StudioState[] = [];
     let historyIndex = -1;
     let isDirty = false;
     let activeSectionId = 'hero';
     let productsCatalogCache: Record<string, any> = {};
     let activeCategoryEditKey: string | null = null;
+    let livePreviewDebounceTimer: any = null;
+    let liveHistoryCommitTimer: any = null;
 
     // Standard Section Definitions for Homepage Structure
     const defaultSectionsMetadata: Record<string, { title: string; subtitle: string; icon: string }> = {
       hero: { title: 'بانر الهيرو الرئيسي', subtitle: 'الشرائح الإعلانية والتحويل', icon: 'fa-images' },
-      trust: { title: 'شريط المزايا والثقة', subtitle: '3 بطاقات مميزات الخدمة والشحن', icon: 'fa-shield-alt' },
+      trust: { title: 'شريط المزايا والثقة', subtitle: 'بطاقات مميزات الخدمة والشحن (حتى 4 بطاقات)', icon: 'fa-shield-alt' },
       offers: { title: 'العروض الخاصة', subtitle: 'قسم المنتجات الأول', icon: 'fa-tags' },
       categories: { title: 'التصنيفات والمجموعات', subtitle: 'الشبكة التحريرية للأقسام', icon: 'fa-th-large' },
       promo: { title: 'البانر الترويجي التحريري', subtitle: 'مجموعة الروتين والعناية', icon: 'fa-ad' },
-      newArrivals: { title: 'أحدث المنتجات', subtitle: 'قسم المنتجات الثاني', icon: 'fa-sparkles' },
+      newArrivals: { title: 'أحدث المنتجات', subtitle: 'قسم المنتجات الثاني', icon: 'fa-star' },
       blog: { title: 'مدونة العناية والجمال', subtitle: 'مقالات نصائح البشرة والشعر', icon: 'fa-newspaper' },
       reviews: { title: 'آراء وتجارب العميلات', subtitle: 'لقطات شاشات المحادثات والتقييمات', icon: 'fa-comments' }
     };
@@ -1456,6 +1579,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     // Expose helpers on window for inline handlers
     (window as any).switchViewport = switchViewport;
     (window as any).switchEditorMode = switchEditorMode;
+    (window as any).switchStudioLang = switchStudioLang;
     (window as any).switchSidebarTab = switchSidebarTab;
     (window as any).selectSection = selectSection;
     (window as any).toggleSectionVisibility = toggleSectionVisibility;
@@ -1554,27 +1678,44 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         const homeData = homeSnap.exists() ? homeSnap.val() : {};
         const catData = catSnap.exists() ? catSnap.val() : {};
+        const loadedReviews = Array.isArray(homeData.dynamicReviews) && homeData.dynamicReviews.length
+          ? homeData.dynamicReviews
+          : Array.isArray(homeData.reviews)
+            ? homeData.reviews
+            : [];
+        const loadedTrust = homeData.trust || { item1: {}, item2: {}, item3: {} };
 
         studioState = {
           hero: Array.isArray(homeData.dynamicHero) ? homeData.dynamicHero : [],
+          heroMeta: homeData.heroMeta || {},
           sections: Array.isArray(homeData.dynamicSections) ? homeData.dynamicSections : [],
-          trust: homeData.trust || { item1: {}, item2: {}, item3: {} },
-          reviews: Array.isArray(homeData.dynamicReviews) ? homeData.dynamicReviews : [],
+          trust: {
+            item1: loadedTrust.item1 || {},
+            item2: loadedTrust.item2 || {},
+            item3: loadedTrust.item3 || {},
+            ...(loadedTrust.item4 ? { item4: loadedTrust.item4 } : {})
+          },
+          trustSection: homeData.trustSection || {},
+          categoriesSection: homeData.categoriesSection || {},
+          blogSection: homeData.blogSection || {},
+          reviewsSection: homeData.reviewsSection || {},
+          reviews: loadedReviews,
           categories: catData || {},
           promoBanner: homeData.promoBanner || {},
           customSections: Array.isArray(homeData.customSections) ? homeData.customSections : [],
           sectionOrder: Array.isArray(homeData.sectionOrder) ? homeData.sectionOrder : undefined,
-          sectionsVisibility: homeData.sectionsVisibility || {}
+          sectionsVisibility: homeData.sectionsVisibility || (homeData.sections && typeof homeData.sections === 'object' ? homeData.sections : {}),
+          enOverlay: homeData.enOverlay && typeof homeData.enOverlay === 'object' ? homeData.enOverlay : {}
         };
 
         // Fallbacks if empty
         if (!studioState.hero.length) {
           studioState.hero = [{
-            desktopImage: 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg',
-            mobileImage: 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg',
+            desktopImage: '/assets/images/hero/hero-1.jpg',
+            mobileImage: '/assets/images/hero/hero-1.jpg',
             duration: 5,
-            title: 'جمال طبيعي مستخلص بعناية فائقة',
-            subtitle: 'تركيبات مصرية طبيعية 100% غنية بخلاصات الزيوت العضوية.',
+            title: 'عناية طبيعية متوازنة لبشرة أكثر إشراقاً وشعر أكثر قوة',
+            subtitle: 'تركيبات صيدلانية لطيفة محضّرة من الزيوت النباتية والزبدات المغذية.',
             buttonText: 'تسوقي الآن',
             link: '/all-products'
           }];
@@ -1582,8 +1723,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
         if (!studioState.sections.length) {
           studioState.sections = [
-            { id: 'sec-special-offers', type: 'offers', title: 'العروض الخاصة', subtitle: 'عروض مميزة', visible: true, order: 0 },
-            { id: 'sec-new-arrivals', type: 'newArrivals', title: 'أحدث المنتجات', subtitle: 'تشكيلة مختارة', visible: true, order: 1 }
+            { id: 'sec-special-offers', type: 'offers', title: 'العروض الخاصة', subtitle: 'مختارات العروض', visible: true, order: 0 },
+            { id: 'sec-new-arrivals', type: 'newArrivals', title: 'مستحضرات مختارة لروتينكِ اليومي', subtitle: 'مختارات داندي', visible: true, order: 1 }
           ];
         }
 
@@ -1602,22 +1743,68 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
-    // 2. STATE MANAGEMENT & HISTORY (UNDO / REDO)
+    // 2. STATE MANAGEMENT, EN OVERLAY & HISTORY (UNDO / REDO)
     function cloneState(st: StudioState): StudioState {
       return JSON.parse(JSON.stringify(st));
     }
 
-    function recordStateMutation(notifyPreview = true) {
+    function ensureEnOverlay(): Record<string, any> {
+      if (!studioState.enOverlay || typeof studioState.enOverlay !== 'object') {
+        studioState.enOverlay = {};
+      }
+      return studioState.enOverlay;
+    }
+
+    function renderEnModeBannerHtml(): string {
+      if (studioLang !== 'en') return '';
+      return `
+        <div class="studio-en-banner">
+          <i class="fas fa-language" style="font-size:1rem; margin-top:2px;"></i>
+          <div>
+            <strong>وضع التحرير الإنجليزي (EN):</strong> النصوص والروابط المخصصة تُحفظ في طبقة اللغة الإنجليزية المستقلة دون تغيير النصوص العربية. الحقول الموسومة بـ <span class="studio-shared-tag">مشترك AR/EN</span> تنطبق على اللغتين معاً.
+          </div>
+        </div>
+      `;
+    }
+
+    function sharedTagHtml(): string {
+      return studioLang === 'en' ? '<span class="studio-shared-tag">مشترك AR/EN</span>' : '';
+    }
+
+    function scheduleLivePreviewMutation() {
+      isDirty = true;
+      updateToolbarStatus();
+      clearTimeout(livePreviewDebounceTimer);
+      livePreviewDebounceTimer = setTimeout(() => {
+        dispatchPreviewStateUpdate();
+      }, 90);
+      clearTimeout(liveHistoryCommitTimer);
+      liveHistoryCommitTimer = setTimeout(() => {
+        pushHistorySnapshot();
+      }, 650);
+    }
+
+    function pushHistorySnapshot() {
       if (historyIndex < historyStack.length - 1) {
         historyStack = historyStack.slice(0, historyIndex + 1);
       }
-      historyStack.push(cloneState(studioState));
+      const snap = cloneState(studioState);
+      if (historyStack[historyIndex] && JSON.stringify(historyStack[historyIndex]) === JSON.stringify(snap)) {
+        return;
+      }
+      historyStack.push(snap);
       if (historyStack.length > 30) {
         historyStack.shift();
       } else {
         historyIndex++;
       }
+      updateToolbarStatus();
+    }
 
+    function recordStateMutation(notifyPreview = true) {
+      clearTimeout(liveHistoryCommitTimer);
+      clearTimeout(livePreviewDebounceTimer);
+      pushHistorySnapshot();
       isDirty = true;
       updateToolbarStatus();
 
@@ -1710,6 +1897,63 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       sendIframeMessage({ type: 'STUDIO_SET_MODE', mode });
     }
 
+    function switchStudioLang(lang: 'ar' | 'en') {
+      studioLang = lang === 'en' ? 'en' : 'ar';
+      const arBtn = document.getElementById('langArBtn');
+      const enBtn = document.getElementById('langEnBtn');
+      arBtn?.classList.toggle('active', studioLang === 'ar');
+      enBtn?.classList.toggle('active', studioLang === 'en');
+
+      const viewLink = document.getElementById('viewStoreLink') as HTMLAnchorElement | null;
+      if (viewLink) {
+        viewLink.href = studioLang === 'en' ? '/en/' : '/';
+      }
+
+      reloadPreviewIframe();
+      renderSectionsNavigator();
+      renderActiveInspector();
+    }
+
+    function openStudioConfirm(message: string, title = 'تأكيد الحذف'): Promise<boolean> {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('studioConfirmModal');
+        const msgEl = document.getElementById('studioConfirmMessage');
+        const titleEl = document.getElementById('studioConfirmTitle');
+        const okBtn = document.getElementById('studioConfirmOkBtn');
+        const cancelBtn = document.getElementById('studioConfirmCancelBtn');
+        const closeBtn = document.getElementById('studioConfirmCloseBtn');
+        if (!modal || !msgEl || !okBtn || !cancelBtn) {
+          resolve(false);
+          return;
+        }
+
+        if (titleEl) {
+          titleEl.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#d97706;"></i> <span>${escapeHtml(title)}</span>`;
+        }
+        msgEl.textContent = message;
+        modal.classList.add('is-open');
+
+        const cleanup = (result: boolean) => {
+          modal.classList.remove('is-open');
+          okBtn.removeEventListener('click', onOk);
+          cancelBtn.removeEventListener('click', onCancel);
+          closeBtn?.removeEventListener('click', onCancel);
+          modal.removeEventListener('click', onBackdrop);
+          resolve(result);
+        };
+        const onOk = () => cleanup(true);
+        const onCancel = () => cleanup(false);
+        const onBackdrop = (ev: MouseEvent) => {
+          if (ev.target === modal) cleanup(false);
+        };
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        closeBtn?.addEventListener('click', onCancel);
+        modal.addEventListener('click', onBackdrop);
+      });
+    }
+
     function switchSidebarTab(tab: 'nav' | 'inspector') {
       const navBtn = document.getElementById('tabNavBtn');
       const insBtn = document.getElementById('tabInspectorBtn');
@@ -1729,6 +1973,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
+    function findDynamicProductSection(secKey: 'offers' | 'newArrivals'): DynamicSection | undefined {
+      const list = studioState.sections || [];
+      if (secKey === 'offers') {
+        return (
+          list.find((s) => s && (s.id === 'sec-special-offers' || s.id === 'sec-offers')) ||
+          list.find((s) => s && s.type === 'offers')
+        );
+      }
+      const offersCandidate =
+        list.find((s) => s && (s.id === 'sec-special-offers' || s.id === 'sec-offers')) ||
+        list.find((s) => s && s.type === 'offers');
+      return (
+        list.find((s) => s && (s.id === 'sec-new-arrivals' || s.id === 'sec-newArrivals')) ||
+        list.find((s) => s && s.id !== offersCandidate?.id && s.type !== 'offers')
+      );
+    }
+
+    function isSectionCurrentlyVisible(secId: string): boolean {
+      if (studioState.sectionsVisibility && studioState.sectionsVisibility[secId] !== undefined) {
+        return studioState.sectionsVisibility[secId] !== false;
+      }
+      if (secId === 'offers' || secId === 'newArrivals') {
+        const secObj = findDynamicProductSection(secId);
+        return secObj ? secObj.visible !== false : true;
+      }
+      return true;
+    }
+
     function selectSection(secId: string, switchTab = true) {
       activeSectionId = secId;
       renderSectionsNavigator();
@@ -1739,16 +2011,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       sendIframeMessage({ type: 'STUDIO_SELECT_SECTION', sectionId: secId });
     }
 
-    function toggleSectionVisibility(secId: string, e: Event) {
-      e.stopPropagation();
+    function toggleSectionVisibility(secId: string, e?: Event) {
+      if (e) e.stopPropagation();
       if (!studioState.sectionsVisibility) {
         studioState.sectionsVisibility = {};
       }
-      const currentVis = studioState.sectionsVisibility[secId] !== false;
+      const currentVis = isSectionCurrentlyVisible(secId);
       studioState.sectionsVisibility[secId] = !currentVis;
 
       if (secId === 'offers' || secId === 'newArrivals') {
-        const target = studioState.sections.find(s => (secId === 'offers' ? s.type === 'offers' : s.type !== 'offers'));
+        const target = findDynamicProductSection(secId);
         if (target) {
           target.visible = studioState.sectionsVisibility[secId];
         }
@@ -1783,16 +2055,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         type: 'STUDIO_UPDATE_STATE',
         state: {
           hero: studioState.hero,
+          heroMeta: studioState.heroMeta || {},
           trust: studioState.trust,
+          trustSection: studioState.trustSection || {},
           sections: studioState.sections,
+          categoriesSection: studioState.categoriesSection || {},
+          blogSection: studioState.blogSection || {},
+          reviewsSection: studioState.reviewsSection || {},
           reviews: studioState.reviews,
           categories: studioState.categories,
           promoBanner: studioState.promoBanner,
-          header: studioState.header,
-          footer: studioState.footer,
           customSections: studioState.customSections,
           sectionOrder: studioState.sectionOrder,
-          sectionsVisibility: studioState.sectionsVisibility
+          sectionsVisibility: studioState.sectionsVisibility,
+          enOverlay: studioState.enOverlay || {}
         }
       });
     }
@@ -1802,7 +2078,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const iframe = document.getElementById('studioPreviewFrame') as HTMLIFrameElement | null;
       if (loader) loader.classList.remove('hidden');
       if (iframe) {
-        iframe.src = '/?studio_preview=1&t=' + Date.now();
+        const prefix = studioLang === 'en' ? '/en/' : '/';
+        iframe.src = `${prefix}?studio_preview=1&t=${Date.now()}`;
       }
     }
 
@@ -1906,9 +2183,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       showStudioToast(`✓ تمت إضافة قسم "${meta.nameAr}" بنجاح`);
     }
 
-    function deleteCustomSection(secId: string, e?: Event) {
+    async function deleteCustomSection(secId: string, e?: Event) {
       if (e) e.stopPropagation();
-      if (!confirm('هل أنتِ متأكدة من حذف هذا القسم نهائياً؟')) return;
+      const ok = await openStudioConfirm('هل أنتِ متأكدة من حذف هذا القسم نهائياً؟', 'حذف القسم المخصص');
+      if (!ok) return;
 
       if (studioState.customSections) {
         studioState.customSections = studioState.customSections.filter(s => s.id !== secId);
@@ -1918,6 +2196,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       if (studioState.sectionsVisibility) {
         delete studioState.sectionsVisibility[secId];
+      }
+      if (studioState.enOverlay?.customSections) {
+        delete studioState.enOverlay.customSections[secId];
       }
 
       if (activeSectionId === secId) {
@@ -1971,13 +2252,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         const isActive = activeSectionId === key ? 'is-active' : '';
 
         // Visibility calculation
-        let isVisible = true;
-        if (studioState.sectionsVisibility && studioState.sectionsVisibility[key] !== undefined) {
-          isVisible = studioState.sectionsVisibility[key];
-        } else if (key === 'offers' || key === 'newArrivals') {
-          const secObj = studioState.sections.find(s => (key === 'offers' ? s.type === 'offers' : s.type !== 'offers'));
-          isVisible = secObj ? secObj.visible !== false : true;
-        }
+        const isVisible = isSectionCurrentlyVisible(key);
 
         html += `
           <div class="nav-section-card ${isActive}" data-id="${key}" onclick="selectSection('${key}', true)">
@@ -2040,7 +2315,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const titleEl = document.getElementById('inspectorHeaderTitle');
       const subEl = document.getElementById('inspectorHeaderSubtitle');
       const iconEl = document.getElementById('inspectorHeaderIcon');
+      const visToggle = document.getElementById('inspectorSectionVisToggle') as HTMLInputElement | null;
+      const visText = document.getElementById('inspectorSectionVisText');
       if (!container) return;
+
+      const secVis = isSectionCurrentlyVisible(activeSectionId);
+      if (visToggle) visToggle.checked = secVis;
+      if (visText) visText.textContent = secVis ? 'ظاهر' : 'مخفي';
 
       const customSec = studioState.customSections?.find(s => s.id === activeSectionId);
       if (customSec) {
@@ -2088,14 +2369,23 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     /* --------------------------------------------------------------------------
-       INSPECTOR: 1. HERO SLIDER
+       INSPECTOR: 1. HERO SLIDER + HERO META
        -------------------------------------------------------------------------- */
     function renderHeroInspector(container: HTMLElement) {
+      const isEnMode = studioLang === 'en';
+      const enMeta = studioState.enOverlay?.heroMeta || {};
+      const heroMeta = isEnMode ? enMeta : (studioState.heroMeta || {});
+
       let slidesHtml = '';
       studioState.hero.forEach((slide, idx) => {
         const desktop = slide.desktopImage || slide.image || '';
         const mobile = slide.mobileImage || slide.desktopImage || slide.image || '';
         const dur = slide.duration || 5;
+        const enSlide = studioState.enOverlay?.heroSlides?.[idx] || {};
+        const titleVal = isEnMode ? (enSlide.title || '') : (slide.title || '');
+        const subVal = isEnMode ? (enSlide.subtitle || '') : (slide.subtitle || '');
+        const btnVal = isEnMode ? (enSlide.buttonText || '') : (slide.buttonText || '');
+        const linkVal = isEnMode ? (enSlide.link || '') : (slide.link || '');
 
         slidesHtml += `
           <div class="studio-slide-item" data-slide-index="${idx}">
@@ -2105,7 +2395,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 <span>شريحة #${idx + 1}</span>
               </span>
               <div style="display:flex; align-items:center; gap:6px;">
-                <label style="font-size:0.72rem; color:#4b5563;">المدة (ثواني):</label>
+                <label style="font-size:0.72rem; color:#4b5563;">المدة (ثواني) ${sharedTagHtml()}:</label>
                 <input type="number" min="1" max="60" value="${dur}" class="studio-input" style="width:60px; padding:3px 6px;" onchange="updateHeroSlideField(${idx}, 'duration', parseFloat(this.value) || 5)">
                 <button type="button" class="btn-nav-action" onclick="deleteHeroSlide(${idx})" title="حذف الشريحة" style="color:#dc2626;">
                   <i class="fas fa-trash-alt"></i>
@@ -2117,10 +2407,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="responsive-image-row">
               <div class="image-spec-box">
                 <div class="image-spec-header">
-                  <span class="image-device-label"><i class="fas fa-desktop" style="color:#2563eb;"></i> ديسكتوب</span>
+                  <span class="image-device-label"><i class="fas fa-desktop" style="color:#2563eb;"></i> ديسكتوب ${sharedTagHtml()}</span>
                   <span class="image-ratio-tag">16:9 / 21:9</span>
                 </div>
-                <input type="url" class="studio-input" value="${escapeHtml(desktop)}" placeholder="رابط صورة عريضة" onchange="updateHeroSlideField(${idx}, 'desktopImage', this.value)">
+                <input type="url" class="studio-input" value="${escapeHtml(desktop)}" placeholder="رابط صورة عريضة" oninput="updateHeroSlideField(${idx}, 'desktopImage', this.value, true)" onchange="updateHeroSlideField(${idx}, 'desktopImage', this.value)">
                 <div class="image-preview-thumb">
                   ${desktop ? `<img src="${escapeHtml(desktop)}" alt="Desktop" onerror="this.parentElement.innerHTML='<span class=thumb-empty>صورة غير صالحة</span>'">` : `<span class="thumb-empty"><i class="fas fa-image"></i> بدون صورة</span>`}
                 </div>
@@ -2128,10 +2418,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
               <div class="image-spec-box">
                 <div class="image-spec-header">
-                  <span class="image-device-label"><i class="fas fa-mobile-alt" style="color:#fe5d9f;"></i> هاتف</span>
+                  <span class="image-device-label"><i class="fas fa-mobile-alt" style="color:#fe5d9f;"></i> هاتف ${sharedTagHtml()}</span>
                   <span class="image-ratio-tag">9:16 / 3:4</span>
                 </div>
-                <input type="url" class="studio-input" value="${escapeHtml(mobile)}" placeholder="رابط صورة طولية" onchange="updateHeroSlideField(${idx}, 'mobileImage', this.value)">
+                <input type="url" class="studio-input" value="${escapeHtml(mobile)}" placeholder="رابط صورة طولية" oninput="updateHeroSlideField(${idx}, 'mobileImage', this.value, true)" onchange="updateHeroSlideField(${idx}, 'mobileImage', this.value)">
                 <div class="image-preview-thumb">
                   ${mobile ? `<img src="${escapeHtml(mobile)}" alt="Mobile" onerror="this.parentElement.innerHTML='<span class=thumb-empty>صورة غير صالحة</span>'">` : `<span class="thumb-empty"><i class="fas fa-mobile-alt"></i> بدون صورة</span>`}
                 </div>
@@ -2141,20 +2431,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <!-- Content Inputs -->
             <div class="studio-form-group">
               <label class="studio-label">العنوان الرئيسي (Heading)</label>
-              <input type="text" class="studio-input" value="${escapeHtml(slide.title || '')}" placeholder="جمال طبيعي مستخلص بعناية" onchange="updateHeroSlideField(${idx}, 'title', this.value)">
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(titleVal)}" placeholder="${isEnMode ? 'EN: Balanced Botanical Care...' : 'عناية طبيعية متوازنة لبشرة أكثر إشراقاً'}" oninput="updateHeroSlideField(${idx}, 'title', this.value, true)" onchange="updateHeroSlideField(${idx}, 'title', this.value)">
             </div>
             <div class="studio-form-group">
               <label class="studio-label">الوصف الفرعي (Subtitle)</label>
-              <input type="text" class="studio-input" value="${escapeHtml(slide.subtitle || '')}" placeholder="تركيبات مصرية طبيعية 100%" onchange="updateHeroSlideField(${idx}, 'subtitle', this.value)">
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(subVal)}" placeholder="${isEnMode ? 'EN: Gentle pharmacist-formulated blends...' : 'تركيبات صيدلانية لطيفة من الزيوت النباتية...'}" oninput="updateHeroSlideField(${idx}, 'subtitle', this.value, true)" onchange="updateHeroSlideField(${idx}, 'subtitle', this.value)">
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
               <div class="studio-form-group">
                 <label class="studio-label">نص الزر (CTA)</label>
-                <input type="text" class="studio-input" value="${escapeHtml(slide.buttonText || 'تسوقي الآن')}" onchange="updateHeroSlideField(${idx}, 'buttonText', this.value)">
+                <input type="text" class="studio-input" dir="auto" value="${escapeHtml(btnVal)}" placeholder="${isEnMode ? 'Shop Now' : 'تسوقي الآن'}" oninput="updateHeroSlideField(${idx}, 'buttonText', this.value, true)" onchange="updateHeroSlideField(${idx}, 'buttonText', this.value)">
               </div>
               <div class="studio-form-group">
                 <label class="studio-label">رابط الزر (URL)</label>
-                <input type="text" class="studio-input" value="${escapeHtml(slide.link || '/all-products')}" onchange="updateHeroSlideField(${idx}, 'link', this.value)">
+                <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(linkVal)}" placeholder="${isEnMode ? '/en/all-products' : '/all-products'}" oninput="updateHeroSlideField(${idx}, 'link', this.value, true)" onchange="updateHeroSlideField(${idx}, 'link', this.value)">
               </div>
             </div>
           </div>
@@ -2162,6 +2452,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
 
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
+        <div class="inspector-card">
+          <div class="inspector-card-header">
+            <h4 class="inspector-card-title"><i class="fas fa-heading"></i> النصوص الثابتة والزر الثانوي للهيرو</h4>
+          </div>
+          <div class="studio-form-group">
+            <label class="studio-label">الشريط النصي العلوي (Kicker)</label>
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(heroMeta.kicker || '')}" placeholder="${isEnMode ? 'Dandy Cosmetics · Pharmacist-Formulated Botanical Care' : 'Dandy Cosmetics · عناية طبيعية برؤية صيدلانية'}" oninput="updateHeroMetaField('kicker', this.value, true)" onchange="updateHeroMetaField('kicker', this.value)">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="studio-form-group">
+              <label class="studio-label">نص الزر الثانوي</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(heroMeta.secondaryCtaLabel || '')}" placeholder="${isEnMode ? 'Our Philosophy' : 'فلسفة داندي'}" oninput="updateHeroMetaField('secondaryCtaLabel', this.value, true)" onchange="updateHeroMetaField('secondaryCtaLabel', this.value)">
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">رابط الزر الثانوي</label>
+              <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(heroMeta.secondaryCtaHref || '')}" placeholder="${isEnMode ? '/en/about-us' : '/about-us'}" oninput="updateHeroMetaField('secondaryCtaHref', this.value, true)" onchange="updateHeroMetaField('secondaryCtaHref', this.value)">
+            </div>
+          </div>
+        </div>
+
         <div class="inspector-card">
           <div class="inspector-card-header">
             <h4 class="inspector-card-title"><i class="fas fa-images"></i> شرائح العرض (${studioState.hero.length})</h4>
@@ -2169,7 +2480,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <i class="fas fa-plus"></i> إضافة شريحة
             </button>
           </div>
-          <p class="studio-hint">يدعم كل سلايد مصدري صورة منفصلين للشاشات العريضة والهواتف لضمان عدم القص والتوافق المثالي.</p>
+          <p class="studio-hint">يدعم كل سلايد مصدري صورة منفصلين للشاشات العريضة والهواتف (بما في ذلك الصور الطولية 9:16 و3:4) عبر &lt;picture&gt;.</p>
           <div id="heroSlidesSortableList">
             ${slidesHtml}
           </div>
@@ -2193,19 +2504,41 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
     }
 
-    (window as any).updateHeroSlideField = function(idx: number, field: keyof HeroSlide, val: any) {
-      if (!studioState.hero[idx]) return;
-      (studioState.hero[idx] as any)[field] = val;
-      if (field === 'desktopImage' || field === 'mobileImage') {
-        studioState.hero[idx].image = studioState.hero[idx].desktopImage || studioState.hero[idx].mobileImage || '';
+    (window as any).updateHeroMetaField = function(field: keyof HeroMetaConfig, val: string, isLiveInput = false) {
+      if (studioLang === 'en') {
+        const ov = ensureEnOverlay();
+        if (!ov.heroMeta) ov.heroMeta = {};
+        ov.heroMeta[field] = val;
+      } else {
+        if (!studioState.heroMeta) studioState.heroMeta = {};
+        studioState.heroMeta[field] = val;
       }
-      recordStateMutation();
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
+    };
+
+    (window as any).updateHeroSlideField = function(idx: number, field: keyof HeroSlide, val: any, isLiveInput = false) {
+      if (!studioState.hero[idx]) return;
+      const isLocalizedText = field === 'title' || field === 'subtitle' || field === 'buttonText' || field === 'link';
+      if (studioLang === 'en' && isLocalizedText) {
+        const ov = ensureEnOverlay();
+        if (!ov.heroSlides) ov.heroSlides = {};
+        if (!ov.heroSlides[idx]) ov.heroSlides[idx] = {};
+        ov.heroSlides[idx][field] = val;
+      } else {
+        (studioState.hero[idx] as any)[field] = val;
+        if (field === 'desktopImage' || field === 'mobileImage') {
+          studioState.hero[idx].image = studioState.hero[idx].desktopImage || studioState.hero[idx].mobileImage || '';
+        }
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
     };
 
     (window as any).addHeroSlide = function() {
       studioState.hero.push({
-        desktopImage: 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg',
-        mobileImage: 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg',
+        desktopImage: '/assets/images/hero/hero-1.jpg',
+        mobileImage: '/assets/images/hero/hero-1.jpg',
         duration: 5,
         title: 'شريحة ترويجية جديدة',
         subtitle: 'اكتشفي تشكيلة داندي الطبيعية للعناية الفائقة.',
@@ -2229,33 +2562,80 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     /* --------------------------------------------------------------------------
-       INSPECTOR: 2. TRUST BAR
+       INSPECTOR: 2. TRUST BAR (SECTION HEADER + 3 OR 4 CARDS + ICON PICKER)
        -------------------------------------------------------------------------- */
     function renderTrustInspector(container: HTMLElement) {
+      const isEnMode = studioLang === 'en';
+      const trustMeta = isEnMode
+        ? (studioState.enOverlay?.trustSection || {})
+        : (studioState.trustSection || {});
+      const keys: Array<'item1' | 'item2' | 'item3' | 'item4'> = studioState.trust.item4
+        ? ['item1', 'item2', 'item3', 'item4']
+        : ['item1', 'item2', 'item3'];
+
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
         <div class="inspector-card">
           <div class="inspector-card-header">
-            <h4 class="inspector-card-title"><i class="fas fa-shield-alt"></i> شريط المزايا (Trust Strip)</h4>
+            <h4 class="inspector-card-title"><i class="fas fa-heading"></i> ترويسة شريط المزايا (اختياري)</h4>
           </div>
-          <p class="studio-hint">ثلاث مزايا رئيسية تظهر أسفل بانر الهيرو لتعزيز الثقة ومعدلات التحويل.</p>
+          <p class="studio-hint">عند ترك العنوان والعنوان الفرعي فارغين يظهر شريط المزايا مباشرة بدون ترويسة علوية.</p>
+          <div class="studio-form-group">
+            <label class="studio-label">الشريط العلوي (Kicker)</label>
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(trustMeta.kicker || '')}" placeholder="${isEnMode ? 'EN: Why Choose DANDY' : 'مثال: لماذا داندي؟'}" oninput="updateTrustSectionMeta('kicker', this.value, true)" onchange="updateTrustSectionMeta('kicker', this.value)">
+          </div>
+          <div class="studio-form-group">
+            <label class="studio-label">عنوان القسم</label>
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(trustMeta.title || '')}" placeholder="${isEnMode ? 'EN: Trusted Botanical Care' : 'مثال: عناية موثوقة كل يوم'}" oninput="updateTrustSectionMeta('title', this.value, true)" onchange="updateTrustSectionMeta('title', this.value)">
+          </div>
+        </div>
 
-          ${[1, 2, 3].map(num => {
-            const itemKey = ('item' + num) as 'item1' | 'item2' | 'item3';
-            const item = studioState.trust[itemKey] || {};
+        <div class="inspector-card">
+          <div class="inspector-card-header">
+            <h4 class="inspector-card-title"><i class="fas fa-shield-alt"></i> بطاقات المزايا (${keys.length})</h4>
+            ${!studioState.trust.item4 ? `
+              <button type="button" class="btn-studio-outline" style="padding:4px 8px; font-size:0.72rem;" onclick="toggleFourthTrustItem(true)">
+                <i class="fas fa-plus"></i> إضافة بطاقة رابعة
+              </button>
+            ` : `
+              <button type="button" class="btn-studio-outline" style="padding:4px 8px; font-size:0.72rem; color:#dc2626; border-color:#fca5a5;" onclick="toggleFourthTrustItem(false)">
+                <i class="fas fa-trash-alt"></i> إزالة البطاقة الرابعة
+              </button>
+            `}
+          </div>
+          <p class="studio-hint">بطاقات المزايا التي تظهر أسفل بانر الهيرو لتعزيز الثقة ومعدلات التحويل.</p>
+
+          ${keys.map((itemKey, idx) => {
+            const baseItem = studioState.trust[itemKey] || {};
+            const enItem = studioState.enOverlay?.trustItems?.[itemKey] || {};
+            const titleVal = isEnMode ? (enItem.title || '') : (baseItem.title || '');
+            const descVal = isEnMode ? (enItem.desc || '') : (baseItem.desc || '');
+            const iconVal = baseItem.icon || '';
+            const matchingPreset = TRUST_ICON_PRESETS.some(p => p.value === iconVal) ? iconVal : '';
+
             return `
               <div style="background:#f9fafb; border:1px solid var(--studio-border); border-radius:6px; padding:10px; margin-bottom:12px;">
-                <h5 style="margin:0 0 8px 0; font-size:0.82rem; font-weight:700; color:#374151;">الميزة #${num}</h5>
+                <h5 style="margin:0 0 8px 0; font-size:0.82rem; font-weight:700; color:#374151; display:flex; align-items:center; justify-content:space-between;">
+                  <span>الميزة #${idx + 1}</span>
+                  ${iconVal ? `<i class="fas ${escapeHtml(iconVal)}" style="color:var(--studio-accent);"></i>` : ''}
+                </h5>
                 <div class="studio-form-group">
-                  <label class="studio-label">الأيقونة (FontAwesome class أو كود SVG)</label>
-                  <input type="text" class="studio-input" value="${escapeHtml(item.icon || '')}" placeholder="مثال: fa-shield-alt أو fa-truck" onchange="updateTrustItem('${itemKey}', 'icon', this.value)">
+                  <label class="studio-label">الأيقونة السريعة ${sharedTagHtml()}</label>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <select class="studio-select" onchange="if(this.value){ updateTrustItem('${itemKey}', 'icon', this.value); renderActiveInspector(); }">
+                      <option value="">-- اختيار أيقونة --</option>
+                      ${TRUST_ICON_PRESETS.map(p => `<option value="${p.value}" ${matchingPreset === p.value ? 'selected' : ''}>${p.label}</option>`).join('')}
+                    </select>
+                    <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(iconVal)}" placeholder="fa-leaf" oninput="updateTrustItem('${itemKey}', 'icon', this.value, true)" onchange="updateTrustItem('${itemKey}', 'icon', this.value)">
+                  </div>
                 </div>
                 <div class="studio-form-group">
                   <label class="studio-label">العنوان</label>
-                  <input type="text" class="studio-input" value="${escapeHtml(item.title || '')}" placeholder="عنوان الميزة" onchange="updateTrustItem('${itemKey}', 'title', this.value)">
+                  <input type="text" class="studio-input" dir="auto" value="${escapeHtml(titleVal)}" placeholder="${isEnMode ? 'EN: Trust benefit title...' : 'عنوان الميزة'}" oninput="updateTrustItem('${itemKey}', 'title', this.value, true)" onchange="updateTrustItem('${itemKey}', 'title', this.value)">
                 </div>
                 <div class="studio-form-group">
                   <label class="studio-label">الوصف القصير</label>
-                  <input type="text" class="studio-input" value="${escapeHtml(item.desc || '')}" placeholder="شرح مبسط" onchange="updateTrustItem('${itemKey}', 'desc', this.value)">
+                  <input type="text" class="studio-input" dir="auto" value="${escapeHtml(descVal)}" placeholder="${isEnMode ? 'EN: Short explanation...' : 'شرح مبسط'}" oninput="updateTrustItem('${itemKey}', 'desc', this.value, true)" onchange="updateTrustItem('${itemKey}', 'desc', this.value)">
                 </div>
               </div>
             `;
@@ -2264,28 +2644,72 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       `;
     }
 
-    (window as any).updateTrustItem = function(key: 'item1' | 'item2' | 'item3', field: string, val: string) {
-      if (!studioState.trust[key]) studioState.trust[key] = {};
-      (studioState.trust[key] as any)[field] = val;
+    (window as any).updateTrustSectionMeta = function(field: 'kicker' | 'title', val: string, isLiveInput = false) {
+      if (studioLang === 'en') {
+        const ov = ensureEnOverlay();
+        if (!ov.trustSection) ov.trustSection = {};
+        ov.trustSection[field] = val;
+      } else {
+        if (!studioState.trustSection) studioState.trustSection = {};
+        studioState.trustSection[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
+    };
+
+    (window as any).toggleFourthTrustItem = function(enable: boolean) {
+      if (enable) {
+        studioState.trust.item4 = {
+          icon: 'fa-heart',
+          title: 'عناية يومية آمنة',
+          desc: 'تركيبات لطيفة خالية من المواد القاسية ومناسبة للاستخدام اليومي.'
+        };
+      } else {
+        delete studioState.trust.item4;
+      }
       recordStateMutation();
+      renderActiveInspector();
+    };
+
+    (window as any).updateTrustItem = function(key: 'item1' | 'item2' | 'item3' | 'item4', field: string, val: string, isLiveInput = false) {
+      if (studioLang === 'en' && (field === 'title' || field === 'desc')) {
+        const ov = ensureEnOverlay();
+        if (!ov.trustItems) ov.trustItems = {};
+        if (!ov.trustItems[key]) ov.trustItems[key] = {};
+        ov.trustItems[key][field] = val;
+      } else {
+        if (!studioState.trust[key]) studioState.trust[key] = {};
+        (studioState.trust[key] as any)[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
     };
 
     /* --------------------------------------------------------------------------
        INSPECTOR: 3. DYNAMIC PRODUCT SECTIONS (Offers & New Arrivals)
        -------------------------------------------------------------------------- */
     function renderProductsSectionInspector(container: HTMLElement, secKey: 'offers' | 'newArrivals') {
-      let sec = studioState.sections.find(s => (secKey === 'offers' ? s.type === 'offers' : s.type !== 'offers'));
+      const isEnMode = studioLang === 'en';
+      let sec = findDynamicProductSection(secKey);
       if (!sec) {
         sec = {
-          id: 'sec-' + secKey,
+          id: secKey === 'offers' ? 'sec-special-offers' : 'sec-new-arrivals',
           type: secKey === 'offers' ? 'offers' : 'newArrivals',
-          title: secKey === 'offers' ? 'العروض الخاصة' : 'أحدث المنتجات',
-          subtitle: secKey === 'offers' ? 'عروض مميزة' : 'تشكيلة مختارة',
+          title: secKey === 'offers' ? 'العروض الخاصة' : 'مستحضرات مختارة لروتينكِ اليومي',
+          subtitle: secKey === 'offers' ? 'مختارات العروض' : 'مختارات داندي',
           visible: true,
+          limit: 8,
           manualProducts: {}
         };
         studioState.sections.push(sec);
       }
+
+      const enSecOv = studioState.enOverlay?.sections?.[sec.id] || studioState.enOverlay?.sections?.[secKey] || {};
+      const titleVal = isEnMode ? (enSecOv.title || '') : (sec.title || '');
+      const subVal = isEnMode ? (enSecOv.subtitle || '') : (sec.subtitle || '');
+      const moreLabelVal = isEnMode ? (enSecOv.viewAllLabel || '') : (sec.viewAllLabel || '');
+      const moreHrefVal = isEnMode ? (enSecOv.viewAllHref || '') : (sec.viewAllHref || '');
+      const currentLimit = Number(sec.limit) >= 2 && Number(sec.limit) <= 12 ? Number(sec.limit) : 8;
 
       // Catalog products list for manual selection
       let prodsListHtml = '';
@@ -2306,38 +2730,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
         <div class="inspector-card">
           <div class="inspector-card-header">
             <h4 class="inspector-card-title"><i class="fas fa-tags"></i> ${escapeHtml(sec.title || '')}</h4>
-            <label class="studio-switch-label" style="gap:6px;">
-              <input type="checkbox" ${sec.visible !== false ? 'checked' : ''} onchange="updateSecField('${sec.id}', 'visible', this.checked)">
-              <span class="studio-switch-text">إظهار القسم</span>
-            </label>
           </div>
 
           <div class="studio-form-group">
             <label class="studio-label">عنوان القسم الرئيسي</label>
-            <input type="text" class="studio-input" value="${escapeHtml(sec.title || '')}" onchange="updateSecField('${sec.id}', 'title', this.value)">
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(titleVal)}" placeholder="${isEnMode ? 'EN: Section heading...' : 'عنوان القسم'}" oninput="updateSecField('${sec.id}', 'title', this.value, '${secKey}', true)" onchange="updateSecField('${sec.id}', 'title', this.value, '${secKey}')">
           </div>
 
           <div class="studio-form-group">
             <label class="studio-label">النص العلوي (Eyebrow Tag)</label>
-            <input type="text" class="studio-input" value="${escapeHtml(sec.subtitle || '')}" onchange="updateSecField('${sec.id}', 'subtitle', this.value)">
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(subVal)}" placeholder="${isEnMode ? 'EN: Kicker tag...' : 'النص العلوي'}" oninput="updateSecField('${sec.id}', 'subtitle', this.value, '${secKey}', true)" onchange="updateSecField('${sec.id}', 'subtitle', this.value, '${secKey}')">
           </div>
 
-          <div class="studio-form-group">
-            <label class="studio-label">مصدر المنتجات المعروضة</label>
-            <select class="studio-select" onchange="updateSecField('${sec.id}', 'type', this.value); renderActiveInspector();">
-              <option value="offers" ${sec.type === 'offers' ? 'selected' : ''}>العروض والخصومات تلقائياً</option>
-              <option value="bestsellers" ${sec.type === 'bestsellers' ? 'selected' : ''}>الأكثر مبيعاً تلقائياً</option>
-              <option value="manual" ${sec.type === 'manual' ? 'selected' : ''}>اختيار يدوي من كتالوج المتجر</option>
-            </select>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="studio-form-group">
+              <label class="studio-label">مصدر المنتجات ${sharedTagHtml()}</label>
+              <select class="studio-select" onchange="updateSecField('${sec.id}', 'type', this.value, '${secKey}'); renderActiveInspector();">
+                <option value="offers" ${sec.type === 'offers' ? 'selected' : ''}>العروض والخصومات تلقائياً</option>
+                <option value="bestsellers" ${sec.type === 'bestsellers' ? 'selected' : ''}>الأكثر مبيعاً تلقائياً</option>
+                <option value="newArrivals" ${sec.type === 'newArrivals' ? 'selected' : ''}>أحدث المنتجات تلقائياً</option>
+                <option value="all" ${sec.type === 'all' ? 'selected' : ''}>مختارات المتجر (كل المنتجات)</option>
+                <option value="manual" ${sec.type === 'manual' ? 'selected' : ''}>اختيار يدوي من الكتالوج</option>
+              </select>
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">عدد المنتجات (2-12) ${sharedTagHtml()}</label>
+              <input type="number" min="2" max="12" class="studio-input" value="${currentLimit}" oninput="updateSecField('${sec.id}', 'limit', Math.max(2, Math.min(12, parseInt(this.value) || 8)), '${secKey}', true)" onchange="updateSecField('${sec.id}', 'limit', Math.max(2, Math.min(12, parseInt(this.value) || 8)), '${secKey}')">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="studio-form-group">
+              <label class="studio-label">نص زر المزيد</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(moreLabelVal)}" placeholder="${isEnMode ? 'View All Products' : 'عرض الكل'}" oninput="updateSecField('${sec.id}', 'viewAllLabel', this.value, '${secKey}', true)" onchange="updateSecField('${sec.id}', 'viewAllLabel', this.value, '${secKey}')">
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">رابط زر المزيد</label>
+              <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(moreHrefVal)}" placeholder="${isEnMode ? '/en/all-products' : '/all-products'}" oninput="updateSecField('${sec.id}', 'viewAllHref', this.value, '${secKey}', true)" onchange="updateSecField('${sec.id}', 'viewAllHref', this.value, '${secKey}')">
+            </div>
           </div>
 
           ${sec.type === 'manual' ? `
             <div class="studio-form-group" style="margin-top:14px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <label class="studio-label" style="margin-bottom:0;">المنتجات المحددة (${selectedCount})</label>
+                <label class="studio-label" style="margin-bottom:0;">المنتجات المحددة (${selectedCount}) ${sharedTagHtml()}</label>
                 <span style="font-size:0.72rem; color:#6b7280;">انقري لتحديد المنتجات</span>
               </div>
               <input type="text" class="studio-input" placeholder="بحث في المنتجات..." style="margin-bottom:6px;" oninput="filterManualProds(this.value)">
@@ -2350,12 +2790,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       `;
     }
 
-    (window as any).updateSecField = function(secId: string, field: string, val: any) {
+    (window as any).updateSecField = function(secId: string, field: string, val: any, secKey?: string, isLiveInput = false) {
       const s = studioState.sections.find(item => item.id === secId);
-      if (s) {
+      if (!s) return;
+      const isLocalized = field === 'title' || field === 'subtitle' || field === 'viewAllLabel' || field === 'viewAllHref';
+      if (studioLang === 'en' && isLocalized) {
+        const ov = ensureEnOverlay();
+        if (!ov.sections) ov.sections = {};
+        const ovKey = secId || secKey || 'sec';
+        if (!ov.sections[ovKey]) ov.sections[ovKey] = {};
+        ov.sections[ovKey][field] = val;
+      } else {
         (s as any)[field] = val;
-        recordStateMutation();
       }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
     };
 
     (window as any).toggleManualProduct = function(secId: string, prodId: string, isChecked: boolean) {
@@ -2381,31 +2830,60 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     /* --------------------------------------------------------------------------
-       INSPECTOR: 4. CATEGORIES & COLLECTIONS (Layout-Aware Responsive System)
+       INSPECTOR: 4. CATEGORIES & COLLECTIONS (HEADER + ORDER + VISIBILITY + DESC)
        -------------------------------------------------------------------------- */
+    function getOrderedCategoryKeys(): string[] {
+      const entries = Object.entries(studioState.categories || {});
+      return entries
+        .map(([key, item], index) => ({
+          key,
+          sortOrder: typeof item?.order === 'number' && Number.isFinite(item.order) ? item.order : index,
+          index
+        }))
+        .sort((a, b) => a.sortOrder - b.sortOrder || a.index - b.index)
+        .map(x => x.key);
+    }
+
     function renderCategoriesInspector(container: HTMLElement) {
-      const catKeys = Object.keys(studioState.categories || {});
+      const isEnMode = studioLang === 'en';
+      const catMeta = isEnMode
+        ? (studioState.enOverlay?.categoriesSection || {})
+        : (studioState.categoriesSection || {});
+      const catKeys = getOrderedCategoryKeys();
       const editingKey = activeCategoryEditKey;
       const currentEditingCat = editingKey ? studioState.categories[editingKey] : null;
+      const currentEditingEn = editingKey ? (studioState.enOverlay?.categories?.[editingKey] || {}) : {};
 
       let catListHtml = '';
-      catKeys.forEach(key => {
+      catKeys.forEach((key, idx) => {
         const c = studioState.categories[key];
         const layout = c.layoutVariant || 'auto';
         const spec = categoryLayoutSpecs[layout] || categoryLayoutSpecs.auto;
         const desktopImg = c.desktopImage || c.image || '';
         const isCurrent = key === editingKey;
+        const isCatVisible = c.visible !== false;
 
         catListHtml += `
-          <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; background:${isCurrent ? 'var(--studio-accent-soft)' : '#f9fafb'}; border:1px solid ${isCurrent ? 'var(--studio-accent)' : 'var(--studio-border)'}; border-radius:6px; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:6px; padding:8px 8px; background:${isCurrent ? 'var(--studio-accent-soft)' : '#f9fafb'}; border:1px solid ${isCurrent ? 'var(--studio-accent)' : 'var(--studio-border)'}; border-radius:6px; margin-bottom:8px; opacity:${isCatVisible ? '1' : '0.6'};">
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <button type="button" class="btn-nav-action" style="width:22px; height:20px;" onclick="moveCategoryOrder('${key}', -1)" ${idx === 0 ? 'disabled' : ''} title="تحريك لأعلى">
+                <i class="fas fa-chevron-up"></i>
+              </button>
+              <button type="button" class="btn-nav-action" style="width:22px; height:20px;" onclick="moveCategoryOrder('${key}', 1)" ${idx === catKeys.length - 1 ? 'disabled' : ''} title="تحريك لأسفل">
+                <i class="fas fa-chevron-down"></i>
+              </button>
+            </div>
             <img src="${escapeHtml(desktopImg || '/assets/images/logo.png')}" style="width:36px; height:36px; object-fit:cover; border-radius:4px;">
             <div style="flex:1; min-width:0;">
               <div style="display:flex; align-items:center; gap:6px;">
-                <h5 style="margin:0; font-size:0.84rem; font-weight:700;">${escapeHtml(c.name || 'بدون اسم')}</h5>
+                <h5 style="margin:0; font-size:0.84rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.name || 'بدون اسم')}</h5>
                 <span class="variant-pill variant-pill-${layout}">${spec.nameAr.split(' ')[0]}</span>
               </div>
-              <small style="color:#6b7280; font-size:0.72rem;">${escapeHtml(c.tagline || '')}</small>
+              <small style="color:#6b7280; font-size:0.72rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.tagline || '')}</small>
             </div>
+            <button type="button" class="btn-nav-action ${isCatVisible ? 'active-vis' : 'hidden-vis'}" onclick="toggleCategoryVisibility('${key}')" title="${isCatVisible ? 'إخفاء التصنيف' : 'إظهار التصنيف'}">
+              <i class="fas ${isCatVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+            </button>
             <button type="button" class="btn-nav-action" onclick="startCategoryEdit('${key}')" title="تعديل هذا القسم">
               <i class="fas fa-edit"></i>
             </button>
@@ -2416,27 +2894,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         `;
       });
 
-      // Active form state (add vs edit)
       const formTitle = editingKey ? `تعديل القسم: ${escapeHtml(currentEditingCat?.name || '')}` : 'إضافة مجموعة جديدة';
-      const nameVal = currentEditingCat?.name || '';
-      const tagVal = currentEditingCat?.tagline || '';
-      const countVal = currentEditingCat?.count || '';
+      const nameVal = isEnMode && editingKey ? (currentEditingEn.name || '') : (currentEditingCat?.name || '');
+      const tagVal = isEnMode && editingKey ? (currentEditingEn.tagline || '') : (currentEditingCat?.tagline || '');
+      const countVal = isEnMode && editingKey ? (currentEditingEn.count || '') : (currentEditingCat?.count || '');
+      const descVal = isEnMode && editingKey ? (currentEditingEn.description || '') : (currentEditingCat?.description || '');
       const layoutVal = currentEditingCat?.layoutVariant || 'auto';
       const desktopVal = currentEditingCat?.desktopImage || currentEditingCat?.image || '';
       const mobileVal = currentEditingCat?.mobileImage || currentEditingCat?.desktopImage || currentEditingCat?.image || '';
       const activeSpec = categoryLayoutSpecs[layoutVal] || categoryLayoutSpecs.auto;
 
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
         <div class="inspector-card">
           <div class="inspector-card-header">
-            <h4 class="inspector-card-title"><i class="fas fa-th-large"></i> الأقسام الحالية (${catKeys.length})</h4>
+            <h4 class="inspector-card-title"><i class="fas fa-heading"></i> ترويسة ورابط قسم التصنيفات</h4>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="studio-form-group">
+              <label class="studio-label">الشريط العلوي (Kicker)</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(catMeta.kicker || '')}" placeholder="${isEnMode ? 'Primary Categories' : 'الأقسام الرئيسية'}" oninput="updateCategoriesSectionMeta('kicker', this.value, true)" onchange="updateCategoriesSectionMeta('kicker', this.value)">
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">العنوان الرئيسي</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(catMeta.title || '')}" placeholder="${isEnMode ? 'Shop by Routine' : 'تسوقي حسب الروتين'}" oninput="updateCategoriesSectionMeta('title', this.value, true)" onchange="updateCategoriesSectionMeta('title', this.value)">
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="studio-form-group">
+              <label class="studio-label">نص زر المزيد</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(catMeta.ctaLabel || '')}" placeholder="${isEnMode ? 'All Products' : 'كل المنتجات'}" oninput="updateCategoriesSectionMeta('ctaLabel', this.value, true)" onchange="updateCategoriesSectionMeta('ctaLabel', this.value)">
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">رابط زر المزيد</label>
+              <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(catMeta.ctaHref || '')}" placeholder="${isEnMode ? '/en/all-products' : '/all-products'}" oninput="updateCategoriesSectionMeta('ctaHref', this.value, true)" onchange="updateCategoriesSectionMeta('ctaHref', this.value)">
+            </div>
+          </div>
+        </div>
+
+        <div class="inspector-card">
+          <div class="inspector-card-header">
+            <h4 class="inspector-card-title"><i class="fas fa-th-large"></i> التصنيفات الحالية (${catKeys.length})</h4>
             ${editingKey ? `
               <button type="button" class="btn-studio-outline" style="padding:4px 8px; font-size:0.72rem;" onclick="cancelCategoryEdit()">
-                <i class="fas fa-plus"></i> إضافة قسم جديد
+                <i class="fas fa-plus"></i> إضافة تصنيف جديد
               </button>
             ` : ''}
           </div>
-          <div style="max-height:160px; overflow-y:auto; margin-bottom:14px;">
+          <div style="max-height:200px; overflow-y:auto; margin-bottom:14px;">
             ${catListHtml || '<p style="color:#9ca3af; font-size:0.78rem; text-align:center; padding:12px;">لا توجد أقسام مسجلة.</p>'}
           </div>
 
@@ -2445,23 +2950,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <h5 style="margin:0 0 10px 0; font-size:0.86rem; font-weight:800; color:var(--studio-text);">${formTitle}</h5>
 
             <div class="studio-form-group">
-              <label class="studio-label">اسم القسم</label>
-              <input type="text" id="catFormName" class="studio-input" value="${escapeHtml(nameVal)}" placeholder="العناية بالبشرة">
+              <label class="studio-label">اسم التصنيف</label>
+              <input type="text" id="catFormName" class="studio-input" dir="auto" value="${escapeHtml(nameVal)}" placeholder="${isEnMode ? 'EN: Skin Care' : 'العناية بالبشرة'}">
             </div>
 
             <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:8px;">
               <div class="studio-form-group">
                 <label class="studio-label">النص التسويقي (Tagline)</label>
-                <input type="text" id="catFormTagline" class="studio-input" value="${escapeHtml(tagVal)}" placeholder="ترطيب ونضارة">
+                <input type="text" id="catFormTagline" class="studio-input" dir="auto" value="${escapeHtml(tagVal)}" placeholder="${isEnMode ? 'EN: Hydration & Glow' : 'ترطيب ونضارة'}">
               </div>
               <div class="studio-form-group">
                 <label class="studio-label">العدد/الشارة</label>
-                <input type="text" id="catFormCount" class="studio-input" value="${escapeHtml(countVal)}" placeholder="12 منتج">
+                <input type="text" id="catFormCount" class="studio-input" dir="auto" value="${escapeHtml(countVal)}" placeholder="${isEnMode ? '12 Items' : '12 منتج'}">
               </div>
             </div>
 
             <div class="studio-form-group">
-              <label class="studio-label">قالب القسم بالشبكة (Layout Variant)</label>
+              <label class="studio-label">وصف البطاقة (Description)</label>
+              <textarea id="catFormDescription" class="studio-textarea" rows="2" dir="auto" placeholder="${isEnMode ? 'EN: Short category card description...' : 'وصف مختصر يظهر أسفل اسم التصنيف...'}">${escapeHtml(descVal)}</textarea>
+            </div>
+
+            <div class="studio-form-group">
+              <label class="studio-label">قالب القسم بالشبكة (Layout Variant) ${sharedTagHtml()}</label>
               <select id="catFormLayout" class="studio-select" onchange="onCategoryLayoutSelectionChange(this.value)">
                 <option value="auto" ${layoutVal === 'auto' ? 'selected' : ''}>تلقائي تحريري (Auto Alternating)</option>
                 <option value="wide" ${layoutVal === 'wide' ? 'selected' : ''}>عريض أفقي (Wide - ارتفاع 250px)</option>
@@ -2486,7 +2996,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div class="responsive-image-row">
               <div class="image-spec-box">
                 <div class="image-spec-header">
-                  <span class="image-device-label"><i class="fas fa-desktop" style="color:#2563eb;"></i> ديسكتوب</span>
+                  <span class="image-device-label"><i class="fas fa-desktop" style="color:#2563eb;"></i> ديسكتوب ${sharedTagHtml()}</span>
                   <span class="image-ratio-tag" id="catDesktopRatioTag">${activeSpec.desktop.ratio}</span>
                 </div>
                 <input type="url" id="catFormDesktopImg" class="studio-input" value="${escapeHtml(desktopVal)}" placeholder="رابط صورة عريضة" onchange="updateCatImagePreview('desktop', this.value)">
@@ -2497,7 +3007,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
               <div class="image-spec-box">
                 <div class="image-spec-header">
-                  <span class="image-device-label"><i class="fas fa-mobile-alt" style="color:#fe5d9f;"></i> هاتف</span>
+                  <span class="image-device-label"><i class="fas fa-mobile-alt" style="color:#fe5d9f;"></i> هاتف ${sharedTagHtml()}</span>
                   <span class="image-ratio-tag" id="catMobileRatioTag">${activeSpec.mobile.ratio}</span>
                 </div>
                 <input type="url" id="catFormMobileImg" class="studio-input" value="${escapeHtml(mobileVal)}" placeholder="رابط صورة الهاتف" onchange="updateCatImagePreview('mobile', this.value)">
@@ -2510,7 +3020,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             <div style="display:flex; gap:8px; margin-top:12px;">
               <button type="button" class="btn-studio-save" style="flex:1; justify-content:center;" onclick="saveCategoryForm()">
                 <i class="fas ${editingKey ? 'fa-save' : 'fa-plus'}"></i>
-                <span>${editingKey ? 'حفظ تعديلات القسم' : 'إضافة هذا القسم'}</span>
+                <span>${editingKey ? 'حفظ تعديلات التصنيف' : 'إضافة هذا التصنيف'}</span>
               </button>
               ${editingKey ? `
                 <button type="button" class="btn-studio-outline" onclick="cancelCategoryEdit()">إلغاء</button>
@@ -2520,6 +3030,42 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       `;
     }
+
+    (window as any).updateCategoriesSectionMeta = function(field: keyof SectionHeaderConfig, val: string, isLiveInput = false) {
+      if (studioLang === 'en') {
+        const ov = ensureEnOverlay();
+        if (!ov.categoriesSection) ov.categoriesSection = {};
+        ov.categoriesSection[field] = val;
+      } else {
+        if (!studioState.categoriesSection) studioState.categoriesSection = {};
+        studioState.categoriesSection[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
+    };
+
+    (window as any).toggleCategoryVisibility = function(key: string) {
+      const c = studioState.categories?.[key];
+      if (!c) return;
+      c.visible = c.visible === false ? true : false;
+      recordStateMutation();
+      renderActiveInspector();
+    };
+
+    (window as any).moveCategoryOrder = function(key: string, direction: -1 | 1) {
+      const keys = getOrderedCategoryKeys();
+      const idx = keys.indexOf(key);
+      const nextIdx = idx + direction;
+      if (idx === -1 || nextIdx < 0 || nextIdx >= keys.length) return;
+      [keys[idx], keys[nextIdx]] = [keys[nextIdx], keys[idx]];
+      keys.forEach((k, orderIdx) => {
+        if (studioState.categories[k]) {
+          studioState.categories[k].order = orderIdx;
+        }
+      });
+      recordStateMutation();
+      renderActiveInspector();
+    };
 
     (window as any).startCategoryEdit = function(key: string) {
       activeCategoryEditKey = key;
@@ -2560,46 +3106,82 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const nameInput = document.getElementById('catFormName') as HTMLInputElement | null;
       const taglineInput = document.getElementById('catFormTagline') as HTMLInputElement | null;
       const countInput = document.getElementById('catFormCount') as HTMLInputElement | null;
+      const descInput = document.getElementById('catFormDescription') as HTMLTextAreaElement | null;
       const layoutInput = document.getElementById('catFormLayout') as HTMLSelectElement | null;
       const desktopInput = document.getElementById('catFormDesktopImg') as HTMLInputElement | null;
       const mobileInput = document.getElementById('catFormMobileImg') as HTMLInputElement | null;
 
       const name = nameInput?.value.trim() || '';
+      const tagline = taglineInput?.value.trim() || '';
+      const count = countInput?.value.trim() || '';
+      const description = descInput?.value.trim() || '';
       const desktop = desktopInput?.value.trim() || '';
       const mobile = mobileInput?.value.trim() || '';
       const fallbackImg = desktop || mobile;
 
+      if (!studioState.categories) studioState.categories = {};
+
+      if (studioLang === 'en' && activeCategoryEditKey && studioState.categories[activeCategoryEditKey]) {
+        const ov = ensureEnOverlay();
+        if (!ov.categories) ov.categories = {};
+        ov.categories[activeCategoryEditKey] = {
+          ...(ov.categories[activeCategoryEditKey] || {}),
+          name,
+          tagline,
+          count,
+          description
+        };
+        if (desktop || mobile) {
+          studioState.categories[activeCategoryEditKey] = {
+            ...studioState.categories[activeCategoryEditKey],
+            layoutVariant: (layoutInput?.value || 'auto') as any,
+            desktopImage: desktop || fallbackImg,
+            mobileImage: mobile || fallbackImg,
+            image: fallbackImg
+          };
+        }
+        showStudioToast('تم حفظ الترجمة الإنجليزية للتصنيف');
+        activeCategoryEditKey = null;
+        recordStateMutation();
+        renderActiveInspector();
+        return;
+      }
+
       if (!name) {
-        showStudioToast('يرجى كتابة اسم القسم', true);
+        showStudioToast('يرجى كتابة اسم التصنيف', true);
         return;
       }
       if (!desktop && !mobile) {
-        showStudioToast('يرجى إضافة صورة ديسكتوب أو هاتف للقسم', true);
+        showStudioToast('يرجى إضافة صورة ديسكتوب أو هاتف للتصنيف', true);
         return;
       }
 
       const payload: CategoryItem = {
         name,
-        tagline: taglineInput?.value.trim() || '',
-        count: countInput?.value.trim() || '',
+        tagline,
+        count,
+        description,
         layoutVariant: (layoutInput?.value || 'auto') as any,
         desktopImage: desktop || fallbackImg,
         mobileImage: mobile || fallbackImg,
         image: fallbackImg
       };
 
-      if (!studioState.categories) studioState.categories = {};
-
       if (activeCategoryEditKey) {
         studioState.categories[activeCategoryEditKey] = {
           ...studioState.categories[activeCategoryEditKey],
           ...payload
         };
-        showStudioToast('تم حفظ تعديلات القسم');
+        showStudioToast('تم حفظ تعديلات التصنيف');
       } else {
         const newKey = 'cat_' + Date.now();
-        studioState.categories[newKey] = payload;
-        showStudioToast('تمت إضافة القسم بنجاح');
+        const maxOrder = getOrderedCategoryKeys().length;
+        studioState.categories[newKey] = {
+          visible: true,
+          order: maxOrder,
+          ...payload
+        };
+        showStudioToast('تمت إضافة التصنيف بنجاح');
       }
 
       activeCategoryEditKey = null;
@@ -2607,85 +3189,126 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       renderActiveInspector();
     };
 
-    (window as any).deleteCategoryItem = function(key: string) {
-      if (confirm('هل أنتِ متأكدة من حذف هذا القسم؟')) {
-        delete studioState.categories[key];
-        if (activeCategoryEditKey === key) activeCategoryEditKey = null;
-        recordStateMutation();
-        renderActiveInspector();
-        showStudioToast('تم حذف القسم');
+    (window as any).deleteCategoryItem = async function(key: string) {
+      const ok = await openStudioConfirm('هل أنتِ متأكدة من حذف هذا التصنيف؟', 'حذف التصنيف');
+      if (!ok) return;
+      delete studioState.categories[key];
+      if (studioState.enOverlay?.categories) {
+        delete studioState.enOverlay.categories[key];
       }
+      if (activeCategoryEditKey === key) activeCategoryEditKey = null;
+      recordStateMutation();
+      renderActiveInspector();
+      showStudioToast('تم حذف التصنيف');
     };
 
     /* --------------------------------------------------------------------------
        INSPECTOR: 5. PROMO BANNER
        -------------------------------------------------------------------------- */
     function renderPromoBannerInspector(container: HTMLElement) {
-      const banner = studioState.promoBanner || {};
+      const isEnMode = studioLang === 'en';
+      const baseBanner = studioState.promoBanner || {};
+      const enBanner = studioState.enOverlay?.promoBanner || {};
+      const banner = isEnMode ? enBanner : baseBanner;
+
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
         <div class="inspector-card">
           <div class="inspector-card-header">
             <h4 class="inspector-card-title"><i class="fas fa-ad"></i> البانر الترويجي التحريري</h4>
           </div>
-          <p class="studio-hint">البانر الأفقي البارز في منتصف الصفحة لتسليط الضوء على روتين أو مجموعة حصرية.</p>
+          <p class="studio-hint">البانر الأفقي البارز في منتصف الصفحة لتسليط الضوء على فلسفة التصنيع أو عرض حصري.</p>
 
           <div class="studio-form-group">
             <label class="studio-label">النص العلوي (Eyebrow)</label>
-            <input type="text" class="studio-input" value="${escapeHtml(banner.eyebrow || 'تركيبات متخصصة')}" onchange="updatePromoField('eyebrow', this.value)">
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(banner.eyebrow || '')}" placeholder="${isEnMode ? 'EN: Our Story & Formulation Philosophy' : 'قصتنا وفلسفة التصنيع'}" oninput="updatePromoField('eyebrow', this.value, true)" onchange="updatePromoField('eyebrow', this.value)">
           </div>
 
           <div class="studio-form-group">
             <label class="studio-label">عنوان البانر الرئيسي</label>
-            <input type="text" class="studio-input" value="${escapeHtml(banner.title || 'روتين العناية المتكامل بجمال ونقاء بشرتكِ')}" onchange="updatePromoField('title', this.value)">
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(banner.title || '')}" placeholder="${isEnMode ? 'EN: Pharmacist-Crafted Formulas...' : 'تركيبات صيدلانية متطورة...'}" oninput="updatePromoField('title', this.value, true)" onchange="updatePromoField('title', this.value)">
           </div>
 
           <div class="studio-form-group">
             <label class="studio-label">نص الوصف</label>
-            <textarea class="studio-textarea" rows="3" onchange="updatePromoField('desc', this.value)">${escapeHtml(banner.desc || 'اكتشفي تشكيلة داندي الطبيعية للعناية الفائقة، مستخلصة من أجود الزيوت والزهور الطبيعية.')}</textarea>
+            <textarea class="studio-textarea" rows="3" dir="auto" placeholder="${isEnMode ? 'EN: Founded with specialized pharmaceutical expertise...' : 'اتركيه فارغاً لاعتماد النص التحريري الافتراضي لداندي'}" oninput="updatePromoField('desc', this.value, true)" onchange="updatePromoField('desc', this.value)">${escapeHtml(banner.desc || '')}</textarea>
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
             <div class="studio-form-group">
               <label class="studio-label">نص زر التحويل</label>
-              <input type="text" class="studio-input" value="${escapeHtml(banner.ctaText || 'اكتشفي المجموعة')}" onchange="updatePromoField('ctaText', this.value)">
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(banner.ctaText || '')}" placeholder="${isEnMode ? 'Explore the Collection' : 'اكتشفي المجموعة'}" oninput="updatePromoField('ctaText', this.value, true)" onchange="updatePromoField('ctaText', this.value)">
             </div>
             <div class="studio-form-group">
               <label class="studio-label">رابط الزر</label>
-              <input type="text" class="studio-input" value="${escapeHtml(banner.ctaLink || '/all-products')}" onchange="updatePromoField('ctaLink', this.value)">
+              <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(banner.ctaLink || '')}" placeholder="${isEnMode ? '/en/all-products' : '/all-products'}" oninput="updatePromoField('ctaLink', this.value, true)" onchange="updatePromoField('ctaLink', this.value)">
             </div>
           </div>
 
           <div class="studio-form-group">
-            <label class="studio-label">صورة البانر</label>
-            <input type="url" class="studio-input" value="${escapeHtml(banner.image || 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789147704/WhatsApp_Image_2026-07-10_at_8.28.01_PM.jpg')}" onchange="updatePromoField('image', this.value)">
+            <label class="studio-label">صورة البانر ${sharedTagHtml()}</label>
+            <input type="url" class="studio-input" dir="ltr" value="${escapeHtml(baseBanner.image || '')}" placeholder="/assets/images/index-products/product-2.jpg (اتركيه فارغاً للصورة الافتراضية)" oninput="updatePromoField('image', this.value, true, true)" onchange="updatePromoField('image', this.value, false, true)">
           </div>
         </div>
       `;
     }
 
-    (window as any).updatePromoField = function(field: string, val: string) {
-      if (!studioState.promoBanner) studioState.promoBanner = {};
-      (studioState.promoBanner as any)[field] = val;
-      recordStateMutation();
+    (window as any).updatePromoField = function(field: string, val: string, isLiveInput = false, forceShared = false) {
+      if (studioLang === 'en' && !forceShared && field !== 'image') {
+        const ov = ensureEnOverlay();
+        if (!ov.promoBanner) ov.promoBanner = {};
+        ov.promoBanner[field] = val;
+      } else {
+        if (!studioState.promoBanner) studioState.promoBanner = {};
+        (studioState.promoBanner as any)[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
     };
 
     /* --------------------------------------------------------------------------
-       INSPECTOR: 6. BLOG SHOWCASE
+       INSPECTOR: 6. BLOG SHOWCASE (HEADER + LIMIT + LINK TO DASHBOARD-BLOG)
        -------------------------------------------------------------------------- */
     function renderBlogInspector(container: HTMLElement) {
+      const isEnMode = studioLang === 'en';
+      const baseMeta = studioState.blogSection || {};
+      const enMeta = studioState.enOverlay?.blogSection || {};
+      const meta = isEnMode ? enMeta : baseMeta;
+      const currentLimit = Number(baseMeta.limit) >= 1 && Number(baseMeta.limit) <= 6 ? Number(baseMeta.limit) : 3;
+
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
         <div class="inspector-card">
           <div class="inspector-card-header">
-            <h4 class="inspector-card-title"><i class="fas fa-newspaper"></i> مقالات المدونة (Beauty Journal)</h4>
+            <h4 class="inspector-card-title"><i class="fas fa-newspaper"></i> إعدادات قسم المدونة</h4>
           </div>
-          <p class="studio-hint">يتم جلب أحدث 3 مقالات منشورة تلقائياً من قاعدة بيانات المقالات في Firestore.</p>
+          <p class="studio-hint">يتم جلب المقالات المنشورة تلقائياً من Firestore ويمكنكِ هنا تخصيص عناوين القسم وعدد المقالات الظاهرة.</p>
 
-          <div style="background:#f9fafb; border:1px solid var(--studio-border); border-radius:6px; padding:12px; margin-bottom:14px;">
+          <div class="studio-form-group">
+            <label class="studio-label">الشريط العلوي (Kicker)</label>
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(meta.kicker || '')}" placeholder="${isEnMode ? 'Beauty Journal' : 'مدونة العناية والجمال'}" oninput="updateBlogSectionMeta('kicker', this.value, true)" onchange="updateBlogSectionMeta('kicker', this.value)">
+          </div>
+          <div class="studio-form-group">
+            <label class="studio-label">العنوان الرئيسي</label>
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(meta.title || '')}" placeholder="${isEnMode ? 'Skincare & Haircare Guides' : 'نصائح ومقالات روتين البشرة والشعر'}" oninput="updateBlogSectionMeta('title', this.value, true)" onchange="updateBlogSectionMeta('title', this.value)">
+          </div>
+          <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:8px;">
+            <div class="studio-form-group">
+              <label class="studio-label">نص رابط المزيد</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(meta.viewAllLabel || '')}" placeholder="${isEnMode ? 'All Articles' : 'كل المقالات'}" oninput="updateBlogSectionMeta('viewAllLabel', this.value, true)" onchange="updateBlogSectionMeta('viewAllLabel', this.value)">
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">عدد المقالات (1-6) ${sharedTagHtml()}</label>
+              <input type="number" min="1" max="6" class="studio-input" value="${currentLimit}" oninput="updateBlogSectionMeta('limit', Math.max(1, Math.min(6, parseInt(this.value) || 3)), true, true)" onchange="updateBlogSectionMeta('limit', Math.max(1, Math.min(6, parseInt(this.value) || 3)), false, true)">
+            </div>
+          </div>
+
+          <div style="background:#f9fafb; border:1px solid var(--studio-border); border-radius:6px; padding:12px; margin-top:12px;">
             <div style="font-size:0.8rem; font-weight:700; color:#374151; margin-bottom:4px;">
               <i class="fas fa-info-circle" style="color:var(--studio-accent);"></i> إدارة وتحرير مقالات المدونة
             </div>
             <p style="font-size:0.75rem; color:#6b7280; margin:0 0 10px 0; line-height:1.5;">
-              تتم إدارة المحتوى والمقالات ونشر التدوينات الجديدة عبر لوحة تحكم المدونة المخصصة.
+              تتم إضافة المقالات ونشر التدوينات الجديدة عبر لوحة تحكم المدونة المخصصة.
             </p>
             <a href="/dashboard-blog" target="_blank" class="btn-studio-save" style="display:inline-flex; font-size:0.78rem; padding:6px 12px; text-decoration:none;">
               <span>فتح لوحة تحكم المدونة</span>
@@ -2696,33 +3319,79 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       `;
     }
 
+    (window as any).updateBlogSectionMeta = function(field: keyof BlogSectionConfig, val: any, isLiveInput = false, forceShared = false) {
+      if (studioLang === 'en' && !forceShared && field !== 'limit') {
+        const ov = ensureEnOverlay();
+        if (!ov.blogSection) ov.blogSection = {};
+        ov.blogSection[field] = val;
+      } else {
+        if (!studioState.blogSection) studioState.blogSection = {};
+        (studioState.blogSection as any)[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
+    };
+
     /* --------------------------------------------------------------------------
-       INSPECTOR: 7. REVIEWS (Authentic Screenshots)
+       INSPECTOR: 7. REVIEWS (HEADER + DRAG SORTABLE + AUTHOR/TEXT/IMAGE)
        -------------------------------------------------------------------------- */
     function renderReviewsInspector(container: HTMLElement) {
+      const isEnMode = studioLang === 'en';
+      const reviewsMeta = isEnMode
+        ? (studioState.enOverlay?.reviewsSection || {})
+        : (studioState.reviewsSection || {});
+
       let reviewsHtml = '';
       studioState.reviews.forEach((r, idx) => {
+        const enRev = studioState.enOverlay?.reviews?.[idx] || {};
+        const authorVal = isEnMode ? (enRev.author || '') : (r.author || '');
+        const textVal = isEnMode ? (enRev.text || '') : (r.text || '');
+
         reviewsHtml += `
-          <div style="background:#f9fafb; border:1px solid var(--studio-border); border-radius:6px; padding:10px; margin-bottom:10px; position:relative;">
+          <div class="studio-review-card-edit" data-review-index="${idx}" style="background:#f9fafb; border:1px solid var(--studio-border); border-radius:6px; padding:10px; margin-bottom:10px; position:relative;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <span style="font-size:0.8rem; font-weight:700; color:#374151;">تجربة عميلة #${idx + 1}</span>
+              <span style="font-size:0.8rem; font-weight:700; color:#374151; display:flex; align-items:center; gap:6px;">
+                <span class="review-drag-handle" style="color:#9ca3af; cursor:grab; padding:2px 4px;" title="اسحبي لإعادة الترتيب"><i class="fas fa-grip-vertical"></i></span>
+                <span>تجربة عميلة #${idx + 1}</span>
+              </span>
               <button type="button" class="btn-nav-action" onclick="deleteReviewItem(${idx})" title="حذف" style="color:#dc2626;">
                 <i class="fas fa-trash-alt"></i>
               </button>
             </div>
             <div class="studio-form-group">
-              <label class="studio-label">رابط صورة المحادثة/التقييم</label>
-              <input type="url" class="studio-input" value="${escapeHtml(r.image || '')}" placeholder="https://..." onchange="updateReviewItem(${idx}, 'image', this.value)">
+              <label class="studio-label">رابط صورة المحادثة/التقييم ${sharedTagHtml()}</label>
+              <input type="url" class="studio-input" dir="ltr" value="${escapeHtml(r.image || '')}" placeholder="https://..." oninput="updateReviewItem(${idx}, 'image', this.value, true)" onchange="updateReviewItem(${idx}, 'image', this.value)">
             </div>
             <div class="studio-form-group">
               <label class="studio-label">اسم العميلة</label>
-              <input type="text" class="studio-input" value="${escapeHtml(r.author || '')}" placeholder="اسم العميلة أو المحافظة" onchange="updateReviewItem(${idx}, 'author', this.value)">
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(authorVal)}" placeholder="${isEnMode ? 'EN: Verified Customer' : 'اسم العميلة أو المحافظة'}" oninput="updateReviewItem(${idx}, 'author', this.value, true)" onchange="updateReviewItem(${idx}, 'author', this.value)">
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">نص التقييم / التعليق</label>
+              <textarea class="studio-textarea" rows="2" dir="auto" placeholder="${isEnMode ? 'EN: Wonderful skincare results...' : 'تعليق العميلة أو وصف النتيجة...'}" oninput="updateReviewItem(${idx}, 'text', this.value, true)" onchange="updateReviewItem(${idx}, 'text', this.value)">${escapeHtml(textVal)}</textarea>
             </div>
           </div>
         `;
       });
 
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
+        <div class="inspector-card">
+          <div class="inspector-card-header">
+            <h4 class="inspector-card-title"><i class="fas fa-heading"></i> ترويسة قسم الآراء</h4>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="studio-form-group">
+              <label class="studio-label">الشريط العلوي (Kicker)</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(reviewsMeta.kicker || '')}" placeholder="${isEnMode ? 'Verified Experiences' : 'تجارب موثقة'}" oninput="updateReviewsSectionMeta('kicker', this.value, true)" onchange="updateReviewsSectionMeta('kicker', this.value)">
+            </div>
+            <div class="studio-form-group">
+              <label class="studio-label">العنوان الرئيسي</label>
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(reviewsMeta.title || '')}" placeholder="${isEnMode ? 'DANDY Customer Reviews' : 'آراء وتجارب عميلات داندي'}" oninput="updateReviewsSectionMeta('title', this.value, true)" onchange="updateReviewsSectionMeta('title', this.value)">
+            </div>
+          </div>
+        </div>
+
         <div class="inspector-card">
           <div class="inspector-card-header">
             <h4 class="inspector-card-title"><i class="fas fa-comments"></i> تقييمات وتجارب العميلات (${studioState.reviews.length})</h4>
@@ -2730,26 +3399,63 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <i class="fas fa-plus"></i> إضافة تجربة
             </button>
           </div>
-          <p class="studio-hint">صور لقطات شاشات المحادثات وتجارب العميلات الواقعية لتعزيز المصداقية والشفافية.</p>
+          <p class="studio-hint">اسحبي البطاقات لإعادة ترتيب عرض الآراء على الصفحة الرئيسية.</p>
 
           <div id="reviewsSortableList">
             ${reviewsHtml || '<p style="color:#9ca3af; font-size:0.78rem; text-align:center; padding:12px;">لا توجد تقييمات مضافة.</p>'}
           </div>
         </div>
       `;
+
+      const reviewsSortable = document.getElementById('reviewsSortableList');
+      if (reviewsSortable && studioState.reviews.length > 1) {
+        Sortable.create(reviewsSortable, {
+          handle: '.review-drag-handle',
+          animation: 150,
+          onEnd: (evt) => {
+            if (evt.oldIndex !== undefined && evt.newIndex !== undefined && evt.oldIndex !== evt.newIndex) {
+              const moved = studioState.reviews.splice(evt.oldIndex, 1)[0];
+              studioState.reviews.splice(evt.newIndex, 0, moved);
+              recordStateMutation();
+              renderReviewsInspector(container);
+            }
+          }
+        });
+      }
     }
 
-    (window as any).updateReviewItem = function(idx: number, field: string, val: string) {
+    (window as any).updateReviewsSectionMeta = function(field: 'kicker' | 'title', val: string, isLiveInput = false) {
+      if (studioLang === 'en') {
+        const ov = ensureEnOverlay();
+        if (!ov.reviewsSection) ov.reviewsSection = {};
+        ov.reviewsSection[field] = val;
+      } else {
+        if (!studioState.reviewsSection) studioState.reviewsSection = {};
+        studioState.reviewsSection[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
+    };
+
+    (window as any).updateReviewItem = function(idx: number, field: string, val: string, isLiveInput = false) {
       if (!studioState.reviews[idx]) return;
-      (studioState.reviews[idx] as any)[field] = val;
-      recordStateMutation();
+      if (studioLang === 'en' && (field === 'author' || field === 'text')) {
+        const ov = ensureEnOverlay();
+        if (!ov.reviews) ov.reviews = {};
+        if (!ov.reviews[idx]) ov.reviews[idx] = {};
+        ov.reviews[idx][field] = val;
+      } else {
+        (studioState.reviews[idx] as any)[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
     };
 
     (window as any).addReviewItem = function() {
       studioState.reviews.push({
         author: 'عميلة داندي',
         text: 'تجربة رائعة',
-        image: 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg'
+        image: '/assets/images/logo.png'
       });
       recordStateMutation();
       renderActiveInspector();
@@ -2764,14 +3470,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     };
 
     /* --------------------------------------------------------------------------
-       INSPECTOR: CUSTOM SECTION (ANY TYPE)
+       INSPECTOR: CUSTOM SECTION (ANY TYPE + EN OVERLAY + GALLERY LINK)
        -------------------------------------------------------------------------- */
     function renderCustomSectionInspector(container: HTMLElement, secId: string) {
+      const isEnMode = studioLang === 'en';
       const sec = studioState.customSections?.find(s => s.id === secId);
       if (!sec) {
         container.innerHTML = '<p style="color:#6b7280; font-size:0.85rem;">القسم غير موجود أو تم حذفه.</p>';
         return;
       }
+
+      const enCustom = studioState.enOverlay?.customSections?.[secId] || {};
+      const titleVal = isEnMode ? (enCustom.title || '') : (sec.title || '');
+      const subVal = isEnMode ? (enCustom.subtitle || '') : (sec.subtitle || '');
 
       const typeMeta = customSectionTypeMeta[sec.type] || { nameAr: 'قسم مخصص', icon: 'fa-cube' };
       const items = sec.items || [];
@@ -2779,19 +3490,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       let specificFormHtml = '';
 
       if (sec.type === 'story') {
+        const contentVal = isEnMode ? (enCustom.content || '') : (sec.content || '');
+        const authorVal = sec.author || '';
         specificFormHtml = `
           <div class="studio-form-group">
             <label class="studio-label">نص القصة / الرسالة</label>
-            <textarea class="studio-input" rows="4" oninput="updateCustomSectionField('${secId}', 'content', this.value)" placeholder="اكتبي هنا قصة ورسالة داندي...">${escapeHtml(sec.content || '')}</textarea>
+            <textarea class="studio-input" rows="4" dir="auto" oninput="updateCustomSectionField('${secId}', 'content', this.value, true)" placeholder="اكتبي هنا قصة ورسالة داندي...">${escapeHtml(contentVal)}</textarea>
           </div>
           <div class="studio-form-group">
-            <label class="studio-label">التوقيع أو جهة الاقتباس</label>
-            <input type="text" class="studio-input" value="${escapeHtml(sec.author || '')}" oninput="updateCustomSectionField('${secId}', 'author', this.value)" placeholder="مثال: فريق داندي للعناية الطبيعية" />
+            <label class="studio-label">التوقيع أو جهة الاقتباس ${sharedTagHtml()}</label>
+            <input type="text" class="studio-input" dir="auto" value="${escapeHtml(authorVal)}" oninput="updateCustomSectionField('${secId}', 'author', this.value, true, true)" placeholder="مثال: فريق داندي للعناية الطبيعية" />
           </div>
         `;
       } else if (sec.type === 'faq') {
         let itemsHtml = '';
         items.forEach((item, idx) => {
+          const enItem = enCustom.items?.[idx] || {};
+          const qVal = isEnMode ? (enItem.q || '') : (item.q || '');
+          const aVal = isEnMode ? (enItem.a || '') : (item.a || '');
           itemsHtml += `
             <div class="studio-card-item" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px; padding:10px; border:1px solid #e5e7eb; border-radius:8px; background:#fff;">
               <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -2802,11 +3518,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               </div>
               <div class="studio-form-group">
                 <label class="studio-label">نص السؤال</label>
-                <input type="text" class="studio-input" value="${escapeHtml(item.q || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'q', this.value)" placeholder="مثال: هل المنتجات مناسبة للحوامل؟" />
+                <input type="text" class="studio-input" dir="auto" value="${escapeHtml(qVal)}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'q', this.value)" placeholder="مثال: هل المنتجات مناسبة للحوامل؟" />
               </div>
               <div class="studio-form-group">
                 <label class="studio-label">نص الإجابة</label>
-                <textarea class="studio-input" rows="2" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'a', this.value)" placeholder="الإجابة بالتفصيل...">${escapeHtml(item.a || '')}</textarea>
+                <textarea class="studio-input" rows="2" dir="auto" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'a', this.value)" placeholder="الإجابة بالتفصيل...">${escapeHtml(aVal)}</textarea>
               </div>
             </div>
           `;
@@ -2826,48 +3542,54 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       } else if (sec.type === 'video') {
         specificFormHtml = `
           <div class="studio-form-group">
-            <label class="studio-label">رابط الفيديو (YouTube URL أو MP4)</label>
-            <input type="text" class="studio-input" value="${escapeHtml(sec.videoUrl || '')}" oninput="updateCustomSectionField('${secId}', 'videoUrl', this.value)" placeholder="https://www.youtube.com/watch?v=..." />
+            <label class="studio-label">رابط الفيديو (YouTube URL أو MP4) ${sharedTagHtml()}</label>
+            <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(sec.videoUrl || '')}" oninput="updateCustomSectionField('${secId}', 'videoUrl', this.value, true, true)" placeholder="https://www.youtube.com/watch?v=..." />
           </div>
           <div class="studio-form-group">
-            <label class="studio-label">رابط صورة الغلاف (Poster Image)</label>
-            <input type="text" class="studio-input" value="${escapeHtml(sec.poster || '')}" oninput="updateCustomSectionField('${secId}', 'poster', this.value)" placeholder="https://..." />
+            <label class="studio-label">رابط صورة الغلاف (Poster Image) ${sharedTagHtml()}</label>
+            <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(sec.poster || '')}" oninput="updateCustomSectionField('${secId}', 'poster', this.value, true, true)" placeholder="https://..." />
           </div>
         `;
       } else if (sec.type === 'banner') {
+        const eyebrowVal = isEnMode ? (enCustom.eyebrow || '') : (sec.eyebrow || '');
+        const ctaTextVal = isEnMode ? (enCustom.ctaText || '') : (sec.ctaText || '');
+        const ctaLinkVal = isEnMode ? (enCustom.ctaLink || '') : (sec.ctaLink || '');
+        const descVal = isEnMode ? (enCustom.desc || '') : (sec.desc || '');
         specificFormHtml = `
           <div class="form-grid-2">
             <div class="studio-form-group">
               <label class="studio-label">النص الصغير العلوي (Eyebrow)</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.eyebrow || '')}" oninput="updateCustomSectionField('${secId}', 'eyebrow', this.value)" placeholder="مثال: خصم خاص" />
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(eyebrowVal)}" oninput="updateCustomSectionField('${secId}', 'eyebrow', this.value, true)" placeholder="مثال: خصم خاص" />
             </div>
             <div class="studio-form-group">
               <label class="studio-label">نص زر التحويل (CTA Text)</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.ctaText || '')}" oninput="updateCustomSectionField('${secId}', 'ctaText', this.value)" placeholder="مثال: تسوقي العرض" />
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(ctaTextVal)}" oninput="updateCustomSectionField('${secId}', 'ctaText', this.value, true)" placeholder="مثال: تسوقي العرض" />
             </div>
           </div>
           <div class="form-grid-2">
             <div class="studio-form-group">
               <label class="studio-label">رابط الزر (CTA Link)</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.ctaLink || '')}" oninput="updateCustomSectionField('${secId}', 'ctaLink', this.value)" placeholder="/all-products" />
+              <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(ctaLinkVal)}" oninput="updateCustomSectionField('${secId}', 'ctaLink', this.value, true)" placeholder="/all-products" />
             </div>
             <div class="studio-form-group">
-              <label class="studio-label">رابط صورة البانر (Image URL)</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.image || '')}" oninput="updateCustomSectionField('${secId}', 'image', this.value)" placeholder="https://..." />
+              <label class="studio-label">رابط صورة البانر (Image URL) ${sharedTagHtml()}</label>
+              <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(sec.image || '')}" oninput="updateCustomSectionField('${secId}', 'image', this.value, true, true)" placeholder="https://..." />
             </div>
           </div>
           <div class="studio-form-group">
             <label class="studio-label">الوصف الترويجي التفصيلي</label>
-            <textarea class="studio-input" rows="2" oninput="updateCustomSectionField('${secId}', 'desc', this.value)" placeholder="وصف مميزات العرض...">${escapeHtml(sec.desc || '')}</textarea>
+            <textarea class="studio-input" rows="2" dir="auto" oninput="updateCustomSectionField('${secId}', 'desc', this.value, true)" placeholder="وصف مميزات العرض...">${escapeHtml(descVal)}</textarea>
           </div>
         `;
       } else if (sec.type === 'products') {
+        const linkTextVal = isEnMode ? (enCustom.linkText || '') : (sec.linkText || 'عرض الكل');
+        const linkUrlVal = isEnMode ? (enCustom.linkUrl || '') : (sec.linkUrl || '/all-products');
         const prodKeys = Object.keys(productsCatalogCache || {});
         let prodCheckboxesHtml = '';
-        if (prodKeys.length > 0) {
+        if (prodKeys.length > 0 && sec.productSource === 'manual') {
           prodCheckboxesHtml = `
             <div style="margin-top:12px; border-top:1px solid #f3f4f6; padding-top:10px;">
-              <label class="studio-label">تحديد منتجات يدوية مخصصة للظهور في هذا القسم:</label>
+              <label class="studio-label">تحديد منتجات يدوية مخصصة ${sharedTagHtml()}:</label>
               <div style="max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; background:#f9fafb; padding:8px; border-radius:6px;">
                 ${prodKeys.map(k => {
                   const p = productsCatalogCache[k] || {};
@@ -2887,27 +3609,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         specificFormHtml = `
           <div class="form-grid-2">
             <div class="studio-form-group">
-              <label class="studio-label">مصدر المنتجات</label>
-              <select class="studio-input" onchange="updateCustomSectionField('${secId}', 'productSource', this.value)">
+              <label class="studio-label">مصدر المنتجات ${sharedTagHtml()}</label>
+              <select class="studio-input" onchange="updateCustomSectionField('${secId}', 'productSource', this.value, false, true); renderActiveInspector();">
                 <option value="all" ${sec.productSource === 'all' ? 'selected' : ''}>كل المنتجات العامة</option>
                 <option value="offers" ${sec.productSource === 'offers' ? 'selected' : ''}>منتجات العروض والتخفيضات</option>
                 <option value="bestsellers" ${sec.productSource === 'bestsellers' ? 'selected' : ''}>المنتجات الأكثر مبيعاً</option>
+                <option value="newArrivals" ${sec.productSource === 'newArrivals' ? 'selected' : ''}>أحدث المنتجات تلقائياً</option>
                 <option value="manual" ${sec.productSource === 'manual' ? 'selected' : ''}>اختيار يدوي محدد</option>
               </select>
             </div>
             <div class="studio-form-group">
-              <label class="studio-label">عدد المنتجات المعروضة</label>
-              <input type="number" min="2" max="12" class="studio-input" value="${sec.limit || 4}" oninput="updateCustomSectionField('${secId}', 'limit', parseInt(this.value) || 4)" />
+              <label class="studio-label">عدد المنتجات المعروضة ${sharedTagHtml()}</label>
+              <input type="number" min="2" max="12" class="studio-input" value="${sec.limit || 4}" oninput="updateCustomSectionField('${secId}', 'limit', parseInt(this.value) || 4, true, true)" />
             </div>
           </div>
           <div class="form-grid-2">
             <div class="studio-form-group">
               <label class="studio-label">نص رابط المزيد</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.linkText || 'عرض الكل')}" oninput="updateCustomSectionField('${secId}', 'linkText', this.value)" />
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(linkTextVal)}" oninput="updateCustomSectionField('${secId}', 'linkText', this.value, true)" />
             </div>
             <div class="studio-form-group">
               <label class="studio-label">رابط المزيد (URL)</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.linkUrl || '/all-products')}" oninput="updateCustomSectionField('${secId}', 'linkUrl', this.value)" />
+              <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(linkUrlVal)}" oninput="updateCustomSectionField('${secId}', 'linkUrl', this.value, true)" />
             </div>
           </div>
           ${prodCheckboxesHtml}
@@ -2915,6 +3638,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       } else if (sec.type === 'gallery') {
         let itemsHtml = '';
         items.forEach((item, idx) => {
+          const enItem = enCustom.items?.[idx] || {};
+          const itemTitleVal = isEnMode ? (enItem.title || '') : (item.title || '');
+          const itemLinkVal = isEnMode ? (enItem.link || '') : (item.link || '');
           itemsHtml += `
             <div class="studio-card-item" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px; padding:10px; border:1px solid #e5e7eb; border-radius:8px; background:#fff;">
               <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -2924,12 +3650,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
                 </button>
               </div>
               <div class="studio-form-group">
-                <label class="studio-label">رابط الصورة (Image URL)</label>
-                <input type="text" class="studio-input" value="${escapeHtml(item.image || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'image', this.value)" placeholder="https://..." />
+                <label class="studio-label">رابط الصورة (Image URL) ${sharedTagHtml()}</label>
+                <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(item.image || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'image', this.value, true)" placeholder="https://..." />
               </div>
               <div class="studio-form-group">
                 <label class="studio-label">عنوان أو تعليق الصورة</label>
-                <input type="text" class="studio-input" value="${escapeHtml(item.title || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'title', this.value)" placeholder="مثال: إشراقة طبيعية" />
+                <input type="text" class="studio-input" dir="auto" value="${escapeHtml(itemTitleVal)}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'title', this.value)" placeholder="مثال: إشراقة طبيعية" />
+              </div>
+              <div class="studio-form-group">
+                <label class="studio-label">رابط التوجيه عند النقر (اختياري)</label>
+                <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(itemLinkVal)}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'link', this.value)" placeholder="/all-products" />
               </div>
             </div>
           `;
@@ -2949,6 +3679,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       } else if (sec.type === 'trust') {
         let itemsHtml = '';
         items.forEach((item, idx) => {
+          const enItem = enCustom.items?.[idx] || {};
+          const itemTitleVal = isEnMode ? (enItem.title || '') : (item.title || '');
+          const itemDescVal = isEnMode ? (enItem.desc || '') : (item.desc || '');
           itemsHtml += `
             <div class="studio-card-item" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px; padding:10px; border:1px solid #e5e7eb; border-radius:8px; background:#fff;">
               <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -2959,17 +3692,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               </div>
               <div class="form-grid-2">
                 <div class="studio-form-group">
-                  <label class="studio-label">أيقونة FontAwesome</label>
-                  <input type="text" class="studio-input" value="${escapeHtml(item.icon || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'icon', this.value)" placeholder="fa-leaf" />
+                  <label class="studio-label">أيقونة FontAwesome ${sharedTagHtml()}</label>
+                  <input type="text" class="studio-input" dir="ltr" value="${escapeHtml(item.icon || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'icon', this.value, true)" placeholder="fa-leaf" />
                 </div>
                 <div class="studio-form-group">
                   <label class="studio-label">عنوان الميزة</label>
-                  <input type="text" class="studio-input" value="${escapeHtml(item.title || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'title', this.value)" placeholder="مثال: نباتي 100%" />
+                  <input type="text" class="studio-input" dir="auto" value="${escapeHtml(itemTitleVal)}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'title', this.value)" placeholder="مثال: نباتي 100%" />
                 </div>
               </div>
               <div class="studio-form-group">
                 <label class="studio-label">الوصف التفصيلي</label>
-                <input type="text" class="studio-input" value="${escapeHtml(item.desc || '')}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'desc', this.value)" placeholder="شرح مختصر..." />
+                <input type="text" class="studio-input" dir="auto" value="${escapeHtml(itemDescVal)}" oninput="updateCustomSectionItemField('${secId}', ${idx}, 'desc', this.value)" placeholder="شرح مختصر..." />
               </div>
             </div>
           `;
@@ -2989,6 +3722,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
 
       container.innerHTML = `
+        ${renderEnModeBannerHtml()}
         <div class="inspector-card">
           <div class="inspector-card-header">
             <h4 class="inspector-card-title"><i class="fas ${typeMeta.icon}"></i> معلومات القسم (${typeMeta.nameAr})</h4>
@@ -2999,11 +3733,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           <div class="form-grid-2">
             <div class="studio-form-group">
               <label class="studio-label">عنوان القسم الرئيسي</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.title || '')}" oninput="updateCustomSectionField('${secId}', 'title', this.value)" placeholder="عنوان القسم" />
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(titleVal)}" oninput="updateCustomSectionField('${secId}', 'title', this.value, true)" placeholder="عنوان القسم" />
             </div>
             <div class="studio-form-group">
               <label class="studio-label">العنوان الفرعي أو الوصف</label>
-              <input type="text" class="studio-input" value="${escapeHtml(sec.subtitle || '')}" oninput="updateCustomSectionField('${secId}', 'subtitle', this.value)" placeholder="وصف مختصر للقسم" />
+              <input type="text" class="studio-input" dir="auto" value="${escapeHtml(subVal)}" oninput="updateCustomSectionField('${secId}', 'subtitle', this.value, true)" placeholder="وصف مختصر للقسم" />
             </div>
           </div>
           ${specificFormHtml}
@@ -3011,11 +3745,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       `;
     }
 
-    function updateCustomSectionField(secId: string, field: string, val: any) {
+    function updateCustomSectionField(secId: string, field: string, val: any, isLiveInput = false, forceShared = false) {
       const sec = studioState.customSections?.find(s => s.id === secId);
       if (!sec) return;
-      (sec as any)[field] = val;
-      recordStateMutation();
+      if (studioLang === 'en' && !forceShared) {
+        const ov = ensureEnOverlay();
+        if (!ov.customSections) ov.customSections = {};
+        if (!ov.customSections[secId]) ov.customSections[secId] = {};
+        ov.customSections[secId][field] = val;
+      } else {
+        (sec as any)[field] = val;
+      }
+      if (isLiveInput) scheduleLivePreviewMutation();
+      else recordStateMutation();
     }
 
     function addCustomSectionItem(secId: string) {
@@ -3026,7 +3768,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (sec.type === 'faq') {
         sec.items.push({ q: 'سؤال جديد', a: 'الإجابة التفصيلية للسؤال هنا...' });
       } else if (sec.type === 'gallery') {
-        sec.items.push({ image: 'https://i.postimg.cc/7Yt4TfBC/Whats-App-Image-2026-07-10-at-8-28-01-PM.jpg', title: 'صورة جديدة' });
+        sec.items.push({ image: '/assets/images/hero/hero-1.jpg', title: 'صورة جديدة', link: '' });
       } else if (sec.type === 'trust') {
         sec.items.push({ icon: 'fa-shield-alt', title: 'ميزة جديدة', desc: 'وصف الميزة...' });
       }
@@ -3045,11 +3787,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       showStudioToast('تم حذف العنصر');
     }
 
-    function updateCustomSectionItemField(secId: string, idx: number, field: string, val: string) {
+    function updateCustomSectionItemField(secId: string, idx: number, field: string, val: string, forceShared = false) {
       const sec = studioState.customSections?.find(s => s.id === secId);
       if (!sec || !sec.items?.[idx]) return;
-      (sec.items[idx] as any)[field] = val;
-      recordStateMutation();
+      if (studioLang === 'en' && !forceShared) {
+        const ov = ensureEnOverlay();
+        if (!ov.customSections) ov.customSections = {};
+        if (!ov.customSections[secId]) ov.customSections[secId] = {};
+        if (!ov.customSections[secId].items) ov.customSections[secId].items = {};
+        if (!ov.customSections[secId].items[idx]) ov.customSections[secId].items[idx] = {};
+        ov.customSections[secId].items[idx][field] = val;
+      } else {
+        (sec.items[idx] as any)[field] = val;
+      }
+      scheduleLivePreviewMutation();
     }
 
     function toggleCustomSectionManualProduct(secId: string, prodId: string, isChecked: boolean) {
@@ -3065,6 +3816,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     // 7. GLOBAL SAVE & FIREBASE PERSISTENCE
+    function sanitizeForRtdb(val: any): any {
+      if (val === undefined) return null;
+      return JSON.parse(JSON.stringify(val));
+    }
+
     async function saveAllChanges() {
       const db = (window as any).db || (typeof (window as any).firebase !== 'undefined' ? (window as any).firebase.database() : null);
       if (!db) {
@@ -3087,27 +3843,33 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       try {
         const promises: Promise<any>[] = [
-          db.ref('homepage/dynamicHero').set(studioState.hero),
-          db.ref('homepage/dynamicSections').set(studioState.sections),
-          db.ref('homepage/trust').set(studioState.trust),
-          db.ref('homepage/dynamicReviews').set(studioState.reviews),
-          db.ref('categories').set(studioState.categories)
+          db.ref('homepage/dynamicHero').set(sanitizeForRtdb(studioState.hero || [])),
+          db.ref('homepage/dynamicSections').set(sanitizeForRtdb(studioState.sections || [])),
+          db.ref('homepage/trust').set(sanitizeForRtdb(studioState.trust || {})),
+          db.ref('homepage/dynamicReviews').set(sanitizeForRtdb(studioState.reviews || [])),
+          db.ref('categories').set(sanitizeForRtdb(studioState.categories || {})),
+          db.ref('homepage/heroMeta').set(sanitizeForRtdb(studioState.heroMeta || {})),
+          db.ref('homepage/trustSection').set(sanitizeForRtdb(studioState.trustSection || {})),
+          db.ref('homepage/categoriesSection').set(sanitizeForRtdb(studioState.categoriesSection || {})),
+          db.ref('homepage/blogSection').set(sanitizeForRtdb(studioState.blogSection || {})),
+          db.ref('homepage/reviewsSection').set(sanitizeForRtdb(studioState.reviewsSection || {})),
+          db.ref('homepage/enOverlay').set(sanitizeForRtdb(studioState.enOverlay || {}))
         ];
 
         if (studioState.promoBanner) {
-          promises.push(db.ref('homepage/promoBanner').set(studioState.promoBanner));
+          promises.push(db.ref('homepage/promoBanner').set(sanitizeForRtdb(studioState.promoBanner)));
         }
 
         if (studioState.customSections) {
-          promises.push(db.ref('homepage/customSections').set(studioState.customSections));
+          promises.push(db.ref('homepage/customSections').set(sanitizeForRtdb(studioState.customSections)));
         }
 
         if (studioState.sectionOrder) {
-          promises.push(db.ref('homepage/sectionOrder').set(studioState.sectionOrder));
+          promises.push(db.ref('homepage/sectionOrder').set(sanitizeForRtdb(studioState.sectionOrder)));
         }
 
         if (studioState.sectionsVisibility) {
-          promises.push(db.ref('homepage/sectionsVisibility').set(studioState.sectionsVisibility));
+          promises.push(db.ref('homepage/sectionsVisibility').set(sanitizeForRtdb(studioState.sectionsVisibility)));
         }
 
         await Promise.all(promises);

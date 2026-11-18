@@ -10,7 +10,7 @@ import { getAllCategories, CATEGORY_TAXONOMY } from '../utils/categories';
 import type { Product } from '../utils/products';
 import { selectFeaturedProducts, isProductSoldOut } from './product-card';
 import type { DandyIconName } from './icons';
-import type { Locale } from '../i18n/types';
+import type { HomepageStudioLocalizedOverlay, Locale } from '../i18n/types';
 import { buildLocalizedPath } from '../i18n/routes';
 import { EN_CATEGORY_CONTENT } from '../i18n/content/en/categories';
 
@@ -25,15 +25,37 @@ export interface HeroSlide {
   link?: string;
 }
 
+export interface HeroMetaConfig {
+  kicker?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+}
+
+export interface SectionHeaderConfig {
+  kicker?: string;
+  title?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+}
+
+export interface BlogSectionConfig {
+  kicker?: string;
+  title?: string;
+  viewAllLabel?: string;
+  limit?: number;
+}
+
 export interface DynamicSection {
   id: string;
   order?: number;
   visible?: boolean;
   title?: string;
   subtitle?: string;
-  type?: 'manual' | 'bestsellers' | 'offers' | 'newArrivals' | string;
+  type?: 'manual' | 'bestsellers' | 'offers' | 'newArrivals' | 'all' | string;
   manualProducts?: Record<string, boolean>;
   limit?: number;
+  viewAllLabel?: string;
+  viewAllHref?: string;
 }
 
 export interface TrustItem {
@@ -52,7 +74,10 @@ export interface StudioCategoryItem {
   id?: string;
   name?: string;
   tagline?: string;
+  description?: string;
   count?: string;
+  visible?: boolean;
+  order?: number;
   layoutVariant?: 'auto' | 'wide' | 'large' | 'tall' | 'small';
   desktopImage?: string;
   mobileImage?: string;
@@ -93,7 +118,7 @@ export interface CustomSection {
   ctaText?: string;
   ctaLink?: string;
   image?: string;
-  productSource?: 'all' | 'offers' | 'bestsellers' | 'manual';
+  productSource?: 'all' | 'offers' | 'bestsellers' | 'manual' | 'newArrivals';
   manualProducts?: Record<string, boolean>;
   limit?: number;
   linkText?: string;
@@ -103,18 +128,25 @@ export interface CustomSection {
 
 export interface HomepageStudioState {
   hero: HeroSlide[];
+  heroMeta?: HeroMetaConfig;
   sections: DynamicSection[];
   trust: {
     item1?: TrustItem;
     item2?: TrustItem;
     item3?: TrustItem;
+    item4?: TrustItem;
   };
+  trustSection?: SectionHeaderConfig;
+  categoriesSection?: SectionHeaderConfig;
+  blogSection?: BlogSectionConfig;
+  reviewsSection?: SectionHeaderConfig;
   reviews: ReviewItem[];
   categories: Record<string, StudioCategoryItem>;
   promoBanner?: PromoBannerConfig;
   customSections?: CustomSection[];
   sectionOrder?: string[];
   sectionsVisibility?: Record<string, boolean>;
+  enOverlay?: HomepageStudioLocalizedOverlay;
 }
 
 export const DEFAULT_SECTION_ORDER: readonly string[] = [
@@ -134,8 +166,8 @@ export const DEFAULT_HERO_SLIDE = {
     'تركيبات صيدلانية لطيفة محضّرة من الزيوت النباتية والزبدات المغذية والفيتامينات، مصممة بعناية لتمنحكِ روتين عناية يومياً موثوقاً وخالياً من الإضافات القاسية.',
   buttonText: 'تسوقي الآن',
   link: '/all-products',
-  desktopImage: '/assets/images/editorial/hero-botanical.jpg',
-  mobileImage: '/assets/images/editorial/hero-botanical.jpg',
+  desktopImage: '/assets/images/hero/hero-1.jpg',
+  mobileImage: '/assets/images/hero/hero-1.jpg',
   durationSeconds: 5,
 };
 
@@ -145,7 +177,7 @@ export const DEFAULT_PROMO_BANNER = {
   desc: 'تأسست DANDY برؤية صيدلانية متخصصة في علم تصنيع مستحضرات التجميل، لتقديم منتجات للعناية بالبشرة والشعر والجسم تعتمد على الاختيار الدقيق للزيوت النباتية والزبدات المغذية والفيتامينات، بتركيبات متوازنة خالية من الإضافات الكيميائية القاسية.',
   ctaText: 'اكتشفي المجموعة',
   ctaLink: '/all-products',
-  image: '/assets/images/editorial/story-botanical.jpg',
+  image: '/assets/images/index-products/product-2.jpg',
 };
 
 export const DEFAULT_TRUST_ITEMS: readonly {
@@ -176,8 +208,8 @@ export const DEFAULT_HERO_SLIDE_EN = {
     'Gentle pharmacist-formulated botanical blends enriched with plant oils, nourishing butters, and vitamins for a trusted daily ritual free from harsh additives.',
   buttonText: 'Shop Now',
   link: '/en/all-products',
-  desktopImage: '/assets/images/editorial/hero-botanical.jpg',
-  mobileImage: '/assets/images/editorial/hero-botanical.jpg',
+  desktopImage: '/assets/images/hero/hero-1.jpg',
+  mobileImage: '/assets/images/hero/hero-1.jpg',
   durationSeconds: 5,
 };
 
@@ -187,7 +219,7 @@ export const DEFAULT_PROMO_BANNER_EN = {
   desc: 'Founded with specialized pharmaceutical formulation expertise, DANDY offers thoughtfully balanced skincare, haircare, body care, and fragrance essentials powered by pure plant oils, rich butters, and vitamins—free from harsh chemicals.',
   ctaText: 'Explore the Collection',
   ctaLink: '/en/all-products',
-  image: '/assets/images/editorial/story-botanical.jpg',
+  image: '/assets/images/index-products/product-2.jpg',
 };
 
 export const DEFAULT_TRUST_ITEMS_EN: readonly {
@@ -247,7 +279,7 @@ export interface ResolvedCategoryCard {
 export interface ResolvedDynamicProductSection {
   sectionKey: 'offers' | 'newArrivals';
   id: string;
-  type: 'offers' | 'bestsellers' | 'manual' | 'newArrivals';
+  type: 'offers' | 'bestsellers' | 'manual' | 'newArrivals' | 'all';
   title: string;
   subtitle: string;
   visible: boolean;
@@ -417,8 +449,105 @@ export function resolveHeroSlides(
   return normalized;
 }
 
+export function resolveHeroMeta(
+  meta?: HeroMetaConfig,
+  locale: Locale = 'ar'
+): {
+  kicker: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+} {
+  const isEn = locale === 'en';
+  const defaultKicker = isEn
+    ? 'Dandy Cosmetics · Pharmacist-Formulated Botanical Care'
+    : 'Dandy Cosmetics · عناية طبيعية برؤية صيدلانية';
+  const defaultSecondaryLabel = isEn ? 'Our Philosophy' : 'فلسفة داندي';
+  const defaultSecondaryHref = buildLocalizedPath('/about-us', locale);
+  const rawHref = (meta?.secondaryCtaHref || '').trim();
+  const safeHref = rawHref ? localizeInternalStoreHref(sanitizeNavHref(rawHref, '/about-us'), locale) : defaultSecondaryHref;
+
+  return {
+    kicker: (meta?.kicker || '').trim() || defaultKicker,
+    secondaryCtaLabel: (meta?.secondaryCtaLabel || '').trim() || defaultSecondaryLabel,
+    secondaryCtaHref: safeHref,
+  };
+}
+
+export function resolveTrustSectionMeta(
+  meta?: SectionHeaderConfig
+): {
+  title: string;
+  subtitle: string;
+} {
+  return {
+    subtitle: (meta?.kicker || '').trim(),
+    title: (meta?.title || '').trim(),
+  };
+}
+
+export function resolveCategoriesSectionMeta(
+  meta?: SectionHeaderConfig,
+  locale: Locale = 'ar'
+): {
+  kicker: string;
+  title: string;
+  ctaLabel: string;
+  ctaHref: string;
+} {
+  const isEn = locale === 'en';
+  const rawHref = (meta?.ctaHref || '').trim();
+  const safeHref = rawHref
+    ? localizeInternalStoreHref(sanitizeNavHref(rawHref, '/all-products'), locale)
+    : buildLocalizedPath('/all-products', locale);
+
+  return {
+    kicker: (meta?.kicker || '').trim() || (isEn ? 'Primary Categories' : 'الأقسام الرئيسية'),
+    title: (meta?.title || '').trim() || (isEn ? 'Shop by Routine' : 'تسوقي حسب الروتين'),
+    ctaLabel: (meta?.ctaLabel || '').trim() || (isEn ? 'All Products' : 'كل المنتجات'),
+    ctaHref: safeHref,
+  };
+}
+
+export function resolveBlogSectionMeta(
+  meta?: BlogSectionConfig,
+  locale: Locale = 'ar'
+): {
+  kicker: string;
+  title: string;
+  viewAllLabel: string;
+  limit: number;
+} {
+  const isEn = locale === 'en';
+  const rawLimit = Number(meta?.limit);
+  const limit = Number.isFinite(rawLimit) && rawLimit >= 1 && rawLimit <= 6 ? Math.round(rawLimit) : 3;
+  return {
+    kicker: (meta?.kicker || '').trim() || (isEn ? 'Beauty Journal' : 'مدونة العناية والجمال'),
+    title:
+      (meta?.title || '').trim() ||
+      (isEn ? 'Skincare & Haircare Guides' : 'نصائح ومقالات روتين البشرة والشعر'),
+    viewAllLabel: (meta?.viewAllLabel || '').trim() || (isEn ? 'All Articles' : 'كل المقالات'),
+    limit,
+  };
+}
+
+export function resolveReviewsSectionMeta(
+  meta?: SectionHeaderConfig,
+  locale: Locale = 'ar'
+): {
+  kicker: string;
+  title: string;
+} {
+  const isEn = locale === 'en';
+  return {
+    kicker: (meta?.kicker || '').trim() || (isEn ? 'Verified Experiences' : 'تجارب موثقة'),
+    title:
+      (meta?.title || '').trim() ||
+      (isEn ? 'DANDY Customer Reviews & Results' : 'آراء وتجارب عميلات داندي'),
+  };
+}
+
 /**
- * Resolves standard `trust` strip (`{ item1, item2, item3 }`) or custom `trust` items.
+ * Resolves standard `trust` strip (`{ item1, item2, item3, item4? }`) or custom `trust` items.
  */
 export function resolveTrustItems(
   trustConfig?: HomepageStudioState['trust'],
@@ -437,19 +566,30 @@ export function resolveTrustItems(
       }));
   }
 
-  const keys: Array<'item1' | 'item2' | 'item3'> = ['item1', 'item2', 'item3'];
+  const keys: Array<'item1' | 'item2' | 'item3' | 'item4'> = ['item1', 'item2', 'item3', 'item4'];
   const mapped: ResolvedTrustItem[] = [];
+  const hasAnyTrustData = Boolean(
+    trustConfig &&
+      (trustConfig.item1?.title?.trim() ||
+        trustConfig.item1?.desc?.trim() ||
+        trustConfig.item2?.title?.trim() ||
+        trustConfig.item2?.desc?.trim() ||
+        trustConfig.item3?.title?.trim() ||
+        trustConfig.item3?.desc?.trim() ||
+        trustConfig.item4?.title?.trim() ||
+        trustConfig.item4?.desc?.trim())
+  );
 
   keys.forEach((key, idx) => {
     const raw = trustConfig?.[key];
-    const fallback = defaultTrust[idx];
+    const fallback = defaultTrust[idx % 3];
     if (raw && (raw.title?.trim() || raw.desc?.trim())) {
       mapped.push({
         iconName: mapStudioIconToLucide(raw.icon),
         title: (raw.title || '').trim() || fallback.title,
         desc: (raw.desc || '').trim() || '',
       });
-    } else if (!trustConfig || (!trustConfig.item1 && !trustConfig.item2 && !trustConfig.item3)) {
+    } else if (idx < 3 && !hasAnyTrustData) {
       mapped.push({ ...fallback });
     }
   });
@@ -497,7 +637,11 @@ export function resolveDynamicProductSection(
 
   const rawType = matched?.type;
   const resolvedType: ResolvedDynamicProductSection['type'] =
-    rawType === 'offers' || rawType === 'bestsellers' || rawType === 'manual'
+    rawType === 'offers' ||
+    rawType === 'bestsellers' ||
+    rawType === 'manual' ||
+    rawType === 'newArrivals' ||
+    rawType === 'all'
       ? rawType
       : secKey === 'offers'
         ? 'offers'
@@ -514,6 +658,17 @@ export function resolveDynamicProductSection(
   const rawLimit = Number(matched?.limit);
   const limit = Number.isFinite(rawLimit) && rawLimit >= 2 && rawLimit <= 12 ? Math.round(rawLimit) : 8;
   const isOffers = secKey === 'offers' || resolvedType === 'offers';
+  const defaultHref =
+    locale === 'en'
+      ? buildLocalizedPath(isOffers ? '/special-offers' : '/all-products', 'en')
+      : isOffers
+        ? '/offers'
+        : '/all-products';
+  const customHref = typeof matched?.viewAllHref === 'string' ? matched.viewAllHref.trim() : '';
+  const resolvedHref = customHref
+    ? localizeInternalStoreHref(sanitizeNavHref(customHref, defaultHref), locale)
+    : defaultHref;
+  const customLabel = typeof matched?.viewAllLabel === 'string' ? matched.viewAllLabel.trim() : '';
 
   return {
     sectionKey: secKey,
@@ -527,20 +682,16 @@ export function resolveDynamicProductSection(
         ? { ...matched.manualProducts }
         : {},
     limit,
-    viewAllHref:
-      locale === 'en'
-        ? buildLocalizedPath(isOffers ? '/special-offers' : '/all-products', 'en')
-        : isOffers
-          ? '/offers'
-          : '/all-products',
+    viewAllHref: resolvedHref,
     viewAllLabel:
-      locale === 'en'
+      customLabel ||
+      (locale === 'en'
         ? isOffers
           ? 'Browse Offers'
           : 'Shop Full Catalog'
         : isOffers
           ? 'تصفحي العروض'
-          : 'عرض المتجر بالكامل',
+          : 'عرض المتجر بالكامل'),
   };
 }
 
@@ -600,13 +751,30 @@ export function selectProductsForStudioSection(
     return inStockFirst(bestMatches).slice(0, safeLimit);
   }
 
+  if (options.source === 'newArrivals') {
+    const getCreatedTs = (p: Product): number => {
+      const raw = (p as any).createdAt ?? (p as any).updatedAt ?? 0;
+      if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+      if (typeof raw === 'string' && raw.trim()) {
+        const parsed = Date.parse(raw);
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+      return 0;
+    };
+    const hasTimestamps = visible.some((p) => getCreatedTs(p) > 0);
+    const newest = hasTimestamps
+      ? [...visible].sort((a, b) => getCreatedTs(b) - getCreatedTs(a))
+      : [...visible].reverse();
+    return inStockFirst(newest).slice(0, safeLimit);
+  }
+
   return selectFeaturedProducts(visible, safeLimit);
 }
 
 /**
  * Matches an RTDB/Studio category record name/key onto one of the 4 canonical SEO category slugs.
  */
-function matchCanonicalCategorySlug(rawName?: string, rawId?: string): string | null {
+export function matchCanonicalCategorySlug(rawName?: string, rawId?: string): string | null {
   const probe = `${rawName || ''} ${rawId || ''}`.toLowerCase().trim();
   if (!probe) return null;
   if (probe.includes('hair') || probe.includes('شعر')) return 'hair-care';
@@ -650,11 +818,20 @@ export function resolveCategoriesForShowcase(
   }
 
   const fallbackImg = '/assets/images/index-products/product-2.jpg';
-  const resolved: ResolvedCategoryCard[] = [];
+  const resolved: Array<ResolvedCategoryCard & { _order: number }> = [];
   const usedCanonicalSlugs = new Set<string>();
 
-  for (const [key, item] of entries) {
+  const orderedEntries = entries
+    .map(([key, item], index) => ({
+      key,
+      item,
+      sortOrder: typeof item?.order === 'number' && Number.isFinite(item.order) ? item.order : index,
+    }))
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  for (const { key, item, sortOrder } of orderedEntries) {
     if (!item || typeof item !== 'object') continue;
+    if (item.visible === false) continue;
     const rawName = (item.name || '').trim();
     if (!rawName) continue;
 
@@ -687,7 +864,7 @@ export function resolveCategoriesForShowcase(
 
     const displayName =
       locale === 'en'
-        ? enCat?.name || taxonomy?.name || rawName
+        ? (isExactCanonicalEnglish ? enCat?.name || taxonomy?.name : rawName) || enCat?.name || taxonomy?.name || rawName
         : taxonomy && isExactCanonicalEnglish
           ? taxonomy.arabicName
           : rawName;
@@ -695,6 +872,8 @@ export function resolveCategoriesForShowcase(
     const baseHref = taxonomy
       ? `/category/${taxonomy.slug}`
       : `/all-products?category=${encodeURIComponent(rawName)}`;
+
+    const customDesc = typeof item.description === 'string' ? item.description.trim() : '';
 
     resolved.push({
       key,
@@ -706,15 +885,18 @@ export function resolveCategoriesForShowcase(
       count: (item.count || '').trim(),
       description:
         locale === 'en'
-          ? enCat?.shortTagline || enCat?.introText || (item.tagline || '').trim() || 'Curated DANDY Essentials'
-          : taxonomy?.introText || (item.tagline || '').trim() || 'منتجات مختارة من داندي',
+          ? customDesc || enCat?.shortTagline || enCat?.introText || (item.tagline || '').trim() || 'Curated DANDY Essentials'
+          : customDesc || taxonomy?.introText || (item.tagline || '').trim() || 'منتجات مختارة من داندي',
       layoutVariant,
       desktopImage: desktop,
       mobileImage: mobile,
+      _order: sortOrder,
     });
   }
 
-  return resolved.length > 0 ? resolved : resolveCategoriesForShowcase(undefined, locale);
+  return resolved.length > 0
+    ? resolved.map(({ _order: _ignored, ...card }) => card)
+    : resolveCategoriesForShowcase(undefined, locale);
 }
 
 /**
@@ -857,7 +1039,7 @@ export function resolveOrderedHomepageEntries(
  * Safely parses YouTube, Vimeo, or direct MP4/WebM URLs for Studio custom `video` sections.
  */
 export function resolveVideoMedia(rawVideoUrl?: string, rawPoster?: string): ResolvedVideoMedia {
-  const poster = sanitizeMediaUrl(rawPoster, '/assets/images/editorial/hero-botanical.jpg');
+  const poster = sanitizeMediaUrl(rawPoster, '/assets/images/hero/hero-1.jpg');
   const trimmed = typeof rawVideoUrl === 'string' ? rawVideoUrl.trim() : '';
   if (!trimmed) {
     return { kind: 'invalid', poster };
@@ -936,8 +1118,28 @@ export function mergeStudioPreviewState(
 
   return {
     hero: Array.isArray(incoming.hero) ? incoming.hero : baseState.hero,
+    heroMeta:
+      incoming.heroMeta && typeof incoming.heroMeta === 'object'
+        ? incoming.heroMeta
+        : baseState.heroMeta,
     sections: Array.isArray(incoming.sections) ? incoming.sections : baseState.sections,
     trust: incoming.trust && typeof incoming.trust === 'object' ? incoming.trust : baseState.trust,
+    trustSection:
+      incoming.trustSection && typeof incoming.trustSection === 'object'
+        ? incoming.trustSection
+        : baseState.trustSection,
+    categoriesSection:
+      incoming.categoriesSection && typeof incoming.categoriesSection === 'object'
+        ? incoming.categoriesSection
+        : baseState.categoriesSection,
+    blogSection:
+      incoming.blogSection && typeof incoming.blogSection === 'object'
+        ? incoming.blogSection
+        : baseState.blogSection,
+    reviewsSection:
+      incoming.reviewsSection && typeof incoming.reviewsSection === 'object'
+        ? incoming.reviewsSection
+        : baseState.reviewsSection,
     reviews: Array.isArray(incoming.reviews) ? incoming.reviews : baseState.reviews,
     categories:
       incoming.categories && typeof incoming.categories === 'object'
@@ -957,5 +1159,9 @@ export function mergeStudioPreviewState(
       incoming.sectionsVisibility && typeof incoming.sectionsVisibility === 'object'
         ? incoming.sectionsVisibility
         : baseState.sectionsVisibility,
+    enOverlay:
+      incoming.enOverlay && typeof incoming.enOverlay === 'object'
+        ? incoming.enOverlay
+        : baseState.enOverlay,
   };
 }

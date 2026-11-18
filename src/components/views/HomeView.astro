@@ -19,15 +19,23 @@ import {
   type CampaignPricingResult,
 } from '../../utils/pink-friday-server';
 import {
+  resolveBlogSectionMeta,
   resolveCategoriesForShowcase,
+  resolveCategoriesSectionMeta,
   resolveDynamicProductSection,
+  resolveHeroMeta,
   resolveHeroSlides,
   resolveOrderedHomepageEntries,
   resolvePromoBanner,
+  resolveReviewsSectionMeta,
   resolveTrustItems,
+  resolveTrustSectionMeta,
   selectProductsForStudioSection,
 } from '../../scripts/homepage-studio';
-import { resolveLocalizedHomepageStudioState } from '../../i18n/content/adapters';
+import {
+  resolveLocalizedArticle,
+  resolveLocalizedHomepageStudioState,
+} from '../../i18n/content/adapters';
 import { EN_HOMEPAGE_STUDIO_OVERLAY } from '../../i18n/content/en/homepage-studio';
 import { buildLocalizedPath } from '../../i18n/routes';
 import type { Locale } from '../../i18n/types';
@@ -59,9 +67,14 @@ const renderedEntries = isStudioPreview
   : orderedEntries.filter((entry) => entry.visible);
 
 const heroSlides = resolveHeroSlides(studioData.hero, locale);
+const heroMeta = resolveHeroMeta(studioData.heroMeta, locale);
 const trustItems = resolveTrustItems(studioData.trust, undefined, locale);
+const trustMeta = resolveTrustSectionMeta(studioData.trustSection);
 const resolvedCategories = resolveCategoriesForShowcase(studioData.categories, locale);
+const categoriesMeta = resolveCategoriesSectionMeta(studioData.categoriesSection, locale);
 const promoBanner = resolvePromoBanner(studioData.promoBanner, locale);
+const blogMeta = resolveBlogSectionMeta(studioData.blogSection, locale);
+const reviewsMeta = resolveReviewsSectionMeta(studioData.reviewsSection, locale);
 
 const offersConfig = resolveDynamicProductSection(studioData, 'offers', locale);
 const offersProducts = selectProductsForStudioSection(allProducts, {
@@ -77,11 +90,53 @@ const newArrivalsProducts = selectProductsForStudioSection(allProducts, {
   limit: newArrivalsConfig.limit,
 });
 
+const previewArticles = isStudioPreview
+  ? allArticles
+      .map((article) => {
+        const view = resolveLocalizedArticle(article, locale, { fallbackToArabicWhenMissing: true });
+        if (isEn && !view.hasTranslation) return null;
+        let excerpt = (view.content.excerpt || article.excerpt || '').trim();
+        if (!excerpt && article.content) {
+          const plain = article.content.replace(/<[^>]+>/g, '').trim();
+          excerpt = plain.length > 130 ? `${plain.slice(0, 130)}...` : plain;
+        }
+        let dateLabel = '';
+        if (article.createdAt) {
+          try {
+            dateLabel = new Date(article.createdAt).toLocaleDateString(isEn ? 'en-US' : 'ar-EG', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            });
+          } catch {
+            dateLabel = article.date?.trim() || '';
+          }
+        } else if (!isEn && article.date?.trim()) {
+          dateLabel = article.date.trim();
+        }
+        return {
+          title: view.content.title,
+          category: view.content.category || (isEn ? 'Beauty Rituals' : 'روتين الجمال'),
+          excerpt,
+          dateLabel,
+          href: buildLocalizedPath(`/blog/${encodeURIComponent(article.slug)}`, locale),
+          image:
+            article.image && !article.image.includes('images.unsplash.com')
+              ? article.image
+              : '/assets/images/index-products/product-2.jpg',
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 6)
+  : [];
+
 const studioBootstrapJson = isStudioPreview
   ? JSON.stringify({
       state: studioData,
+      rawState: rawStudioData,
       showPinkFriday: showPfSection,
       products: allProducts.filter((p) => !p.isHidden),
+      articles: previewArticles,
       pinkFridayPricingMap: publishedPfCampaign
         ? Object.fromEntries(
             allProducts
@@ -307,11 +362,27 @@ const searchTargetUrl = `${SITE_URL}${buildLocalizedPath('/all-products', locale
 
       switch (entry.id) {
         case 'hero':
-          return <HeroEditorial slides={heroSlides} hidden={hidden} locale={locale} />;
+          return <HeroEditorial slides={heroSlides} heroMeta={heroMeta} hidden={hidden} locale={locale} />;
         case 'trust':
-          return <TrustStripSection sectionId="trust" items={trustItems} hidden={hidden} locale={locale} />;
+          return (
+            <TrustStripSection
+              sectionId="trust"
+              title={trustMeta.title}
+              subtitle={trustMeta.subtitle}
+              items={trustItems}
+              hidden={hidden}
+              locale={locale}
+            />
+          );
         case 'categories':
-          return <CategoryDiscovery categories={resolvedCategories} hidden={hidden} locale={locale} />;
+          return (
+            <CategoryDiscovery
+              categories={resolvedCategories}
+              sectionMeta={categoriesMeta}
+              hidden={hidden}
+              locale={locale}
+            />
+          );
         case 'offers':
           return (
             <FeaturedProducts
@@ -358,9 +429,23 @@ const searchTargetUrl = `${SITE_URL}${buildLocalizedPath('/all-products', locale
             />
           );
         case 'blog':
-          return <BlogHomeSection articles={allArticles} hidden={hidden} locale={locale} />;
+          return (
+            <BlogHomeSection
+              articles={allArticles}
+              sectionMeta={blogMeta}
+              hidden={hidden}
+              locale={locale}
+            />
+          );
         case 'reviews':
-          return <ReviewsHomeSection reviews={studioData.reviews} hidden={hidden} locale={locale} />;
+          return (
+            <ReviewsHomeSection
+              reviews={studioData.reviews}
+              sectionMeta={reviewsMeta}
+              hidden={hidden}
+              locale={locale}
+            />
+          );
         default:
           return null;
       }

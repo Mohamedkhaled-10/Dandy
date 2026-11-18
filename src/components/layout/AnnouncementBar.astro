@@ -19,10 +19,10 @@ export interface Props {
 const { locale = 'ar' } = Astro.props;
 const dir = getLocaleDirection(locale);
 const rawCampaign = await getPublishedPinkFridayCampaign();
+const showPinkFriday = shouldDisplayCampaignToCustomers(rawCampaign);
 const publishedCampaign = rawCampaign
   ? resolveLocalizedPinkFridayCampaign(rawCampaign, locale, locale === 'en' ? EN_PINK_FRIDAY_OVERLAY : null)
   : null;
-const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
 const announcement = resolveAnnouncementState(showPinkFriday, publishedCampaign, locale);
 const isPinkFriday = announcement.mode === 'pink-friday';
 ---

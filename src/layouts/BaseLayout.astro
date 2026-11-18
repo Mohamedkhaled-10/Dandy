@@ -88,6 +88,18 @@ const localizedPinkFridayCampaign =
   resolvedLang === 'en'
     ? resolveLocalizedPinkFridayCampaign(pinkFridayCampaign, 'en', EN_PINK_FRIDAY_OVERLAY)
     : pinkFridayCampaign;
+const pinkFridayClientConfig =
+  localizedPinkFridayCampaign &&
+  localizedPinkFridayCampaign.enabled === true &&
+  localizedPinkFridayCampaign.unpublished !== true
+    ? localizedPinkFridayCampaign
+    : {
+        ...localizedPinkFridayCampaign,
+        enabled: false,
+        unpublished: true,
+        offers: [],
+        collections: [],
+      };
 const enableStorefrontMotion =
   !showDashboardNav && !isExcludedMotionRoute(Astro.url.pathname || '/', Astro.url.search || '');
 ---
@@ -143,7 +155,7 @@ const enableStorefrontMotion =
   <!-- Dandy Variants & Slugs Utilities -->
   <script is:inline src="/assets/js/variants.js"></script>
   <script is:inline src="/assets/js/product-slugs.js"></script>
-  <script is:inline define:vars={{ pinkFridayConfig: localizedPinkFridayCampaign }}>
+  <script is:inline define:vars={{ pinkFridayConfig: pinkFridayClientConfig }}>
     window.__PINK_FRIDAY_CONFIG = pinkFridayConfig;
   </script>
   <script is:inline src="/assets/js/pink-friday.js"></script>

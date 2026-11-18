@@ -21,12 +21,17 @@ import {
   DEFAULT_PROMO_BANNER,
   localizeInternalStoreHref,
   mergeStudioPreviewState,
+  resolveBlogSectionMeta,
   resolveCategoriesForShowcase,
+  resolveCategoriesSectionMeta,
   resolveDynamicProductSection,
+  resolveHeroMeta,
   resolveHeroSlides,
   resolveOrderedHomepageEntries,
   resolvePromoBanner,
+  resolveReviewsSectionMeta,
   resolveTrustItems,
+  resolveTrustSectionMeta,
   resolveVideoMedia,
   sanitizeMediaUrl,
   sanitizeNavHref,
@@ -47,9 +52,20 @@ function getRuntimeLocale(): 'ar' | 'en' {
   return 'ar';
 }
 
+interface StudioPreviewArticleItem {
+  title: string;
+  category: string;
+  excerpt: string;
+  dateLabel: string;
+  href: string;
+  image: string;
+}
+
 interface StudioBootstrapPayload {
   state: HomepageStudioState;
+  rawState?: HomepageStudioState;
   products: Product[];
+  articles?: StudioPreviewArticleItem[];
   pinkFridayPricingMap?: Record<string, CampaignPricingResult | null>;
   showPinkFriday?: boolean;
 }
@@ -83,6 +99,7 @@ let currentHeroIndex = 0;
 let currentMode: 'edit' | 'preview' = 'edit';
 let activeSelectedSectionId = 'hero';
 let studioBootstrap: StudioBootstrapPayload | null = null;
+let rawCurrentState: HomepageStudioState | null = null;
 let currentState: HomepageStudioState | null = null;
 let initialized = false;
 
@@ -166,30 +183,6 @@ function scheduleHeroRotation(): void {
   }, durationSec * 1000);
 }
 
-function syncHeroResponsiveAssets(): void {
-  if (typeof window === 'undefined' || window.innerWidth >= 768) return;
-  const imgs = document.querySelectorAll<HTMLImageElement>('.dandy-hero-img[data-mobile-src]');
-  imgs.forEach((img) => {
-    const mobileSrc = img.getAttribute('data-mobile-src') || '';
-    const desktopSrc = img.getAttribute('data-desktop-src') || '';
-    if (!mobileSrc || mobileSrc === desktopSrc) return;
-    if (img.dataset.mobileProbed === '1') return;
-    img.dataset.mobileProbed = '1';
-
-    const probe = new Image();
-    probe.referrerPolicy = 'no-referrer';
-    probe.onload = () => {
-      // Adopt genuine landscape/wide mobile assets seamlessly; keep desktopImage when mobileImage is tall vertical flyer
-      if (probe.naturalWidth > 0 && probe.naturalHeight > 0 && probe.naturalWidth / probe.naturalHeight >= 1.1) {
-        if (window.innerWidth < 768) {
-          img.src = mobileSrc;
-        }
-      }
-    };
-    probe.src = mobileSrc;
-  });
-}
-
 function initHeroControls(): void {
   document.addEventListener('click', (event: MouseEvent) => {
     const target = event.target as HTMLElement | null;
@@ -265,8 +258,6 @@ function initHeroControls(): void {
     { passive: true }
   );
 
-  syncHeroResponsiveAssets();
-  window.addEventListener('resize', () => syncHeroResponsiveAssets(), { passive: true });
   scheduleHeroRotation();
 }
 
@@ -375,6 +366,7 @@ function updateHeroDom(state: HomepageStudioState): void {
   const locale = getRuntimeLocale();
   const isEn = locale === 'en';
   const slides = resolveHeroSlides(state.hero, locale);
+  const heroMeta = resolveHeroMeta(state.heroMeta, locale);
   const first = slides[0];
   const fallbackSlideImg = (isEn ? DEFAULT_HERO_SLIDE_EN : DEFAULT_HERO_SLIDE).desktopImage;
   const carousel = heroSec.querySelector<HTMLElement>('[data-hero-carousel]');
@@ -382,10 +374,18 @@ function updateHeroDom(state: HomepageStudioState): void {
   const dotsContainer = heroSec.querySelector<HTMLElement>('[data-hero-dots]');
   const controlsContainer = heroSec.querySelector<HTMLElement>('[data-hero-controls]');
 
+  const kickerEl = heroSec.querySelector<HTMLElement>('[data-hero-kicker]');
+  const secCtaEl = heroSec.querySelector<HTMLAnchorElement>('[data-hero-secondary-cta]');
+  const secCtaLabelEl = heroSec.querySelector<HTMLElement>('[data-hero-secondary-label]');
+  if (kickerEl) kickerEl.textContent = heroMeta.kicker;
+  if (secCtaLabelEl) secCtaLabelEl.textContent = heroMeta.secondaryCtaLabel;
+  if (secCtaEl) secCtaEl.setAttribute('href', heroMeta.secondaryCtaHref);
+
   if (slidesContainer) {
     slidesContainer.innerHTML = slides
-      .map(
-        (slide, idx) => `
+      .map((slide, idx) => {
+        const hasMobileSource = Boolean(slide.mobileImage && slide.mobileImage !== slide.desktopImage);
+        return `
           <figure
             class="dandy-hero-frame${idx === 0 ? ' is-active' : ''}"
             data-hero-slide="${idx}"
@@ -396,24 +396,26 @@ function updateHeroDom(state: HomepageStudioState): void {
             data-link="${escapeHtml(slide.link)}"
             aria-hidden="${idx === 0 ? 'false' : 'true'}"
           >
-            <img
-              src="${escapeHtml(slide.desktopImage)}"
-              data-desktop-src="${escapeHtml(slide.desktopImage)}"
-              data-mobile-src="${escapeHtml(slide.mobileImage || '')}"
-              alt="${escapeHtml(slide.title)}"
-              width="1376"
-              height="768"
-              loading="${idx === 0 ? 'eager' : 'lazy'}"
-              decoding="async"
-              referrerpolicy="no-referrer"
-              class="dandy-hero-img"
-              onerror="this.onerror=null;this.src='${fallbackSlideImg}';"
-            />
+            <picture>
+              ${hasMobileSource ? `<source media="(max-width: 767px)" srcset="${escapeHtml(slide.mobileImage)}" data-hero-mobile-source />` : ''}
+              <img
+                src="${escapeHtml(slide.desktopImage)}"
+                data-desktop-src="${escapeHtml(slide.desktopImage)}"
+                data-mobile-src="${escapeHtml(slide.mobileImage || '')}"
+                alt="${escapeHtml(slide.title)}"
+                width="1376"
+                height="768"
+                loading="${idx === 0 ? 'eager' : 'lazy'}"
+                decoding="async"
+                referrerpolicy="no-referrer"
+                class="dandy-hero-img"
+                onerror="this.onerror=null;this.src='${fallbackSlideImg}';"
+              />
+            </picture>
           </figure>
-        `
-      )
+        `;
+      })
       .join('');
-    syncHeroResponsiveAssets();
   }
 
   if (dotsContainer) {
@@ -456,6 +458,27 @@ function updateTrustDom(state: HomepageStudioState): void {
   const grid = sec.querySelector<HTMLElement>('[data-trust-grid]');
   if (!grid) return;
 
+  const trustMeta = resolveTrustSectionMeta(state.trustSection);
+  const headerEl = sec.querySelector<HTMLElement>('[data-trust-header]');
+  const subEl = sec.querySelector<HTMLElement>('[data-trust-subtitle]');
+  const titleEl = sec.querySelector<HTMLElement>('[data-trust-title]');
+  const hasHeader = Boolean(trustMeta.title || trustMeta.subtitle);
+  sec.classList.toggle('has-header', hasHeader);
+  if (headerEl) {
+    if (hasHeader) headerEl.removeAttribute('hidden');
+    else headerEl.setAttribute('hidden', '');
+  }
+  if (subEl) {
+    subEl.textContent = trustMeta.subtitle;
+    if (trustMeta.subtitle) subEl.removeAttribute('hidden');
+    else subEl.setAttribute('hidden', '');
+  }
+  if (titleEl) {
+    titleEl.textContent = trustMeta.title;
+    if (trustMeta.title) titleEl.removeAttribute('hidden');
+    else titleEl.setAttribute('hidden', '');
+  }
+
   const locale = getRuntimeLocale();
   const items = resolveTrustItems(state.trust, undefined, locale);
   const cols = items.length === 2 ? 2 : items.length >= 4 ? 4 : 3;
@@ -485,6 +508,16 @@ function updateCategoriesDom(state: HomepageStudioState): void {
 
   const locale = getRuntimeLocale();
   const isEn = locale === 'en';
+  const catMeta = resolveCategoriesSectionMeta(state.categoriesSection, locale);
+  const kickerEl = sec.querySelector<HTMLElement>('[data-cats-kicker]');
+  const titleEl = sec.querySelector<HTMLElement>('[data-cats-title]');
+  const moreLinkEl = sec.querySelector<HTMLAnchorElement>('[data-cats-more-link]');
+  const moreLabelEl = sec.querySelector<HTMLElement>('[data-cats-more-label]');
+  if (kickerEl) kickerEl.textContent = catMeta.kicker;
+  if (titleEl) titleEl.textContent = catMeta.title;
+  if (moreLinkEl) moreLinkEl.setAttribute('href', catMeta.ctaHref);
+  if (moreLabelEl) moreLabelEl.textContent = catMeta.ctaLabel;
+
   const categories = resolveCategoriesForShowcase(state.categories, locale);
   const fallbackCatImg = '/assets/images/index-products/product-2.jpg';
 
@@ -512,7 +545,7 @@ function updateCategoriesDom(state: HomepageStudioState): void {
           <div class="dandy-cat-body">
             <div class="dandy-cat-title-row">
               <h3 class="dandy-cat-title" dir="auto">${escapeHtml(cat.name)}</h3>
-              ${cat.englishName && cat.englishName !== cat.name ? `<span class="dandy-cat-en" dir="ltr">${escapeHtml(cat.englishName)}</span>` : ''}
+              ${!isEn && cat.englishName && cat.englishName !== cat.name ? `<span class="dandy-cat-en" dir="ltr">${escapeHtml(cat.englishName)}</span>` : ''}
             </div>
             ${metaParts.length > 0 ? `<p class="dandy-cat-meta-line" dir="auto">${metaParts.map((p) => `<span dir="auto">${escapeHtml(p)}</span>`).join(' · ')}</p>` : ''}
             <p class="dandy-cat-desc">${escapeHtml(cat.description)}</p>
@@ -595,14 +628,77 @@ function updatePromoBannerDom(state: HomepageStudioState): void {
   if (extraPillars) extraPillars.hidden = promo.isCustomized;
 }
 
+function updateBlogDom(state: HomepageStudioState, bootstrap: StudioBootstrapPayload | null): void {
+  const sec = document.querySelector<HTMLElement>('[data-studio-section="blog"]');
+  if (!sec) return;
+
+  const locale = getRuntimeLocale();
+  const isEn = locale === 'en';
+  const meta = resolveBlogSectionMeta(state.blogSection, locale);
+  const kickerEl = sec.querySelector<HTMLElement>('[data-blog-kicker]');
+  const titleEl = sec.querySelector<HTMLElement>('[data-blog-title]');
+  const moreLabelEl = sec.querySelector<HTMLElement>('[data-blog-more-label]');
+  if (kickerEl) kickerEl.textContent = meta.kicker;
+  if (titleEl) titleEl.textContent = meta.title;
+  if (moreLabelEl) moreLabelEl.textContent = meta.viewAllLabel;
+
+  const gridEl = sec.querySelector<HTMLElement>('[data-blog-grid]');
+  if (gridEl && bootstrap && Array.isArray(bootstrap.articles)) {
+    const fallbackBlogImg = '/assets/images/index-products/product-2.jpg';
+    const items = bootstrap.articles.slice(0, meta.limit);
+    gridEl.setAttribute('data-blog-limit', String(meta.limit));
+    gridEl.innerHTML = items
+      .map(
+        (item) => `
+          <article class="dandy-blog-home-card">
+            <a href="${escapeHtml(item.href)}" class="dandy-blog-home-media">
+              <img
+                src="${escapeHtml(item.image || fallbackBlogImg)}"
+                alt="${escapeHtml(item.title)}"
+                width="640"
+                height="360"
+                loading="lazy"
+                decoding="async"
+                referrerpolicy="no-referrer"
+                class="dandy-blog-home-img"
+                onerror="this.onerror=null;this.src='${fallbackBlogImg}';"
+              />
+            </a>
+            <div class="dandy-blog-home-body">
+              <p class="dandy-blog-home-meta">
+                <span>${escapeHtml(item.category)}</span>
+                ${item.dateLabel ? `<span aria-hidden="true">·</span><span>${escapeHtml(item.dateLabel)}</span>` : ''}
+              </p>
+              <h3 class="dandy-blog-home-title"><a href="${escapeHtml(item.href)}">${escapeHtml(item.title)}</a></h3>
+              ${item.excerpt ? `<p class="dandy-blog-home-excerpt">${escapeHtml(item.excerpt)}</p>` : ''}
+              <a href="${escapeHtml(item.href)}" class="dandy-blog-home-link">
+                <span>${isEn ? 'Read Article' : 'اقرئي المقال'}</span>
+                ${getIconSvg(isEn ? 'chevron-right' : 'chevron-left', { size: 14, strokeWidth: 2 })}
+              </a>
+            </div>
+          </article>
+        `
+      )
+      .join('');
+  }
+}
+
 function updateReviewsDom(state: HomepageStudioState): void {
   const sec = document.querySelector<HTMLElement>('[data-studio-section="reviews"]');
   if (!sec) return;
+
+  const locale = getRuntimeLocale();
+  const isEn = locale === 'en';
+  const reviewsMeta = resolveReviewsSectionMeta(state.reviewsSection, locale);
+  const kickerEl = sec.querySelector<HTMLElement>('[data-reviews-kicker]');
+  const titleEl = sec.querySelector<HTMLElement>('[data-reviews-title]');
+  if (kickerEl) kickerEl.textContent = reviewsMeta.kicker;
+  if (titleEl) titleEl.textContent = reviewsMeta.title;
+
   const grid = sec.querySelector<HTMLElement>('[data-reviews-grid]');
   const empty = sec.querySelector<HTMLElement>('[data-reviews-empty]');
   if (!grid) return;
 
-  const isEn = getRuntimeLocale() === 'en';
   const fallbackImg = '/assets/images/logo.png';
   const list = (state.reviews || [])
     .filter((r) => r && (r.image || r.text))
@@ -943,6 +1039,7 @@ function initStudioPreviewBridge(): void {
   document.documentElement.classList.add('dandy-studio-preview');
   studioBootstrap = readBootstrapPayload();
   currentState = studioBootstrap?.state || null;
+  rawCurrentState = studioBootstrap?.rawState || studioBootstrap?.state || null;
   setStudioEditMode('edit');
   decorateStudioSectionBadges(currentState);
 
@@ -985,20 +1082,21 @@ function initStudioPreviewBridge(): void {
       window.location.reload();
     } else if (data.type === 'STUDIO_UPDATE_STATE') {
       const mainEl = document.getElementById('main-content');
-      if (!mainEl || !currentState) return;
+      if (!mainEl || !rawCurrentState) return;
 
       const locale = getRuntimeLocale();
-      const merged = mergeStudioPreviewState(currentState, data.state);
+      rawCurrentState = mergeStudioPreviewState(rawCurrentState, data.state);
       currentState =
         locale === 'en'
-          ? resolveLocalizedHomepageStudioState(merged, 'en', EN_HOMEPAGE_STUDIO_OVERLAY)
-          : merged;
+          ? resolveLocalizedHomepageStudioState(rawCurrentState, 'en', EN_HOMEPAGE_STUDIO_OVERLAY)
+          : rawCurrentState;
       updateHeroDom(currentState);
       updateTrustDom(currentState);
       updateCategoriesDom(currentState);
       updateDynamicProductSectionDom(currentState, 'offers', studioBootstrap);
       updateDynamicProductSectionDom(currentState, 'newArrivals', studioBootstrap);
       updatePromoBannerDom(currentState);
+      updateBlogDom(currentState, studioBootstrap);
       updateReviewsDom(currentState);
       syncCustomSectionsDom(mainEl, currentState, studioBootstrap);
       syncOrderAndVisibilityDom(mainEl, currentState, Boolean(studioBootstrap?.showPinkFriday));

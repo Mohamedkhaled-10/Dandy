@@ -373,4 +373,111 @@ test('Case 22: Collections stored as RTDB keyed objects are safely normalized an
   assert.equal(shouldDisplay, true);
 });
 
+// 23. Unified 8-state Pink Friday decision matrix (evaluatePinkFridayState)
+test('Case 23: evaluatePinkFridayState returns exact decisions across all 8 lifecycle states', async () => {
+  const { evaluatePinkFridayState } = await import('../src/utils/pink-friday-server.ts');
+
+  assert.equal(evaluatePinkFridayState(null, fixedNow).decision, 'invalid');
+  assert.equal(
+    evaluatePinkFridayState({ ...activeConfig, enabled: true, unpublished: true }, fixedNow).decision,
+    'unpublished'
+  );
+  assert.equal(
+    evaluatePinkFridayState({ ...activeConfig, enabled: false }, fixedNow).decision,
+    'disabled'
+  );
+  assert.equal(
+    evaluatePinkFridayState(
+      { ...activeConfig, startAt: '2026-11-20T00:00:00+02:00', endAt: '2026-11-10T00:00:00+02:00' },
+      fixedNow
+    ).decision,
+    'invalid'
+  );
+
+  const upcomingRes = evaluatePinkFridayState(activeConfig, new Date('2026-10-20T12:00:00+02:00'));
+  assert.equal(upcomingRes.decision, 'upcoming');
+  assert.equal(upcomingRes.shouldDisplay, true);
+  assert.equal(upcomingRes.isPricingActive, false);
+
+  const endedRes = evaluatePinkFridayState(activeConfig, new Date('2026-12-05T12:00:00+02:00'));
+  assert.equal(endedRes.decision, 'ended');
+  assert.equal(endedRes.shouldDisplay, false);
+  assert.equal(endedRes.isPricingActive, false);
+
+  const offersOnlyRes = evaluatePinkFridayState({ ...activeConfig, collections: [] }, fixedNow);
+  assert.equal(offersOnlyRes.decision, 'active-offers-only');
+  assert.equal(offersOnlyRes.shouldDisplay, true);
+  assert.equal(offersOnlyRes.isPricingActive, true);
+
+  const bundlesOnlyRes = evaluatePinkFridayState(
+    {
+      ...activeConfig,
+      offers: [],
+      collections: [
+        {
+          id: 'col-1',
+          name: 'Bundle',
+          active: true,
+          pricingType: 'package',
+          packagePrice: 400,
+          items: [{ collectionItemId: 'ci1', productId: 'prod-001' }],
+        },
+      ],
+    },
+    fixedNow
+  );
+  assert.equal(bundlesOnlyRes.decision, 'active-bundles-only');
+  assert.equal(bundlesOnlyRes.shouldDisplay, true);
+  assert.equal(bundlesOnlyRes.isPricingActive, true);
+
+  const fullRes = evaluatePinkFridayState(
+    {
+      ...activeConfig,
+      collections: [
+        {
+          id: 'col-1',
+          name: 'Bundle',
+          active: true,
+          pricingType: 'package',
+          packagePrice: 400,
+          items: [{ collectionItemId: 'ci1', productId: 'prod-001' }],
+        },
+      ],
+    },
+    fixedNow
+  );
+  assert.equal(fullRes.decision, 'active-full');
+
+  const emptyRes = evaluatePinkFridayState({ ...activeConfig, offers: [], collections: [] }, fixedNow);
+  assert.equal(emptyRes.decision, 'active-empty');
+  assert.equal(emptyRes.shouldDisplay, false);
+  assert.equal(emptyRes.isPricingActive, false);
+});
+
+// 24. Campaign disabled rejects Pink Friday discount cleanly without altering regular product attributes
+test('Case 24: Regular onSale product stays non-eligible for Pink Friday when campaign is disabled', async () => {
+  const { evaluatePinkFridayState } = await import('../src/utils/pink-friday-server.ts');
+
+  const disabledCampaign = { ...activeConfig, enabled: false };
+  const evalDisabled = evaluatePinkFridayState(disabledCampaign, fixedNow);
+  assert.equal(evalDisabled.shouldDisplay, false);
+  assert.equal(evalDisabled.isPricingActive, false);
+
+  const regularOnSaleProduct = {
+    id: 'prod-sale',
+    price: 200,
+    originalPrice: 250,
+    discount: 20,
+    onSale: true,
+  };
+
+  const pfPricing = calculatePinkFridayPricing(regularOnSaleProduct, disabledCampaign, fixedNow);
+  assert.equal(pfPricing.isEligible, false);
+  assert.equal(pfPricing.campaignPrice, 200);
+  assert.equal(regularOnSaleProduct.onSale, true);
+  assert.equal(regularOnSaleProduct.discount, 20);
+});
+
+
+
 

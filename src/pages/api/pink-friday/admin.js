@@ -6,7 +6,89 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { INITIAL_2026_CAMPAIGN } from '../../../utils/pink-friday-server.ts';
+import { INITIAL_2026_CAMPAIGN, invalidatePinkFridayCache } from '../../../utils/pink-friday-server.ts';
+
+async function enrichNormalizedOffers(rawOffers, adminDb) {
+  const offersList = Array.isArray(rawOffers)
+    ? rawOffers
+    : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+
+  const validOffers = offersList.filter((o) => o && o.productId);
+  if (validOffers.length === 0) return [];
+
+  let productsMap = {};
+  try {
+    const pSnap = await adminDb.ref('products').once('value');
+    productsMap = pSnap.val() || {};
+  } catch (err) {
+    console.warn('[PinkFriday Admin API] Could not read products for offer enrichment:', err?.message);
+  }
+
+  return validOffers.map((o) => {
+    const productId = String(o.productId).trim();
+    const prod = productsMap[productId] || null;
+    const prodPrice = prod ? parseFloat(String(prod.price || 0).replace(/[^0-9.-]+/g, '')) || 0 : 0;
+    const rawExpected = Number(o.expectedBasePrice);
+    const expectedBasePrice = prodPrice > 0 ? prodPrice : (Number.isFinite(rawExpected) && rawExpected > 0 ? rawExpected : 0);
+
+    const rawDiscount = Number(o.discountPercentage);
+    const discountPercentage = Number.isFinite(rawDiscount) && rawDiscount > 0 && rawDiscount < 100
+      ? Math.round(rawDiscount)
+      : 0;
+
+    const rawCampaignPrice = Number(o.campaignPrice);
+    let campaignPrice = Number.isFinite(rawCampaignPrice) && rawCampaignPrice > 0 ? rawCampaignPrice : 0;
+    if (expectedBasePrice > 0 && discountPercentage > 0) {
+      campaignPrice = Math.round(expectedBasePrice * (1 - discountPercentage / 100));
+    }
+
+    const active = o.active !== false && o.active !== 'false' && o.active !== 0;
+
+    return {
+      ...o,
+      productId,
+      expectedBasePrice,
+      discountPercentage,
+      campaignPrice,
+      active,
+      badgeText: typeof o.badgeText === 'string' && o.badgeText.trim() ? o.badgeText.trim() : 'Pink Friday',
+      allowWithGenericDiscount: Boolean(o.allowWithGenericDiscount)
+    };
+  });
+}
+
+function normalizeCampaignI18n(rawI18n) {
+  if (!rawI18n || typeof rawI18n !== 'object') return undefined;
+  const en = rawI18n.en;
+  if (!en || typeof en !== 'object') return undefined;
+
+  const cleanCollectionOverrides = {};
+  if (en.collectionTextOverrides && typeof en.collectionTextOverrides === 'object') {
+    for (const [colId, val] of Object.entries(en.collectionTextOverrides)) {
+      if (val && typeof val === 'object') {
+        cleanCollectionOverrides[colId] = {
+          ...(typeof val.name === 'string' ? { name: val.name } : {}),
+          ...(typeof val.description === 'string' ? { description: val.description } : {}),
+          ...(typeof val.badgeText === 'string' ? { badgeText: val.badgeText } : {})
+        };
+      }
+    }
+  }
+
+  return {
+    en: {
+      ...(typeof en.title === 'string' ? { title: en.title } : {}),
+      ...(typeof en.headline === 'string' ? { headline: en.headline } : {}),
+      ...(typeof en.subtitle === 'string' ? { subtitle: en.subtitle } : {}),
+      ...(typeof en.ctaText === 'string' ? { ctaText: en.ctaText } : {}),
+      ...(typeof en.badgeText === 'string' ? { badgeText: en.badgeText } : {}),
+      ...(typeof en.heroImageOverride === 'string' ? { heroImageOverride: en.heroImageOverride } : {}),
+      ...(Object.keys(cleanCollectionOverrides).length > 0
+        ? { collectionTextOverrides: cleanCollectionOverrides }
+        : {})
+    }
+  };
+}
 
 function getAdminApp() {
   if (getApps().length > 0) {
@@ -64,23 +146,26 @@ export async function GET({ request }) {
     let data = snap.val();
 
     if (!data || !data.campaigns) {
-      // Bootstrap 2026 default baseline into RTDB
+      // Bootstrap 2026 default baseline into RTDB (strictly fail-closed enabled: false)
+      const baseline = { ...INITIAL_2026_CAMPAIGN, enabled: false };
+      const nowIso = new Date().toISOString();
       const bootstrapData = {
         currentYear: 2026,
         campaigns: {
           'pink-friday-2026': {
-            ...INITIAL_2026_CAMPAIGN,
-            draft: { ...INITIAL_2026_CAMPAIGN, updatedAt: new Date().toISOString() },
-            published: { ...INITIAL_2026_CAMPAIGN, publishedAt: new Date().toISOString() }
+            ...baseline,
+            draft: { ...baseline, updatedAt: nowIso },
+            published: { ...baseline, publishedAt: nowIso }
           }
         },
         publishedActiveCampaign: {
-          ...INITIAL_2026_CAMPAIGN,
-          publishedAt: new Date().toISOString()
+          ...baseline,
+          publishedAt: nowIso
         }
       };
 
       await adminDb.ref('settings/pinkFriday').set(bootstrapData);
+      invalidatePinkFridayCache();
       data = bootstrapData;
     }
 
@@ -138,10 +223,7 @@ export async function POST({ request }) {
       const startAt = campaignData.startAt || campaignData.startDate || null;
       const endAt = campaignData.endAt || campaignData.endDate || null;
 
-      const rawOffers = campaignData.offers;
-      const normalizedOffers = Array.isArray(rawOffers)
-        ? rawOffers
-        : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+      const normalizedOffers = await enrichNormalizedOffers(campaignData.offers, adminDb);
 
       const rawCollections = campaignData.collections;
       const collectionsList = Array.isArray(rawCollections)
@@ -151,22 +233,26 @@ export async function POST({ request }) {
       const normalizedCollections = collectionsList.filter(Boolean).map(col => ({
         ...col,
         allowDuplicates: Boolean(col.allowDuplicates),
-        active: col.active !== false,
+        active: col.active !== false && col.active !== 'false' && col.active !== 0,
         items: Array.isArray(col.items)
           ? col.items
           : (col.items && typeof col.items === 'object' ? Object.values(col.items) : [])
       }));
 
+      const normalizedI18n = normalizeCampaignI18n(campaignData.i18n);
+
       const draftPayload = {
         ...campaignData,
         id: campaignId,
         year: campaignYear,
+        enabled: campaignData.enabled === true,
         startAt,
         startDate: startAt,
         endAt,
         endDate: endAt,
         offers: normalizedOffers,
         collections: normalizedCollections,
+        ...(normalizedI18n ? { i18n: normalizedI18n } : {}),
         updatedAt: new Date().toISOString(),
         updatedBy: admin.email
       };
@@ -177,6 +263,7 @@ export async function POST({ request }) {
         year: campaignYear,
         updatedAt: new Date().toISOString()
       });
+      invalidatePinkFridayCache();
 
       // Log activity to Firestore change_logs if available
       if (adminFs) {
@@ -230,10 +317,7 @@ export async function POST({ request }) {
         });
       }
 
-      const rawOffers = draft.offers;
-      const normalizedOffers = Array.isArray(rawOffers)
-        ? rawOffers
-        : (rawOffers && typeof rawOffers === 'object' ? Object.values(rawOffers) : []);
+      const normalizedOffers = await enrichNormalizedOffers(draft.offers, adminDb);
 
       const rawCollections = draft.collections;
       const collectionsList = Array.isArray(rawCollections)
@@ -243,24 +327,34 @@ export async function POST({ request }) {
       const normalizedCollections = collectionsList.filter(Boolean).map(col => ({
         ...col,
         allowDuplicates: Boolean(col.allowDuplicates),
-        active: col.active !== false,
+        active: col.active !== false && col.active !== 'false' && col.active !== 0,
         items: Array.isArray(col.items)
           ? col.items
           : (col.items && typeof col.items === 'object' ? Object.values(col.items) : [])
       }));
 
+      const normalizedI18n = normalizeCampaignI18n(draft.i18n);
+      const nowIso = new Date().toISOString();
+
       const publishedPayload = {
         ...draft,
         id: campaignId,
         year: campaignYear,
+        enabled: draft.enabled === true,
+        unpublished: false,
+        unpublishedAt: null,
+        unpublishedBy: null,
         startAt,
         startDate: startAt,
         endAt,
         endDate: endAt,
         offers: normalizedOffers,
         collections: normalizedCollections,
-        publishedAt: new Date().toISOString(),
-        publishedBy: admin.email
+        ...(normalizedI18n ? { i18n: normalizedI18n } : {}),
+        publishedAt: nowIso,
+        publishedBy: admin.email,
+        updatedAt: nowIso,
+        updatedBy: admin.email
       };
 
       // Keep draft in sync
@@ -272,6 +366,7 @@ export async function POST({ request }) {
       // 2. Publish as the active campaign snapshot for customer storefront
       await adminDb.ref('settings/pinkFriday/publishedActiveCampaign').set(publishedPayload);
       await adminDb.ref('settings/pinkFriday/currentYear').set(campaignYear);
+      invalidatePinkFridayCache();
 
       if (adminFs) {
         try {
@@ -287,8 +382,78 @@ export async function POST({ request }) {
 
       return new Response(JSON.stringify({
         success: true,
-        message: `تم اعتماد ونشر حملة Pink Friday ${campaignYear} بنجاح`,
-        published: publishedPayload
+        message: publishedPayload.enabled
+          ? `تم اعتماد ونشر حملة Pink Friday ${campaignYear} بنجاح`
+          : `تم نشر حالة إيقاف الحملة لسنة ${campaignYear} على المتجر بنجاح`,
+        published: publishedPayload,
+        draft: publishedPayload
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (action === 'unpublish') {
+      const nowIso = new Date().toISOString();
+      const [liveSnap, pubSnap, draftSnap] = await Promise.all([
+        adminDb.ref('settings/pinkFriday/publishedActiveCampaign').once('value'),
+        adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/published`).once('value'),
+        adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/draft`).once('value')
+      ]);
+
+      const baseLive = liveSnap.val() || pubSnap.val() || draftSnap.val() || {
+        ...INITIAL_2026_CAMPAIGN,
+        id: campaignId,
+        year: campaignYear
+      };
+
+      const unpublishedPayload = {
+        ...baseLive,
+        id: baseLive.id || campaignId,
+        year: Number(baseLive.year) || campaignYear,
+        enabled: false,
+        unpublished: true,
+        unpublishedAt: nowIso,
+        unpublishedBy: admin.email,
+        updatedAt: nowIso,
+        updatedBy: admin.email
+      };
+
+      const draftBase = draftSnap.val() || unpublishedPayload;
+      const updatedDraft = {
+        ...draftBase,
+        enabled: false,
+        unpublished: true,
+        unpublishedAt: nowIso,
+        unpublishedBy: admin.email,
+        updatedAt: nowIso,
+        updatedBy: admin.email
+      };
+
+      await Promise.all([
+        adminDb.ref('settings/pinkFriday/publishedActiveCampaign').set(unpublishedPayload),
+        adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/published`).set(unpublishedPayload),
+        adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/draft`).set(updatedDraft)
+      ]);
+      invalidatePinkFridayCache();
+
+      if (adminFs) {
+        try {
+          await adminFs.collection('change_logs').add({
+            adminEmail: admin.email,
+            action: `إيقاف وإلغاء نشر حملة Pink Friday لسنة ${campaignYear} فوراً`,
+            timestamp: FieldValue.serverTimestamp()
+          });
+        } catch (fsErr) {
+          console.warn('[change_logs] Error writing log:', fsErr.message);
+        }
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'تم إيقاف الحملة وإلغاء نشرها على المتجر فوراً',
+        published: unpublishedPayload,
+        draft: updatedDraft
       }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -312,11 +477,13 @@ export async function POST({ request }) {
 
       const restoredDraft = {
         ...published,
+        enabled: published.enabled === true && published.unpublished !== true,
         updatedAt: new Date().toISOString(),
         updatedBy: admin.email
       };
 
       await adminDb.ref(`settings/pinkFriday/campaigns/${campaignId}/draft`).set(restoredDraft);
+      invalidatePinkFridayCache();
 
       return new Response(JSON.stringify({
         success: true,

@@ -247,7 +247,7 @@ export async function POST({ request }) {
       console.warn('Could not fetch publishedActiveCampaign from RTDB:', campErr.message);
     }
     if (!activeCampaign) {
-      activeCampaign = await getPublishedPinkFridayCampaign();
+      activeCampaign = await getPublishedPinkFridayCampaign(true);
     }
 
     // Map to track stock deduction for individual products (including components of collection bundles)
@@ -261,7 +261,7 @@ export async function POST({ request }) {
         if (!colId || quantity <= 0) continue;
 
         // Verify campaign is active
-        const campStatus = (activeCampaign && activeCampaign.enabled !== false)
+        const campStatus = (activeCampaign && activeCampaign.enabled === true && activeCampaign.unpublished !== true)
           ? getCampaignStatus(activeCampaign)
           : 'disabled';
 

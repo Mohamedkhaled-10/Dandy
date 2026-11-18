@@ -9,24 +9,27 @@ import type { Article } from '../../utils/articles';
 import type { Locale } from '../../i18n/types';
 import { buildLocalizedPath } from '../../i18n/routes';
 import { resolveLocalizedArticle } from '../../i18n/content/adapters';
+import { resolveBlogSectionMeta, type BlogSectionConfig } from '../../scripts/homepage-studio';
 
 export interface Props {
   articles: Article[];
+  sectionMeta?: BlogSectionConfig;
   hidden?: boolean;
   locale?: Locale;
 }
 
-const { articles = [], hidden = false, locale = 'ar' } = Astro.props;
+const { articles = [], sectionMeta, hidden = false, locale = 'ar' } = Astro.props;
 const isEn = locale === 'en';
+const resolvedHeader = resolveBlogSectionMeta(sectionMeta, locale);
 const localizedArticles = articles
   .map((article) => ({
     article,
     view: resolveLocalizedArticle(article, locale, { fallbackToArabicWhenMissing: true }),
   }))
   .filter((entry) => !isEn || entry.view.hasTranslation)
-  .slice(0, 3);
+  .slice(0, resolvedHeader.limit);
 
-const fallbackBlogImg = '/assets/images/editorial/story-botanical.jpg';
+const fallbackBlogImg = '/assets/images/index-products/product-2.jpg';
 const blogIndexHref = buildLocalizedPath('/blog', locale);
 
 function getArticleExcerpt(article: Article, localizedExcerpt?: string): string {
@@ -69,19 +72,25 @@ function getArticleDateLabel(article: Article): string {
   <div class="dandy-container">
     <header class="dandy-section-header" data-dandy-reveal>
       <div class="dandy-section-titles">
-        <p class="dandy-section-kicker">{isEn ? 'Beauty Journal' : 'مدونة العناية والجمال'}</p>
-        <h2 id="home-blog-heading" class="dandy-section-heading">
-          {isEn ? 'Skincare & Haircare Guides' : 'نصائح ومقالات روتين البشرة والشعر'}
+        <p class="dandy-section-kicker" data-blog-kicker dir="auto">{resolvedHeader.kicker}</p>
+        <h2 id="home-blog-heading" class="dandy-section-heading" data-blog-title dir="auto">
+          {resolvedHeader.title}
         </h2>
       </div>
       <a href={blogIndexHref} class="dandy-section-more">
-        <span>{isEn ? 'All Articles' : 'كل المقالات'}</span>
+        <span data-blog-more-label dir="auto">{resolvedHeader.viewAllLabel}</span>
         <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={15} strokeWidth={1.8} />
       </a>
     </header>
 
     {localizedArticles.length > 0 ? (
-      <div class="dandy-blog-home-grid" data-dandy-reveal data-dandy-stagger="group">
+      <div
+        class="dandy-blog-home-grid"
+        data-blog-grid
+        data-blog-limit={resolvedHeader.limit}
+        data-dandy-reveal
+        data-dandy-stagger="group"
+      >
         {localizedArticles.map(({ article, view }) => {
           const articleTitle = view.content.title;
           const articleCat = view.content.category || (isEn ? 'Beauty Rituals' : 'روتين الجمال');

@@ -421,6 +421,11 @@ export interface PinkFridayLocalizedOverlay {
 
 export interface HomepageStudioLocalizedOverlay {
   locale: Locale;
+  heroMeta?: {
+    kicker?: string;
+    secondaryCtaLabel?: string;
+    secondaryCtaHref?: string;
+  };
   heroSlides?: Record<
     number,
     {
@@ -432,10 +437,15 @@ export interface HomepageStudioLocalizedOverlay {
       mobileImage?: string;
     }
   >;
+  trustSection?: {
+    kicker?: string;
+    title?: string;
+  };
   trustItems?: {
     item1?: { title?: string; desc?: string };
     item2?: { title?: string; desc?: string };
     item3?: { title?: string; desc?: string };
+    item4?: { title?: string; desc?: string };
   };
   sections?: Record<
     string,
@@ -443,8 +453,15 @@ export interface HomepageStudioLocalizedOverlay {
       title?: string;
       subtitle?: string;
       viewAllLabel?: string;
+      viewAllHref?: string;
     }
   >;
+  categoriesSection?: {
+    kicker?: string;
+    title?: string;
+    ctaLabel?: string;
+    ctaHref?: string;
+  };
   promoBanner?: {
     eyebrow?: string;
     title?: string;
@@ -458,8 +475,18 @@ export interface HomepageStudioLocalizedOverlay {
       name?: string;
       tagline?: string;
       count?: string;
+      description?: string;
     }
   >;
+  blogSection?: {
+    kicker?: string;
+    title?: string;
+    viewAllLabel?: string;
+  };
+  reviewsSection?: {
+    kicker?: string;
+    title?: string;
+  };
   reviews?: Record<
     number,
     {

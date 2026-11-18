@@ -5,19 +5,23 @@
  * chat/outcome screenshots in framed cards that preserve legibility without awkward cropping.
  */
 import {
+  resolveReviewsSectionMeta,
   sanitizeMediaUrl,
   type ReviewItem,
+  type SectionHeaderConfig,
 } from '../../scripts/homepage-studio';
 import type { Locale } from '../../i18n/types';
 
 export interface Props {
   reviews: ReviewItem[];
+  sectionMeta?: SectionHeaderConfig;
   hidden?: boolean;
   locale?: Locale;
 }
 
-const { reviews = [], hidden = false, locale = 'ar' } = Astro.props;
+const { reviews = [], sectionMeta, hidden = false, locale = 'ar' } = Astro.props;
 const isEn = locale === 'en';
+const resolvedHeader = resolveReviewsSectionMeta(sectionMeta, locale);
 const fallbackImg = '/assets/images/logo.png';
 
 const cleanReviews = reviews
@@ -38,9 +42,9 @@ const cleanReviews = reviews
   <div class="dandy-container">
     <header class="dandy-section-header" data-dandy-reveal>
       <div class="dandy-section-titles">
-        <p class="dandy-section-kicker">{isEn ? 'Verified Experiences' : 'تجارب موثقة'}</p>
-        <h2 id="home-reviews-heading" class="dandy-section-heading">
-          {isEn ? 'DANDY Customer Reviews & Results' : 'آراء وتجارب عميلات داندي'}
+        <p class="dandy-section-kicker" data-reviews-kicker dir="auto">{resolvedHeader.kicker}</p>
+        <h2 id="home-reviews-heading" class="dandy-section-heading" data-reviews-title dir="auto">
+          {resolvedHeader.title}
         </h2>
       </div>
     </header>

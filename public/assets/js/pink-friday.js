@@ -16,7 +16,8 @@
     : (serverConfig.collections && typeof serverConfig.collections === 'object' ? Object.values(serverConfig.collections) : []);
 
   const config = {
-    enabled: typeof serverConfig.enabled === 'boolean' ? serverConfig.enabled : false,
+    enabled: serverConfig.enabled === true && serverConfig.unpublished !== true,
+    unpublished: serverConfig.unpublished === true,
     campaignId: serverConfig.campaignId || serverConfig.id || 'pink-friday',
     title: serverConfig.title || 'Pink Friday',
     subtitleAr: serverConfig.subtitleAr || 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.',
@@ -27,8 +28,16 @@
     collections: rawCollections
   };
 
+  function isFlagActive(item) {
+    if (!item) return false;
+    if (item.active === false || item.active === 'false' || item.active === 0 || item.active === null) {
+      return false;
+    }
+    return item.active === true || item.active === undefined;
+  }
+
   function getStatus(now) {
-    if (!config.enabled) return 'disabled';
+    if (config.enabled !== true || config.unpublished === true) return 'disabled';
     const currentTime = (now || new Date()).getTime();
 
     if (config.startAt) {
@@ -45,14 +54,16 @@
   }
 
   function isActive(now) {
-    return getStatus(now) === 'active';
+    return config.enabled === true && config.unpublished !== true && getStatus(now) === 'active';
   }
 
   function hasValidCampaign() {
-    if (!config.enabled || !isActive()) return false;
-    const activeOffers = config.offers.filter(function(o) { return o && o.active !== false && o.productId; });
+    if (!isActive()) return false;
+    const activeOffers = config.offers.filter(function(o) {
+      return isFlagActive(o) && Boolean(o.productId) && Number(o.campaignPrice) > 0;
+    });
     const activeCollections = config.collections.filter(function(c) {
-      if (!c || c.active === false) return false;
+      if (!isFlagActive(c)) return false;
       var items = Array.isArray(c.items) ? c.items : (c.items && typeof c.items === 'object' ? Object.values(c.items) : []);
       return items.length > 0;
     });
@@ -60,33 +71,44 @@
   }
 
   function getCollections() {
-    if (!config.enabled || !isActive()) return [];
+    if (!isActive()) return [];
     return config.collections.filter(function(c) {
-      return c && c.active !== false;
+      if (!isFlagActive(c)) return false;
+      var items = Array.isArray(c.items) ? c.items : (c.items && typeof c.items === 'object' ? Object.values(c.items) : []);
+      return items.length > 0;
     });
   }
 
   function getCollectionById(id) {
-    if (!config.enabled || !isActive() || !id) return null;
-    return config.collections.find(function(c) {
-      return c && String(c.id) === String(id) && c.active !== false;
+    if (!isActive() || !id) return null;
+    return getCollections().find(function(c) {
+      return String(c.id) === String(id);
     }) || null;
   }
 
   function getOfferForProduct(productId) {
-    if (!config.enabled || !isActive()) return null;
+    if (!isActive()) return null;
     if (!productId) return null;
     const cleanId = String(productId).split('::')[0];
     return config.offers.find(function(o) {
-      return String(o.productId) === cleanId && o.active;
+      return isFlagActive(o) && String(o.productId) === cleanId;
     }) || null;
   }
 
   function getPricing(product) {
-    if (!product) return { isEligible: false, price: 0 };
+    if (!product) return { isEligible: false, regularPrice: 0, campaignPrice: 0, savings: 0, discountPercentage: 0 };
     const basePrice = Number(product.price) || 0;
-    const offer = getOfferForProduct(product.id || product.productId);
+    if (product.isHidden || product.isSoldOut || basePrice <= 0) {
+      return {
+        isEligible: false,
+        regularPrice: basePrice,
+        campaignPrice: basePrice,
+        savings: 0,
+        discountPercentage: 0
+      };
+    }
 
+    const offer = getOfferForProduct(product.id || product.productId);
     if (!offer) {
       return {
         isEligible: false,
@@ -97,8 +119,19 @@
       };
     }
 
+    if (product.onSale && product.discount && !offer.allowWithGenericDiscount) {
+      return {
+        isEligible: false,
+        regularPrice: basePrice,
+        campaignPrice: basePrice,
+        savings: 0,
+        discountPercentage: 0,
+        stackingBlocked: true
+      };
+    }
+
     // Check price mismatch with expectedBasePrice
-    if (offer.expectedBasePrice && basePrice !== offer.expectedBasePrice) {
+    if (offer.expectedBasePrice && basePrice !== Number(offer.expectedBasePrice)) {
       return {
         isEligible: false,
         regularPrice: basePrice,
@@ -109,9 +142,21 @@
       };
     }
 
-    const campaignPrice = Number(offer.campaignPrice) || basePrice;
+    const campaignPrice = Number(offer.campaignPrice) || 0;
+    if (campaignPrice <= 0 || campaignPrice >= basePrice) {
+      return {
+        isEligible: false,
+        regularPrice: basePrice,
+        campaignPrice: basePrice,
+        savings: 0,
+        discountPercentage: 0
+      };
+    }
+
     const savings = Math.max(0, basePrice - campaignPrice);
-    const discountPercentage = basePrice > 0 ? Math.round((savings / basePrice) * 100) : 0;
+    const discountPercentage = offer.discountPercentage
+      ? Number(offer.discountPercentage)
+      : (basePrice > 0 ? Math.round((savings / basePrice) * 100) : 0);
 
     return {
       isEligible: true,

@@ -37,14 +37,21 @@ const cols = items.length === 2 ? 2 : items.length >= 4 ? 4 : 3;
   hidden={hidden || undefined}
 >
   <div class="dandy-container">
-    {hasHeader && (
-      <header class="dandy-section-header dandy-trust-header" data-dandy-reveal>
-        <div class="dandy-section-titles">
-          {subtitle && <p class="dandy-section-kicker" data-trust-subtitle dir="auto">{subtitle}</p>}
-          {title && <h2 class="dandy-section-heading" data-trust-title dir="auto">{title}</h2>}
-        </div>
-      </header>
-    )}
+    <header
+      class="dandy-section-header dandy-trust-header"
+      data-trust-header
+      data-dandy-reveal
+      hidden={!hasHeader || undefined}
+    >
+      <div class="dandy-section-titles">
+        <p class="dandy-section-kicker" data-trust-subtitle dir="auto" hidden={!subtitle?.trim() || undefined}>
+          {subtitle}
+        </p>
+        <h2 class="dandy-section-heading" data-trust-title dir="auto" hidden={!title?.trim() || undefined}>
+          {title}
+        </h2>
+      </div>
+    </header>
 
     <div
       class={`dandy-trust-grid dandy-trust-cols-${cols}`}
@@ -80,6 +87,11 @@ const cols = items.length === 2 ? 2 : items.length >= 4 ? 4 : 3;
 
   .dandy-trust-header {
     margin-bottom: 24px;
+  }
+
+  .dandy-trust-header[hidden],
+  .dandy-trust-header [hidden] {
+    display: none !important;
   }
 
   .dandy-trust-grid {

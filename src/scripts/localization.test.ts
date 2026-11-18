@@ -484,3 +484,91 @@ test('translation completeness audit passes real Phase 11 dictionary/categories 
   assert.deepEqual(incompleteAudit.articles.missingArticleIds, ['missing-art']);
   assert.ok(incompleteAudit.sharedCommerceExemptions.includes('product.price'));
 });
+
+test('dynamic Admin Studio enOverlay takes precedence over static EN overlay without mutating Arabic baseline or leaking Arabic text', () => {
+  const studioState: HomepageStudioState = {
+    hero: [{ title: 'عنوان عربي', subtitle: 'وصف عربي', buttonText: 'تسوقي', image: '/hero-ar.jpg' }],
+    heroMeta: { kicker: 'شعار عربي', secondaryCtaLabel: 'عن داندي', secondaryCtaHref: '/about-us' },
+    sections: [
+      { id: 'sec-special-offers', type: 'offers', visible: true, title: 'عروض خاصة', subtitle: 'مختارات', viewAllLabel: 'كل العروض', viewAllHref: '/offers' },
+    ],
+    trust: {
+      item1: { icon: 'fa-leaf', title: 'تركيبة نباتية', desc: 'وصف 1' },
+      item2: { icon: 'fa-truck', title: 'شحن سريع', desc: 'وصف 2' },
+      item3: { icon: 'fa-shield-alt', title: 'جودة', desc: 'وصف 3' },
+      item4: { icon: 'fa-gift', title: 'هدية مجانية', desc: 'وصف عربي 4' },
+    },
+    trustSection: { kicker: 'ثقة', title: 'ليه داندي' },
+    categoriesSection: { kicker: 'الأقسام', title: 'تسوقي حسب الروتين', ctaLabel: 'الكل', ctaHref: '/all-products' },
+    blogSection: { kicker: 'المدونة', title: 'مقالات', viewAllLabel: 'كل المقالات', limit: 4 },
+    reviewsSection: { kicker: 'تجارب', title: 'آراء العميلات' },
+    reviews: [{ author: 'سارة', text: 'ممتاز جداً', image: '/rev1.jpg' }],
+    categories: {
+      '-OxBody123': { name: 'Body Care', tagline: 'ترطيب عميق', description: 'وصف عربي يجب ألا يتسرب', visible: true, order: 0 },
+    },
+    sectionOrder: ['hero', 'trust', 'offers', 'categories', 'blog', 'reviews'],
+    sectionsVisibility: { hero: true, trust: true, offers: true, categories: true },
+    enOverlay: {
+      heroMeta: { kicker: 'Dynamic EN Kicker', secondaryCtaLabel: 'Our Craft' },
+      heroSlides: [{ title: 'Dynamic Winter Ritual', subtitle: 'Botanical serum', buttonText: 'Shop Ritual' }],
+      trustSection: { kicker: 'Trust', title: 'Why Choose DANDY' },
+      trustItems: { item4: { title: 'Complimentary Sample', desc: 'Included in every box' } },
+      sections: { 'sec-special-offers': { title: 'Seasonal Deals', viewAllLabel: 'View All Deals' } },
+      categoriesSection: { kicker: 'Curated', title: 'Explore Routines', ctaLabel: 'All Goods' },
+      blogSection: { kicker: 'Journal', title: 'Formulation Notes', viewAllLabel: 'Read More' },
+      reviewsSection: { kicker: 'Verified', title: 'Loved by Customers' },
+      reviews: [{ author: 'Sara M.', text: 'Truly nourishing.' }],
+      categories: {
+        '-OxBody123': { name: 'Body Care', tagline: 'Deep Silk Moisture', count: '12 formulas' },
+      },
+    },
+  };
+
+  const localized = resolveLocalizedHomepageStudioState(studioState, 'en', EN_HOMEPAGE_STUDIO_OVERLAY);
+  assert.equal(localized.heroMeta?.kicker, 'Dynamic EN Kicker');
+  assert.equal(localized.heroMeta?.secondaryCtaLabel, 'Our Craft');
+  assert.equal(localized.hero[0].title, 'Dynamic Winter Ritual');
+  assert.equal(localized.trustSection?.title, 'Why Choose DANDY');
+  assert.equal(localized.trust.item4?.title, 'Complimentary Sample');
+  assert.equal(localized.sections[0].title, 'Seasonal Deals');
+  assert.equal(localized.sections[0].viewAllLabel, 'View All Deals');
+  assert.equal(localized.categoriesSection?.title, 'Explore Routines');
+  assert.equal(localized.blogSection?.limit, 4);
+  assert.equal(localized.blogSection?.viewAllLabel, 'Read More');
+  assert.equal(localized.reviewsSection?.title, 'Loved by Customers');
+  assert.equal(localized.reviews[0].text, 'Truly nourishing.');
+
+  // Push ID category resolves EN taxonomy description instead of leaking Arabic description
+  assert.equal(localized.categories['-OxBody123'].tagline, 'Deep Silk Moisture');
+  assert.notEqual(localized.categories['-OxBody123'].description, 'وصف عربي يجب ألا يتسرب');
+  assert.ok(localized.categories['-OxBody123'].description && localized.categories['-OxBody123'].description.length > 0);
+
+  // Arabic source baseline remains untouched
+  assert.equal(studioState.hero[0].title, 'عنوان عربي');
+  assert.equal(studioState.categories['-OxBody123'].description, 'وصف عربي يجب ألا يتسرب');
+});
+
+test('dynamic Pink Friday i18n.en overlay overrides visuals while preserving disabled gating', () => {
+  const disabledWithEn = {
+    ...INITIAL_2026_CAMPAIGN,
+    enabled: false,
+    unpublished: true,
+    i18n: {
+      en: {
+        title: 'Pink Friday Dynamic EN',
+        headline: 'Dynamic Flash Week',
+        subtitle: 'Up to 40% off botanicals',
+        ctaText: 'Grab Deals',
+        badgeText: 'EN Flash',
+      },
+    },
+  };
+
+  const localized = resolveLocalizedPinkFridayCampaign(disabledWithEn, 'en', EN_PINK_FRIDAY_OVERLAY);
+  assert.equal(localized.enabled, false);
+  assert.equal(localized.unpublished, true);
+  assert.equal(localized.title, 'Pink Friday Dynamic EN');
+  assert.equal(localized.visuals?.headline, 'Dynamic Flash Week');
+  assert.equal(localized.visuals?.ctaText, 'Grab Deals');
+});
+

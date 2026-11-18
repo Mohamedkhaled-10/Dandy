@@ -7,7 +7,11 @@
 import Icon from '../ui/Icon.astro';
 import type { Locale } from '../../i18n/types';
 import { buildLocalizedPath } from '../../i18n/routes';
-import { DEFAULT_PROMO_BANNER, DEFAULT_PROMO_BANNER_EN } from '../../scripts/homepage-studio';
+import {
+  DEFAULT_PROMO_BANNER,
+  DEFAULT_PROMO_BANNER_EN,
+  localizeInternalStoreHref,
+} from '../../scripts/homepage-studio';
 
 export interface Props {
   sectionId?: string;
@@ -42,7 +46,7 @@ const resolvedTitle = title || defaults.title;
 const resolvedDesc = desc || defaults.desc;
 const resolvedCtaText = ctaText || defaults.ctaText;
 const rawCtaLink = ctaLink || defaults.ctaLink;
-const resolvedCtaLink = rawCtaLink.startsWith('/') ? buildLocalizedPath(rawCtaLink, locale) : rawCtaLink;
+const resolvedCtaLink = rawCtaLink.startsWith('/') ? localizeInternalStoreHref(rawCtaLink, locale) : rawCtaLink;
 const resolvedImage = image || defaults.image;
 const aboutHref = buildLocalizedPath('/about-us', locale);
 
