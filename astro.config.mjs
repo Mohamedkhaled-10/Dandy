@@ -7,7 +7,7 @@ const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
 
 // https://astro.build/config
 export default defineConfig({
-  output: isVercel ? 'static' : 'server',
+  output: 'server',
   adapter: isVercel
     ? vercel()
     : node({
@@ -17,4 +17,3 @@ export default defineConfig({
     format: 'directory'
   }
 });
-
