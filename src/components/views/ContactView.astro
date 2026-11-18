@@ -1,0 +1,311 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/contact-us', locale)}`;
+const helpHref = buildLocalizedPath('/help', locale);
+const trackOrderHref = buildLocalizedPath('/track-order', locale);
+
+const pageTitle = isEn ? 'Contact Us | Dandy Cosmetics' : 'تواصل معنا | Dandy';
+const pageDescription = isEn
+  ? 'Reach Dandy Cosmetics customer care via WhatsApp or official social channels for product recommendations, shipping updates, and order support.'
+  : 'تواصلي مع فريق خدمة عملاء داندي عبر الواتساب ومنصات التواصل الاجتماعي للاستفسار عن المنتجات، الشحن، والطلبات.';
+const pageKeywords = isEn
+  ? 'Contact Dandy Cosmetics, Dandy WhatsApp support, Egypt skincare customer care'
+  : 'تواصل مع داندي, خدمة عملاء داندي, واتساب داندي, Dandy contact';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={pageKeywords}
+  canonical={canonicalUrl}
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </Fragment>
+
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Customer Care' : 'خدمة العملاء'}
+    title={isEn ? 'Contact DANDY Support' : 'تواصلي مع داندي'}
+    description={
+      isEn
+        ? 'We are happy to answer your questions and guide you toward the right care ritual across our official support channels.'
+        : 'يسعدنا استقبال استفساراتكِ وتقديم الإرشادات المناسبة لروتين العناية الخاص بكِ عبر قنواتنا الرسمية.'
+    }
+    currentCrumb={isEn ? 'Contact Us' : 'تواصل معنا'}
+  />
+
+  <main class="dandy-page-band" data-dandy-motion="calm">
+    <div class="dandy-container">
+      <div class="dandy-contact-grid" data-dandy-reveal data-dandy-stagger="group">
+        <!-- WhatsApp -->
+        <article class="dandy-contact-card" data-dandy-reveal-child>
+          <div class="dandy-contact-card-head">
+            <span class="dandy-contact-icon is-wa" aria-hidden="true">
+              <Icon name="message-circle" size={20} strokeWidth={1.85} />
+            </span>
+            <div>
+              <h2>{isEn ? 'Direct WhatsApp Care' : 'محادثة واتساب المباشرة'}</h2>
+              <span dir="ltr">01038941005</span>
+            </div>
+          </div>
+          <p class="dandy-contact-desc">
+            {isEn
+              ? 'For quick product questions, personalized routine guidance, shipping timelines, and order updates.'
+              : 'للاستفسار السريع عن المنتجات، اختيار الروتين المناسب، ومتابعة حالات الشحن والطلبات.'}
+          </p>
+          <a
+            href="https://wa.me/201038941005"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="dandy-btn dandy-btn--editorial dandy-contact-btn"
+          >
+            <Icon name="message-circle" size={16} strokeWidth={1.85} />
+            <span>{isEn ? 'Message on WhatsApp' : 'مراسلة عبر واتساب'}</span>
+          </a>
+        </article>
+
+        <!-- Instagram -->
+        <article class="dandy-contact-card" data-dandy-reveal-child>
+          <div class="dandy-contact-card-head">
+            <span class="dandy-contact-icon is-ig" aria-hidden="true">
+              <Icon name="sparkles" size={20} strokeWidth={1.85} />
+            </span>
+            <div>
+              <h2>{isEn ? 'DANDY Instagram' : 'إنستجرام داندي'}</h2>
+              <span dir="ltr">@dandy_skincare_cosmotics</span>
+            </div>
+          </div>
+          <p class="dandy-contact-desc">
+            {isEn
+              ? 'Follow new botanical releases, daily application tips, and reach our team via direct messages.'
+              : 'تابعي أحدث الإطلاقات، نصائح الاستخدام اليومية، وتواصلي معنا عبر الرسائل المباشرة.'}
+          </p>
+          <a
+            href="https://www.instagram.com/dandy_skincare_cosmotics"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="dandy-btn dandy-btn--outline dandy-contact-btn"
+          >
+            <Icon name="external-link" size={16} strokeWidth={1.85} />
+            <span>{isEn ? 'Visit Instagram' : 'زيارة إنستجرام'}</span>
+          </a>
+        </article>
+
+        <!-- Facebook -->
+        <article class="dandy-contact-card" data-dandy-reveal-child>
+          <div class="dandy-contact-card-head">
+            <span class="dandy-contact-icon is-fb" aria-hidden="true">
+              <Icon name="user-plus" size={20} strokeWidth={1.85} />
+            </span>
+            <div>
+              <h2>{isEn ? 'Facebook Page' : 'صفحة فيسبوك'}</h2>
+              <span>Dandy Cosmetics</span>
+            </div>
+          </div>
+          <p class="dandy-contact-desc">
+            {isEn
+              ? 'Join the DANDY community on Facebook and connect with our support team via page inbox.'
+              : 'انضمي إلى مجتمع داندي على فيسبوك وتواصلي مع فريق الدعم عبر رسائل الصفحة.'}
+          </p>
+          <a
+            href="https://www.facebook.com/profile.php?id=61563039704396"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="dandy-btn dandy-btn--outline dandy-contact-btn"
+          >
+            <Icon name="external-link" size={16} strokeWidth={1.85} />
+            <span>{isEn ? 'Visit Facebook' : 'زيارة فيسبوك'}</span>
+          </a>
+        </article>
+      </div>
+
+      <section
+        class="dandy-contact-meta-strip"
+        data-dandy-reveal
+        aria-label={isEn ? 'Support hours and headquarters' : 'ساعات العمل والمقر'}
+      >
+        <div class="dandy-contact-meta-item">
+          <Icon name="clock" size={18} strokeWidth={1.85} />
+          <div>
+            <h3>{isEn ? 'Support Hours' : 'ساعات العمل والدعم'}</h3>
+            <p>
+              {isEn
+                ? 'Daily, 7 days a week from 10:00 AM to 10:00 PM Cairo time.'
+                : 'يومياً طوال أيام الأسبوع من الساعة 10:00 صباحاً حتى 10:00 مساءً بتوقيت القاهرة.'}
+            </p>
+          </div>
+        </div>
+
+        <div class="dandy-contact-meta-item">
+          <Icon name="map-pin" size={18} strokeWidth={1.85} />
+          <div>
+            <h3>{isEn ? 'Headquarters & Delivery' : 'المقر والشحن'}</h3>
+            <p>
+              {isEn
+                ? 'Nasr City, Cairo — Nationwide courier delivery across all Egyptian governorates.'
+                : 'مدينة نصر، القاهرة — شحن وتوصيل لجميع محافظات جمهورية مصر العربية.'}
+            </p>
+          </div>
+        </div>
+
+        <div class="dandy-contact-meta-item">
+          <Icon name="circle-help" size={18} strokeWidth={1.85} />
+          <div>
+            <h3>{isEn ? 'Quick Links Before Messaging' : 'روابط سريعة قبل التواصل'}</h3>
+            <div class="dandy-contact-quick-links">
+              <a href={helpHref}>{isEn ? 'FAQs & Shipping Policies' : 'الأسئلة الشائعة وسياسات الشحن'}</a>
+              <span aria-hidden="true">·</span>
+              <a href={trackOrderHref}>{isEn ? 'Track Your Order' : 'تتبع حالة طلبكِ'}</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .dandy-contact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  .dandy-contact-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dandy-contact-card-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .dandy-contact-card-head h2 {
+    margin: 0 0 2px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-contact-card-head span {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-contact-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--dandy-radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .dandy-contact-icon.is-wa {
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-contact-icon.is-ig {
+    background-color: var(--dandy-accent-soft);
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-contact-icon.is-fb {
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-contact-desc {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-contact-btn {
+    margin-top: auto;
+    width: 100%;
+  }
+
+  .dandy-contact-meta-strip {
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dandy-contact-meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-contact-meta-item h3 {
+    margin: 0 0 4px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-contact-meta-item p {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-contact-quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--dandy-text-sm);
+  }
+
+  .dandy-contact-quick-links a {
+    color: var(--dandy-accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 899px) {
+    .dandy-contact-grid,
+    .dandy-contact-meta-strip {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

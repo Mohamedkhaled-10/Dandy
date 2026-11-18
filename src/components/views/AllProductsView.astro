@@ -1,0 +1,253 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductCard from '../product/ProductCard.astro';
+import CatalogToolbar from '../catalog/CatalogToolbar.astro';
+import MobileFilterDrawer from '../catalog/MobileFilterDrawer.astro';
+import CatalogEmptyState from '../catalog/CatalogEmptyState.astro';
+import { getAllProducts, SITE_URL } from '../../utils/products';
+import {
+  calculatePinkFridayPricing,
+  getPublishedPinkFridayCampaign,
+} from '../../utils/pink-friday-server';
+import { buildCatalogItemMeta } from '../../scripts/catalog';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { t } from '../../i18n/translator';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+
+const AUDITED_CATALOG_PARAMS = [
+  'category',
+  'search',
+  'sort',
+  'page',
+  'price',
+  'sale',
+  'availability',
+  'bestseller',
+];
+const hasAuditedCatalogParam = AUDITED_CATALOG_PARAMS.some((param) =>
+  Astro.url.searchParams.has(param)
+);
+const robotsDirective = hasAuditedCatalogParam ? 'noindex, follow' : 'index, follow';
+
+const [allProductsRaw, pinkFridayCampaign] = await Promise.all([
+  getAllProducts(),
+  getPublishedPinkFridayCampaign(),
+]);
+
+const visibleProducts = allProductsRaw.filter((p) => p && !p.isHidden);
+
+const catalogEntries = visibleProducts.map((product, index) => {
+  const pfPricing = pinkFridayCampaign
+    ? calculatePinkFridayPricing(product, pinkFridayCampaign)
+    : null;
+  const meta = buildCatalogItemMeta(product, index, pfPricing, locale);
+  return { product, pfPricing, meta };
+});
+
+const hasSaleItems = catalogEntries.some((e) => e.meta.isOnSale);
+const hasBestSellerItems = catalogEntries.some((e) => e.meta.isBestSeller);
+const hasSoldOutItems = catalogEntries.some((e) => e.meta.isSoldOut);
+
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/all-products', locale)}`;
+const homeHref = buildLocalizedPath('/', locale);
+const pageTitle = isEn
+  ? 'All Products | Dandy Cosmetics - Natural Skincare, Haircare & Body Care'
+  : 'جميع المنتجات | Dandy Cosmetics - منتجات طبيعية للعناية';
+const pageDescription = isEn
+  ? 'Explore the full Dandy Cosmetics catalog of natural skincare, haircare, body care, and botanical fragrance essentials in Egypt.'
+  : 'تصفحي جميع منتجات داندي (Dandy Cosmetics) للعناية بالبشرة والشعر. تشكيلة واسعة من مستحضرات التجميل الطبيعية والمضمونة بأسعار ممتازة.';
+const keywords = isEn
+  ? 'Dandy Cosmetics, All Products, Natural Skincare Egypt, Haircare, Body Care, Botanical Fragrance'
+  : 'Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, جميع المنتجات, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل, Skincare, Haircare';
+const ogImage = 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={keywords}
+  canonical={canonicalUrl}
+  robots={robotsDirective}
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        inLanguage: isEn ? 'en' : 'ar',
+        name: isEn ? 'All Products | Dandy Cosmetics' : 'جميع المنتجات | Dandy Cosmetics',
+        description: isEn
+          ? 'Browse all natural skincare, haircare, body care, and fragrance essentials from Dandy Cosmetics.'
+          : 'تصفحي جميع منتجات داندي للعناية بالبشرة والشعر الطبيعية.',
+        url: canonicalUrl,
+      })}
+    />
+  </Fragment>
+
+  <header class="dandy-all-header">
+    <div class="dandy-container">
+      <div class="dandy-all-header-inner">
+        <p class="dandy-all-kicker" data-dandy-entrance="0">
+          {isEn ? 'Complete DANDY Catalog' : 'كتالوج داندي الكامل'}
+        </p>
+        <h1 class="dandy-all-title dandy-font-ar-display" data-dandy-entrance="1">
+          {isEn ? t('en', 'catalog.allProductsTitle') : 'جميع مستحضرات داندي الطبيعية'}
+        </h1>
+        <p class="dandy-all-desc" data-dandy-entrance="2">
+          {isEn
+            ? 'Gentle botanical formulas crafted for daily skincare, haircare, body care, and fragrance rituals—with instant search and transparent price & category filtering.'
+            : 'تركيبات طبيعية لطيفة للعناية اليومية بالبشرة والشعر والجسم، مع بحث فوري وتصفية واضحة حسب الفئة والسعر.'}
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <main
+    class="dandy-page-band"
+    data-catalog-root
+    data-show-category-filter="true"
+    data-sync-url="true"
+  >
+    <div class="dandy-container">
+      <CatalogToolbar
+        totalCount={catalogEntries.length}
+        showCategoryFilter={true}
+        showPriceFilter={true}
+        hasSaleItems={hasSaleItems}
+        hasBestSellerItems={hasBestSellerItems}
+        hasSoldOutItems={hasSoldOutItems}
+        searchPlaceholder={isEn ? t('en', 'catalog.searchPlaceholder') : 'ابحثي باسم المنتج أو الفئة أو المكونات...'}
+        locale={locale}
+      />
+
+      <MobileFilterDrawer
+        showCategoryFilter={true}
+        showPriceFilter={true}
+        hasSaleItems={hasSaleItems}
+        hasBestSellerItems={hasBestSellerItems}
+        hasSoldOutItems={hasSoldOutItems}
+        locale={locale}
+      />
+
+      {catalogEntries.length > 0 ? (
+        <>
+          <div class="dandy-catalog-grid" id="productContainer" data-catalog-grid data-dandy-stagger="grid">
+            {catalogEntries.map(({ product, pfPricing, meta }, index) => (
+              <div
+                class="dandy-catalog-slot"
+                data-catalog-item
+                data-dandy-reveal-child
+                data-product-id={meta.id}
+                data-index={meta.index}
+                data-name={meta.name}
+                data-category={meta.categorySlug}
+                data-category-label={meta.categoryLabelAr}
+                data-price={meta.currentPrice}
+                data-on-sale={meta.isOnSale ? 'true' : 'false'}
+                data-bestseller={meta.isBestSeller ? 'true' : 'false'}
+                data-sold-out={meta.isSoldOut ? 'true' : 'false'}
+                data-search={meta.searchText}
+              >
+                <ProductCard
+                  product={product}
+                  pinkFridayPricing={pfPricing}
+                  priority={index < 4}
+                  locale={locale}
+                />
+              </div>
+            ))}
+          </div>
+
+          <CatalogEmptyState
+            isFilterEmpty={true}
+            hidden={true}
+            icon="search"
+            title={isEn ? t('en', 'catalog.emptyTitle') : 'لم نجد منتجات تطابق اختياراتكِ'}
+            description={
+              isEn
+                ? t('en', 'catalog.emptyDesc')
+                : 'جرّبي تعديل كلمات البحث أو إزالة بعض الفلاتر لاستعراض بقية تشكيلة داندي الطبيعية.'
+            }
+            resetLabel={isEn ? t('en', 'catalog.resetFilters') : 'إعادة ضبط الفلاتر'}
+          />
+        </>
+      ) : (
+        <CatalogEmptyState
+          hidden={false}
+          icon="package-check"
+          title={isEn ? 'Catalog Is Updating' : 'الكتالوج قيد التحديث'}
+          description={
+            isEn
+              ? 'We are updating our available botanical essentials. Return to the homepage or browse current offers.'
+              : 'نقوم بتحديث تشكيلة المنتجات المتاحة حالياً. يمكنكِ العودة للرئيسية أو زيارة العروض الخاصة.'
+          }
+          ctaLabel={isEn ? 'Back to Home' : 'العودة للرئيسية'}
+          ctaHref={homeHref}
+        />
+      )}
+    </div>
+  </main>
+
+  <script>
+    import { initCatalogControllers } from '../../scripts/catalog-client';
+    initCatalogControllers();
+  </script>
+</BaseLayout>
+
+<style>
+  .dandy-all-header {
+    background-color: var(--dandy-bg-editorial);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    padding-block: clamp(24px, 4vw, 40px);
+  }
+
+  .dandy-all-header-inner {
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-all-kicker {
+    margin: 0;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-all-title {
+    margin: 0;
+    font-size: clamp(1.75rem, 3.2vw, 2.45rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--dandy-ink-primary);
+    text-wrap: balance;
+  }
+
+  .dandy-all-desc {
+    margin: 0;
+    font-size: var(--dandy-text-base);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+</style>

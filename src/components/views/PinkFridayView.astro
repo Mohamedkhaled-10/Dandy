@@ -1,0 +1,1438 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import ProductCard from '../product/ProductCard.astro';
+import CatalogEmptyState from '../catalog/CatalogEmptyState.astro';
+import { getAllProducts, optimizeCloudinaryUrl, SITE_URL, type Product } from '../../utils/products';
+import {
+  getPublishedPinkFridayCampaign,
+  getCampaignStatus,
+  calculatePinkFridayPricing,
+  validateOffer,
+  type PinkFridayCampaign,
+  type CampaignPricingResult,
+} from '../../utils/pink-friday-server';
+import { normalizeProductVariants, formatEgpPrice } from '../../scripts/product-card';
+import {
+  computeCairoCountdown,
+  normalizeCairoIsoTimestamp,
+  resolvePinkFridayDisplayMode,
+} from '../../scripts/catalog';
+import { resolveLocalizedPinkFridayCampaign, resolveLocalizedProduct } from '../../i18n/content/adapters';
+import { EN_PINK_FRIDAY_OVERLAY } from '../../i18n/content/en/pink-friday';
+import { EN_PRODUCT_CONTENT } from '../../i18n/content/en/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const dir = isEn ? 'ltr' : 'rtl';
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const specialOffersHref = buildLocalizedPath('/special-offers', locale);
+
+const [rawCampaign, allProducts] = await Promise.all([
+  getPublishedPinkFridayCampaign() as Promise<PinkFridayCampaign>,
+  getAllProducts(),
+]);
+
+const campaign = isEn
+  ? resolveLocalizedPinkFridayCampaign(rawCampaign, 'en', EN_PINK_FRIDAY_OVERLAY)
+  : rawCampaign;
+
+const status = getCampaignStatus(campaign);
+
+interface ValidCampaignItem {
+  product: Product;
+  pricing: CampaignPricingResult;
+}
+
+const validCampaignItems: ValidCampaignItem[] = [];
+
+if (status === 'active' && campaign.offers) {
+  for (const offer of campaign.offers) {
+    if (!offer.active) continue;
+    const prod = allProducts.find((p) => String(p.id) === String(offer.productId));
+    if (!prod) continue;
+
+    const validation = validateOffer(offer, prod, campaign);
+    if (validation.isValid) {
+      const pricing = calculatePinkFridayPricing(prod, campaign);
+      if (pricing.isEligible) {
+        validCampaignItems.push({ product: prod, pricing });
+      }
+    }
+  }
+}
+
+interface ResolvedCollectionItem {
+  collectionItemId: string;
+  productId: string;
+  productName: string;
+  image: string;
+  price: number;
+  scents: Array<{ id: string; name: string }>;
+  defaultVariantId?: string;
+}
+
+interface ValidCollectionItem {
+  id: string;
+  name: string;
+  description: string;
+  coverImage: string;
+  badgeText: string;
+  pricingType: 'package' | 'percentage';
+  packagePrice?: number;
+  discountPercentage?: number;
+  calculatedPrice: number;
+  totalRegularPrice: number;
+  savings: number;
+  items: ResolvedCollectionItem[];
+}
+
+const validCollections: ValidCollectionItem[] = [];
+
+const rawCampaignCollections = campaign.collections;
+const campaignCollectionsList = Array.isArray(rawCampaignCollections)
+  ? rawCampaignCollections
+  : rawCampaignCollections && typeof rawCampaignCollections === 'object'
+    ? Object.values(rawCampaignCollections)
+    : [];
+
+if (status === 'active' && campaignCollectionsList.length > 0) {
+  for (const col of campaignCollectionsList as any[]) {
+    if (!col || col.active === false) continue;
+    const colItems = Array.isArray(col.items)
+      ? col.items
+      : col.items && typeof col.items === 'object'
+        ? Object.values(col.items)
+        : [];
+    if (colItems.length === 0) continue;
+
+    let totalRegPrice = 0;
+    let isAllAvailable = true;
+    const resolvedItems: ResolvedCollectionItem[] = [];
+
+    for (const cItem of colItems) {
+      const prod = allProducts.find((p) => String(p.id) === String(cItem.productId));
+      if (!prod || prod.isHidden || prod.isSoldOut) {
+        isAllAvailable = false;
+        break;
+      }
+      const itemBasePrice = parseFloat(String(prod.price)) || 0;
+      totalRegPrice += itemBasePrice;
+
+      const localizedProd = isEn ? resolveLocalizedProduct(prod, 'en') : null;
+      const localizedName = localizedProd ? localizedProd.localization.content.name : prod.name;
+      const variantLabels = isEn ? EN_PRODUCT_CONTENT[prod.id]?.variantLabels : undefined;
+
+      const rawScents = (prod as any).scents;
+      const variantList = Array.isArray(rawScents) && rawScents.length > 0
+        ? rawScents
+        : normalizeProductVariants(prod.variants);
+
+      const cleanScents = variantList.map((s: any) => {
+        const sId = typeof s === 'object' ? String(s.id || s.name) : String(s);
+        const sRawName = typeof s === 'object' ? String(s.name || s.id) : String(s);
+        const translatedName = isEn ? variantLabels?.[sId] || sRawName : sRawName;
+        return {
+          id: sId,
+          name: translatedName,
+        };
+      });
+
+      resolvedItems.push({
+        collectionItemId: cItem.collectionItemId,
+        productId: cItem.productId,
+        productName: localizedName,
+        image: optimizeCloudinaryUrl(prod.image, { width: 320, height: 320, crop: 'limit' }) || '/assets/images/logo.png',
+        price: itemBasePrice,
+        scents: cleanScents,
+        defaultVariantId: cItem.defaultVariantId,
+      });
+    }
+
+    if (!isAllAvailable) continue;
+
+    let calcPrice = totalRegPrice;
+    if (col.pricingType === 'package' && typeof col.packagePrice === 'number' && col.packagePrice > 0) {
+      calcPrice = col.packagePrice;
+    } else if (col.pricingType === 'percentage' && typeof col.discountPercentage === 'number' && col.discountPercentage > 0) {
+      calcPrice = Math.round(totalRegPrice * (1 - col.discountPercentage / 100));
+    }
+
+    const savings = Math.max(0, Math.round(totalRegPrice - calcPrice));
+
+    validCollections.push({
+      id: col.id,
+      name: col.name,
+      description: col.description || '',
+      coverImage:
+        optimizeCloudinaryUrl(col.coverImage, { width: 640, height: 640, crop: 'limit' }) ||
+        resolvedItems[0]?.image ||
+        '/assets/images/logo.png',
+      badgeText: col.badgeText || (isEn ? 'Pink Friday Collection' : 'كوليكشن Pink Friday'),
+      pricingType: col.pricingType,
+      packagePrice: col.packagePrice,
+      discountPercentage: col.discountPercentage,
+      calculatedPrice: Math.round(calcPrice),
+      totalRegularPrice: Math.round(totalRegPrice),
+      savings,
+      items: resolvedItems,
+    });
+  }
+}
+
+const displayMode = resolvePinkFridayDisplayMode(
+  status,
+  validCampaignItems.length,
+  validCollections.length
+);
+
+const visualsAny = (campaign.visuals || {}) as Record<string, any>;
+const badgeLabel = visualsAny.badgeText || 'Pink Friday';
+const heroHeadline = visualsAny.headline || campaign.title || (isEn ? 'Pink Friday Offers' : 'Pink Friday');
+const heroSubtitle =
+  visualsAny.subtitle ||
+  campaign.subtitleAr ||
+  (isEn
+    ? 'Enjoy special savings on all your favorite DANDY botanical essentials for Pink Friday.'
+    : 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.');
+const heroCtaText = visualsAny.ctaText || (isEn ? 'Explore Offers' : 'اكتشفي العروض');
+
+const rawHeroArtwork: string = visualsAny.heroImageUrl || visualsAny.bannerImage || '';
+const heroArtworkUrl =
+  rawHeroArtwork && !rawHeroArtwork.includes('images.unsplash.com')
+    ? rawHeroArtwork
+    : '/assets/images/index-products/product-2.jpg';
+
+const targetCountdownIso =
+  status === 'upcoming'
+    ? normalizeCairoIsoTimestamp(campaign.startAt)
+    : status === 'active'
+      ? normalizeCairoIsoTimestamp(campaign.endAt)
+      : null;
+
+const initialCountdown = computeCairoCountdown(targetCountdownIso);
+const showCountdown =
+  (status === 'active' || status === 'upcoming') &&
+  Boolean(targetCountdownIso) &&
+  !initialCountdown.isExpired;
+
+const pageTitle = isEn
+  ? 'Pink Friday Offers & Curated Bundles | Dandy Cosmetics'
+  : 'عروض Pink Friday | داندي كوزمتكس';
+const pageDescription = isEn
+  ? 'Explore exclusive Pink Friday botanical skincare, haircare, body care, and customizable scent bundles from Dandy Cosmetics Egypt.'
+  : 'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday الحصرية من داندي. مستحضرات طبيعية للعناية بالبشرة والشعر بأعلى جودة.';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/pink-friday', locale)}`;
+---
+
+<BaseLayout locale={locale} title={pageTitle} description={pageDescription} canonical={canonicalUrl}>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={heroArtworkUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={heroArtworkUrl} />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        inLanguage: isEn ? 'en' : 'ar',
+        name: isEn ? 'Pink Friday Offers | Dandy Cosmetics' : 'عروض Pink Friday من داندي كوزمتكس',
+        url: canonicalUrl,
+        description: pageDescription,
+        publisher: {
+          '@type': 'Organization',
+          name: 'Dandy Cosmetics',
+          url: SITE_URL,
+        },
+      })}
+    />
+  </Fragment>
+
+  <main class="dandy-pf-page" id="pink-friday-main" dir={dir} data-dandy-motion="expressive">
+    <section class="dandy-pf-hero" aria-label={isEn ? 'Pink Friday Campaign' : 'حملة Pink Friday'}>
+      <div class="dandy-container">
+        <div class="dandy-pf-hero-grid">
+          <div class="dandy-pf-hero-copy">
+            <p class="dandy-pf-kicker" data-dandy-entrance="0">{badgeLabel}</p>
+            <h1 class="dandy-pf-hero-title dandy-font-ar-display" data-dandy-entrance="1">{heroHeadline}</h1>
+            <p class="dandy-pf-hero-subtitle" data-dandy-entrance="2">{heroSubtitle}</p>
+
+            {showCountdown && targetCountdownIso && (
+              <div
+                class="dandy-pf-countdown-wrap"
+                id="dandy-pf-countdown"
+                data-target-iso={targetCountdownIso}
+                data-dandy-entrance="3"
+                aria-label={
+                  isEn
+                    ? status === 'upcoming'
+                      ? 'Countdown until Pink Friday launches'
+                      : 'Time remaining in Cairo Time'
+                    : status === 'upcoming'
+                      ? 'العد التنازلي لانطلاق الحملة'
+                      : 'الوقت المتبقي لنهاية الحملة بتوقيت القاهرة'
+                }
+              >
+                <p class="dandy-pf-countdown-label">
+                  {isEn
+                    ? status === 'upcoming'
+                      ? 'Offers launch in:'
+                      : 'Campaign ends (Cairo Time) in:'
+                    : status === 'upcoming'
+                      ? 'تنطلق العروض خلال:'
+                      : 'تنتهي الحملة بتوقيت القاهرة خلال:'}
+                </p>
+                <div class="dandy-pf-countdown-grid dandy-tabular">
+                  <div class="dandy-pf-cd-unit">
+                    <span class="dandy-pf-cd-val" data-cd="days">{String(initialCountdown.days).padStart(2, '0')}</span>
+                    <span class="dandy-pf-cd-key">{isEn ? 'Days' : 'يوم'}</span>
+                  </div>
+                  <div class="dandy-pf-cd-unit">
+                    <span class="dandy-pf-cd-val" data-cd="hours">{String(initialCountdown.hours).padStart(2, '0')}</span>
+                    <span class="dandy-pf-cd-key">{isEn ? 'Hours' : 'ساعة'}</span>
+                  </div>
+                  <div class="dandy-pf-cd-unit">
+                    <span class="dandy-pf-cd-val" data-cd="minutes">{String(initialCountdown.minutes).padStart(2, '0')}</span>
+                    <span class="dandy-pf-cd-key">{isEn ? 'Mins' : 'دقيقة'}</span>
+                  </div>
+                  <div class="dandy-pf-cd-unit">
+                    <span class="dandy-pf-cd-val" data-cd="seconds">{String(initialCountdown.seconds).padStart(2, '0')}</span>
+                    <span class="dandy-pf-cd-key">{isEn ? 'Secs' : 'ثانية'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {status === 'active' && (validCampaignItems.length > 0 || validCollections.length > 0) && (
+              <div class="dandy-pf-hero-actions" data-dandy-entrance="4">
+                <a
+                  href={validCampaignItems.length > 0 ? '#pink-friday-products' : '#pink-friday-collections'}
+                  class="dandy-pf-hero-cta"
+                >
+                  <span>{heroCtaText}</span>
+                  <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={16} strokeWidth={1.9} />
+                </a>
+                <a href={specialOffersHref} class="dandy-pf-hero-secondary">
+                  <span>{isEn ? 'Special Offers' : 'العروض الخاصة'}</span>
+                </a>
+              </div>
+            )}
+          </div>
+
+          <div class="dandy-pf-hero-media" data-dandy-media-settle>
+            <img
+              src={heroArtworkUrl}
+              alt={heroHeadline}
+              width="720"
+              height="540"
+              loading="eager"
+              decoding="sync"
+              referrerpolicy="no-referrer"
+              class="dandy-pf-hero-img"
+              onerror="this.onerror=null;this.src='/assets/images/index-products/product-2.jpg';"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dandy-page-band" aria-label={isEn ? 'Pink Friday Offers & Collections' : 'محتوى حملة Pink Friday'}>
+      <div class="dandy-container">
+        {displayMode === 'active-full' || displayMode === 'active-offers-only' ? (
+          <div id="pink-friday-products" class="dandy-pf-block">
+            <header class="dandy-pf-sec-header" data-dandy-reveal>
+              <p class="dandy-pf-sec-kicker">
+                {isEn ? 'Individual Campaign Deals' : 'عروض الحملة الفردية'}
+              </p>
+              <h2 class="dandy-pf-sec-title dandy-font-ar-display">
+                {isEn ? 'Products Featured at Pink Friday Prices' : 'المنتجات المشمولة بأسعار Pink Friday'}
+              </h2>
+              <p class="dandy-pf-sec-note dandy-tabular">
+                {isEn
+                  ? `${validCampaignItems.length} discounted ${validCampaignItems.length === 1 ? 'item' : 'items'} included in this campaign`
+                  : `${validCampaignItems.length} منتج مخفّض ضمن الحملة النشطة`}
+              </p>
+            </header>
+
+            <div class="dandy-catalog-grid" data-dandy-stagger="grid">
+              {validCampaignItems.map(({ product, pricing }, index) => (
+                <div class="dandy-catalog-slot" data-dandy-reveal-child>
+                  <ProductCard
+                    product={product}
+                    pinkFridayPricing={pricing}
+                    priority={index < 4}
+                    locale={locale}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {(displayMode === 'active-full' || displayMode === 'active-bundles-only') && (
+          <div id="pink-friday-collections" class="dandy-pf-block">
+            <header class="dandy-pf-sec-header" data-dandy-reveal>
+              <p class="dandy-pf-sec-kicker">
+                {isEn ? 'Curated Pink Friday Bundles' : 'باقات Pink Friday المختارة'}
+              </p>
+              <h2 class="dandy-pf-sec-title dandy-font-ar-display">
+                {isEn ? 'Customizable Gift Collections & Sets' : 'الكوليكشنز والعروض المجمعة'}
+              </h2>
+              <p class="dandy-pf-sec-note">
+                {isEn
+                  ? displayMode === 'active-bundles-only'
+                    ? `Featuring ${validCollections.length} curated value collections—select your preferred scent for each piece in your bundle.`
+                    : `${validCollections.length} customizable collections ready to add directly to your bag.`
+                  : displayMode === 'active-bundles-only'
+                    ? `التركيز الحالي للحملة على ${validCollections.length} كوليكشن متكامل؛ اختاري الروائح المفضلة لكل قطعة داخل الباقة.`
+                    : `${validCollections.length} كوليكشن جاهز للتخصيص والإضافة المباشرة للسلة.`}
+              </p>
+            </header>
+
+            <div class="dandy-pf-collections-grid" data-dandy-stagger="grid">
+              {validCollections.map((col, idx) => (
+                <article class="dandy-pf-col-card" data-dandy-reveal-child>
+                  <div class="dandy-pf-col-stage">
+                    <span class="dandy-pf-col-tag">{col.badgeText}</span>
+                    <img
+                      src={col.coverImage}
+                      alt={col.name}
+                      width="480"
+                      height="480"
+                      loading={idx < 4 ? 'eager' : 'lazy'}
+                      decoding={idx < 4 ? 'sync' : 'async'}
+                      referrerpolicy="no-referrer"
+                      class="dandy-pf-col-img"
+                      onerror="this.onerror=null;this.src='/assets/images/logo.png';"
+                    />
+                  </div>
+
+                  <div class="dandy-pf-col-body">
+                    <div class="dandy-pf-col-meta dandy-tabular">
+                      <span>
+                        {isEn
+                          ? `${col.items.length} ${col.items.length === 1 ? 'item' : 'items'}`
+                          : `${col.items.length} منتجات`}
+                      </span>
+                      {col.savings > 0 && (
+                        <>
+                          <span aria-hidden="true" class="dandy-pf-col-dot">·</span>
+                          <span class="dandy-pf-col-save">
+                            {isEn ? `Save ${formatEgpPrice(col.savings, 'en')}` : `وفّري ${formatEgpPrice(col.savings, 'ar')}`}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <h3 class="dandy-pf-col-title">{col.name}</h3>
+                    <p class="dandy-pf-col-desc">
+                      {col.description ||
+                        (isEn
+                          ? `A curated bundle featuring ${col.items.length} DANDY botanical essentials.`
+                          : `باقة مختارة تضم ${col.items.length} من مستحضرات داندي الطبيعية.`)}
+                    </p>
+
+                    <div class="dandy-pf-col-items-box">
+                      <p class="dandy-pf-col-items-label">
+                        {isEn ? 'Included in this collection:' : 'مكونات الكوليكشن:'}
+                      </p>
+                      <ul class="dandy-pf-col-items-list">
+                        {col.items.map((it) => (
+                          <li>{it.productName}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div class="dandy-pf-col-price-row dandy-tabular">
+                      <span class="dandy-pf-col-price">{formatEgpPrice(col.calculatedPrice, locale)}</span>
+                      {col.totalRegularPrice > col.calculatedPrice && (
+                        <del class="dandy-pf-col-old-price">{formatEgpPrice(col.totalRegularPrice, locale)}</del>
+                      )}
+                    </div>
+
+                    <div class="dandy-pf-col-footer">
+                      <button
+                        type="button"
+                        class="dandy-btn dandy-btn--editorial dandy-pf-col-btn btn-open-col-modal"
+                        data-col-id={col.id}
+                        data-col-name={col.name}
+                        data-col-price={col.calculatedPrice}
+                        data-col-json={JSON.stringify(col)}
+                      >
+                        <Icon name="sparkles" size={16} strokeWidth={1.85} />
+                        <span>{isEn ? 'Choose Scents & Add to Bag' : 'اختيار الروائح وإضافة للسلة'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {displayMode === 'active-empty' && (
+          <CatalogEmptyState
+            hidden={false}
+            icon="sparkles"
+            title={isEn ? 'Preparing Pink Friday Offers' : 'نجهّز لكِ عروض Pink Friday المميزة'}
+            description={
+              isEn
+                ? 'The campaign is active and we are finalizing included bundles and markdowns. Browse all products or current offers meanwhile.'
+                : 'الحملة مفعّلة ونقوم حالياً بإضافة الباقات والمنتجات المشمولة. يمكنكِ تصفح جميع المنتجات أو العروض الخاصة الحالية.'
+            }
+            ctaLabel={isEn ? 'Browse All Products' : 'تصفحي جميع المنتجات'}
+            ctaHref={allProductsHref}
+          />
+        )}
+
+        {displayMode === 'upcoming' && (
+          <CatalogEmptyState
+            hidden={false}
+            icon="clock"
+            title={isEn ? 'Pink Friday Offers Coming Soon' : 'عروض Pink Friday قادمة قريباً'}
+            description={
+              isEn
+                ? 'Stay tuned for Pink Friday bundles and exclusive offers launching in Cairo Time. Browse our permanent catalog anytime.'
+                : 'ترقّبي انطلاق باقات ومنتجات Pink Friday بتوقيت القاهرة. يمكنكِ استعراض الكتالوج الدائم في الأثناء.'
+            }
+            ctaLabel={isEn ? 'Browse All Products' : 'تصفح جميع المنتجات'}
+            ctaHref={allProductsHref}
+          />
+        )}
+
+        {displayMode === 'ended' && (
+          <CatalogEmptyState
+            hidden={false}
+            icon="gift"
+            title={isEn ? 'This Season’s Pink Friday Campaign Has Ended' : 'انتهت عروض Pink Friday لهذا الموسم'}
+            description={
+              isEn
+                ? 'Thank you for shopping with DANDY! Explore ongoing special offers and our core botanical collection.'
+                : 'شكراً لتسوّقكِ معنا! تابعي العروض المتجددة ومستحضراتنا الطبيعية الدائمة عبر المتجر.'
+            }
+            ctaLabel={isEn ? 'Current Special Offers' : 'العروض الخاصة الحالية'}
+            ctaHref={specialOffersHref}
+          />
+        )}
+
+        {displayMode === 'disabled' && (
+          <CatalogEmptyState
+            hidden={false}
+            icon="sparkles"
+            title={isEn ? 'Pink Friday Campaign Currently Unavailable' : 'حملة Pink Friday غير متاحة حالياً'}
+            description={
+              isEn
+                ? 'Explore the full DANDY collection and ongoing offers available across the store.'
+                : 'يمكنكِ الاستمتاع بكامل تشكيلة داندي الطبيعية والعروض المتوفرة حالياً في المتجر.'
+            }
+            ctaLabel={isEn ? 'Browse All Products' : 'تصفح جميع المنتجات'}
+            ctaHref={allProductsHref}
+          />
+        )}
+      </div>
+    </section>
+
+    <div
+      class="dandy-pf-modal-backdrop"
+      id="storefrontColModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sfColModalName"
+      hidden
+    >
+      <div class="dandy-pf-modal-dialog">
+        <header class="dandy-pf-modal-header">
+          <h3 class="dandy-pf-modal-heading">
+            <Icon name="sparkles" size={18} strokeWidth={1.85} />
+            <span id="sfColModalName">
+              {isEn ? 'Customize Collection Scents' : 'تخصيص الروائح للكوليكشن'}
+            </span>
+          </h3>
+          <button
+            type="button"
+            id="btnCloseSfColModal"
+            class="dandy-pf-modal-close"
+            aria-label={isEn ? 'Close scent customization modal' : 'إغلاق نافذة التخصيص'}
+          >
+            <Icon name="x" size={20} strokeWidth={1.9} />
+          </button>
+        </header>
+
+        <p class="dandy-pf-modal-hint">
+          {isEn
+            ? 'Select your preferred fragrance or shade for each item in this collection before adding to your bag:'
+            : 'اختاري العطر أو الرائحة المفضلة لكل منتج داخل الكوليكشن قبل الإضافة للسلة:'}
+        </p>
+
+        <div id="sfColItemsContainer" class="dandy-pf-modal-items"></div>
+
+        <footer class="dandy-pf-modal-footer">
+          <div>
+            <span class="dandy-pf-modal-price-label">
+              {isEn ? 'Bundle Total:' : 'السعر الإجمالي للباقة:'}
+            </span>
+            <div class="dandy-pf-modal-price-val dandy-tabular" id="sfColModalTotalPrice">
+              {isEn ? '0 EGP' : '0 ج.م'}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="dandy-btn dandy-btn--primary"
+            id="btnConfirmAddColToCart"
+          >
+            <Icon name="shopping-bag" size={16} strokeWidth={1.85} />
+            <span>{isEn ? 'Confirm & Add to Bag' : 'تأكيد وإضافة للسلة'}</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    import { computeCairoCountdown } from '../../scripts/catalog';
+
+    interface ColModalItem {
+      collectionItemId: string;
+      productId: string;
+      productName: string;
+      image: string;
+      scents?: Array<{ id: string; name: string }>;
+      defaultVariantId?: string;
+    }
+
+    interface ColModalPayload {
+      id: string;
+      name: string;
+      calculatedPrice: number;
+      totalRegularPrice: number;
+      coverImage: string;
+      items: ColModalItem[];
+    }
+
+    function initPinkFridayPage(): void {
+      const isEn = document.documentElement.lang === 'en';
+      const currencyUnit = isEn ? 'EGP' : 'ج.م';
+      const cartHref = isEn ? '/en/cart' : '/cart';
+
+      const cdEl = document.getElementById('dandy-pf-countdown');
+      const targetIso = cdEl?.getAttribute('data-target-iso');
+      if (cdEl && targetIso) {
+        const dayEl = cdEl.querySelector('[data-cd="days"]');
+        const hrEl = cdEl.querySelector('[data-cd="hours"]');
+        const minEl = cdEl.querySelector('[data-cd="minutes"]');
+        const secEl = cdEl.querySelector('[data-cd="seconds"]');
+
+        const tick = () => {
+          const snap = computeCairoCountdown(targetIso);
+          if (dayEl) dayEl.textContent = String(snap.days).padStart(2, '0');
+          if (hrEl) hrEl.textContent = String(snap.hours).padStart(2, '0');
+          if (minEl) minEl.textContent = String(snap.minutes).padStart(2, '0');
+          if (secEl) secEl.textContent = String(snap.seconds).padStart(2, '0');
+          return !snap.isExpired;
+        };
+
+        tick();
+        const timerId = window.setInterval(() => {
+          if (!tick()) {
+            window.clearInterval(timerId);
+          }
+        }, 1000);
+      }
+
+      const modal = document.getElementById('storefrontColModal');
+      const closeBtn = document.getElementById('btnCloseSfColModal');
+      const confirmBtn = document.getElementById('btnConfirmAddColToCart');
+      const itemsContainer = document.getElementById('sfColItemsContainer');
+      const nameEl = document.getElementById('sfColModalName');
+      const priceEl = document.getElementById('sfColModalTotalPrice');
+
+      if (!modal || !itemsContainer) return;
+
+      let selectedColData: ColModalPayload | null = null;
+      let lastTriggerEl: HTMLElement | null = null;
+
+      function closeModal(): void {
+        if (!modal) return;
+        modal.hidden = true;
+        document.body.style.overflow = '';
+        lastTriggerEl?.focus();
+      }
+
+      function openModal(trigger: HTMLElement, data: ColModalPayload): void {
+        selectedColData = data;
+        lastTriggerEl = trigger;
+        renderModalItems();
+        modal!.hidden = false;
+        document.body.style.overflow = 'hidden';
+        closeBtn?.focus();
+      }
+
+      function renderModalItems(): void {
+        if (!selectedColData || !itemsContainer) return;
+        if (nameEl) nameEl.textContent = selectedColData.name;
+        if (priceEl) priceEl.textContent = `${selectedColData.calculatedPrice} ${currencyUnit}`;
+
+        itemsContainer.innerHTML = '';
+
+        selectedColData.items.forEach((item, idx) => {
+          const row = document.createElement('div');
+          row.className = 'dandy-pf-modal-item-row';
+
+          const info = document.createElement('div');
+          info.className = 'dandy-pf-modal-item-info';
+
+          const img = document.createElement('img');
+          img.src = item.image || '/assets/images/logo.png';
+          img.alt = item.productName;
+          img.width = 44;
+          img.height = 44;
+          img.referrerPolicy = 'no-referrer';
+          img.className = 'dandy-pf-modal-item-img';
+          img.onerror = () => {
+            img.onerror = null;
+            img.src = '/assets/images/logo.png';
+          };
+
+          const title = document.createElement('strong');
+          title.className = 'dandy-pf-modal-item-name';
+          title.textContent = item.productName;
+
+          info.appendChild(img);
+          info.appendChild(title);
+          row.appendChild(info);
+
+          const controlWrap = document.createElement('div');
+          controlWrap.className = 'dandy-pf-modal-item-ctrl';
+
+          const scents = item.scents || [];
+          if (scents.length > 0) {
+            const select = document.createElement('select');
+            select.className = 'sf-item-scent-select dandy-pf-modal-select';
+            select.setAttribute('data-item-index', String(idx));
+            select.setAttribute(
+              'aria-label',
+              isEn ? `Choose scent for ${item.productName}` : `اختاري رائحة ${item.productName}`
+            );
+
+            scents.forEach((scent) => {
+              const opt = document.createElement('option');
+              opt.value = scent.id;
+              opt.textContent = scent.name;
+              if (String(scent.id) === String(item.defaultVariantId)) {
+                opt.selected = true;
+              }
+              select.appendChild(opt);
+            });
+            controlWrap.appendChild(select);
+          } else {
+            const note = document.createElement('span');
+            note.className = 'dandy-pf-modal-item-fixed';
+            note.textContent = isEn ? 'Size & variant shown in image' : 'الحجم والنوع الموضح بالصورة';
+            controlWrap.appendChild(note);
+          }
+
+          row.appendChild(controlWrap);
+          itemsContainer.appendChild(row);
+        });
+      }
+
+      document.querySelectorAll<HTMLButtonElement>('.btn-open-col-modal').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const rawJson = btn.getAttribute('data-col-json');
+          if (!rawJson) return;
+          try {
+            const parsed = JSON.parse(rawJson) as ColModalPayload;
+            openModal(btn, parsed);
+          } catch (err) {
+            console.error('Error parsing Pink Friday collection data:', err);
+          }
+        });
+      });
+
+      closeBtn?.addEventListener('click', closeModal);
+
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (!modal.hidden && event.key === 'Escape') {
+          event.preventDefault();
+          closeModal();
+        }
+      });
+
+      confirmBtn?.addEventListener('click', () => {
+        if (!selectedColData) return;
+
+        const scentSelects = Array.from(
+          document.querySelectorAll<HTMLSelectElement>('.sf-item-scent-select')
+        );
+
+        const selectedItems = selectedColData.items.map((item, idx) => {
+          const select = scentSelects.find(
+            (s) => s.getAttribute('data-item-index') === String(idx)
+          );
+          let chosenScent: { id: string; name: string } | null = null;
+          if (select && select.selectedIndex >= 0) {
+            const selectedOpt = select.options[select.selectedIndex];
+            if (selectedOpt) {
+              chosenScent = {
+                id: selectedOpt.value,
+                name: selectedOpt.textContent || selectedOpt.value,
+              };
+            }
+          }
+
+          return {
+            collectionItemId: item.collectionItemId,
+            productId: item.productId,
+            productName: item.productName,
+            selectedVariant: chosenScent,
+          };
+        });
+
+        const cartItem = {
+          type: 'collection',
+          isCollection: true,
+          isPinkFriday: true,
+          collectionId: selectedColData.id,
+          name: selectedColData.name,
+          price: selectedColData.calculatedPrice,
+          regularPrice: selectedColData.totalRegularPrice,
+          image: selectedColData.coverImage,
+          quantity: 1,
+          selectedItems,
+        };
+
+        try {
+          const rawCart = window.localStorage.getItem('cart');
+          const cart = rawCart ? JSON.parse(rawCart) : [];
+          const nextCart = Array.isArray(cart) ? [...cart, cartItem] : [cartItem];
+          const serialized = JSON.stringify(nextCart);
+          window.localStorage.setItem('cart', serialized);
+          window.localStorage.setItem('dandy_cart', serialized);
+        } catch {
+          if (window.DandyToast?.show) {
+            window.DandyToast.show({
+              type: 'error',
+              message: isEn ? 'Could not save this collection to your bag.' : 'تعذر حفظ الكوليكشن في السلة.',
+            });
+          }
+          return;
+        }
+
+        if ((window as any).DandyMeta?.trackAddToCart) {
+          (window as any).DandyMeta.trackAddToCart(cartItem);
+        } else if (typeof (window as any).fbq === 'function') {
+          (window as any).fbq('track', 'AddToCart', {
+            content_name: cartItem.name,
+            content_ids: selectedItems.map((s) => s.productId).filter(Boolean),
+            content_type: 'product_group',
+            value: Number(cartItem.price) || 0,
+            currency: 'EGP',
+          });
+        }
+
+        if (typeof (window as any).updateSharedCartCount === 'function') {
+          (window as any).updateSharedCartCount();
+        }
+        if (typeof (window as any).updateCartBadge === 'function') {
+          (window as any).updateCartBadge();
+        }
+        window.dispatchEvent(new CustomEvent('cart-updated', { detail: { collectionId: selectedColData.id } }));
+
+        const addedName = selectedColData.name;
+        closeModal();
+
+        if (window.DandyToast?.show) {
+          window.DandyToast.show({
+            type: 'success',
+            message: isEn ? `"${addedName}" added to your bag.` : `تمت إضافة «${addedName}» إلى السلة.`,
+            actionLabel: isEn ? 'View Bag' : 'عرض السلة',
+            actionUrl: cartHref,
+            duration: 5000,
+          });
+        } else {
+          window.location.href = cartHref;
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPinkFridayPage);
+    } else {
+      initPinkFridayPage();
+    }
+  </script>
+</BaseLayout>
+
+<style>
+  .dandy-pf-page {
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    min-height: 75vh;
+  }
+
+  .dandy-pf-hero {
+    background: linear-gradient(135deg, var(--dandy-bg-dark) 0%, var(--dandy-plum-ink) 100%);
+    color: var(--dandy-ink-inverse);
+    padding-block: clamp(28px, 5vw, 56px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .dandy-pf-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 48px);
+  }
+
+  .dandy-pf-hero-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .dandy-pf-kicker {
+    margin: 0;
+    font-family: var(--dandy-font-en-sans);
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: #E8C5D3;
+    letter-spacing: 0.04em;
+  }
+
+  .dandy-pf-hero-title {
+    margin: 0;
+    font-size: clamp(1.9rem, 3.6vw, 3rem);
+    font-weight: 700;
+    line-height: 1.22;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  .dandy-pf-hero-subtitle {
+    margin: 0;
+    max-width: 54ch;
+    font-size: var(--dandy-text-base);
+    line-height: 1.75;
+    color: rgba(250, 248, 246, 0.88);
+  }
+
+  .dandy-pf-countdown-wrap {
+    width: 100%;
+    max-width: 440px;
+    padding: 14px 16px;
+    border-radius: var(--dandy-radius-md);
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-pf-countdown-label {
+    margin: 0;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: #F3C4D7;
+  }
+
+  .dandy-pf-countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dandy-pf-cd-unit {
+    background-color: rgba(26, 23, 21, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--dandy-radius-sm);
+    padding: 8px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .dandy-pf-cd-val {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #FFFFFF;
+  }
+
+  .dandy-pf-cd-key {
+    font-size: 0.72rem;
+    color: rgba(250, 248, 246, 0.75);
+  }
+
+  .dandy-pf-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding-top: 6px;
+  }
+
+  .dandy-pf-hero-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 11px 24px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: #FAF8F6;
+    color: var(--dandy-ink-primary);
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-pf-hero-cta:hover {
+    background-color: #FFFFFF;
+    color: var(--dandy-plum-ink);
+  }
+
+  .dandy-pf-hero-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 18px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid rgba(250, 248, 246, 0.3);
+    color: #FAF8F6;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--dandy-transition-fast), border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-pf-hero-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(250, 248, 246, 0.6);
+  }
+
+  .dandy-pf-hero-media {
+    width: 100%;
+    min-width: 0;
+    border-radius: var(--dandy-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background-color: rgba(255, 255, 255, 0.03);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-pf-hero-img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .dandy-pf-block + .dandy-pf-block {
+    margin-top: clamp(48px, 6vw, 72px);
+  }
+
+  .dandy-pf-sec-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+
+  .dandy-pf-sec-kicker {
+    margin: 0;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-pf-sec-title {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pf-sec-note {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+    line-height: 1.65;
+  }
+
+  .dandy-pf-collections-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+  }
+
+  .dandy-pf-col-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    transition: transform var(--dandy-transition-base), border-color var(--dandy-transition-base), box-shadow var(--dandy-transition-base);
+  }
+
+  .dandy-pf-col-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--dandy-border-default);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-pf-col-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-pf-col-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform 360ms var(--dandy-ease-out);
+  }
+
+  .dandy-pf-col-card:hover .dandy-pf-col-img {
+    transform: scale(1.025);
+  }
+
+  .dandy-pf-col-tag {
+    position: absolute;
+    top: 10px;
+    inset-inline-start: 10px;
+    z-index: 2;
+    padding: 4px 10px;
+    border-radius: var(--dandy-radius-xs);
+    background-color: var(--dandy-plum-ink);
+    color: var(--dandy-ink-inverse);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .dandy-pf-col-body {
+    flex: 1 1 auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .dandy-pf-col-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pf-col-dot {
+    color: var(--dandy-border-default);
+  }
+
+  .dandy-pf-col-save {
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-pf-col-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.45;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pf-col-desc {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-pf-col-items-box {
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    padding: 10px 14px;
+  }
+
+  .dandy-pf-col-items-label {
+    margin: 0 0 6px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pf-col-items-list {
+    margin: 0;
+    padding-inline-start: 18px;
+    font-size: var(--dandy-text-xs);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-pf-col-price-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 6px;
+  }
+
+  .dandy-pf-col-price {
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pf-col-old-price {
+    font-size: 0.88rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pf-col-footer {
+    padding-top: 4px;
+  }
+
+  .dandy-pf-col-btn {
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .dandy-pf-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(26, 23, 21, 0.56);
+    z-index: var(--dandy-z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .dandy-pf-modal-backdrop[hidden] {
+    display: none;
+  }
+
+  .dandy-pf-modal-dialog {
+    width: 100%;
+    max-width: 560px;
+    max-height: calc(100vh - 32px);
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-lg);
+    box-shadow: var(--dandy-shadow-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow: hidden;
+  }
+
+  .dandy-pf-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-pf-modal-heading {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dandy-pf-modal-close {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-editorial);
+    color: var(--dandy-ink-primary);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .dandy-pf-modal-hint {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.6;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-pf-modal-items {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-inline-end: 4px;
+  }
+
+  :global(.dandy-pf-modal-item-row) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 12px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  :global(.dandy-pf-modal-item-info) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 200px;
+  }
+
+  :global(.dandy-pf-modal-item-img) {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--dandy-radius-xs);
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: var(--dandy-bg-stage);
+  }
+
+  :global(.dandy-pf-modal-item-name) {
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    line-height: 1.4;
+  }
+
+  :global(.dandy-pf-modal-item-ctrl) {
+    flex: 0 1 190px;
+    min-width: 0;
+  }
+
+  :global(.dandy-pf-modal-select) {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+  }
+
+  :global(.dandy-pf-modal-item-fixed) {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pf-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-pf-modal-price-label {
+    display: block;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pf-modal-price-val {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dandy-accent-text);
+  }
+
+  @media (max-width: 1023px) {
+    .dandy-pf-collections-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 899px) {
+    .dandy-pf-hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-pf-hero-copy {
+      align-items: stretch;
+    }
+
+    .dandy-pf-countdown-wrap {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .dandy-pf-collections-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .dandy-pf-modal-footer .dandy-btn {
+      width: 100%;
+    }
+  }
+</style>

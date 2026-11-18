@@ -1,0 +1,326 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/about-us', locale)}`;
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const blogHref = buildLocalizedPath('/blog', locale);
+
+const pageTitle = isEn
+  ? 'About DANDY | Our Story & Formulation Vision | Dandy Cosmetics'
+  : 'عن داندي | قصتنا ورؤيتنا | Dandy';
+const pageDescription = isEn
+  ? 'Discover the philosophy behind Dandy Cosmetics: pharmacist-crafted botanical formulations combining natural purity with proven daily care efficacy in Egypt.'
+  : 'تعرفي على فلسفة داندي: تركيبات صيدلانية متطورة تجمع بين نقاء الطبيعة والفاعلية العلمية لتقديم عناية راقية للبشرة والشعر.';
+const pageKeywords = isEn
+  ? 'Dandy Cosmetics, our story, pharmacist skincare Egypt, botanical beauty formulations'
+  : 'Dandy, داندي, قصة داندي, منتجات العناية بالبشرة مصر, تركيبات طبيعية';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={pageKeywords}
+  canonical={canonicalUrl}
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </Fragment>
+
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Our Story & Philosophy' : 'قصتنا وفلسفتنا'}
+    title={isEn ? 'About DANDY Cosmetics' : 'عن داندي (Dandy)'}
+    description={
+      isEn
+        ? 'Where pharmaceutical formulation expertise meets natural botanical purity to deliver thoughtful, reliable daily care.'
+        : 'حيث يلتقي الشغف الصيدلاني بنقاء الطبيعة لتقديم مستحضرات عناية متطورة وموثوقة.'
+    }
+    currentCrumb={isEn ? 'About Us' : 'من نحن'}
+  />
+
+  <main class="dandy-page-band" data-dandy-motion="calm">
+    <div class="dandy-container">
+      <div class="dandy-about-grid">
+        <!-- Sticky Botanical Editorial Card -->
+        <aside class="dandy-about-aside" data-dandy-reveal>
+          <div class="dandy-about-media">
+            <img
+              src="/assets/images/editorial/story-botanical.jpg"
+              alt={isEn ? 'Dandy Cosmetics botanical formulations for skin and hair care' : 'تركيبات داندي النباتية للعناية بالبشرة والشعر'}
+              width="640"
+              height="480"
+              loading="eager"
+              decoding="async"
+              onerror="this.onerror=null;this.src='/assets/images/logo.png';"
+            />
+          </div>
+
+          <div class="dandy-about-card-body">
+            <img
+              src="/assets/images/logo.png"
+              alt={isEn ? 'Dandy Cosmetics logo' : 'شعار Dandy Cosmetics'}
+              width="96"
+              height="40"
+              class="dandy-about-logo"
+            />
+            <p class="dandy-about-tagline" dir="ltr">
+              DANDY — Where Science Meets Nature, and Premium Quality Meets Local Value.
+            </p>
+
+            <ul class="dandy-about-meta">
+              <li>
+                <Icon name="map-pin" size={16} strokeWidth={1.85} />
+                <span>{isEn ? 'Nasr City, Cairo, Egypt' : 'مدينة نصر، القاهرة، جمهورية مصر العربية'}</span>
+              </li>
+              <li>
+                <Icon name="message-circle" size={16} strokeWidth={1.85} />
+                <a href="https://wa.me/201038941005" target="_blank" rel="noopener noreferrer" dir="ltr">01038941005</a>
+              </li>
+              <li>
+                <Icon name="external-link" size={16} strokeWidth={1.85} />
+                <a href="https://www.instagram.com/dandy_skincare_cosmotics" target="_blank" rel="noopener noreferrer" dir="ltr">@dandy_skincare_cosmotics</a>
+              </li>
+              <li>
+                <Icon name="external-link" size={16} strokeWidth={1.85} />
+                <a href="https://www.facebook.com/profile.php?id=61563039704396" target="_blank" rel="noopener noreferrer">
+                  {isEn ? 'Official Dandy Cosmetics Page' : 'صفحة Dandy Cosmetics الرسمية'}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- Editorial Narrative -->
+        <article class="dandy-about-story" data-dandy-reveal>
+          {isEn ? (
+            <>
+              <section class="dandy-about-block">
+                <h2 class="dandy-font-ar-display">Our Vision &amp; Origin</h2>
+                <p>
+                  At <strong>DANDY</strong>, we believe truly effective skin and hair care begins with intentional ingredient selection and scientifically balanced formulations.
+                </p>
+                <p>
+                  Founded with a pharmacist's dedication to cosmetic formulation science, <strong>DANDY</strong> pairs the richness of botanical extracts with proven actives. Every formula is crafted to deliver visible results while staying gentle and dependable for everyday rituals.
+                </p>
+              </section>
+
+              <blockquote class="dandy-about-quote">
+                &ldquo;Our mission is to make refined botanical beauty care accessible to everyone—crafted to international standards at a fair local value.&rdquo;
+              </blockquote>
+
+              <section class="dandy-about-block">
+                <h2 class="dandy-font-ar-display">Ingredients &amp; Craft Standards</h2>
+                <p>
+                  Our collection spans face, hair, body, and signature fragrance care, made with cold-pressed plant oils, nourishing botanical butters, vitamins, and carefully calibrated active ingredients—free from harsh, unnecessary additives.
+                </p>
+              </section>
+
+              <section class="dandy-about-block">
+                <h2 class="dandy-font-ar-display">Commitment to Transparency</h2>
+                <p>
+                  More than a skincare label, <strong>DANDY</strong> stands for honest ingredient transparency, continuous formulation refinement, and attentive quality standards so you can enjoy your routine with lasting confidence.
+                </p>
+              </section>
+            </>
+          ) : (
+            <>
+              <section class="dandy-about-block">
+                <h2 class="dandy-font-ar-display">رؤيتنا وبداية الرحلة</h2>
+                <p>
+                  نؤمن في <strong>DANDY</strong> بأن العناية الحقيقية والفعالة بالبشرة والشعر تبدأ من الاختيار الدقيق للمكونات والتركيبات المطورة علمياً.
+                </p>
+                <p>
+                  تأسست <strong>DANDY</strong> برؤية صيدلانية متخصصة في علم تصنيع مستحضرات التجميل، لتقديم منتجات تجمع بين قوة المكونات الطبيعية والمستخلصات الفعالة المثبتة مخبرياً. كل تركيبة مصممة بعناية فائقة لتمنح نتائج ملموسة مع الحفاظ على لطفها وأمانها التام للاستخدام اليومي.
+                </p>
+              </section>
+
+              <blockquote class="dandy-about-quote">
+                «مهمتنا هي جعل منتجات الجمال عالية الجودة في متناول الجميع، بتركيبات تنافس المعايير العالمية وبقيمة محلية عادلة.»
+              </blockquote>
+
+              <section class="dandy-about-block">
+                <h2 class="dandy-font-ar-display">مكوناتنا ومعايير التصنيع</h2>
+                <p>
+                  تضم تشكيلتنا منتجات العناية بالبشرة والشعر والجسم، المصنوعة من أجود الزيوت النباتية، الزبدات المغذية، الفيتامينات، والمكونات الفعالة المختارة بدقة. نحرص على تقديم تركيبات متوازنة وخالية من الإضافات الكيميائية القاسية لضمان تجربة عناية موثوقة وممتعة.
+                </p>
+              </section>
+
+              <section class="dandy-about-block">
+                <h2 class="dandy-font-ar-display">الالتزام بالشفافية والتطوير</h2>
+                <p>
+                  أكثر من مجرد علامة تجارية؛ تلتزم <strong>DANDY</strong> بالشفافية الكاملة، والبحث المستمر، وأعلى معايير الجودة لتمكينكِ من الاستمتاع بروتين العناية بثقة وأمان دائم.
+                </p>
+              </section>
+            </>
+          )}
+
+          <div class="dandy-about-cta-row">
+            <a href={allProductsHref} class="dandy-btn dandy-btn--editorial">
+              <span>{isEn ? 'Browse All Products' : 'تصفح جميع المنتجات'}</span>
+              <Icon name="arrow-left" size={16} strokeWidth={1.85} directional={true} />
+            </a>
+            <a href={blogHref} class="dandy-btn dandy-btn--outline">
+              <Icon name="book-open" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Read the Beauty Journal' : 'اقرئي مدونة العناية'}</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .dandy-about-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: clamp(28px, 4vw, 56px);
+    align-items: start;
+  }
+
+  .dandy-about-aside {
+    position: sticky;
+    top: 96px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+  }
+
+  .dandy-about-media {
+    aspect-ratio: 4 / 3;
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+  }
+
+  .dandy-about-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dandy-about-card-body {
+    padding: 22px;
+  }
+
+  .dandy-about-logo {
+    width: 96px;
+    height: auto;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .dandy-about-tagline {
+    margin: 0 0 16px;
+    font-family: var(--dandy-font-en-display);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--dandy-ink-primary);
+    text-align: start;
+  }
+
+  .dandy-about-meta {
+    list-style: none;
+    margin: 0;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-about-meta li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-about-meta a {
+    color: var(--dandy-ink-primary);
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-about-meta a:hover {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-about-story {
+    max-width: var(--dandy-container-reading);
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .dandy-about-block h2 {
+    margin: 0 0 12px;
+    font-size: clamp(1.3rem, 2vw, 1.6rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-about-block p {
+    margin: 0 0 16px;
+    font-size: 1.02rem;
+    line-height: 1.85;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-about-block p:last-child {
+    margin-bottom: 0;
+  }
+
+  .dandy-about-block strong {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-about-quote {
+    margin: 0;
+    padding: 20px 24px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-inline-start: 3px solid var(--dandy-botanical-deep);
+    border-radius: var(--dandy-radius-sm);
+    font-family: var(--dandy-font-active-display);
+    font-size: 1.2rem;
+    line-height: 1.7;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-about-cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 8px;
+  }
+
+  @media (max-width: 899px) {
+    .dandy-about-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-about-aside {
+      position: static;
+    }
+  }
+</style>

@@ -1,0 +1,105 @@
+---
+/**
+ * DANDY COSMETICS — BOTANICAL / FACTUAL SPECIFICATION GRID (PHASE 4)
+ * Displays only grounded, verified attributes parsed from real product data.
+ */
+import Icon from '../ui/Icon.astro';
+import type { ProductHighlightItem } from '../../scripts/product-pdp';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  items: ProductHighlightItem[];
+  locale?: Locale;
+}
+
+const { items = [], locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+---
+
+{items.length >= 2 && (
+  <section
+    class="dandy-pdp-highlights"
+    aria-label={isEn ? 'Key product specifications' : 'المواصفات الأساسية للمستحضر'}
+  >
+    <div class="dandy-pdp-highlights-grid">
+      {items.map((item) => (
+        <div class="dandy-pdp-highlight-cell">
+          <span class="dandy-pdp-highlight-icon" aria-hidden="true">
+            <Icon name={item.icon} size={16} strokeWidth={1.8} />
+          </span>
+          <div class="dandy-pdp-highlight-copy">
+            <span class="dandy-pdp-highlight-label">{item.label}</span>
+            <span class="dandy-pdp-highlight-value">{item.value}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .dandy-pdp-highlights {
+    margin-top: 4px;
+  }
+
+  .dandy-pdp-highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .dandy-pdp-highlight-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 13px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-pdp-highlight-cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .dandy-pdp-highlight-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .dandy-pdp-highlight-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .dandy-pdp-highlight-label {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .dandy-pdp-highlight-value {
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-primary);
+    font-weight: 600;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  @media (max-width: 520px) {
+    .dandy-pdp-highlights-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

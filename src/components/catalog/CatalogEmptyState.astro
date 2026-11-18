@@ -1,0 +1,111 @@
+---
+/**
+ * DANDY COSMETICS — SHARED HONEST EMPTY STATE (PHASE 5)
+ * Reusable for filter-no-match, empty category, or zero special offers.
+ */
+import Icon, { type LucideIconName } from '../ui/Icon.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+  icon?: LucideIconName;
+  resetLabel?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  hidden?: boolean;
+  isFilterEmpty?: boolean;
+}
+
+const {
+  title,
+  description,
+  icon = 'search',
+  resetLabel,
+  ctaLabel,
+  ctaHref,
+  hidden = false,
+  isFilterEmpty = false,
+} = Astro.props;
+---
+
+<div
+  class="dandy-empty-state"
+  data-catalog-empty={isFilterEmpty ? 'true' : undefined}
+  hidden={hidden}
+>
+  <div class="dandy-empty-icon" aria-hidden="true">
+    <Icon name={icon} size={26} strokeWidth={1.65} />
+  </div>
+  <h2 class="dandy-empty-title dandy-font-ar-display">{title}</h2>
+  <p class="dandy-empty-desc">{description}</p>
+  {(resetLabel || (ctaLabel && ctaHref)) && (
+    <div class="dandy-empty-actions">
+      {resetLabel && (
+        <button type="button" class="dandy-btn dandy-btn--editorial" data-catalog-reset>
+          <Icon name="rotate-ccw" size={16} strokeWidth={1.85} />
+          <span>{resetLabel}</span>
+        </button>
+      )}
+      {ctaLabel && ctaHref && (
+        <a href={ctaHref} class="dandy-btn dandy-btn--outline">
+          <span>{ctaLabel}</span>
+        </a>
+      )}
+    </div>
+  )}
+</div>
+
+<style is:global>
+  .dandy-empty-state {
+    max-width: 560px;
+    margin: 24px auto 8px;
+    padding: 40px 24px;
+    text-align: center;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dandy-empty-state[hidden] {
+    display: none;
+  }
+
+  .dandy-empty-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-empty-title {
+    margin: 4px 0 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-empty-desc {
+    margin: 0;
+    max-width: 46ch;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 8px;
+  }
+</style>

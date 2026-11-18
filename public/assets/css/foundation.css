@@ -5,120 +5,7 @@
  * ====================================================================
  */
 
-:root {
-  /* ------------------------------------------------------------------
-     1. COLOR SYSTEM (Dandy Brand Palette - Modern Minimal Restraint)
-     ------------------------------------------------------------------ */
-  --color-canvas: #ffffff;
-  --color-canvas-subtle: #faf8f6;
-  --color-surface: #ffffff;
-  --color-surface-soft: #fbf7f6;
-  --color-surface-hover: #f5eeea;
-
-  /* Primary Deep Brand Anchors */
-  --color-primary: #38121d;          /* Deep luxury burgundy/plum for refined hierarchy */
-  --color-primary-hover: #4e1828;
-  --color-burgundy: #4a1525;
-
-  /* Signature Dandy Rose & Blush Accents (Commerce & Interaction) */
-  --color-blush: #db2777;            /* Dandy vibrant signature blush/rose */
-  --color-blush-hover: #be185d;
-  --color-blush-soft: #fdf2f8;       /* Subtle powder rose background tint */
-  --color-magenta: #be185d;
-  --color-accent: #db2777;
-  --color-accent-hover: #be185d;
-  --color-accent-soft: #fdf2f8;
-
-  /* Subtle Warm Accents */
-  --color-gold: #b38728;             /* Muted restrained metallic bronze gold */
-  --color-gold-cream: #fef8ee;
-  --color-cream: #faf5f0;
-
-  /* High-legibility Neutrals (WCAG AAA / AA compliant) */
-  --color-text: #1c1917;             /* Crisp warm charcoal black */
-  --color-text-secondary: #44403c;   /* Supporting readable dark */
-  --color-muted: #78716c;            /* Quiet neutral gray-brown for secondary copy */
-  --color-subtle: #a8a29e;           /* Placeholder and faint text */
-
-  /* Functional Status Colors */
-  --color-success: #15803d;
-  --color-success-soft: #f0fdf4;
-  --color-danger: #be123c;
-  --color-danger-soft: #fff1f2;
-  --color-warning: #b45309;
-  --color-warning-soft: #fffbeb;
-
-  /* Quiet, Thin Borders */
-  --border-subtle: #f2ede9;
-  --border-light: #e8e1dd;
-  --border-medium: #d6cbc3;
-  --border-strong: #a8a29e;
-  --border-blush: #fbcfe8;
-
-  /* ------------------------------------------------------------------
-     2. TYPOGRAPHY SYSTEM (Arabic-First Modern Hierarchy)
-     ------------------------------------------------------------------ */
-  --font-sans: 'Alexandria', 'Cairo', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-  /* Typographic Scales */
-  --text-xs: 0.75rem;       /* 12px */
-  --text-sm: 0.84375rem;    /* 13.5px */
-  --text-base: 0.9375rem;   /* 15px */
-  --text-md: 1rem;          /* 16px */
-  --text-lg: 1.125rem;      /* 18px */
-  --text-xl: 1.25rem;       /* 20px */
-  --text-2xl: 1.5rem;       /* 24px */
-  --text-3xl: 1.875rem;     /* 30px */
-  --text-4xl: 2.25rem;      /* 36px */
-
-  /* ------------------------------------------------------------------
-     3. SPACING SYSTEM (8-point Rhythm)
-     ------------------------------------------------------------------ */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --space-20: 80px;
-
-  /* Container bounds */
-  --container-max-width: 1240px;
-  --container-px: 20px;
-
-  /* ------------------------------------------------------------------
-     4. RESTRAINED RADII (Controlled rounding, NO pills everywhere)
-     ------------------------------------------------------------------ */
-  --radius-none: 0px;
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;          /* Standard controls, cards & inputs */
-  --radius-lg: 12px;         /* Maximum container radius */
-  --radius-full: 9999px;     /* Reserved strictly for small circular badges / status dots */
-
-  /* Legacy variable compatibility */
-  --border-radius-sm: 6px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-
-  /* ------------------------------------------------------------------
-     5. SUBTLE DIFFUSED SHADOWS (Low-intensity, no neon halos)
-     ------------------------------------------------------------------ */
-  --shadow-xs: 0 1px 2px 0 rgba(28, 25, 23, 0.04);
-  --shadow-sm: 0 1px 3px 0 rgba(28, 25, 23, 0.05), 0 1px 2px -1px rgba(28, 25, 23, 0.03);
-  --shadow-md: 0 4px 12px -2px rgba(28, 25, 23, 0.06), 0 2px 4px -2px rgba(28, 25, 23, 0.03);
-  --shadow-lg: 0 10px 24px -4px rgba(28, 25, 23, 0.07), 0 4px 8px -4px rgba(28, 25, 23, 0.04);
-
-  /* Transitions */
-  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* Canonical :root tokens and legacy compatibility aliases live in src/styles/tokens.css */
 
 /* ------------------------------------------------------------------
    BASE DOCUMENT & ARABIC-FIRST NORMALIZATION
@@ -160,12 +47,12 @@ html[dir="ltr"] body {
 
 /* Base Headings Hierarchy */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--color-text);
-  font-family: var(--font-sans);
+  color: var(--dandy-ink-primary);
+  font-family: var(--dandy-font-ar-sans);
   font-weight: 700;
   line-height: 1.3;
   margin-top: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 /* Editorial Serif Accent (strictly for logo and special brand titles) */

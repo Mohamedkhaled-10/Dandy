@@ -1,0 +1,343 @@
+/**
+ * ============================================================================
+ * DANDY COSMETICS — SHARED UI PRIMITIVES & TOAST HOST STYLES (PHASE 1)
+ * Scoped with .dandy- prefix to prevent unintended overrides on legacy UI.
+ * ============================================================================
+ */
+
+/* Containers */
+.dandy-container {
+  width: 100%;
+  max-width: var(--dandy-container-max);
+  margin-inline: auto;
+  padding-inline: var(--dandy-container-px);
+}
+
+.dandy-container-reading {
+  width: 100%;
+  max-width: var(--dandy-container-reading);
+  margin-inline: auto;
+  padding-inline: var(--dandy-container-px);
+}
+
+/* Standardized Lucide Icon Base */
+.dandy-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: inherit;
+}
+
+:dir(rtl) .dandy-icon-directional {
+  transform: scaleX(-1);
+}
+
+/* DANDY Foundational Buttons (Opt-in via .dandy-btn) */
+.dandy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dandy-space-2);
+  min-height: 44px;
+  padding-block: 10px;
+  padding-inline: 22px;
+  border-radius: var(--dandy-radius-sm);
+  border: 1px solid transparent;
+  font-family: var(--dandy-font-active-sans);
+  font-size: var(--dandy-text-sm);
+  font-weight: 600;
+  line-height: var(--dandy-leading-ui);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dandy-transition-fast),
+              border-color var(--dandy-transition-fast),
+              color var(--dandy-transition-fast),
+              transform var(--dandy-transition-fast),
+              box-shadow var(--dandy-transition-fast);
+}
+
+.dandy-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dandy-btn--pill {
+  border-radius: var(--dandy-radius-pill);
+}
+
+.dandy-btn--primary {
+  background-color: var(--dandy-accent-primary);
+  color: #FFFFFF;
+}
+
+.dandy-btn--primary:hover:not(:disabled) {
+  background-color: var(--dandy-accent-hover);
+  color: #FFFFFF;
+}
+
+.dandy-btn--editorial {
+  background-color: var(--dandy-ink-primary);
+  color: var(--dandy-ink-inverse);
+}
+
+.dandy-btn--editorial:hover:not(:disabled) {
+  background-color: var(--dandy-plum-ink);
+  color: var(--dandy-ink-inverse);
+}
+
+.dandy-btn--outline {
+  background-color: transparent;
+  border-color: var(--dandy-border-default);
+  color: var(--dandy-ink-primary);
+}
+
+.dandy-btn--outline:hover:not(:disabled) {
+  border-color: var(--dandy-ink-primary);
+  background-color: var(--dandy-bg-editorial);
+}
+
+/* ============================================================================
+   DANDY TOAST NOTIFICATION SYSTEM
+   Positioned at inline-start bottom on desktop (right in RTL, opposite left BAB
+   launcher) and clean top-inline banner on mobile to avoid bottom-nav & BAB.
+   ============================================================================ */
+.dandy-toast-host {
+  position: fixed;
+  bottom: var(--dandy-space-6);
+  inset-inline-start: var(--dandy-space-6);
+  z-index: var(--dandy-z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--dandy-space-2);
+  width: min(390px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.dandy-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dandy-space-3);
+  padding: 13px 14px;
+  background-color: var(--dandy-bg-editorial);
+  color: var(--dandy-ink-primary);
+  border: 1px solid var(--dandy-border-default);
+  border-radius: var(--dandy-radius-md);
+  box-shadow: var(--dandy-shadow-md);
+  font-family: var(--dandy-font-active-sans);
+  font-size: var(--dandy-text-sm);
+  line-height: 1.5;
+  text-align: start;
+  position: relative;
+  overflow: hidden;
+  animation: dandyToastEnter var(--dandy-transition-base) forwards;
+}
+
+.dandy-toast.is-leaving {
+  animation: dandyToastExit 180ms var(--dandy-ease-standard) forwards;
+}
+
+.dandy-toast__indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--dandy-radius-pill);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dandy-toast--success .dandy-toast__indicator {
+  background-color: var(--dandy-botanical-soft);
+  color: var(--dandy-botanical-deep);
+}
+
+.dandy-toast--error {
+  border-color: #F4C7D2;
+}
+
+.dandy-toast--error .dandy-toast__indicator {
+  background-color: var(--dandy-danger-soft);
+  color: var(--dandy-danger);
+}
+
+.dandy-toast--info .dandy-toast__indicator {
+  background-color: var(--dandy-bg-stage);
+  color: var(--dandy-plum-ink);
+}
+
+.dandy-toast__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dandy-toast__message {
+  color: var(--dandy-ink-primary);
+  font-weight: 500;
+  word-wrap: break-word;
+}
+
+.dandy-toast__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  color: var(--dandy-accent-text);
+  font-size: var(--dandy-text-xs);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dandy-toast__action:hover {
+  color: var(--dandy-accent-hover);
+}
+
+.dandy-toast__close {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--dandy-ink-muted);
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  border-radius: var(--dandy-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+}
+
+.dandy-toast__close:hover {
+  background-color: var(--dandy-bg-stage);
+  color: var(--dandy-ink-primary);
+}
+
+@media (max-width: 767px) {
+  .dandy-toast-host {
+    bottom: auto;
+    top: calc(72px + env(safe-area-inset-top, 0px));
+    inset-inline-start: 16px;
+    inset-inline-end: 16px;
+    width: auto;
+    max-width: 440px;
+    margin-inline: auto;
+  }
+
+  .dandy-toast__close {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+/* ============================================================================
+   DANDY CATALOG GRID & PAGE BANDS (PHASE 5)
+   ============================================================================ */
+.dandy-page-band {
+  padding-block: clamp(24px, 4vw, 44px) clamp(56px, 7vw, 88px);
+}
+
+.dandy-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.dandy-catalog-grid[hidden] {
+  display: none;
+}
+
+.dandy-catalog-slot {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dandy-catalog-slot[hidden] {
+  display: none;
+}
+
+.dandy-catalog-slot > .dandy-pcard {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 1099px) {
+  .dandy-catalog-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 767px) {
+  .dandy-catalog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* ============================================================================
+   DANDY PRODUCT CARD — FULL-SURFACE STRETCHED ANCHOR INTERACTION
+   Ensures consistent full-card clickability across SSR, Studio Sync & Wishlist.
+   ============================================================================ */
+.dandy-pcard {
+  position: relative;
+}
+
+.dandy-pcard-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.dandy-pcard-category,
+.dandy-pcard-actions > * {
+  position: relative;
+  z-index: 2;
+}
+
+.dandy-pcard-link:focus {
+  outline: none;
+}
+
+.dandy-pcard-link:focus-visible {
+  outline: 2px solid var(--dandy-accent-primary) !important;
+  outline-offset: 2px !important;
+  border-radius: var(--dandy-radius-xs);
+}
+
+@supports selector(:has(*)) {
+  .dandy-pcard:has(.dandy-pcard-link:focus-visible) {
+    outline: 2px solid var(--dandy-accent-primary);
+    outline-offset: 2px;
+    border-color: var(--dandy-accent-primary);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-pcard:has(.dandy-pcard-link:focus-visible) .dandy-pcard-link:focus-visible {
+    outline: none !important;
+    outline-offset: 0 !important;
+  }
+}
+
+.dandy-pcard-category:focus-visible,
+.dandy-pcard-btn:focus-visible,
+.dandy-wish-remove-btn:focus-visible {
+  outline: 2px solid var(--dandy-accent-primary) !important;
+  outline-offset: 2px !important;
+}
+

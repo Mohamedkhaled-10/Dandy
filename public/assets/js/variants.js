@@ -87,6 +87,26 @@
     return String(prodId);
   }
 
+  function isEnglishRuntime() {
+    if (typeof document !== 'undefined' && document.documentElement) {
+      const lang = (document.documentElement.getAttribute('lang') || '').toLowerCase();
+      if (lang.indexOf('en') === 0) return true;
+      if (lang.indexOf('ar') === 0) return false;
+    }
+    if (typeof window !== 'undefined' && window.location && window.location.pathname) {
+      return window.location.pathname === '/en' || window.location.pathname.indexOf('/en/') === 0;
+    }
+    return false;
+  }
+
+  function resolveLocalizedVariantLabel(prodId, varId, rawName, isEn) {
+    if (!isEn) return rawName;
+    if (typeof window !== 'undefined' && typeof window.__dandyResolveVariantName === 'function') {
+      return window.__dandyResolveVariantName(prodId, varId, rawName);
+    }
+    return rawName;
+  }
+
   /**
    * Extracts structured display info for variants (0, 1, or multiple).
    * Supports `selectedVariants` (array), `selectedVariant` (legacy object), and `variantName` (legacy string).
@@ -95,39 +115,50 @@
    */
   function getVariantsDisplayInfo(item) {
     if (!item) return null;
+    const isEn = isEnglishRuntime();
+    const singleLabel = isEn ? 'Scent' : 'الرائحة';
+    const multiLabel = isEn ? 'Scents' : 'الروائح';
+    const joiner = isEn ? ', ' : '، ';
+    const prodId = item.productId || (typeof item.id === 'string' ? item.id.split('::')[0] : item.id) || '';
 
     // 1. Array of selected variants
     if (Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0) {
       const list = item.selectedVariants
-        .map(v => (v && typeof v === 'object' ? (v.name || v.id) : String(v)))
-        .filter(Boolean)
-        .map(s => String(s).trim())
+        .map(v => {
+          if (v && typeof v === 'object') {
+            const raw = String(v.name || v.id || '').trim();
+            return resolveLocalizedVariantLabel(prodId, v.id, raw, isEn);
+          }
+          const rawStr = String(v || '').trim();
+          return resolveLocalizedVariantLabel(prodId, rawStr, rawStr, isEn);
+        })
         .filter(s => s && s !== 'undefined' && s !== 'null');
 
       if (list.length === 0) return null;
       if (list.length === 1) {
         return {
           count: 1,
-          label: 'الرائحة',
+          label: singleLabel,
           text: list[0],
           list: list
         };
       }
       return {
         count: list.length,
-        label: 'الروائح',
-        text: list.join('، '),
+        label: multiLabel,
+        text: list.join(joiner),
         list: list
       };
     }
 
     // 2. Legacy single variant object
-    if (item.selectedVariant && item.selectedVariant.name) {
-      const name = String(item.selectedVariant.name).trim();
+    if (item.selectedVariant && (item.selectedVariant.name || item.selectedVariant.id)) {
+      const raw = String(item.selectedVariant.name || item.selectedVariant.id || '').trim();
+      const name = resolveLocalizedVariantLabel(prodId, item.selectedVariant.id, raw, isEn);
       if (name && name !== 'undefined' && name !== 'null') {
         return {
           count: 1,
-          label: 'الرائحة',
+          label: singleLabel,
           text: name,
           list: [name]
         };
@@ -136,11 +167,12 @@
 
     // 3. Legacy variantName string
     if (item.variantName) {
-      const name = String(item.variantName).trim();
+      const raw = String(item.variantName).trim();
+      const name = resolveLocalizedVariantLabel(prodId, item.variantId, raw, isEn);
       if (name && name !== 'undefined' && name !== 'null') {
         return {
           count: 1,
-          label: 'الرائحة',
+          label: singleLabel,
           text: name,
           list: [name]
         };

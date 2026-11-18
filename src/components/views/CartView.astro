@@ -1,0 +1,1641 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import CheckoutPageHeader from '../commerce/CheckoutPageHeader.astro';
+import CheckoutStepper from '../commerce/CheckoutStepper.astro';
+import CartRemoveDialog from '../commerce/CartRemoveDialog.astro';
+import { GOVERNORATES } from '../../scripts/purchase-flow';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const specialOffersHref = buildLocalizedPath('/special-offers', locale);
+const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/cart', locale)}`;
+
+const pageTitle = isEn
+  ? 'Shopping Bag & Checkout | Dandy Cosmetics'
+  : 'حقيبة التسوق وإتمام الطلب | Dandy Cosmetics';
+const pageDescription = isEn
+  ? 'Review your shopping bag, calculate delivery shipping by governorate, and place your natural care order with Cash on Delivery across Egypt.'
+  : 'راجعي محتويات حقيبة التسوق، احسبي تكلفة الشحن حسب المحافظة، وأكّدي طلبكِ من منتجات داندي الطبيعية مع الدفع عند الاستلام.';
+const zeroPriceText = isEn ? '0 EGP' : '0 ج.م';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={
+    isEn
+      ? 'shopping bag, checkout, Dandy Cosmetics, cash on delivery Egypt'
+      : 'حقيبة التسوق، إتمام الطلب، داندي للتجميل، الدفع عند الاستلام'
+  }
+  canonical={canonicalUrl}
+  robots="noindex, nofollow"
+>
+  <Fragment slot="head">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta
+      property="og:image"
+      content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg"
+    />
+  </Fragment>
+
+  <CheckoutPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Secure Checkout' : 'مسار الشراء الآمن'}
+    title={isEn ? 'Shopping Bag & Checkout' : 'حقيبة التسوق وإتمام الطلب'}
+    description={
+      isEn
+        ? 'Review your selected formulas and enter your delivery details step by step with Cash on Delivery across all Egyptian governorates.'
+        : 'راجعي منتجاتكِ المختارة وأدخلي بيانات التوصيل بخطوات واضحة مع الدفع عند الاستلام لجميع محافظات مصر.'
+    }
+    currentCrumb={isEn ? 'Shopping Bag' : 'حقيبة التسوق'}
+  />
+
+  <main class="dandy-page-band dandy-cart-page" data-dandy-motion="calm">
+    <div class="dandy-container">
+      <div class="dandy-cart-shell" id="cartCheckoutContainer">
+        <!-- Empty Cart State -->
+        <section
+          id="cartEmptyState"
+          class="dandy-cart-empty-card"
+          aria-labelledby="emptyCartHeading"
+          hidden
+        >
+          <div class="dandy-cart-empty-icon" aria-hidden="true">
+            <Icon name="shopping-bag" size={28} strokeWidth={1.65} />
+          </div>
+          <h2 id="emptyCartHeading" class="dandy-cart-empty-title dandy-font-ar-display">
+            {isEn ? 'Your Shopping Bag is Empty' : 'حقيبة التسوق فارغة حالياً'}
+          </h2>
+          <p class="dandy-cart-empty-desc">
+            {isEn
+              ? 'You haven’t added any botanical formulas to your bag yet. Explore Dandy’s natural skin, hair, and body care collection.'
+              : 'لم تضيفي أي مستحضرات إلى حقيبتكِ بعد. تصفحي تشكيلة داندي الطبيعية للعناية بالبشرة والشعر والجسم.'}
+          </p>
+          <div class="dandy-cart-empty-actions">
+            <a href={allProductsHref} class="dandy-btn dandy-btn--primary">
+              <Icon name="shopping-bag" size={17} strokeWidth={1.85} />
+              <span>{isEn ? 'Browse All Products' : 'تصفح جميع المنتجات'}</span>
+            </a>
+            <a href={specialOffersHref} class="dandy-btn dandy-btn--outline">
+              <span>{isEn ? 'Explore Special Offers' : 'اكتشفي العروض الخاصة'}</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- Active Checkout Flow -->
+        <div id="checkoutFlowViews">
+          <CheckoutStepper locale={locale} />
+
+          <!-- Restrained Unboxed Storefront Guarantees -->
+          <div
+            class="dandy-cart-trust-strip"
+            aria-label={isEn ? 'Dandy purchase guarantees' : 'ضمانات الشراء من داندي'}
+            data-dandy-entrance="1"
+          >
+            <div class="dandy-cart-trust-item">
+              <Icon name="truck" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Free shipping over 2,000 EGP' : 'شحن مجاني فوق 2,000 ج.م'}</span>
+            </div>
+            <div class="dandy-cart-trust-item">
+              <Icon name="banknote" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Cash on Delivery (COD)' : 'الدفع عند الاستلام (COD)'}</span>
+            </div>
+            <div class="dandy-cart-trust-item">
+              <Icon name="leaf" size={16} strokeWidth={1.85} />
+              <span>{isEn ? '100% Authentic Natural Formulas' : 'تركيبات طبيعية أصلية 100%'}</span>
+            </div>
+            <div class="dandy-cart-trust-item">
+              <Icon name="shield-check" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Instant Order Tracking' : 'تتبع فوري لحالة الطلب'}</span>
+            </div>
+          </div>
+
+          <!-- STEP 1: CART REVIEW -->
+          <section
+            id="step-panel-1"
+            class="checkout-step-panel active"
+            aria-labelledby="step1Heading"
+          >
+            <div class="dandy-checkout-grid">
+              <div class="dandy-checkout-main-col">
+                <!-- Free Shipping Progress Indicator (> 2000 EGP) -->
+                <div class="dandy-shipping-meter" id="freeShippingProgressBox">
+                  <div class="dandy-shipping-meter-top">
+                    <span class="dandy-shipping-meter-label">
+                      <Icon name="truck" size={16} strokeWidth={1.85} />
+                      <span id="freeShippingText">
+                        {isEn
+                          ? 'Calculating free shipping progress...'
+                          : 'جاري حساب قيمة الشحن المجاني...'}
+                      </span>
+                    </span>
+                    <span class="dandy-shipping-meter-pct dandy-tabular" id="freeShippingPctLabel">
+                      0%
+                    </span>
+                  </div>
+                  <div class="dandy-shipping-meter-rail" aria-hidden="true">
+                    <div class="dandy-shipping-meter-fill" id="freeShippingFill"></div>
+                  </div>
+                </div>
+
+                <div class="dandy-checkout-card">
+                  <div class="dandy-checkout-card-head">
+                    <h2 id="step1Heading" class="dandy-checkout-card-title">
+                      <Icon name="shopping-bag" size={18} strokeWidth={1.85} />
+                      <span>{isEn ? 'Items in Your Bag' : 'المنتجات في حقيبتكِ'}</span>
+                    </h2>
+                    <span class="dandy-cart-count-pill dandy-tabular" id="cartItemsCountBadge">
+                      {isEn ? '0 items' : '0 منتج'}
+                    </span>
+                  </div>
+
+                  <ul id="cartItemsList" class="dandy-cart-items-list"></ul>
+
+                  <div class="dandy-cart-continue-row">
+                    <a href={allProductsHref} class="dandy-cart-continue-link">
+                      <Icon name="arrow-right" size={15} strokeWidth={1.85} directional={true} />
+                      <span>
+                        {isEn
+                          ? 'Continue shopping & add more items'
+                          : 'مواصلة التسوق وإضافة منتجات أخرى'}
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <aside
+                class="dandy-checkout-summary-card"
+                aria-label={isEn ? 'Bag Summary' : 'ملخص الحقيبة'}
+              >
+                <h3 class="dandy-summary-heading">
+                  <Icon name="receipt" size={17} strokeWidth={1.85} />
+                  <span>{isEn ? 'Order Summary' : 'ملخص الحساب'}</span>
+                </h3>
+
+                <div class="dandy-summary-rows">
+                  <div class="dandy-summary-row">
+                    <span class="dandy-sum-label">{isEn ? 'Subtotal' : 'المجموع الفرعي'}</span>
+                    <span class="dandy-sum-value dandy-tabular" id="subtotalValSummary">
+                      {zeroPriceText}
+                    </span>
+                  </div>
+                  <div class="dandy-summary-row">
+                    <span class="dandy-sum-label">{isEn ? 'Shipping Fee' : 'تكلفة الشحن'}</span>
+                    <span
+                      class="dandy-sum-value dandy-sum-value--muted"
+                      id="shippingCostSummary1"
+                    >
+                      {isEn ? 'Calculated at next step' : 'تُحدد عند اختيار المحافظة'}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="dandy-summary-total-row">
+                  <span>{isEn ? 'Estimated Total' : 'الإجمالي التقديري'}</span>
+                  <strong class="dandy-summary-grand dandy-tabular" id="grandTotalSummaryValue1">
+                    {zeroPriceText}
+                  </strong>
+                </div>
+
+                <button
+                  type="button"
+                  id="btnProceedToShipping"
+                  class="dandy-btn dandy-btn--primary dandy-btn-full"
+                >
+                  <span>{isEn ? 'Proceed to Shipping' : 'متابعة لبيانات الشحن'}</span>
+                  <Icon name="arrow-left" size={17} strokeWidth={1.9} directional={true} />
+                </button>
+
+                <p class="dandy-summary-footnote">
+                  <Icon name="shield-check" size={15} strokeWidth={1.85} />
+                  <span>
+                    {isEn
+                      ? 'No account required — guest checkout is fast and secure.'
+                      : 'لا يلزم إنشاء حساب — إتمام الطلب متاح كضيفة بأمان كامل.'}
+                  </span>
+                </p>
+              </aside>
+            </div>
+          </section>
+
+          <!-- STEP 2: SHIPPING DETAILS -->
+          <section
+            id="step-panel-2"
+            class="checkout-step-panel"
+            aria-labelledby="step2Heading"
+          >
+            <div class="dandy-checkout-grid">
+              <div class="dandy-checkout-card">
+                <div class="dandy-checkout-card-head">
+                  <h2 id="step2Heading" class="dandy-checkout-card-title">
+                    <Icon name="map-pin" size={18} strokeWidth={1.85} />
+                    <span>
+                      {isEn ? 'Recipient & Delivery Details' : 'بيانات المستلمة وعنوان التوصيل'}
+                    </span>
+                  </h2>
+                  <span class="dandy-guest-note">
+                    {isEn ? 'Express Guest Checkout' : 'طلب ضيفة سريع'}
+                  </span>
+                </div>
+
+                <!-- Optional Saved Addresses for Authenticated Customers -->
+                <div id="savedAddressesSection" class="dandy-saved-addresses" style="display:none;">
+                  <div class="dandy-saved-addresses-title">
+                    <Icon name="user" size={16} strokeWidth={1.85} />
+                    <span>
+                      {isEn ? 'Saved Addresses in Your Account' : 'العناوين المحفوظة في حسابكِ'}
+                    </span>
+                  </div>
+                  <div class="dandy-saved-mode-radios">
+                    <label class="dandy-radio-choice">
+                      <input type="radio" name="addressMode" id="addrModeSaved" value="saved" checked />
+                      <span>{isEn ? 'Use saved address' : 'استخدام عنوان محفوظ'}</span>
+                    </label>
+                    <label class="dandy-radio-choice">
+                      <input type="radio" name="addressMode" id="addrModeNew" value="new" />
+                      <span>{isEn ? 'Enter new address' : 'إدخال عنوان جديد'}</span>
+                    </label>
+                  </div>
+                  <div id="savedSelectWrap" class="dandy-field">
+                    <label for="savedAddressSelect">
+                      {isEn ? 'Select a saved address' : 'اختاري العنوان المحفوظ'}
+                    </label>
+                    <select id="savedAddressSelect" class="dandy-control">
+                      <option value="">
+                        {isEn ? '-- Select a saved address --' : '-- اختاري عنواناً محفوظاً --'}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div
+                  id="checkoutErrorSummary"
+                  class="dandy-inline-alert dandy-inline-alert--error"
+                  role="alert"
+                  hidden
+                ></div>
+
+                <form id="shippingFormElement" class="dandy-checkout-form" novalidate>
+                  <div class="dandy-field">
+                    <label for="f-name">
+                      {isEn ? 'Full Name' : 'الاسم بالكامل'}{' '}
+                      <span class="dandy-req" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="f-name"
+                      name="name"
+                      autocomplete="name"
+                      class="dandy-control"
+                      placeholder={
+                        isEn
+                          ? 'Enter your full name (at least two words)'
+                          : 'اكتبي اسمكِ بالكامل (كلمتين على الأقل)'
+                      }
+                      required
+                    />
+                    <p id="err-f-name" class="dandy-field-error" hidden></p>
+                  </div>
+
+                  <div class="dandy-form-row">
+                    <div class="dandy-field">
+                      <label for="f-phone">
+                        {isEn ? 'Phone Number' : 'رقم الهاتف'}{' '}
+                        <span class="dandy-req" aria-hidden="true">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        id="f-phone"
+                        name="phone"
+                        autocomplete="tel"
+                        inputmode="tel"
+                        dir="ltr"
+                        class="dandy-control dandy-control--ltr dandy-tabular"
+                        placeholder="01012345678"
+                        required
+                      />
+                      <p id="err-f-phone" class="dandy-field-error" hidden></p>
+                    </div>
+
+                    <div class="dandy-field">
+                      <label for="f-email">
+                        {isEn ? 'Email Address (Optional)' : 'البريد الإلكتروني (اختياري)'}
+                      </label>
+                      <input
+                        type="email"
+                        id="f-email"
+                        name="email"
+                        autocomplete="email"
+                        dir="ltr"
+                        class="dandy-control dandy-control--ltr"
+                        placeholder="name@example.com"
+                      />
+                      <p id="err-f-email" class="dandy-field-error" hidden></p>
+                    </div>
+                  </div>
+
+                  <div class="dandy-form-row">
+                    <div class="dandy-field">
+                      <label for="f-gov">
+                        {isEn ? 'Governorate' : 'المحافظة'}{' '}
+                        <span class="dandy-req" aria-hidden="true">*</span>
+                      </label>
+                      <select id="f-gov" name="governorate" class="dandy-control" required>
+                        <option value="">
+                          {isEn ? 'Select Governorate' : 'اختاري المحافظة'}
+                        </option>
+                        {GOVERNORATES.map((gov) => (
+                          <option value={gov.value}>{isEn ? gov.value : gov.labelAr}</option>
+                        ))}
+                      </select>
+                      <p id="err-f-gov" class="dandy-field-error" hidden></p>
+                    </div>
+
+                    <div class="dandy-field">
+                      <label for="f-city">
+                        {isEn ? 'City / Area' : 'المدينة / المنطقة'}{' '}
+                        <span class="dandy-req" aria-hidden="true">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="f-city"
+                        name="city"
+                        autocomplete="address-level2"
+                        class="dandy-control"
+                        placeholder={
+                          isEn
+                            ? 'e.g., Nasr City, Dokki, Smouha'
+                            : 'مثال: مدينة نصر، الدقي، سموحة'
+                        }
+                        required
+                      />
+                      <p id="err-f-city" class="dandy-field-error" hidden></p>
+                    </div>
+                  </div>
+
+                  <div class="dandy-field">
+                    <label for="f-address">
+                      {isEn ? 'Detailed Street Address' : 'العنوان بالتفصيل'}{' '}
+                      <span class="dandy-req" aria-hidden="true">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="f-address"
+                      name="address"
+                      autocomplete="street-address"
+                      class="dandy-control"
+                      placeholder={
+                        isEn
+                          ? 'Street name, building number, floor/apartment, and nearest landmark'
+                          : 'اسم الشارع، رقم العقار، الدور/الشقة، وعلامة مميزة'
+                      }
+                      required
+                    />
+                    <p id="err-f-address" class="dandy-field-error" hidden></p>
+                  </div>
+                </form>
+
+                <div class="dandy-checkout-actions-bar">
+                  <button type="button" id="btnBackToCart" class="dandy-btn dandy-btn--outline">
+                    <Icon name="arrow-right" size={16} strokeWidth={1.85} directional={true} />
+                    <span>{isEn ? 'Back to Bag' : 'العودة للحقيبة'}</span>
+                  </button>
+                  <button type="button" id="btnProceedToReview" class="dandy-btn dandy-btn--primary">
+                    <span>{isEn ? 'Review Order' : 'الانتقال للمراجعة النهائية'}</span>
+                    <Icon name="arrow-left" size={16} strokeWidth={1.85} directional={true} />
+                  </button>
+                </div>
+              </div>
+
+              <aside
+                class="dandy-checkout-summary-card"
+                aria-label={isEn ? 'Shipping & Order Summary' : 'ملخص الشحن والطلب'}
+              >
+                <h3 class="dandy-summary-heading">
+                  <Icon name="receipt" size={17} strokeWidth={1.85} />
+                  <span>{isEn ? 'Order Summary' : 'ملخص الطلب'}</span>
+                </h3>
+
+                <div class="dandy-summary-rows">
+                  <div class="dandy-summary-row">
+                    <span class="dandy-sum-label">{isEn ? 'Subtotal' : 'المجموع الفرعي'}</span>
+                    <span class="dandy-sum-value dandy-tabular" id="subtotalValSummary2">
+                      {zeroPriceText}
+                    </span>
+                  </div>
+                  <div class="dandy-summary-row">
+                    <span class="dandy-sum-label">{isEn ? 'Shipping Fee' : 'مصاريف الشحن'}</span>
+                    <span
+                      class="dandy-sum-value dandy-sum-value--muted dandy-tabular"
+                      id="shippingCostSummary2"
+                    >
+                      {isEn ? 'Select governorate to calculate' : 'اختاري المحافظة لحساب الشحن'}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="dandy-summary-total-row">
+                  <span>{isEn ? 'Grand Total' : 'الإجمالي الكلي'}</span>
+                  <strong class="dandy-summary-grand dandy-tabular" id="grandTotalSummaryValue2">
+                    {zeroPriceText}
+                  </strong>
+                </div>
+
+                <div class="dandy-summary-note-box">
+                  <Icon name="truck" size={16} strokeWidth={1.8} />
+                  <span>
+                    {isEn
+                      ? 'Shipping is calculated automatically by governorate and becomes free on orders over 2,000 EGP.'
+                      : 'تُحسب تكلفة الشحن تلقائياً وفق المحافظة المختارة، وتصبح مجانية عند تجاوز 2,000 ج.م.'}
+                  </span>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <!-- STEP 3: FINAL REVIEW & CONFIRM -->
+          <section
+            id="step-panel-3"
+            class="checkout-step-panel"
+            aria-labelledby="step3Heading"
+          >
+            <div class="dandy-checkout-grid">
+              <div class="dandy-checkout-card">
+                <div class="dandy-checkout-card-head">
+                  <h2 id="step3Heading" class="dandy-checkout-card-title">
+                    <Icon name="clipboard-check" size={18} strokeWidth={1.85} />
+                    <span>
+                      {isEn ? 'Final Review & Confirmation' : 'المراجعة النهائية وتأكيد الطلب'}
+                    </span>
+                  </h2>
+                </div>
+
+                <div class="dandy-review-block">
+                  <div class="dandy-review-block-head">
+                    <h3>{isEn ? 'Recipient & Delivery Info' : 'بيانات الشحن والمستلمة'}</h3>
+                    <button type="button" class="dandy-link-btn" data-step-target="2">
+                      {isEn ? 'Edit Details' : 'تعديل البيانات'}
+                    </button>
+                  </div>
+                  <dl class="dandy-review-dl">
+                    <div>
+                      <dt>{isEn ? 'Recipient Name' : 'اسم المستلمة'}</dt>
+                      <dd id="revCustName">—</dd>
+                    </div>
+                    <div>
+                      <dt>{isEn ? 'Phone Number' : 'رقم التواصل'}</dt>
+                      <dd id="revCustPhone" dir="ltr" class="dandy-tabular">—</dd>
+                    </div>
+                    <div>
+                      <dt>{isEn ? 'Email Address' : 'البريد الإلكتروني'}</dt>
+                      <dd id="revCustEmail" dir="ltr">—</dd>
+                    </div>
+                    <div>
+                      <dt>{isEn ? 'City & Governorate' : 'المدينة والمحافظة'}</dt>
+                      <dd id="revCustLocation">—</dd>
+                    </div>
+                    <div class="dandy-review-dl--full">
+                      <dt>{isEn ? 'Detailed Address' : 'العنوان بالتفصيل'}</dt>
+                      <dd id="revCustAddress">—</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div class="dandy-review-block">
+                  <div class="dandy-review-block-head">
+                    <h3>{isEn ? 'Ordered Items' : 'المنتجات المطلوبة'}</h3>
+                    <button type="button" class="dandy-link-btn" data-step-target="1">
+                      {isEn ? 'Edit Bag' : 'تعديل الحقيبة'}
+                    </button>
+                  </div>
+                  <div id="revProductsList"></div>
+                </div>
+
+                <!-- Cloudflare Turnstile Security Verification -->
+                <div class="dandy-turnstile-wrap">
+                  <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+                  <small class="dandy-turnstile-note">
+                    <Icon name="lock" size={13} strokeWidth={1.9} />
+                    <span>
+                      {isEn ? 'Security check to protect your order' : 'تحقق أمني لحماية الطلبات'}
+                    </span>
+                  </small>
+                </div>
+
+                <div
+                  id="reviewSubmitError"
+                  class="dandy-inline-alert dandy-inline-alert--error"
+                  role="alert"
+                  hidden
+                ></div>
+
+                <div class="dandy-checkout-actions-bar">
+                  <button type="button" id="btnBackToShipping" class="dandy-btn dandy-btn--outline">
+                    <Icon name="arrow-right" size={16} strokeWidth={1.85} directional={true} />
+                    <span>{isEn ? 'Back to Shipping' : 'العودة لبيانات الشحن'}</span>
+                  </button>
+                  <button type="button" id="finalPlaceOrderBtn" class="dandy-btn dandy-btn--botanical">
+                    <Icon name="check" size={17} strokeWidth={2.1} />
+                    <span>{isEn ? 'Confirm & Place Order' : 'تأكيد وإتمام الطلب'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <aside
+                class="dandy-checkout-summary-card"
+                aria-label={isEn ? 'Payment & Grand Total' : 'طريقة الدفع والإجمالي'}
+              >
+                <h3 class="dandy-summary-heading">
+                  <Icon name="banknote" size={17} strokeWidth={1.85} />
+                  <span>{isEn ? 'Payment Method' : 'طريقة الدفع'}</span>
+                </h3>
+
+                <div class="dandy-cod-box">
+                  <div class="dandy-cod-title">
+                    <Icon name="banknote" size={17} strokeWidth={1.85} />
+                    <strong>{isEn ? 'Cash on Delivery (COD)' : 'الدفع عند الاستلام (COD)'}</strong>
+                  </div>
+                  <p>
+                    {isEn
+                      ? 'You can inspect your products upon delivery before making payment.'
+                      : 'يمكنكِ مراجعة المنتجات والتأكد منها عند استلام الشحنة قبل الدفع.'}
+                  </p>
+                </div>
+
+                <div class="dandy-summary-rows">
+                  <div class="dandy-summary-row">
+                    <span class="dandy-sum-label">{isEn ? 'Subtotal' : 'المجموع الفرعي'}</span>
+                    <span class="dandy-sum-value dandy-tabular" id="summSubtotal">
+                      {zeroPriceText}
+                    </span>
+                  </div>
+                  <div class="dandy-summary-row">
+                    <span class="dandy-sum-label">{isEn ? 'Shipping Fee' : 'مصاريف الشحن'}</span>
+                    <span class="dandy-sum-value dandy-tabular" id="summShipping">
+                      {zeroPriceText}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="dandy-summary-total-row">
+                  <span>{isEn ? 'Total Due' : 'الإجمالي المستحق'}</span>
+                  <strong class="dandy-summary-grand dandy-tabular" id="finalSummaryTotal">
+                    {zeroPriceText}
+                  </strong>
+                </div>
+
+                <p class="dandy-summary-footnote" id="savingTextLoader">
+                  <Icon name="lock" size={14} strokeWidth={1.9} />
+                  <span>
+                    {isEn
+                      ? 'Confirming saves your invoice and gives you an instant tracking code.'
+                      : 'تأكيد الطلب يحفظ فاتورتكِ ويمنحكِ كود تتبع فوري.'}
+                  </span>
+                </p>
+              </aside>
+            </div>
+          </section>
+        </div>
+
+        <CartRemoveDialog locale={locale} />
+      </div>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      try {
+        var primary = JSON.parse(localStorage.getItem('cart') || '[]');
+        var legacy = JSON.parse(localStorage.getItem('dandy_cart') || '[]');
+        var hasItems =
+          (Array.isArray(primary) && primary.length > 0) ||
+          (Array.isArray(legacy) && legacy.length > 0);
+        if (!hasItems) {
+          var flow = document.getElementById('checkoutFlowViews');
+          var empty = document.getElementById('cartEmptyState');
+          if (flow) flow.hidden = true;
+          if (empty) empty.hidden = false;
+        }
+      } catch (_err) {}
+    })();
+  </script>
+
+  <script>
+    import { initCartCheckoutPage } from '../../scripts/cart-client';
+    initCartCheckoutPage();
+  </script>
+</BaseLayout>
+
+<style is:global>
+  .dandy-cart-page {
+    min-height: 70vh;
+    background-color: var(--dandy-bg-page);
+  }
+
+  .dandy-cart-shell {
+    max-width: 1120px;
+    margin-inline: auto;
+    scroll-margin-top: 92px;
+  }
+
+  /* Empty Cart */
+  .dandy-cart-empty-card {
+    max-width: 560px;
+    margin-inline: auto;
+    padding: clamp(36px, 5vw, 56px) 24px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    text-align: center;
+  }
+
+  .dandy-cart-empty-card[hidden],
+  #checkoutFlowViews[hidden] {
+    display: none;
+  }
+
+  .dandy-cart-empty-icon {
+    width: 60px;
+    height: 60px;
+    margin-inline: auto;
+    margin-bottom: 16px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-elevated);
+    border: 1px solid var(--dandy-border-default);
+    color: var(--dandy-accent-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-cart-empty-title {
+    margin: 0 0 8px 0;
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-cart-empty-desc {
+    margin: 0 auto 24px auto;
+    max-width: 44ch;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-cart-empty-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Trust Strip */
+  .dandy-cart-trust-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 22px;
+    padding-block: 12px;
+    padding-inline: 14px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+  }
+
+  .dandy-cart-trust-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--dandy-ink-secondary);
+    text-align: center;
+  }
+
+  .dandy-cart-trust-item .dandy-icon {
+    color: var(--dandy-botanical-deep);
+  }
+
+  /* Step Panels */
+  .checkout-step-panel {
+    display: none;
+  }
+
+  .checkout-step-panel.active {
+    display: block;
+    animation: dandyStepFade 220ms var(--dandy-ease-out);
+  }
+
+  @keyframes dandyStepFade {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Main 2-Column Checkout Grid */
+  .dandy-checkout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.68fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dandy-checkout-main-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dandy-checkout-card,
+  .dandy-checkout-summary-card {
+    background-color: var(--dandy-bg-elevated);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    padding: clamp(18px, 2.5vw, 24px);
+    min-width: 0;
+  }
+
+  .dandy-checkout-summary-card {
+    position: sticky;
+    top: 92px;
+  }
+
+  .dandy-checkout-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-checkout-card-title {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-checkout-card-title .dandy-icon {
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-cart-count-pill {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--dandy-ink-secondary);
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    padding: 4px 10px;
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-guest-note {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--dandy-botanical-deep);
+    background-color: var(--dandy-botanical-soft);
+    padding: 4px 10px;
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  /* Free Shipping Progress Meter */
+  .dandy-shipping-meter {
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-shipping-meter.is-qualified {
+    background-color: var(--dandy-botanical-soft);
+    border-color: #C7D7C8;
+  }
+
+  .dandy-shipping-meter-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.84375rem;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-shipping-meter-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .dandy-shipping-meter.is-qualified .dandy-shipping-meter-label .dandy-icon {
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-shipping-meter-pct {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--dandy-ink-secondary);
+    flex-shrink: 0;
+  }
+
+  .dandy-shipping-meter-rail {
+    height: 6px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-border-subtle);
+    overflow: hidden;
+  }
+
+  .dandy-shipping-meter-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--dandy-accent-primary);
+    border-radius: var(--dandy-radius-pill);
+    transition: width 320ms var(--dandy-ease-out), background-color 220ms ease;
+  }
+
+  .dandy-shipping-meter.is-qualified .dandy-shipping-meter-fill {
+    background-color: var(--dandy-botanical-deep);
+  }
+
+  /* Cart Line Items */
+  .dandy-cart-items-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dandy-cart-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 16px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-cart-item-row:first-child {
+    padding-top: 4px;
+  }
+
+  .dandy-cart-item-row:last-child {
+    border-bottom: none;
+    padding-bottom: 4px;
+  }
+
+  .dandy-cart-item-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .dandy-cart-item-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-stage);
+    flex-shrink: 0;
+  }
+
+  .dandy-cart-item-img[src$='logo.png'],
+  .dandy-rev-product-img[src$='logo.png'] {
+    object-fit: contain;
+    padding: 6px;
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-cart-item-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dandy-cart-item-title {
+    margin: 0;
+    font-size: 0.96rem;
+    font-weight: 700;
+    line-height: 1.45;
+    color: var(--dandy-ink-primary);
+    word-break: break-word;
+  }
+
+  .dandy-cart-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .dandy-cart-offer-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--dandy-radius-xs);
+    background-color: var(--dandy-accent-soft);
+    color: var(--dandy-accent-text);
+    border: 1px solid var(--dandy-border-accent);
+  }
+
+  .dandy-cart-old-price {
+    font-size: 0.78rem;
+    color: var(--dandy-ink-muted);
+    text-decoration: line-through;
+  }
+
+  .dandy-cart-variant-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8125rem;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-cart-variant-line .dandy-icon {
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-cart-col-box {
+    margin-top: 4px;
+    padding: 8px 10px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    font-size: 0.76rem;
+  }
+
+  .dandy-cart-col-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 700;
+    color: var(--dandy-botanical-deep);
+    margin-bottom: 4px;
+  }
+
+  .dandy-cart-col-list {
+    margin: 0;
+    padding-inline-start: 16px;
+    color: var(--dandy-ink-secondary);
+    line-height: 1.55;
+  }
+
+  .dandy-cart-col-scent {
+    color: var(--dandy-accent-text);
+    font-weight: 600;
+  }
+
+  .dandy-cart-unit-price {
+    font-size: 0.8125rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-cart-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .dandy-qty-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-elevated);
+    overflow: hidden;
+  }
+
+  .dandy-qty-btn {
+    appearance: none;
+    width: 34px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-qty-btn:hover:not(:disabled) {
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-qty-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .dandy-qty-value {
+    min-width: 30px;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    border-inline: 1px solid var(--dandy-border-subtle);
+    padding-inline: 4px;
+    line-height: 36px;
+  }
+
+  .dandy-cart-item-end {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dandy-cart-row-total {
+    min-width: 72px;
+    text-align: end;
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    white-space: nowrap;
+  }
+
+  .dandy-cart-remove-btn {
+    appearance: none;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: transparent;
+    color: var(--dandy-ink-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      background-color var(--dandy-transition-fast),
+      border-color var(--dandy-transition-fast),
+      color var(--dandy-transition-fast);
+  }
+
+  .dandy-cart-remove-btn:hover {
+    background-color: var(--dandy-danger-soft);
+    border-color: #F4C7D2;
+    color: var(--dandy-danger);
+  }
+
+  .dandy-cart-continue-row {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-cart-continue-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.84375rem;
+    font-weight: 600;
+    color: var(--dandy-ink-secondary);
+    text-decoration: none;
+  }
+
+  .dandy-cart-continue-link:hover {
+    color: var(--dandy-ink-primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Summary Card */
+  .dandy-summary-heading {
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-summary-heading .dandy-icon {
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-summary-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-summary-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.875rem;
+  }
+
+  .dandy-sum-label {
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-sum-value {
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    text-align: end;
+  }
+
+  .dandy-sum-value--muted {
+    font-weight: 500;
+    color: var(--dandy-ink-muted);
+    font-size: 0.8125rem;
+  }
+
+  .dandy-sum-value--free {
+    color: var(--dandy-success);
+    font-weight: 700;
+  }
+
+  .dandy-summary-total-row {
+    margin-block: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-summary-grand {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-btn-full {
+    width: 100%;
+  }
+
+  .dandy-btn--botanical {
+    background-color: var(--dandy-botanical-deep);
+    color: #FFFFFF;
+  }
+
+  .dandy-btn--botanical:hover:not(:disabled) {
+    background-color: #1F2B20;
+    color: #FFFFFF;
+  }
+
+  .dandy-summary-footnote {
+    margin: 14px 0 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-summary-footnote .dandy-icon {
+    color: var(--dandy-botanical-deep);
+    margin-top: 2px;
+  }
+
+  .dandy-summary-note-box {
+    margin-top: 12px;
+    padding: 11px 12px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--dandy-ink-secondary);
+  }
+
+  /* Shipping Form & Validation */
+  .dandy-saved-addresses {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-saved-addresses-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    margin-bottom: 10px;
+  }
+
+  .dandy-saved-mode-radios {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 0.84375rem;
+  }
+
+  .dandy-radio-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dandy-form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .dandy-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .dandy-field label {
+    font-size: 0.84375rem;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-req {
+    color: var(--dandy-accent-primary);
+  }
+
+  .dandy-control {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 13px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-elevated);
+    color: var(--dandy-ink-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    transition: border-color var(--dandy-transition-fast), box-shadow var(--dandy-transition-fast);
+  }
+
+  .dandy-control--ltr {
+    text-align: start;
+  }
+
+  .dandy-control:focus {
+    outline: none;
+    border-color: var(--dandy-ink-primary);
+    box-shadow: 0 0 0 3px rgba(26, 23, 21, 0.08);
+  }
+
+  .dandy-field.has-error .dandy-control {
+    border-color: var(--dandy-danger);
+    background-color: #FFF9FA;
+  }
+
+  .dandy-field-error {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--dandy-danger);
+    line-height: 1.45;
+  }
+
+  .dandy-field-error[hidden] {
+    display: none;
+  }
+
+  .dandy-inline-alert {
+    padding: 11px 14px;
+    border-radius: var(--dandy-radius-sm);
+    font-size: 0.84375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .dandy-inline-alert[hidden] {
+    display: none;
+  }
+
+  .dandy-inline-alert--error {
+    background-color: var(--dandy-danger-soft);
+    border: 1px solid #F4C7D2;
+    color: var(--dandy-danger);
+  }
+
+  .dandy-checkout-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    flex-wrap: wrap;
+  }
+
+  /* Review Step */
+  .dandy-review-block {
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+
+  .dandy-review-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-review-block-head h3 {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-link-btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 4px 6px;
+    color: var(--dandy-accent-text);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .dandy-review-dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+  }
+
+  .dandy-review-dl > div {
+    min-width: 0;
+  }
+
+  .dandy-review-dl--full {
+    grid-column: 1 / -1;
+  }
+
+  .dandy-review-dl dt {
+    font-size: 0.75rem;
+    color: var(--dandy-ink-muted);
+    margin-bottom: 2px;
+  }
+
+  .dandy-review-dl dd {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    word-break: break-word;
+  }
+
+  .dandy-rev-products {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-rev-product-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-rev-product-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .dandy-rev-product-start {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dandy-rev-product-img {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-stage);
+    flex-shrink: 0;
+  }
+
+  .dandy-rev-product-info {
+    min-width: 0;
+  }
+
+  .dandy-rev-product-name {
+    margin: 0 0 3px 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-rev-product-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-rev-variant {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-rev-col-sub {
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: var(--dandy-ink-secondary);
+    line-height: 1.45;
+  }
+
+  .dandy-rev-col-sub span {
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-rev-product-total {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    white-space: nowrap;
+  }
+
+  .dandy-turnstile-wrap {
+    margin-block: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dandy-turnstile-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-cod-box {
+    padding: 13px 14px;
+    margin-bottom: 16px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-botanical-soft);
+    border: 1px solid #C7D7C8;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-cod-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.875rem;
+    margin-bottom: 4px;
+  }
+
+  .dandy-cod-box p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--dandy-ink-secondary);
+  }
+
+  /* Responsive Breakpoints */
+  @media (max-width: 960px) {
+    .dandy-checkout-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-checkout-summary-card {
+      position: static;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .dandy-cart-trust-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 12px;
+      padding: 10px 12px;
+    }
+
+    .dandy-cart-trust-item {
+      justify-content: flex-start;
+      text-align: start;
+      font-size: 0.75rem;
+    }
+
+    .dandy-form-row,
+    .dandy-review-dl {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-cart-item-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .dandy-cart-item-controls {
+      justify-content: space-between;
+      padding-inline-start: 0;
+    }
+
+    .dandy-checkout-actions-bar {
+      flex-direction: column-reverse;
+      align-items: stretch;
+    }
+
+    .dandy-checkout-actions-bar .dandy-btn {
+      width: 100%;
+    }
+  }
+</style>

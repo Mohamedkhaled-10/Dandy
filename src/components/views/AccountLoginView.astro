@@ -1,0 +1,159 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import AuthEditorialLayout from '../account/AuthEditorialLayout.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/account-login', locale)}`;
+const signupHref = buildLocalizedPath('/account-signup', locale);
+const trackOrderHref = buildLocalizedPath('/track-order', locale);
+
+const pageTitle = isEn
+  ? 'Customer Sign In | Dandy Cosmetics'
+  : 'تسجيل دخول العميلة | Dandy Cosmetics';
+const pageDescription = isEn
+  ? 'Sign in to your Dandy Cosmetics account to view your orders, manage saved delivery addresses, and access your wishlist.'
+  : 'سجّلي الدخول إلى حسابك في داندي لمتابعة طلباتك، تعديل عناوين الشحن، ومشاهدة قائمتك المفضلة.';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
+  robots="noindex, follow"
+>
+  <Fragment slot="head">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  </Fragment>
+
+  <AuthEditorialLayout
+    mainId="loginMain"
+    cardId="loginCard"
+    formAriaLabel={isEn ? 'Customer sign in form' : 'نموذج تسجيل الدخول'}
+    eyebrow={isEn ? 'Customer Account' : 'حساب العميلة'}
+    title={isEn ? 'Sign In' : 'تسجيل الدخول'}
+    subtitle={
+      isEn
+        ? 'Enter your email address and password to access your order history and saved delivery addresses.'
+        : 'أدخلي بريدكِ الإلكتروني وكلمة المرور للوصول إلى طلباتكِ وعناوينكِ المحفوظة.'
+    }
+    quoteTag={isEn ? 'Botanical Daily Care' : 'عالم داندي للعناية الطبيعية'}
+    quoteLine1={isEn ? 'Balanced daily rituals' : 'روتين عناية متوازن'}
+    quoteHighlight={isEn ? 'crafted with trusted botanicals' : 'بتركيبات نباتية موثوقة'}
+  >
+    <div id="loginAlert" class="dandy-auth-alert" role="alert" aria-live="assertive"></div>
+
+    <form id="customerLoginForm" novalidate data-dandy-entrance="1">
+      <div class="dandy-auth-field-group">
+        <label for="cl-email">
+          <span>
+            {isEn ? 'Email Address' : 'البريد الإلكتروني'}{' '}
+            <span class="dandy-auth-req" aria-hidden="true">*</span>
+          </span>
+        </label>
+        <input
+          type="email"
+          id="cl-email"
+          name="email"
+          class="dandy-auth-input"
+          placeholder="name@example.com"
+          required
+          dir="ltr"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="dandy-auth-field-group">
+        <label for="cl-pass">
+          <span>
+            {isEn ? 'Password' : 'كلمة المرور'}{' '}
+            <span class="dandy-auth-req" aria-hidden="true">*</span>
+          </span>
+        </label>
+        <div class="dandy-auth-input-wrap">
+          <input
+            type="password"
+            id="cl-pass"
+            name="password"
+            class="dandy-auth-input dandy-auth-input--password"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="dandy-auth-pw-toggle"
+            data-dandy-pw-toggle
+            data-target="cl-pass"
+            aria-label={isEn ? 'Show password' : 'إظهار كلمة المرور'}
+            aria-pressed="false"
+          >
+            <Icon name="eye" size={18} strokeWidth={1.85} />
+          </button>
+        </div>
+      </div>
+
+      <div class="dandy-auth-options">
+        <label class="dandy-auth-remember" for="rememberMeCheckbox">
+          <input type="checkbox" id="rememberMeCheckbox" class="dandy-auth-checkbox" />
+          <span>{isEn ? 'Remember my email' : 'تذكرني'}</span>
+        </label>
+
+        <button type="button" id="forgotPassBtn" class="dandy-auth-forgot">
+          {isEn ? 'Forgot password?' : 'نسيتِ كلمة السر؟'}
+        </button>
+      </div>
+
+      <div class="dandy-auth-turnstile-wrap">
+        <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+      </div>
+
+      <button type="submit" id="loginSubmitBtn" class="dandy-btn dandy-btn--editorial dandy-auth-submit">
+        <span data-submit-label>{isEn ? 'Sign In' : 'تسجيل الدخول'}</span>
+        <Icon name="arrow-left" size={17} strokeWidth={1.85} directional={true} />
+      </button>
+    </form>
+
+    <div class="dandy-auth-switch" data-dandy-entrance="2">
+      <div>
+        {isEn ? (
+          <>
+            New to DANDY? <a href={signupHref}>Create a new account</a>
+          </>
+        ) : (
+          <>
+            ليس لديكِ حساب؟ <a href={signupHref}>إنشاء حساب جديد</a>
+          </>
+        )}
+      </div>
+      <div class="dandy-auth-alt-note">
+        {isEn ? (
+          <>
+            You can also follow up on an order without signing in via the{' '}
+            <a href={trackOrderHref}>Track Order page</a>
+          </>
+        ) : (
+          <>
+            يمكنكِ أيضاً متابعة طلبكِ دون تسجيل عبر{' '}
+            <a href={trackOrderHref}>صفحة تتبع الطلب</a>
+          </>
+        )}
+      </div>
+    </div>
+  </AuthEditorialLayout>
+
+  <script>
+    import { initCustomerLoginPage } from '../../scripts/account-auth-client';
+    initCustomerLoginPage();
+  </script>
+</BaseLayout>

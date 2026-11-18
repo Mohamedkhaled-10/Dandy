@@ -1,0 +1,106 @@
+/**
+ * ============================================================================
+ * DANDY COSMETICS — FOUNDATIONAL BASE STYLES (PHASE 1)
+ * Deliberately minimal document defaults, RTL/LTR typography rules,
+ * accessible focus indicators, and tabular numeral helpers.
+ * Avoids broad element resets that could disrupt existing forms or modals.
+ * ============================================================================
+ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--dandy-font-active-sans);
+  color: var(--dandy-ink-primary);
+  background-color: var(--dandy-bg-page);
+  line-height: var(--dandy-leading-body-ar);
+}
+
+html[lang="en"] body {
+  font-family: var(--dandy-font-active-sans);
+  line-height: var(--dandy-leading-body-en);
+}
+
+/* Editorial Display & Heading Helpers */
+.dandy-font-ar-display,
+.dandy-font-localized-display {
+  font-family: var(--dandy-font-active-display);
+  line-height: var(--dandy-leading-display-ar);
+  letter-spacing: 0;
+}
+
+.dandy-font-en-display {
+  font-family: var(--dandy-font-en-display);
+  line-height: var(--dandy-leading-display-en);
+}
+
+.dandy-tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Arabic RTL Typography Safeguard: Never stretch connected Arabic glyphs */
+html[dir="rtl"] .dandy-prose,
+html[dir="rtl"] .dandy-prose p,
+html[dir="rtl"] .dandy-prose h1,
+html[dir="rtl"] .dandy-prose h2,
+html[dir="rtl"] .dandy-prose h3,
+html[dir="rtl"] .dandy-prose h4 {
+  letter-spacing: 0;
+  text-align: start;
+}
+
+/* English LTR Typography Compatibility */
+html[dir="ltr"] .dandy-prose,
+html[dir="ltr"] .dandy-prose p,
+html[dir="ltr"] .dandy-prose h1,
+html[dir="ltr"] .dandy-prose h2,
+html[dir="ltr"] .dandy-prose h3,
+html[dir="ltr"] .dandy-prose h4 {
+  text-align: start;
+}
+
+html[lang="en"] .dandy-font-ar-display,
+html[lang="en"] .dandy-font-localized-display {
+  font-family: var(--dandy-font-active-display);
+  line-height: var(--dandy-leading-display-en);
+}
+
+.dandy-prose h1,
+.dandy-prose h2,
+.dandy-prose h3,
+.dandy-prose h4 {
+  color: var(--dandy-ink-primary);
+  text-wrap: balance;
+}
+
+.dandy-prose p {
+  color: var(--dandy-ink-secondary);
+}
+
+/* Logical Bidirectional Isolation for Mixed Currency / SKU / Measurements */
+.dandy-bidi-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* Shared Accessible Focus Ring (High contrast dark ink) */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--dandy-ink-primary);
+  outline-offset: 2px;
+}
+
+/* Visually Hidden Screen Reader Utility */
+.dandy-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

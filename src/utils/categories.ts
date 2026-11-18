@@ -128,16 +128,29 @@ export function getProductsForCategory(categorySlug: string, allProducts: Produc
 export function generateCategoryJsonLd(
   category: CategoryTaxonomy,
   products: Product[],
-  canonicalUrl: string
+  canonicalUrl: string,
+  locale: 'ar' | 'en' = 'ar',
+  localized?: {
+    name?: string;
+    seoTitle?: string;
+    seoDescription?: string;
+    productNames?: Record<string, string>;
+  }
 ): Record<string, any>[] {
+  const isEn = locale === 'en';
+  const catName = localized?.name || (isEn ? category.name : category.arabicName);
+  const seoTitle = localized?.seoTitle || category.seoTitle;
+  const seoDesc = localized?.seoDescription || category.seoDescription;
+  const homeUrl = isEn ? `${SITE_URL}/en/` : `${SITE_URL}/`;
+
   const collectionPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     '@id': `${canonicalUrl}#webpage`,
     'url': canonicalUrl,
-    'name': category.seoTitle,
-    'description': category.seoDescription,
-    'inLanguage': 'ar',
+    'name': seoTitle,
+    'description': seoDesc,
+    'inLanguage': isEn ? 'en' : 'ar',
     'isPartOf': {
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
@@ -150,14 +163,16 @@ export function generateCategoryJsonLd(
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     '@id': `${canonicalUrl}#itemlist`,
-    'name': category.arabicName,
-    'description': category.seoDescription,
+    'name': catName,
+    'description': seoDesc,
     'numberOfItems': products.length,
     'itemListElement': products.map((p, idx) => ({
       '@type': 'ListItem',
       'position': idx + 1,
-      'name': p.name,
-      'url': `${SITE_URL}/product/${encodeURIComponent(p.resolvedSlug)}`,
+      'name': localized?.productNames?.[p.id] || p.name,
+      'url': isEn
+        ? `${SITE_URL}/en/product/${encodeURIComponent(p.resolvedSlug)}`
+        : `${SITE_URL}/product/${encodeURIComponent(p.resolvedSlug)}`,
     })),
   };
 
@@ -169,13 +184,13 @@ export function generateCategoryJsonLd(
       {
         '@type': 'ListItem',
         'position': 1,
-        'name': 'الرئيسية',
-        'item': `${SITE_URL}/`,
+        'name': isEn ? 'Home' : 'الرئيسية',
+        'item': homeUrl,
       },
       {
         '@type': 'ListItem',
         'position': 2,
-        'name': category.arabicName,
+        'name': catName,
         'item': canonicalUrl,
       },
     ],

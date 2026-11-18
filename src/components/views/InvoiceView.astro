@@ -1,0 +1,906 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import CheckoutPageHeader from '../commerce/CheckoutPageHeader.astro';
+import OrderStatusTimeline from '../commerce/OrderStatusTimeline.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const homeHref = buildLocalizedPath('/', locale);
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const trackOrderHref = buildLocalizedPath('/track-order', locale);
+
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/invoice', locale)}`;
+const pageTitle = isEn
+  ? 'Order Confirmation & Invoice | Dandy Cosmetics'
+  : 'تأكيد الطلب والفاتورة | Dandy Cosmetics';
+const pageDescription = isEn
+  ? 'Your electronic order invoice from Dandy Cosmetics Egypt with live status tracking and A4 print or PDF export.'
+  : 'فاتورة طلبكِ الإلكترونية من متجر داندي للتجميل الطبيعي مع متابعة حالة الطلب وإمكانية الطباعة أو الحفظ بصيغة PDF.';
+const zeroPriceText = isEn ? '0 EGP' : '0 ج.م';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={
+    isEn
+      ? 'order invoice, order confirmation, Dandy Cosmetics'
+      : 'فاتورة طلب، تأكيد الطلب، داندي للتجميل'
+  }
+  canonical={canonicalUrl}
+  robots="noindex, nofollow"
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+  </Fragment>
+
+  <CheckoutPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Electronic Invoice' : 'الفاتورة الإلكترونية'}
+    title={isEn ? 'Order Confirmation & Invoice Details' : 'تأكيد الطلب وتفاصيل الفاتورة'}
+    description={
+      isEn
+        ? 'Keep your invoice code to track order preparation and delivery status at any time.'
+        : 'احتفظي بكود الفاتورة لمتابعة حالة تجهيز وشحن طلبكِ في أي وقت.'
+    }
+    currentCrumb={isEn ? 'Invoice' : 'الفاتورة'}
+    extraCrumbHref={trackOrderHref}
+    extraCrumbLabel={isEn ? 'Track Order' : 'تتبع الطلب'}
+    hideOnPrint={true}
+  />
+
+  <main class="dandy-page-band dandy-invoice-page" data-dandy-motion="calm">
+    <div class="dandy-container">
+      <div class="dandy-invoice-wrap">
+        <!-- Loading State -->
+        <section id="invoiceLoadingState" class="dandy-inv-state-card" aria-live="polite">
+          <div class="dandy-inv-spinner" aria-hidden="true"></div>
+          <p class="dandy-inv-state-title">
+            {isEn ? 'Loading your invoice details...' : 'جاري تحميل بيانات الفاتورة...'}
+          </p>
+          <p class="dandy-inv-state-desc">
+            {isEn
+              ? 'Just a moment while we retrieve your full order summary.'
+              : 'لحظات قليلة لعرض تفاصيل طلبكِ الكاملة.'}
+          </p>
+        </section>
+
+        <!-- Error / Not Found State -->
+        <section id="invoiceErrorState" class="dandy-inv-state-card" hidden>
+          <div class="dandy-inv-error-icon" aria-hidden="true">
+            <Icon name="alert-circle" size={28} strokeWidth={1.75} />
+          </div>
+          <h2 class="dandy-inv-state-heading dandy-font-ar-display">
+            {isEn ? 'Unable to Display Invoice' : 'تعذر عرض الفاتورة'}
+          </h2>
+          <p id="invoiceErrorDesc" class="dandy-inv-state-desc">
+            {isEn
+              ? 'Please verify your invoice code or use the Track Order page with your registered phone number.'
+              : 'يرجى التحقق من كود الفاتورة أو استخدام صفحة تتبع الطلب برقم الهاتف المسجل.'}
+          </p>
+          <div class="dandy-inv-state-actions">
+            <a href={trackOrderHref} class="dandy-btn dandy-btn--primary">
+              <Icon name="search" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Go to Track Order' : 'الانتقال لتتبع الطلب'}</span>
+            </a>
+            <a href={homeHref} class="dandy-btn dandy-btn--outline">
+              <span>{isEn ? 'Back to Home' : 'العودة للرئيسية'}</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- Printable Invoice Sheet -->
+        <article class="dandy-inv-sheet" id="invoiceCard" hidden>
+          <!-- Brand Print Masthead & Confirmation Banner -->
+          <header class="dandy-inv-masthead">
+            <div class="dandy-inv-brand-col">
+              <img
+                src="/assets/images/logo.png"
+                alt="Dandy Cosmetics"
+                width="116"
+                height="34"
+                class="dandy-inv-logo"
+              />
+              <span class="dandy-inv-brand-sub">
+                {isEn
+                  ? 'Dandy Cosmetics — Electronic Order Invoice'
+                  : 'Dandy Cosmetics — فاتورة طلب إلكترونية'}
+              </span>
+            </div>
+
+            <div class="dandy-inv-status-col">
+              <span class="dandy-status-badge dandy-status-badge--new" id="statusBadge">
+                {isEn ? 'Pending Review' : 'قيد المراجعة'}
+              </span>
+              <span class="dandy-inv-date dandy-tabular" id="invoiceDate">—</span>
+            </div>
+          </header>
+
+          <!-- Confirmation Title & Copyable Invoice Code -->
+          <div class="dandy-inv-hero">
+            <div class="dandy-inv-hero-check" aria-hidden="true">
+              <Icon name="check-circle" size={24} strokeWidth={1.9} />
+            </div>
+            <div class="dandy-inv-hero-text">
+              <h2 class="dandy-inv-hero-title dandy-font-ar-display">
+                {isEn ? 'Your Order Has Been Received' : 'تم استلام طلبكِ بنجاح'}
+              </h2>
+              <p class="dandy-inv-hero-sub">
+                {isEn ? 'Your Invoice Code:' : 'كود الفاتورة الخاص بكِ:'}
+                <strong id="invoiceCode" class="dandy-inv-code dandy-tabular">—</strong>
+              </p>
+            </div>
+            <button
+              type="button"
+              id="btnCopyCode"
+              class="dandy-btn dandy-btn--outline dandy-btn-sm dandy-no-print"
+            >
+              <Icon name="copy" size={15} strokeWidth={1.85} />
+              <span data-copy-label>{isEn ? 'Copy Code' : 'نسخ الكود'}</span>
+            </button>
+          </div>
+
+          <!-- Order Progress Timeline -->
+          <section
+            class="dandy-inv-timeline-sec"
+            aria-label={isEn ? 'Current order status' : 'حالة الطلب الحالية'}
+          >
+            <OrderStatusTimeline locale={locale} />
+          </section>
+
+          <!-- Email Spam Notice -->
+          <div class="dandy-inv-email-note dandy-no-print">
+            <Icon name="mail" size={17} strokeWidth={1.8} />
+            <p>
+              {isEn ? (
+                <>
+                  <strong>Email Notice:</strong> If you entered an email address, your invoice
+                  confirmation may occasionally arrive in your Spam or Promotions folder.
+                </>
+              ) : (
+                <>
+                  <strong>تنبيه البريد الإلكتروني:</strong> إذا أضفتِ بريدكِ الإلكتروني، فقد تصل
+                  رسالة تأكيد الفاتورة أحياناً إلى مجلد الرسائل غير المرغوب فيها (Spam) أو العروض.
+                </>
+              )}
+            </p>
+          </div>
+
+          <!-- Recipient & Shipping Details Grid -->
+          <section
+            class="dandy-inv-meta-grid"
+            aria-label={isEn ? 'Recipient and delivery details' : 'بيانات العميلة والشحن'}
+          >
+            <div class="dandy-inv-meta-card">
+              <h3>{isEn ? 'Recipient Details' : 'بيانات المستلمة'}</h3>
+              <dl class="dandy-inv-dl">
+                <div>
+                  <dt>{isEn ? 'Name' : 'الاسم'}</dt>
+                  <dd id="custName">—</dd>
+                </div>
+                <div>
+                  <dt>{isEn ? 'Phone Number' : 'رقم الهاتف'}</dt>
+                  <dd id="custPhone" dir="ltr" class="dandy-tabular">—</dd>
+                </div>
+                <div>
+                  <dt>{isEn ? 'Email Address' : 'البريد الإلكتروني'}</dt>
+                  <dd id="custEmail" dir="ltr">—</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="dandy-inv-meta-card">
+              <h3>{isEn ? 'Delivery Address' : 'عنوان التوصيل'}</h3>
+              <dl class="dandy-inv-dl">
+                <div>
+                  <dt>{isEn ? 'Governorate' : 'المحافظة'}</dt>
+                  <dd id="custGov">—</dd>
+                </div>
+                <div>
+                  <dt>{isEn ? 'City / Area' : 'المدينة / المنطقة'}</dt>
+                  <dd id="custCity">—</dd>
+                </div>
+                <div>
+                  <dt>{isEn ? 'Detailed Address' : 'العنوان بالتفصيل'}</dt>
+                  <dd id="custAddress">—</dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <!-- Itemized Products Table -->
+          <section
+            class="dandy-inv-table-sec"
+            aria-label={isEn ? 'Ordered items breakdown' : 'تفاصيل المنتجات المطلوبة'}
+          >
+            <h3 class="dandy-inv-section-title">
+              {isEn ? 'Ordered Products' : 'المنتجات المطلوبة'}
+            </h3>
+            <div class="dandy-inv-table-wrap">
+              <table class="dandy-inv-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{isEn ? 'Product' : 'المنتج'}</th>
+                    <th scope="col" class="dandy-inv-qty-col">{isEn ? 'Qty' : 'الكمية'}</th>
+                    <th scope="col" class="dandy-inv-price-col">{isEn ? 'Total' : 'الإجمالي'}</th>
+                  </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Financial Totals & Payment Method -->
+          <section
+            class="dandy-inv-footer-grid"
+            aria-label={isEn ? 'Payment summary' : 'ملخص المدفوعات'}
+          >
+            <div class="dandy-inv-payment-card">
+              <div class="dandy-inv-payment-head">
+                <Icon name="banknote" size={17} strokeWidth={1.85} />
+                <strong>
+                  {isEn
+                    ? 'Payment Method: Cash on Delivery (COD)'
+                    : 'طريقة الدفع: الدفع عند الاستلام (COD)'}
+                </strong>
+              </div>
+              <p>
+                {isEn
+                  ? 'Total amount is paid in cash to the courier upon receiving and inspecting your order.'
+                  : 'يتم سداد المبلغ الإجمالي نقداً لمندوب الشحن عند استلام الطلب ومراجعته.'}
+              </p>
+            </div>
+
+            <div class="dandy-inv-totals-card">
+              <div class="dandy-inv-total-row">
+                <span>{isEn ? 'Subtotal' : 'المجموع الفرعي'}</span>
+                <span id="tableSubtotal" class="dandy-tabular">{zeroPriceText}</span>
+              </div>
+              <div class="dandy-inv-total-row">
+                <span>{isEn ? 'Shipping Fee' : 'مصاريف الشحن'}</span>
+                <span id="tableShipping" class="dandy-tabular">{zeroPriceText}</span>
+              </div>
+              <div class="dandy-inv-total-row dandy-inv-total-row--grand">
+                <span>{isEn ? 'Total Due' : 'الإجمالي المستحق'}</span>
+                <strong id="tableGrandTotal" class="dandy-tabular">{zeroPriceText}</strong>
+              </div>
+            </div>
+          </section>
+
+          <!-- Print-Only Footer Contact -->
+          <footer class="dandy-inv-print-footer">
+            <p>
+              {isEn
+                ? 'Dandy Cosmetics · Cairo, Egypt · Customer Care: 01038941005 · dandy-ebon.vercel.app'
+                : 'Dandy Cosmetics · القاهرة، مصر · خدمة العملاء: 01038941005 · dandy-ebon.vercel.app'}
+            </p>
+          </footer>
+
+          <!-- Screen Actions Bar -->
+          <div class="dandy-inv-actions dandy-no-print">
+            <button type="button" id="print-btn" class="dandy-btn dandy-btn--editorial">
+              <Icon name="printer" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Print Invoice / Save PDF' : 'طباعة الفاتورة / حفظ PDF'}</span>
+            </button>
+
+            <a href={trackOrderHref} id="trackOrderBtn" class="dandy-btn dandy-btn--outline">
+              <Icon name="truck" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Track Order Status' : 'تتبع حالة الطلب'}</span>
+            </a>
+
+            <a
+              href="https://wa.me/201038941005"
+              id="share-whatsapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="dandy-btn dandy-btn--outline"
+            >
+              <Icon name="message-circle" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Inquire via WhatsApp' : 'استفسار عبر واتساب'}</span>
+            </a>
+
+            <a href={allProductsHref} class="dandy-btn dandy-btn--primary">
+              <Icon name="shopping-bag" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Continue Shopping' : 'متابعة التسوق'}</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    import { initInvoicePage } from '../../scripts/invoice-client';
+    initInvoicePage();
+  </script>
+</BaseLayout>
+
+<style is:global>
+  .dandy-invoice-page {
+    background-color: var(--dandy-bg-page);
+    min-height: 70vh;
+  }
+
+  .dandy-invoice-wrap {
+    max-width: 880px;
+    margin-inline: auto;
+  }
+
+  .dandy-inv-state-card {
+    max-width: 560px;
+    margin-inline: auto;
+    padding: clamp(36px, 5vw, 54px) 24px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    text-align: center;
+  }
+
+  .dandy-inv-state-card[hidden],
+  .dandy-inv-sheet[hidden] {
+    display: none;
+  }
+
+  .dandy-inv-spinner {
+    width: 36px;
+    height: 36px;
+    margin-inline: auto;
+    margin-bottom: 14px;
+    border-radius: var(--dandy-radius-pill);
+    border: 2.5px solid var(--dandy-border-default);
+    border-top-color: var(--dandy-ink-primary);
+    animation: dandySpin 750ms linear infinite;
+  }
+
+  @keyframes dandySpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .dandy-inv-error-icon {
+    width: 56px;
+    height: 56px;
+    margin-inline: auto;
+    margin-bottom: 14px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-danger-soft);
+    color: var(--dandy-danger);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-inv-state-title,
+  .dandy-inv-state-heading {
+    margin: 0 0 8px 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-inv-state-desc {
+    margin: 0 auto 20px auto;
+    max-width: 44ch;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-inv-state-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* Printable Invoice Sheet */
+  .dandy-inv-sheet {
+    background-color: var(--dandy-bg-elevated);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    padding: clamp(20px, 3.4vw, 36px);
+    box-shadow: var(--dandy-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .dandy-inv-masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-inv-brand-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dandy-inv-logo {
+    height: 34px;
+    width: auto;
+    object-fit: contain;
+    align-self: flex-start;
+  }
+
+  .dandy-inv-brand-sub {
+    font-size: 0.78rem;
+    color: var(--dandy-ink-muted);
+    font-weight: 500;
+  }
+
+  .dandy-inv-status-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .dandy-inv-date {
+    font-size: 0.8rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  /* Shared Canonical Status Badges */
+  .dandy-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: var(--dandy-radius-sm);
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+  }
+
+  .dandy-status-badge--new {
+    background-color: var(--dandy-gold-soft);
+    border-color: #E7D6B3;
+    color: #7A5A1C;
+  }
+
+  .dandy-status-badge--processing,
+  .dandy-status-badge--shipped {
+    background-color: var(--dandy-bg-stage);
+    border-color: var(--dandy-border-default);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-status-badge--delivered {
+    background-color: var(--dandy-botanical-soft);
+    border-color: #C7D7C8;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-status-badge--cancelled {
+    background-color: var(--dandy-danger-soft);
+    border-color: #F4C7D2;
+    color: var(--dandy-danger);
+  }
+
+  /* Confirmation Hero */
+  .dandy-inv-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 16px 18px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-inv-hero-check {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-inv-hero-text {
+    flex: 1 1 240px;
+    min-width: 0;
+  }
+
+  .dandy-inv-hero-title {
+    margin: 0 0 4px 0;
+    font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-inv-hero-sub {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-inv-code {
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-mono);
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    margin-inline-start: 4px;
+    border-radius: var(--dandy-radius-xs);
+    background-color: var(--dandy-bg-elevated);
+    border: 1px solid var(--dandy-border-default);
+  }
+
+  .dandy-btn-sm {
+    min-height: 38px;
+    padding-block: 7px;
+    padding-inline: 14px;
+    font-size: 0.8125rem;
+  }
+
+  .dandy-inv-email-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background-color: var(--dandy-gold-soft);
+    border: 1px solid #E7D6B3;
+    border-radius: var(--dandy-radius-sm);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-inv-email-note .dandy-icon {
+    color: var(--dandy-gold-editorial);
+    margin-top: 2px;
+  }
+
+  .dandy-inv-email-note p {
+    margin: 0;
+  }
+
+  /* Recipient & Shipping Grid */
+  .dandy-inv-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .dandy-inv-meta-card {
+    padding: 16px;
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-editorial);
+    min-width: 0;
+  }
+
+  .dandy-inv-meta-card h3,
+  .dandy-inv-section-title {
+    margin: 0 0 12px 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-inv-dl {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .dandy-inv-dl > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .dandy-inv-dl dt {
+    font-size: 0.75rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-inv-dl dd {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    word-break: break-word;
+  }
+
+  /* Itemized Table */
+  .dandy-inv-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .dandy-inv-table th {
+    background-color: var(--dandy-bg-editorial);
+    color: var(--dandy-ink-secondary);
+    font-weight: 700;
+    font-size: 0.8125rem;
+    text-align: start;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-inv-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    vertical-align: middle;
+  }
+
+  .dandy-inv-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .dandy-inv-qty-col {
+    text-align: center !important;
+    width: 84px;
+    white-space: nowrap;
+    color: var(--dandy-ink-secondary);
+    font-weight: 600;
+  }
+
+  .dandy-inv-price-col {
+    text-align: end !important;
+    width: 120px;
+    white-space: nowrap;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-inv-product-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .dandy-inv-product-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-stage);
+    flex-shrink: 0;
+  }
+
+  .dandy-inv-product-img[src$='logo.png'] {
+    object-fit: contain;
+    padding: 6px;
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-inv-product-text {
+    min-width: 0;
+  }
+
+  .dandy-inv-product-name {
+    display: block;
+    color: var(--dandy-ink-primary);
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .dandy-inv-item-variant {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+    font-size: 0.78rem;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-inv-col-list {
+    margin: 4px 0 0 0;
+    padding-inline-start: 16px;
+    font-size: 0.76rem;
+    color: var(--dandy-ink-secondary);
+    line-height: 1.5;
+  }
+
+  .dandy-inv-crossed {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--dandy-ink-muted);
+    text-decoration: line-through;
+    margin-inline-start: 4px;
+  }
+
+  .dandy-inv-empty-row {
+    text-align: center;
+    color: var(--dandy-ink-muted);
+    padding: 20px;
+  }
+
+  /* Totals & Payment */
+  .dandy-inv-footer-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .dandy-inv-payment-card {
+    padding: 16px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-botanical-soft);
+    border: 1px solid #C7D7C8;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-inv-payment-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    margin-bottom: 5px;
+  }
+
+  .dandy-inv-payment-card p {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-inv-totals-card {
+    padding: 16px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dandy-inv-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-inv-total-row--grand {
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--dandy-border-default);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-inv-total-row--grand strong {
+    font-size: 1.25rem;
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-inv-print-footer {
+    display: none;
+  }
+
+  .dandy-inv-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+  }
+
+  @media (max-width: 767px) {
+    .dandy-inv-meta-grid,
+    .dandy-inv-footer-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-inv-status-col {
+      align-items: flex-start;
+    }
+
+    .dandy-inv-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-inv-actions .dandy-btn {
+      width: 100%;
+    }
+  }
+
+  /* Dedicated A4 Print Stylesheet */
+  @media print {
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
+
+    #site-announce-bar,
+    #site-header,
+    #site-footer,
+    #global-mobile-bottom-nav,
+    #dandy-consent-banner,
+    #dandy-toast-host,
+    dandy-bab-widget,
+    .dandy-no-print {
+      display: none !important;
+    }
+
+    html,
+    body {
+      background: #FFFFFF !important;
+      color: #111111 !important;
+      padding-bottom: 0 !important;
+      margin: 0 !important;
+    }
+
+    .dandy-page-band {
+      padding: 0 !important;
+    }
+
+    .dandy-container {
+      max-width: 100% !important;
+      padding: 0 !important;
+    }
+
+    .dandy-inv-sheet {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      gap: 14px !important;
+    }
+
+    .dandy-inv-hero,
+    .dandy-inv-meta-card,
+    .dandy-inv-payment-card,
+    .dandy-inv-totals-card {
+      background: #FFFFFF !important;
+      border-color: #D4D4D4 !important;
+      break-inside: avoid;
+    }
+
+    .dandy-inv-table tr {
+      break-inside: avoid;
+    }
+
+    .dandy-inv-print-footer {
+      display: block !important;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #D4D4D4;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #555555;
+    }
+  }
+</style>

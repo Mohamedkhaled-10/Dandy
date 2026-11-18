@@ -1,0 +1,449 @@
+---
+/**
+ * DANDY COSMETICS — EDITORIAL SPLIT AUTHENTICATION LAYOUT (PHASE 8)
+ * Calm Botanical Editorial split card for /account-login and /account-signup.
+ * Localization-ready via CSS logical properties and restrained surface geometry.
+ */
+export interface Props {
+  mainId: string;
+  cardId: string;
+  formAriaLabel: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  quoteTag: string;
+  quoteLine1: string;
+  quoteHighlight: string;
+}
+
+const {
+  mainId,
+  cardId,
+  formAriaLabel,
+  eyebrow,
+  title,
+  subtitle,
+  quoteTag,
+  quoteLine1,
+  quoteHighlight,
+} = Astro.props;
+---
+
+<main class="dandy-auth-page" id={mainId} data-dandy-motion="calm">
+  <div class="dandy-container">
+    <div class="dandy-auth-shell" id={cardId}>
+      <section class="dandy-auth-form-pane" aria-label={formAriaLabel}>
+        <div class="dandy-auth-header" data-dandy-entrance="0">
+          <p class="dandy-auth-eyebrow">{eyebrow}</p>
+          <h1 class="dandy-auth-title dandy-font-ar-display">{title}</h1>
+          <p class="dandy-auth-subtitle">{subtitle}</p>
+        </div>
+
+        <slot />
+      </section>
+
+      <aside class="dandy-auth-visual-pane" aria-hidden="true" data-dandy-media-settle>
+        <img
+          src="/assets/images/dandy_login_art.jpg"
+          alt="Dandy Botanical Cosmetics"
+          class="dandy-auth-visual-img"
+          width="800"
+          height="1000"
+          loading="eager"
+          decoding="async"
+          referrerpolicy="no-referrer"
+        />
+        <div class="dandy-auth-visual-scrim"></div>
+
+        <div class="dandy-auth-mark">
+          <img
+            src="/assets/images/logo.png"
+            alt=""
+            width="86"
+            height="26"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+
+        <div class="dandy-auth-quote">
+          <p class="dandy-auth-quote-tag">{quoteTag}</p>
+          <h2 class="dandy-auth-quote-heading dandy-font-ar-display">
+            {quoteLine1}<br />
+            <strong>{quoteHighlight}</strong>
+          </h2>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<style is:global>
+  .dandy-auth-page {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    padding-block: clamp(28px, 4.5vw, 56px) clamp(56px, 7vw, 88px);
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-auth-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    max-width: 1040px;
+    margin-inline: auto;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-auth-form-pane {
+    padding: clamp(28px, 4.5vw, 52px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--dandy-bg-page);
+  }
+
+  .dandy-auth-header {
+    margin-bottom: 24px;
+    text-align: start;
+  }
+
+  .dandy-auth-eyebrow {
+    margin: 0 0 6px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-auth-title {
+    margin: 0 0 8px;
+    font-size: clamp(1.65rem, 2.7vw, 2.15rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--dandy-ink-primary);
+    text-wrap: balance;
+  }
+
+  .dandy-auth-subtitle {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-auth-alert {
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--dandy-radius-sm);
+    font-size: var(--dandy-text-sm);
+    line-height: 1.55;
+    margin-bottom: 18px;
+    text-align: start;
+  }
+
+  .dandy-auth-alert.error {
+    display: flex;
+    background-color: var(--dandy-danger-soft);
+    color: var(--dandy-danger);
+    border: 1px solid #F6C8D3;
+  }
+
+  .dandy-auth-alert.success {
+    display: flex;
+    background-color: var(--dandy-success-soft);
+    color: var(--dandy-success);
+    border: 1px solid #BCE3C9;
+  }
+
+  .dandy-auth-field-group {
+    margin-bottom: 18px;
+    text-align: start;
+  }
+
+  .dandy-auth-field-group label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    margin-bottom: 7px;
+  }
+
+  .dandy-auth-label-hint {
+    font-size: var(--dandy-text-xs);
+    font-weight: 400;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-auth-req {
+    color: var(--dandy-accent-primary);
+  }
+
+  .dandy-auth-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .dandy-auth-input {
+    width: 100%;
+    min-height: 46px;
+    padding-block: 11px;
+    padding-inline: 14px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-base);
+    color: var(--dandy-ink-primary);
+    transition: border-color var(--dandy-transition-fast), background-color var(--dandy-transition-fast), box-shadow var(--dandy-transition-fast);
+    box-sizing: border-box;
+  }
+
+  .dandy-auth-input--password {
+    padding-inline-end: 46px;
+  }
+
+  .dandy-auth-input::placeholder {
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-auth-input:focus {
+    outline: none;
+    background-color: var(--dandy-bg-page);
+    border-color: var(--dandy-ink-primary);
+    box-shadow: 0 0 0 3px rgba(26, 23, 21, 0.08);
+  }
+
+  .dandy-auth-pw-toggle {
+    position: absolute;
+    inset-inline-end: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border: 1px solid transparent;
+    border-radius: var(--dandy-radius-sm);
+    background: transparent;
+    color: var(--dandy-ink-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: color var(--dandy-transition-fast), background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-auth-pw-toggle:hover {
+    color: var(--dandy-ink-primary);
+    background-color: var(--dandy-bg-stage);
+  }
+
+  .dandy-auth-pw-toggle:focus-visible {
+    outline: 2px solid var(--dandy-ink-primary);
+    outline-offset: 1px;
+  }
+
+  .dandy-auth-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-block: 4px 20px;
+    font-size: var(--dandy-text-sm);
+  }
+
+  .dandy-auth-remember {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    color: var(--dandy-ink-secondary);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .dandy-auth-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--dandy-ink-primary);
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .dandy-auth-forgot {
+    background: transparent;
+    border: none;
+    padding: 6px 4px;
+    min-height: 36px;
+    font-family: inherit;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-accent-text);
+    cursor: pointer;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-auth-forgot:hover:not(:disabled) {
+    color: var(--dandy-accent-hover);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .dandy-auth-forgot:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .dandy-auth-turnstile-wrap {
+    margin-block: 16px 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 65px;
+  }
+
+  .dandy-auth-submit {
+    width: 100%;
+    min-height: 48px;
+    font-size: var(--dandy-text-base);
+  }
+
+  .dandy-auth-switch {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-auth-switch a {
+    color: var(--dandy-ink-primary);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .dandy-auth-switch a:hover {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-auth-alt-note {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  /* Visual Editorial Panel */
+  .dandy-auth-visual-pane {
+    position: relative;
+    margin: 12px;
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    background-color: var(--dandy-bg-dark);
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 28px;
+    color: var(--dandy-ink-inverse);
+  }
+
+  .dandy-auth-visual-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+  }
+
+  .dandy-auth-visual-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(26, 23, 21, 0.34) 0%,
+      rgba(26, 23, 21, 0.12) 45%,
+      rgba(26, 23, 21, 0.78) 82%,
+      rgba(26, 23, 21, 0.92) 100%
+    );
+  }
+
+  .dandy-auth-mark {
+    position: relative;
+    z-index: 2;
+    align-self: flex-start;
+    padding: 8px 14px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: rgba(250, 248, 246, 0.92);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .dandy-auth-mark img {
+    height: 22px;
+    width: auto;
+    display: block;
+  }
+
+  .dandy-auth-quote {
+    position: relative;
+    z-index: 2;
+    text-align: start;
+  }
+
+  .dandy-auth-quote-tag {
+    margin: 0 0 8px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: #F4C4D7;
+  }
+
+  .dandy-auth-quote-heading {
+    margin: 0;
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    font-weight: 400;
+    line-height: 1.3;
+    color: #FFFFFF;
+    text-wrap: balance;
+  }
+
+  .dandy-auth-quote-heading strong {
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+
+  @media (max-width: 900px) {
+    .dandy-auth-shell {
+      grid-template-columns: 1fr;
+      max-width: 520px;
+    }
+
+    .dandy-auth-visual-pane {
+      order: -1;
+      min-height: 210px;
+      margin: 10px 10px 0;
+      padding: 20px;
+    }
+
+    .dandy-auth-form-pane {
+      padding: 24px 20px 28px;
+    }
+  }
+</style>

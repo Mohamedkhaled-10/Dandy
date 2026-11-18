@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import AuthEditorialLayout from '../account/AuthEditorialLayout.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const turnstileSiteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/account-signup', locale)}`;
+const loginHref = buildLocalizedPath('/account-login', locale);
+
+const pageTitle = isEn
+  ? 'Create Account | Dandy Cosmetics'
+  : 'إنشاء حساب جديد | Dandy Cosmetics';
+const pageDescription = isEn
+  ? 'Join Dandy Cosmetics to automatically link your previous orders by phone number, save shipping addresses, and manage your wishlist.'
+  : 'انضمي إلى عائلة داندي وتابعي طلباتك السابقة، عناوينك المحفوظة، وقائمتك المفضلة بكل سهولة.';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
+  robots="noindex, follow"
+>
+  <Fragment slot="head">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  </Fragment>
+
+  <AuthEditorialLayout
+    mainId="signupMain"
+    cardId="signupCard"
+    formAriaLabel={isEn ? 'Create customer account form' : 'نموذج إنشاء حساب جديد'}
+    eyebrow={isEn ? 'New Account' : 'حساب جديد'}
+    title={isEn ? 'Create Your DANDY Account' : 'إنشاء حساب عميلة جديدة'}
+    subtitle={
+      isEn
+        ? 'Register with your mobile number to automatically link past guest orders, save delivery addresses, and organize your wishlist.'
+        : 'سجّلي برقم هاتفكِ لربط طلباتكِ السابقة تلقائياً وحفظ عناوين الشحن والمفضلة.'
+    }
+    quoteTag={isEn ? 'Seamless Shopping Experience' : 'تجربة تسوق متكاملة'}
+    quoteLine1={isEn ? 'Save your addresses' : 'احفظي عناوينكِ'}
+    quoteHighlight={isEn ? '& track every order effortlessly' : 'وتابعي طلباتكِ بسهولة'}
+  >
+    <div id="signupAlert" class="dandy-auth-alert" role="alert" aria-live="assertive"></div>
+
+    <form id="signupForm" novalidate data-dandy-entrance="1">
+      <div class="dandy-auth-field-group">
+        <label for="c-name">
+          <span>
+            {isEn ? 'Full Name' : 'الاسم بالكامل'}{' '}
+            <span class="dandy-auth-req" aria-hidden="true">*</span>
+          </span>
+        </label>
+        <input
+          type="text"
+          id="c-name"
+          name="name"
+          class="dandy-auth-input"
+          placeholder={isEn ? 'e.g., Sara Ahmed' : 'مثال: سارة أحمد'}
+          required
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="dandy-auth-field-group">
+        <label for="c-phone">
+          <span>
+            {isEn ? 'Mobile Number' : 'رقم الهاتف'}{' '}
+            <span class="dandy-auth-req" aria-hidden="true">*</span>
+          </span>
+          <span class="dandy-auth-label-hint">
+            {isEn ? 'Used to link your past orders' : 'يُستخدم لربط طلباتكِ'}
+          </span>
+        </label>
+        <input
+          type="tel"
+          id="c-phone"
+          name="phone"
+          class="dandy-auth-input"
+          placeholder="01xxxxxxxxx"
+          required
+          dir="ltr"
+          autocomplete="tel"
+        />
+      </div>
+
+      <div class="dandy-auth-field-group">
+        <label for="c-email">
+          <span>
+            {isEn ? 'Email Address' : 'البريد الإلكتروني'}{' '}
+            <span class="dandy-auth-req" aria-hidden="true">*</span>
+          </span>
+        </label>
+        <input
+          type="email"
+          id="c-email"
+          name="email"
+          class="dandy-auth-input"
+          placeholder="name@example.com"
+          required
+          dir="ltr"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="dandy-auth-field-group">
+        <label for="c-pass">
+          <span>
+            {isEn ? 'Password' : 'كلمة المرور'}{' '}
+            <span class="dandy-auth-req" aria-hidden="true">*</span>
+          </span>
+          <span class="dandy-auth-label-hint">
+            {isEn ? 'At least 6 characters' : '6 أحرف على الأقل'}
+          </span>
+        </label>
+        <div class="dandy-auth-input-wrap">
+          <input
+            type="password"
+            id="c-pass"
+            name="password"
+            class="dandy-auth-input dandy-auth-input--password"
+            placeholder="••••••••"
+            required
+            minlength="6"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="dandy-auth-pw-toggle"
+            data-dandy-pw-toggle
+            data-target="c-pass"
+            aria-label={isEn ? 'Show password' : 'إظهار كلمة المرور'}
+            aria-pressed="false"
+          >
+            <Icon name="eye" size={18} strokeWidth={1.85} />
+          </button>
+        </div>
+      </div>
+
+      <div class="dandy-auth-turnstile-wrap">
+        <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+      </div>
+
+      <button type="submit" id="signupSubmitBtn" class="dandy-btn dandy-btn--primary dandy-auth-submit">
+        <span data-submit-label>{isEn ? 'Create Account' : 'إنشاء الحساب'}</span>
+        <Icon name="arrow-left" size={17} strokeWidth={1.85} directional={true} />
+      </button>
+    </form>
+
+    <div class="dandy-auth-switch" data-dandy-entrance="2">
+      <div>
+        {isEn ? (
+          <>
+            Already have an account? <a href={loginHref}>Sign In</a>
+          </>
+        ) : (
+          <>
+            لديكِ حساب بالفعل؟ <a href={loginHref}>تسجيل الدخول</a>
+          </>
+        )}
+      </div>
+    </div>
+  </AuthEditorialLayout>
+
+  <script>
+    import { initCustomerSignupPage } from '../../scripts/account-auth-client';
+    initCustomerSignupPage();
+  </script>
+</BaseLayout>

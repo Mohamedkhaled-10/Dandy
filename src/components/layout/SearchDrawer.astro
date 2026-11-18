@@ -1,0 +1,828 @@
+---
+/**
+ * DANDY COSMETICS — LIVE SEARCH DRAWER / MODAL (PHASE 2)
+ * Centered architectural search overlay on desktop and full-height sheet on mobile.
+ * Preserves live debounced Firebase RTDB + REST lookup, Meta Pixel events,
+ * keyboard shortcuts ('/' and Ctrl/Cmd+K), Escape dismissal, and focus restoration.
+ */
+import Icon from '../ui/Icon.astro';
+import { getLocaleDirection } from '../../i18n/config';
+import { t } from '../../i18n/translator';
+import { EN_PRODUCT_SUMMARY_MAP } from '../../i18n/content/en/products';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const dir = getLocaleDirection(locale);
+const isEnglish = locale === 'en';
+const SEARCH_SUGGESTIONS = isEnglish
+  ? ['Skincare', 'Haircare', 'Serum', 'Splash', 'Musk']
+  : ['عناية', 'شعر', 'بشرة', 'سيروم', 'عطور'];
+
+const enSearchMap = isEnglish
+  ? Object.fromEntries(
+      Object.entries(EN_PRODUCT_SUMMARY_MAP).map(([id, item]) => [
+        id,
+        {
+          name: item.name,
+          category:
+            item.category === 'hair-care'
+              ? 'Hair Care'
+              : item.category === 'skin-care'
+                ? 'Skin Care'
+                : item.category === 'fragrance'
+                  ? 'Fragrance'
+                  : 'Body Care',
+        },
+      ])
+    )
+  : {};
+
+const searchI18n = {
+  locale,
+  isEnglish,
+  suggestions: SEARCH_SUGGESTIONS,
+  suggestionsHeading: isEnglish ? 'Popular Searches' : 'عمليات البحث الشائعة',
+  loadingText: isEnglish ? 'Searching store...' : 'جاري البحث في المتجر...',
+  errorText: isEnglish ? 'An error occurred while searching. Please try again.' : 'حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى.',
+  fetchEmptyText: isEnglish ? 'Unable to load products right now.' : 'عذراً، لم نتمكن من جلب المنتجات حالياً.',
+  noResultsPrefix: isEnglish ? 'No matching results found for' : 'لا توجد نتائج مطابقة لـ',
+  noResultsHint: isEnglish ? 'Try general keywords like: skin, hair, serum, splash, or musk.' : 'جربي البحث بكلمات عامة مثل: بشرة، شعر، سيروم، عطور.',
+  currencyLabel: isEnglish ? 'EGP' : 'ج.م',
+  productPrefix: isEnglish ? '/en/product' : '/product',
+  enSearchMap,
+};
+---
+
+<div
+  class="dandy-search-overlay"
+  id="search-overlay"
+  onclick="window.toggleSearchPanel(false)"
+  aria-hidden="true"
+></div>
+
+<div
+  class="dandy-search-panel"
+  id="search-panel"
+  role="dialog"
+  aria-modal="true"
+  aria-label={t(locale, 'header.searchTriggerLabel')}
+  dir={dir}
+  hidden
+>
+  <div class="dandy-search-header">
+    <div class="dandy-search-title">
+      <Icon name="search" size={18} strokeWidth={1.85} />
+      <span>{isEnglish ? 'Search DANDY Store' : 'ابحثي في متجر داندي'}</span>
+    </div>
+    <button
+      type="button"
+      class="dandy-search-close"
+      id="close-search-trigger"
+      onclick="window.toggleSearchPanel(false)"
+      aria-label={isEnglish ? 'Close search' : 'إغلاق البحث'}
+    >
+      <Icon name="x" size={19} strokeWidth={1.85} />
+    </button>
+  </div>
+
+  <div class="dandy-search-input-section">
+    <div class="dandy-search-input-wrap">
+      <span class="dandy-search-input-icon" aria-hidden="true">
+        <Icon name="search" size={18} strokeWidth={1.75} />
+      </span>
+      <input
+        type="search"
+        id="live-search-input"
+        placeholder={isEnglish ? 'Search by product name, category, or care benefit...' : 'اكتبي اسم المنتج، التصنيف، أو نوع العناية...'}
+        autocomplete="off"
+        oninput="window.handleLiveSearch(this.value)"
+      />
+      <button
+        type="button"
+        class="dandy-search-clear-btn"
+        id="search-clear-btn"
+        style="display:none;"
+        onclick="window.clearDandySearch()"
+        aria-label={isEnglish ? 'Clear search text' : 'مسح نص البحث'}
+      >
+        <Icon name="x" size={14} strokeWidth={2} />
+      </button>
+    </div>
+  </div>
+
+  <div id="live-search-results" class="dandy-search-results-area">
+    <div class="dandy-search-suggestions">
+      <div class="dandy-suggestions-heading">{searchI18n.suggestionsHeading}</div>
+      <div class="dandy-suggestions-list">
+        {SEARCH_SUGGESTIONS.map((term) => (
+          <button
+            type="button"
+            class="dandy-search-suggestion"
+            data-search-term={term}
+            onclick={`window.applyDandySearchSuggestion('${term}')`}
+          >
+            <span>{term}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ searchI18n }}>
+  (function () {
+    const SUGGESTION_TERMS = Array.isArray(searchI18n?.suggestions)
+      ? searchI18n.suggestions
+      : ['عناية', 'شعر', 'بشرة', 'سيروم', 'عطور'];
+    let lastFocusedBeforeSearch = null;
+    let liveSearchTimeout = null;
+
+    function escapeHtml(value) {
+      if (!value) return '';
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderSuggestionsMarkup() {
+      const buttons = SUGGESTION_TERMS.map(function (term) {
+        return (
+          '<button type="button" class="dandy-search-suggestion" onclick="window.applyDandySearchSuggestion(\'' +
+          escapeHtml(term) +
+          '\')"><span>' +
+          escapeHtml(term) +
+          '</span></button>'
+        );
+      }).join('');
+      return (
+        '<div class="dandy-search-suggestions">' +
+        '<div class="dandy-suggestions-heading">' + escapeHtml(searchI18n.suggestionsHeading) + '</div>' +
+        '<div class="dandy-suggestions-list">' +
+        buttons +
+        '</div>' +
+        '</div>'
+      );
+    }
+
+    window.applyDandySearchSuggestion = function (term) {
+      const input = document.getElementById('live-search-input');
+      if (input) {
+        input.value = term;
+        input.focus();
+      }
+      window.handleLiveSearch(term);
+    };
+
+    window.clearDandySearch = function () {
+      const input = document.getElementById('live-search-input');
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      if (clearBtn) clearBtn.style.display = 'none';
+      window.handleLiveSearch('');
+    };
+
+    window.toggleSearchPanel = function (forceState) {
+      const panel = document.getElementById('search-panel');
+      const overlay = document.getElementById('search-overlay');
+      const menubar = document.getElementById('menubar');
+      const menuOverlay = document.getElementById('menu-overlay');
+      const mobileTrigger = document.getElementById('mobile-menu-trigger');
+      if (!panel) return;
+
+      const currentlyOpen = panel.classList.contains('active');
+      const nextOpen = typeof forceState === 'boolean' ? forceState : !currentlyOpen;
+
+      if (nextOpen) {
+        lastFocusedBeforeSearch =
+          document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+        if (typeof window.closeHeaderDropdowns === 'function') {
+          window.closeHeaderDropdowns();
+        }
+        if (menubar) menubar.classList.remove('active');
+        if (menuOverlay) menuOverlay.classList.remove('active');
+        if (mobileTrigger) mobileTrigger.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('menu-open');
+        document.documentElement.classList.remove('menu-open');
+
+        panel.hidden = false;
+        window.requestAnimationFrame(function () {
+          panel.classList.add('active');
+          if (overlay) overlay.classList.add('active');
+        });
+        document.body.classList.add('search-open');
+        document.documentElement.classList.add('search-open');
+
+        setTimeout(function () {
+          const input = document.getElementById('live-search-input');
+          if (input) {
+            input.focus();
+            const clearBtn = document.getElementById('search-clear-btn');
+            if (clearBtn) clearBtn.style.display = input.value.trim() ? 'inline-flex' : 'none';
+          }
+        }, 80);
+      } else {
+        panel.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.classList.remove('search-open');
+        document.documentElement.classList.remove('search-open');
+        setTimeout(function () {
+          if (!panel.classList.contains('active')) {
+            panel.hidden = true;
+          }
+        }, 220);
+
+        if (lastFocusedBeforeSearch && typeof lastFocusedBeforeSearch.focus === 'function') {
+          lastFocusedBeforeSearch.focus();
+          lastFocusedBeforeSearch = null;
+        }
+      }
+    };
+
+    window.handleLiveSearch = function (query) {
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (clearBtn) {
+        clearBtn.style.display = query && String(query).trim() ? 'inline-flex' : 'none';
+      }
+      clearTimeout(liveSearchTimeout);
+      liveSearchTimeout = setTimeout(function () {
+        performSearch(query);
+      }, 240);
+    };
+
+    function performSearch(rawQuery) {
+      const resultsContainer = document.getElementById('live-search-results');
+      if (!resultsContainer) return;
+
+      const query = String(rawQuery || '').trim().toLowerCase();
+      if (!query) {
+        resultsContainer.innerHTML = renderSuggestionsMarkup();
+        return;
+      }
+
+      resultsContainer.innerHTML =
+        '<div class="dandy-search-loading">' +
+        '<div class="dandy-search-spinner" aria-hidden="true"></div>' +
+        '<span>' + escapeHtml(searchI18n.loadingText) + '</span>' +
+        '</div>';
+
+      if (typeof window.db === 'undefined' && typeof firebase !== 'undefined') {
+        window.db = firebase.database();
+      }
+
+      if (window.DandyMeta && typeof window.DandyMeta.trackSearch === 'function') {
+        window.DandyMeta.trackSearch(query);
+      } else if (typeof fbq === 'function') {
+        fbq('track', 'Search', { search_string: query });
+      }
+
+      if (typeof window.db === 'undefined') {
+        fetch('https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app/products.json')
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            renderSearchResults(data, query, resultsContainer);
+          })
+          .catch(function (err) {
+            console.error(err);
+            resultsContainer.innerHTML =
+              '<p class="dandy-search-error">' + escapeHtml(searchI18n.errorText) + '</p>';
+          });
+      } else {
+        window.db
+          .ref('products')
+          .once('value')
+          .then(function (snap) {
+            renderSearchResults(snap.val(), query, resultsContainer);
+          })
+          .catch(function (err) {
+            console.error(err);
+            resultsContainer.innerHTML =
+              '<p class="dandy-search-error">' + escapeHtml(searchI18n.errorText) + '</p>';
+          });
+      }
+    }
+
+    function renderSearchResults(data, query, container) {
+      if (!data) {
+        container.innerHTML =
+          '<div class="dandy-search-empty"><p>' + escapeHtml(searchI18n.fetchEmptyText) + '</p></div>';
+        return;
+      }
+
+      const products = [];
+      const enMap = searchI18n.enSearchMap || {};
+      const currLabel = searchI18n.currencyLabel || 'ج.م';
+      Object.keys(data).forEach(function (k) {
+        const p = data[k];
+        if (!p || !p.name || p.isHidden) return;
+        const enEntry = searchI18n.isEnglish ? enMap[k] : null;
+        const displayName = (enEntry && enEntry.name) ? enEntry.name : p.name;
+        const displayCategory = (enEntry && enEntry.category) ? enEntry.category : (p.category || '');
+
+        const nameLower = String(displayName).toLowerCase();
+        const sourceNameLower = String(p.name).toLowerCase();
+        const catLower = String(displayCategory).toLowerCase();
+        const sourceCatLower = String(p.category || '').toLowerCase();
+
+        let score = 0;
+        if (nameLower === query || sourceNameLower === query) score = 100;
+        else if (nameLower.startsWith(query) || sourceNameLower.startsWith(query)) score = 80;
+        else if (nameLower.includes(query) || sourceNameLower.includes(query)) score = 50;
+
+        if (catLower === query || sourceCatLower === query) score += 30;
+        else if (catLower.includes(query) || sourceCatLower.includes(query)) score += 10;
+
+        if (score > 0) {
+          products.push({
+            id: k,
+            name: displayName,
+            category: displayCategory,
+            slug: p.slug || '',
+            image: p.image || '/assets/images/logo.png',
+            price: p.price,
+            originalPrice: p.originalPrice,
+            onSale: p.onSale,
+            discount: p.discount,
+            _score: score,
+          });
+        }
+      });
+
+      products.sort(function (a, b) {
+        return b._score - a._score;
+      });
+
+      if (products.length === 0) {
+        container.innerHTML =
+          '<div class="dandy-search-empty">' +
+          '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
+          '<p>' + escapeHtml(searchI18n.noResultsPrefix) + ' "<strong>' +
+          escapeHtml(query) +
+          '</strong>"</p>' +
+          '<small>' + escapeHtml(searchI18n.noResultsHint) + '</small>' +
+          '</div>';
+        return;
+      }
+
+      const arrowPath = searchI18n.isEnglish ? '<path d="m9 18 6-6-6-6"/>' : '<path d="m15 18-6-6 6-6"/>';
+      let html = '<div class="dandy-search-results-list">';
+      products.forEach(function (p) {
+        let priceHtml = '';
+        if (p.onSale && p.discount) {
+          const priceRaw = parseFloat(p.price);
+          const discountPercent = parseFloat(p.discount) || 0;
+          const oldPrice = discountPercent > 0 && discountPercent < 100 ? priceRaw / (1 - discountPercent / 100) : 0;
+          priceHtml =
+            (oldPrice > priceRaw
+              ? '<span class="dandy-result-old-price dandy-tabular">' + Math.round(oldPrice) + ' ' + escapeHtml(currLabel) + '</span> '
+              : '') +
+            '<span class="dandy-result-current-price dandy-tabular">' +
+            escapeHtml(String(priceRaw)) +
+            ' ' + escapeHtml(currLabel) + '</span>';
+        } else if (p.originalPrice && parseFloat(p.originalPrice) > parseFloat(p.price)) {
+          priceHtml =
+            '<span class="dandy-result-old-price dandy-tabular">' +
+            escapeHtml(String(p.originalPrice)) +
+            ' ' + escapeHtml(currLabel) + '</span> ' +
+            '<span class="dandy-result-current-price dandy-tabular">' +
+            escapeHtml(String(p.price)) +
+            ' ' + escapeHtml(currLabel) + '</span>';
+        } else {
+          priceHtml =
+            '<span class="dandy-result-current-price dandy-tabular">' +
+            escapeHtml(String(p.price)) +
+            ' ' + escapeHtml(currLabel) + '</span>';
+        }
+
+        const pLink = p.slug
+          ? searchI18n.productPrefix + '/' + encodeURIComponent(p.slug)
+          : searchI18n.productPrefix + '?id=' + encodeURIComponent(p.id);
+        html +=
+          '<a href="' +
+          pLink +
+          '" class="dandy-search-result-card" onclick="window.toggleSearchPanel(false)">' +
+          '<div class="dandy-result-thumb"><img src="' +
+          escapeHtml(p.image) +
+          '" alt="' +
+          escapeHtml(p.name) +
+          '" loading="lazy" /></div>' +
+          '<div class="dandy-result-details">' +
+          '<h4 class="dandy-result-name">' +
+          escapeHtml(p.name) +
+          '</h4>' +
+          '<div class="dandy-result-price">' +
+          priceHtml +
+          '</div>' +
+          (p.category ? '<span class="dandy-result-category">' + escapeHtml(p.category) + '</span>' : '') +
+          '</div>' +
+          '<svg class="dandy-result-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">' + arrowPath + '</svg>' +
+          '</a>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    window.addEventListener('keydown', function (e) {
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' && !document.activeElement?.isContentEditable) {
+        e.preventDefault();
+        window.toggleSearchPanel(true);
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        window.toggleSearchPanel();
+        return;
+      }
+      if (e.key === 'Escape') {
+        const panel = document.getElementById('search-panel');
+        if (panel && panel.classList.contains('active')) {
+          window.toggleSearchPanel(false);
+        }
+      }
+    });
+  })();
+</script>
+
+<style is:global>
+  body.search-open,
+  html.search-open {
+    overflow: hidden !important;
+  }
+
+  body.search-open nav.dandy-bottom-nav,
+  html.search-open nav.dandy-bottom-nav {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .dandy-search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 23, 21, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--dandy-z-modal);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--dandy-transition-base), visibility var(--dandy-transition-base);
+  }
+
+  .dandy-search-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .dandy-search-panel {
+    position: fixed;
+    top: clamp(28px, 7vh, 72px);
+    inset-inline: 0;
+    margin-inline: auto;
+    width: min(720px, calc(100vw - 32px));
+    max-height: min(78vh, 660px);
+    background-color: var(--dandy-bg-elevated);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-lg);
+    box-shadow: var(--dandy-shadow-lg);
+    z-index: calc(var(--dandy-z-modal) + 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
+    pointer-events: none;
+    transition: opacity var(--dandy-transition-base), transform var(--dandy-transition-base);
+    font-family: var(--dandy-font-active-sans);
+  }
+
+  .dandy-search-panel[hidden] {
+    display: none;
+  }
+
+  .dandy-search-panel.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  .dandy-search-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-page);
+  }
+
+  .dandy-search-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-search-close {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--dandy-radius-sm);
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dandy-ink-muted);
+    cursor: pointer;
+    transition: background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-search-close:hover {
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-search-input-section {
+    padding: 16px 22px;
+    background-color: var(--dandy-bg-editorial);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-search-input-wrap {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .dandy-search-input-wrap input {
+    width: 100%;
+    height: 46px;
+    padding-inline: 44px 40px;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    background-color: #FFFFFF;
+    font-family: var(--dandy-font-active-sans);
+    font-size: 0.9375rem;
+    color: var(--dandy-ink-primary);
+    transition: border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-search-input-wrap input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .dandy-search-input-wrap input::placeholder {
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-search-input-wrap input:focus {
+    outline: none;
+    border-color: var(--dandy-ink-primary);
+  }
+
+  .dandy-search-input-icon {
+    position: absolute;
+    inset-inline-start: 14px;
+    display: inline-flex;
+    color: var(--dandy-ink-muted);
+    pointer-events: none;
+  }
+
+  .dandy-search-clear-btn {
+    position: absolute;
+    inset-inline-end: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .dandy-search-clear-btn:hover {
+    color: var(--dandy-danger);
+    border-color: var(--dandy-border-default);
+  }
+
+  .dandy-search-results-area {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 20px 22px 24px;
+    scrollbar-width: thin;
+  }
+
+  .dandy-suggestions-heading {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+    margin-bottom: 12px;
+  }
+
+  .dandy-suggestions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dandy-search-suggestion {
+    appearance: none;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    padding: 8px 14px;
+    font-family: var(--dandy-font-active-sans);
+    font-size: 0.84375rem;
+    font-weight: 500;
+    color: var(--dandy-ink-primary);
+    cursor: pointer;
+    transition: border-color var(--dandy-transition-fast), background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-search-suggestion:hover {
+    background-color: var(--dandy-bg-stage);
+    border-color: var(--dandy-ink-primary);
+  }
+
+  .dandy-search-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    gap: 12px;
+    color: var(--dandy-ink-muted);
+    font-size: 0.875rem;
+  }
+
+  .dandy-search-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--dandy-border-default);
+    border-top-color: var(--dandy-ink-primary);
+    border-radius: 50%;
+    animation: dandySearchSpin 0.7s linear infinite;
+  }
+
+  @keyframes dandySearchSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .dandy-search-empty,
+  .dandy-search-error {
+    text-align: center;
+    padding: 36px 16px;
+    color: var(--dandy-ink-secondary);
+    font-size: 0.875rem;
+  }
+
+  .dandy-search-empty svg {
+    color: var(--dandy-ink-muted);
+    margin-bottom: 10px;
+  }
+
+  .dandy-search-empty p {
+    margin: 0 0 6px 0;
+  }
+
+  .dandy-search-empty small {
+    color: var(--dandy-ink-muted);
+    font-size: 0.78rem;
+  }
+
+  .dandy-search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dandy-search-result-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    text-decoration: none;
+    background-color: var(--dandy-bg-page);
+    transition: border-color var(--dandy-transition-fast), background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-search-result-card:hover {
+    border-color: var(--dandy-border-default);
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-result-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .dandy-result-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dandy-result-details {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .dandy-result-name {
+    margin: 0 0 3px 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dandy-result-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .dandy-result-current-price {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-result-old-price {
+    color: var(--dandy-ink-muted);
+    text-decoration: line-through;
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .dandy-result-category {
+    display: inline-block;
+    margin-top: 3px;
+    font-size: 0.72rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-result-arrow {
+    color: var(--dandy-ink-muted);
+    flex-shrink: 0;
+    transition: transform var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-search-result-card:hover .dandy-result-arrow {
+    color: var(--dandy-ink-primary);
+    transform: translateX(-3px);
+  }
+
+  html[dir='ltr'] .dandy-search-result-card:hover .dandy-result-arrow {
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 767px) {
+    .dandy-search-panel {
+      top: 0;
+      width: 100%;
+      max-width: 100vw;
+      height: 100dvh;
+      max-height: 100dvh;
+      border-radius: 0;
+      border: 0;
+    }
+
+    .dandy-search-header,
+    .dandy-search-input-section,
+    .dandy-search-results-area {
+      padding-inline: 16px;
+    }
+  }
+</style>

@@ -1,0 +1,595 @@
+---
+/**
+ * DANDY COSMETICS — CATALOG FILTER & SORT TOOLBAR (PHASE 5)
+ * Desktop horizontal bar + compact mobile filter drawer trigger.
+ * Grounded strictly in actual available catalog flags & prices.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+import {
+  getCategoryFilterOptions,
+  getPriceRangeOptions,
+  getSortOptions,
+} from '../../scripts/catalog';
+
+export interface Props {
+  totalCount: number;
+  showCategoryFilter?: boolean;
+  availableCategories?: string[];
+  showPriceFilter?: boolean;
+  hasSaleItems?: boolean;
+  hasBestSellerItems?: boolean;
+  hasSoldOutItems?: boolean;
+  searchPlaceholder?: string;
+  locale?: Locale;
+}
+
+const {
+  totalCount,
+  showCategoryFilter = true,
+  availableCategories,
+  showPriceFilter = true,
+  hasSaleItems = false,
+  hasBestSellerItems = false,
+  hasSoldOutItems = false,
+  searchPlaceholder,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+const resolvedPlaceholder =
+  searchPlaceholder || (isEn ? 'Search by product name or category...' : 'ابحثي باسم المنتج أو الفئة...');
+
+const categoryOptions = getCategoryFilterOptions(locale);
+const priceOptions = getPriceRangeOptions(locale);
+const sortOptions = getSortOptions(locale);
+
+const visibleCategories =
+  availableCategories && availableCategories.length > 0
+    ? categoryOptions.filter((cat) => availableCategories.includes(cat.slug))
+    : categoryOptions;
+---
+
+<div
+  class="dandy-cat-controls"
+  aria-label={isEn ? 'Search, filter, and sort controls' : 'أدوات البحث والتصفية والترتيب'}
+>
+  <div class="dandy-cat-bar">
+    {/* Search Input */}
+    <div class="dandy-cat-search">
+      <Icon name="search" size={17} strokeWidth={1.85} class="dandy-cat-search-icon" />
+      <label for="dandy-catalog-search" class="dandy-sr-only">
+        {isEn ? 'Search products' : 'البحث في المنتجات'}
+      </label>
+      <input
+        id="dandy-catalog-search"
+        type="search"
+        class="dandy-cat-search-input"
+        placeholder={resolvedPlaceholder}
+        autocomplete="off"
+        data-catalog-search
+      />
+      <button
+        type="button"
+        class="dandy-cat-search-clear"
+        data-clear-search
+        aria-label={isEn ? 'Clear search' : 'مسح البحث'}
+        hidden
+      >
+        <Icon name="x" size={15} strokeWidth={2} />
+      </button>
+    </div>
+
+    {/* Desktop Inline Filters */}
+    <div class="dandy-cat-inline-filters">
+      {showPriceFilter && (
+        <div class="dandy-cat-select-wrap">
+          <label for="dandy-catalog-price" class="dandy-sr-only">
+            {isEn ? 'Price range' : 'نطاق السعر'}
+          </label>
+          <select
+            id="dandy-catalog-price"
+            class="dandy-cat-select"
+            data-filter-price
+            aria-label={isEn ? 'Price range' : 'نطاق السعر'}
+          >
+            {priceOptions.map((opt) => (
+              <option value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <Icon name="chevron-down" size={14} strokeWidth={2} class="dandy-cat-select-arrow" />
+        </div>
+      )}
+
+      {hasSaleItems && (
+        <button
+          type="button"
+          class="dandy-cat-toggle"
+          data-filter-toggle="saleOnly"
+          aria-pressed="false"
+        >
+          <span>{isEn ? 'Offers' : 'العروض'}</span>
+        </button>
+      )}
+
+      {hasBestSellerItems && (
+        <button
+          type="button"
+          class="dandy-cat-toggle"
+          data-filter-toggle="bestSellerOnly"
+          aria-pressed="false"
+        >
+          <span>{isEn ? 'Best Sellers' : 'الأكثر مبيعاً'}</span>
+        </button>
+      )}
+
+      {hasSoldOutItems && (
+        <button
+          type="button"
+          class="dandy-cat-toggle"
+          data-filter-toggle="inStockOnly"
+          aria-pressed="false"
+        >
+          <span>{isEn ? 'In Stock Only' : 'المتوفر فقط'}</span>
+        </button>
+      )}
+    </div>
+
+    {/* Right/End Cluster: Sort + Count + Mobile Trigger */}
+    <div class="dandy-cat-end-actions">
+      <div class="dandy-cat-select-wrap">
+        <label for="dandy-catalog-sort" class="dandy-sr-only">
+          {isEn ? 'Sort products' : 'ترتيب المنتجات'}
+        </label>
+        <select
+          id="dandy-catalog-sort"
+          class="dandy-cat-select"
+          data-catalog-sort
+          aria-label={isEn ? 'Sort products' : 'ترتيب المنتجات'}
+        >
+          {sortOptions.map((opt) => (
+            <option value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <Icon name="chevron-down" size={14} strokeWidth={2} class="dandy-cat-select-arrow" />
+      </div>
+
+      <button
+        type="button"
+        class="dandy-cat-mobile-trigger"
+        data-open-filter-drawer
+        aria-controls="dandyFilterDrawer"
+        aria-expanded="false"
+      >
+        <Icon name="sliders" size={16} strokeWidth={1.85} />
+        <span>{isEn ? 'Filter' : 'تصفية'}</span>
+        <span class="dandy-cat-trigger-badge dandy-tabular" data-mobile-filter-count hidden>0</span>
+      </button>
+
+      <span class="dandy-cat-count dandy-tabular" data-catalog-count aria-live="polite">
+        {isEn
+          ? `${totalCount} ${totalCount === 1 ? 'product' : 'products'}`
+          : `${totalCount} منتج`}
+      </span>
+    </div>
+  </div>
+
+  {/* Desktop Category Filter Strip */}
+  {showCategoryFilter && (
+    <div
+      class="dandy-cat-segments"
+      role="group"
+      aria-label={isEn ? 'Filter by category' : 'تصفية حسب القسم'}
+    >
+      <button
+        type="button"
+        class="dandy-cat-seg-btn is-active"
+        data-filter-category="all"
+        aria-pressed="true"
+      >
+        <span>{isEn ? 'All Categories' : 'جميع الأقسام'}</span>
+      </button>
+      {visibleCategories.map((cat) => (
+        <button
+          type="button"
+          class="dandy-cat-seg-btn"
+          data-filter-category={cat.slug}
+          aria-pressed="false"
+        >
+          <span>{cat.label}</span>
+        </button>
+      ))}
+    </div>
+  )}
+
+  {/* Applied Filter Chips */}
+  <div class="dandy-cat-chips-bar" data-catalog-chips-bar hidden>
+    <span class="dandy-cat-chips-label">
+      {isEn ? 'Applied filters:' : 'الفلاتر المطبقة:'}
+    </span>
+    <div class="dandy-cat-chips-list" data-catalog-chips-list></div>
+    <button type="button" class="dandy-cat-chips-clear" data-catalog-reset>
+      {isEn ? 'Reset all' : 'إعادة ضبط الكل'}
+    </button>
+  </div>
+</div>
+
+<style is:global>
+  .dandy-cat-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+    min-width: 0;
+  }
+
+  .dandy-cat-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    min-width: 0;
+  }
+
+  .dandy-cat-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1 1 240px;
+    min-width: 0;
+    min-height: 44px;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    padding-inline: 12px 6px;
+    gap: 8px;
+    transition: border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-cat-search:focus-within {
+    border-color: var(--dandy-ink-primary);
+  }
+
+  .dandy-cat-search:has(input:focus-visible) {
+    outline: 2px solid var(--dandy-ink-primary);
+    outline-offset: 2px;
+  }
+
+  .dandy-cat-search-icon {
+    color: var(--dandy-ink-muted);
+    flex-shrink: 0;
+  }
+
+  .dandy-cat-search input.dandy-cat-search-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    outline: none;
+  }
+
+  .dandy-cat-search input.dandy-cat-search-input:focus,
+  .dandy-cat-search input.dandy-cat-search-input:focus-visible {
+    outline: none;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .dandy-cat-search input.dandy-cat-search-input::placeholder {
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-cat-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .dandy-cat-search-clear {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    border: 0;
+    border-radius: var(--dandy-radius-sm);
+    background: transparent;
+    color: var(--dandy-ink-muted);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .dandy-cat-search-clear[hidden] {
+    display: none;
+  }
+
+  .dandy-cat-search-clear:hover {
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-cat-inline-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dandy-cat-select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .dandy-cat-select {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 44px;
+    padding-block: 8px;
+    padding-inline-start: 12px;
+    padding-inline-end: 32px;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 500;
+    color: var(--dandy-ink-primary);
+    cursor: pointer;
+    max-width: 100%;
+    transition: border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-cat-select:hover,
+  .dandy-cat-select:focus-visible {
+    border-color: var(--dandy-ink-primary);
+  }
+
+  .dandy-cat-select-arrow {
+    position: absolute;
+    inset-inline-end: 10px;
+    pointer-events: none;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-cat-toggle {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-secondary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color var(--dandy-transition-fast),
+      border-color var(--dandy-transition-fast),
+      color var(--dandy-transition-fast);
+  }
+
+  .dandy-cat-toggle:hover {
+    border-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-cat-toggle.is-active {
+    background-color: var(--dandy-ink-primary);
+    border-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+    font-weight: 600;
+  }
+
+  .dandy-cat-end-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-inline-start: auto;
+    flex-wrap: wrap;
+  }
+
+  .dandy-cat-count {
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-secondary);
+    white-space: nowrap;
+    padding-inline: 4px;
+  }
+
+  .dandy-cat-mobile-trigger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .dandy-cat-trigger-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding-inline: 6px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-accent-primary);
+    color: #FFFFFF;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .dandy-cat-trigger-badge[hidden] {
+    display: none;
+  }
+
+  /* Category Segment Tabs */
+  .dandy-cat-segments {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dandy-cat-seg-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 7px 16px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-secondary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color var(--dandy-transition-fast),
+      border-color var(--dandy-transition-fast),
+      color var(--dandy-transition-fast);
+  }
+
+  .dandy-cat-seg-btn:hover {
+    border-color: var(--dandy-border-default);
+    color: var(--dandy-ink-primary);
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-cat-seg-btn.is-active {
+    background-color: var(--dandy-ink-primary);
+    border-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+    font-weight: 600;
+  }
+
+  /* Chips Bar */
+  .dandy-cat-chips-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-block: 6px;
+  }
+
+  .dandy-cat-chips-bar[hidden] {
+    display: none;
+  }
+
+  .dandy-cat-chips-label {
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-cat-chips-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dandy-filter-chip {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 4px 12px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-editorial);
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--dandy-transition-fast), background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-filter-chip:hover {
+    border-color: var(--dandy-accent-primary);
+    background-color: var(--dandy-accent-soft);
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-cat-chips-clear {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 6px 8px;
+    min-height: 36px;
+    color: var(--dandy-accent-text);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    margin-inline-start: auto;
+  }
+
+  .dandy-cat-chips-clear:hover {
+    color: var(--dandy-accent-hover);
+  }
+
+  @media (max-width: 899px) {
+    .dandy-cat-inline-filters,
+    .dandy-cat-segments,
+    .dandy-cat-end-actions .dandy-cat-select-wrap {
+      display: none;
+    }
+
+    .dandy-cat-bar {
+      padding: 10px;
+      gap: 8px;
+    }
+
+    .dandy-cat-search {
+      flex: 1 1 100%;
+    }
+
+    .dandy-cat-end-actions {
+      width: 100%;
+      margin-inline-start: 0;
+      justify-content: space-between;
+    }
+
+    .dandy-cat-mobile-trigger {
+      display: inline-flex;
+      flex: 0 0 auto;
+    }
+  }
+</style>

@@ -403,22 +403,39 @@ export function escapeHtml(str: string): string {
 }
 
 // Generate valid Schema.org Product JSON-LD structured data
-export function generateProductJsonLd(product: Product, canonicalUrl: string): Record<string, any> {
-  const cleanDescription = (product.description || '')
-    .replace(/<[^>]*>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim() || `${product.name} - مستحضر طبيعي فاخر للعناية بالبشرة والجسم من داندي كوزمتكس مصر.`;
+export function generateProductJsonLd(
+  product: Product,
+  canonicalUrl: string,
+  locale: 'ar' | 'en' = 'ar',
+  localized?: {
+    name?: string;
+    description?: string;
+    categoryName?: string;
+  }
+): Record<string, any> {
+  const isEn = locale === 'en';
+  const resolvedName = localized?.name || product.name;
+  const rawDesc = localized?.description || product.description || '';
+  const cleanDescription =
+    rawDesc
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim() ||
+    (isEn
+      ? `${resolvedName} — Natural botanical personal care by Dandy Cosmetics Egypt.`
+      : `${resolvedName} - مستحضر طبيعي فاخر للعناية بالبشرة والجسم من داندي كوزمتكس مصر.`);
 
   const isAvailable = product.isSoldOut !== true && product.inStock !== false;
 
   const schema: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    'name': product.name,
+    'inLanguage': isEn ? 'en' : 'ar',
+    'name': resolvedName,
     'description': cleanDescription,
     'image': product.image ? [product.image] : [`${SITE_URL}/assets/images/fav-icons/android-chrome-512x512.png`],
     'sku': product.id,
-    'category': normalizeCategory(product.category),
+    'category': localized?.categoryName || normalizeCategory(product.category),
     'brand': {
       '@type': 'Brand',
       'name': 'Dandy Cosmetics'

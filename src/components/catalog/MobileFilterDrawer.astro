@@ -1,0 +1,309 @@
+---
+/**
+ * DANDY COSMETICS — ACCESSIBLE RTL MOBILE FILTER DRAWER (PHASE 5)
+ * Full Escape, backdrop, scroll lock, and bidirectional sync with CatalogToolbar.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+import {
+  getCategoryFilterOptions,
+  getPriceRangeOptions,
+  getSortOptions,
+} from '../../scripts/catalog';
+
+export interface Props {
+  showCategoryFilter?: boolean;
+  availableCategories?: string[];
+  showPriceFilter?: boolean;
+  hasSaleItems?: boolean;
+  hasBestSellerItems?: boolean;
+  hasSoldOutItems?: boolean;
+  locale?: Locale;
+}
+
+const {
+  showCategoryFilter = true,
+  availableCategories,
+  showPriceFilter = true,
+  hasSaleItems = false,
+  hasBestSellerItems = false,
+  hasSoldOutItems = false,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+const categoryOptions = getCategoryFilterOptions(locale);
+const priceOptions = getPriceRangeOptions(locale);
+const sortOptions = getSortOptions(locale);
+
+const visibleCategories =
+  availableCategories && availableCategories.length > 0
+    ? categoryOptions.filter((cat) => availableCategories.includes(cat.slug))
+    : categoryOptions;
+---
+
+<div class="dandy-fdrawer-backdrop" id="dandyFilterBackdrop" hidden></div>
+
+<aside
+  class="dandy-fdrawer"
+  id="dandyFilterDrawer"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="dandyFilterDrawerTitle"
+  dir={isEn ? 'ltr' : 'rtl'}
+  hidden
+>
+  <header class="dandy-fdrawer-header">
+    <h2 id="dandyFilterDrawerTitle" class="dandy-fdrawer-title">
+      {isEn ? 'Filter & Sort Products' : 'تصفية وترتيب المنتجات'}
+    </h2>
+    <button
+      type="button"
+      class="dandy-fdrawer-close"
+      data-close-filter-drawer
+      aria-label={isEn ? 'Close filter drawer' : 'إغلاق نافذة التصفية'}
+    >
+      <Icon name="x" size={20} strokeWidth={1.9} />
+    </button>
+  </header>
+
+  <div class="dandy-fdrawer-body">
+    <div class="dandy-fdrawer-group">
+      <label for="dandy-drawer-sort" class="dandy-fdrawer-label">
+        {isEn ? 'Sort by' : 'ترتيب حسب'}
+      </label>
+      <div class="dandy-fdrawer-select-wrap">
+        <select id="dandy-drawer-sort" class="dandy-cat-select dandy-fdrawer-select" data-catalog-sort>
+          {sortOptions.map((opt) => (
+            <option value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <Icon name="chevron-down" size={14} strokeWidth={2} class="dandy-cat-select-arrow" />
+      </div>
+    </div>
+
+    {showPriceFilter && (
+      <div class="dandy-fdrawer-group">
+        <label for="dandy-drawer-price" class="dandy-fdrawer-label">
+          {isEn ? 'Price Range' : 'نطاق السعر'}
+        </label>
+        <div class="dandy-fdrawer-select-wrap">
+          <select id="dandy-drawer-price" class="dandy-cat-select dandy-fdrawer-select" data-filter-price>
+            {priceOptions.map((opt) => (
+              <option value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <Icon name="chevron-down" size={14} strokeWidth={2} class="dandy-cat-select-arrow" />
+        </div>
+      </div>
+    )}
+
+    {showCategoryFilter && (
+      <fieldset class="dandy-fdrawer-group">
+        <legend class="dandy-fdrawer-label">{isEn ? 'Categories' : 'الأقسام'}</legend>
+        <div class="dandy-fdrawer-checks">
+          {visibleCategories.map((cat) => (
+            <label class="dandy-fdrawer-check-item">
+              <input type="checkbox" value={cat.slug} data-drawer-category />
+              <span>{cat.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    )}
+
+    {(hasSaleItems || hasBestSellerItems || hasSoldOutItems) && (
+      <fieldset class="dandy-fdrawer-group">
+        <legend class="dandy-fdrawer-label">{isEn ? 'More Options' : 'خيارات إضافية'}</legend>
+        <div class="dandy-fdrawer-checks">
+          {hasSaleItems && (
+            <label class="dandy-fdrawer-check-item">
+              <input type="checkbox" data-drawer-toggle="saleOnly" />
+              <span>{isEn ? 'Active Offers & Discounts' : 'العروض والتخفيضات النشطة'}</span>
+            </label>
+          )}
+          {hasBestSellerItems && (
+            <label class="dandy-fdrawer-check-item">
+              <input type="checkbox" data-drawer-toggle="bestSellerOnly" />
+              <span>{isEn ? 'Best Sellers' : 'الأكثر مبيعاً'}</span>
+            </label>
+          )}
+          {hasSoldOutItems && (
+            <label class="dandy-fdrawer-check-item">
+              <input type="checkbox" data-drawer-toggle="inStockOnly" />
+              <span>{isEn ? 'In Stock Products Only' : 'المنتجات المتوفرة فقط'}</span>
+            </label>
+          )}
+        </div>
+      </fieldset>
+    )}
+  </div>
+
+  <footer class="dandy-fdrawer-footer">
+    <button type="button" class="dandy-btn dandy-btn--editorial dandy-fdrawer-apply" data-apply-filter-drawer>
+      <span>{isEn ? 'Show Results' : 'عرض النتائج'}</span>
+    </button>
+    <button type="button" class="dandy-btn dandy-btn--outline" data-reset-filter-drawer>
+      <span>{isEn ? 'Reset' : 'إعادة ضبط'}</span>
+    </button>
+  </footer>
+</aside>
+
+<style is:global>
+  .dandy-fdrawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(26, 23, 21, 0.45);
+    z-index: var(--dandy-z-drawer-backdrop);
+    opacity: 0;
+    transition: opacity 220ms var(--dandy-ease-standard);
+  }
+
+  .dandy-fdrawer-backdrop[hidden] {
+    display: none;
+  }
+
+  .dandy-fdrawer-backdrop.is-open {
+    opacity: 1;
+  }
+
+  .dandy-fdrawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    width: min(360px, 100vw);
+    max-width: 100%;
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    z-index: var(--dandy-z-drawer);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--dandy-shadow-lg);
+    transform: translateX(105%);
+    transition: transform 240ms var(--dandy-ease-out);
+  }
+
+  :dir(ltr) .dandy-fdrawer {
+    transform: translateX(-105%);
+  }
+
+  .dandy-fdrawer[hidden] {
+    display: none;
+  }
+
+  .dandy-fdrawer.is-open {
+    transform: translateX(0);
+  }
+
+  .dandy-fdrawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-fdrawer-title {
+    margin: 0;
+    font-family: var(--dandy-font-active-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-fdrawer-close {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-editorial);
+    color: var(--dandy-ink-primary);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .dandy-fdrawer-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .dandy-fdrawer-group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-fdrawer-label {
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    padding: 0;
+  }
+
+  .dandy-fdrawer-select-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .dandy-fdrawer-select {
+    width: 100%;
+  }
+
+  .dandy-fdrawer-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dandy-fdrawer-check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-editorial);
+    color: var(--dandy-ink-primary);
+    font-size: var(--dandy-text-sm);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .dandy-fdrawer-check-item input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    accent-color: var(--dandy-ink-primary);
+    margin: 0;
+  }
+
+  .dandy-fdrawer-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-fdrawer-apply {
+    flex: 1 1 auto;
+  }
+</style>

@@ -1,0 +1,459 @@
+---
+/**
+ * DANDY COSMETICS — PDP EDITORIAL PRODUCT GALLERY & ACCESSIBLE LIGHTBOX (PHASE 4)
+ * Warm --dandy-bg-stage canvas, genuine multi-image thumbnails only when >1 image exists,
+ * accessible zoom modal (<dialog>) with Escape/backdrop close and focus restoration.
+ */
+import Icon from '../ui/Icon.astro';
+import { FALLBACK_PRODUCT_IMAGE } from '../../scripts/product-card';
+import type { GalleryImageItem } from '../../scripts/product-pdp';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  productId: string;
+  productName: string;
+  images: GalleryImageItem[];
+  badge?: { text: string; tone: 'soldout' | 'campaign' | 'discount' } | null;
+  isSoldOut?: boolean;
+  locale?: Locale;
+}
+
+const {
+  productId,
+  productName,
+  images,
+  badge = null,
+  isSoldOut = false,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+
+const safeImages = images.length > 0
+  ? images
+  : [
+      {
+        index: 0,
+        rawUrl: FALLBACK_PRODUCT_IMAGE,
+        stageUrl: FALLBACK_PRODUCT_IMAGE,
+        zoomUrl: FALLBACK_PRODUCT_IMAGE,
+        thumbUrl: FALLBACK_PRODUCT_IMAGE,
+        alt: productName,
+        isFallback: true,
+      },
+    ];
+
+const primary = safeImages[0];
+const hasMultiple = safeImages.length > 1;
+---
+
+<div class="dandy-pdp-gallery" data-pdp-gallery>
+  <div
+    class:list={[
+      'dandy-pdp-stage',
+      { 'is-fallback': primary.isFallback, 'is-sold-out': isSoldOut },
+    ]}
+    id="pdp-gallery-stage"
+  >
+    {badge && (
+      <span class={`dandy-pdp-stage-tag is-${badge.tone}`} id="pdp-stage-badge">
+        {badge.text}
+      </span>
+    )}
+
+    <button
+      type="button"
+      class="dandy-pdp-stage-action dandy-pdp-wishlist-pin"
+      id="detailWishlistBtn"
+      data-product-id={productId}
+      title={isEn ? 'Save to Wishlist' : 'حفظ في المفضلة'}
+      aria-label={isEn ? 'Save to Wishlist' : 'حفظ في المفضلة'}
+      aria-pressed="false"
+    >
+      <Icon name="heart" size={19} strokeWidth={1.8} />
+    </button>
+
+    <button
+      type="button"
+      class="dandy-pdp-stage-action dandy-pdp-zoom-trigger"
+      id="gallery-zoom-btn"
+      title={isEn ? 'Zoom photo' : 'تكبير الصورة'}
+      aria-label={isEn ? 'Zoom product photo' : 'تكبير صورة المنتج'}
+      data-zoom-src={primary.zoomUrl}
+      data-zoom-alt={primary.alt}
+    >
+      <Icon name="zoom-in" size={19} strokeWidth={1.8} />
+    </button>
+
+    <img
+      id="product-img"
+      src={primary.stageUrl}
+      alt={primary.alt}
+      width="960"
+      height="960"
+      loading="eager"
+      decoding="sync"
+      referrerpolicy="no-referrer"
+      class="dandy-pdp-main-img"
+      data-active-index="0"
+      onerror={`this.onerror=null;this.src='${FALLBACK_PRODUCT_IMAGE}';this.closest('.dandy-pdp-stage')?.classList.add('is-fallback');`}
+    />
+  </div>
+
+  {hasMultiple && (
+    <div class="dandy-pdp-thumbs" role="list" aria-label={isEn ? 'Product photos' : 'صور المنتج'}>
+      {safeImages.map((img, idx) => (
+        <button
+          type="button"
+          role="listitem"
+          class:list={['dandy-pdp-thumb-btn', { 'is-active': idx === 0 }]}
+          data-gallery-thumb
+          data-index={idx}
+          data-stage-src={img.stageUrl}
+          data-zoom-src={img.zoomUrl}
+          data-alt={img.alt}
+          aria-label={isEn ? `View ${img.alt}` : `عرض ${img.alt}`}
+          aria-current={idx === 0 ? 'true' : 'false'}
+        >
+          <img
+            src={img.thumbUrl}
+            alt=""
+            width="100"
+            height="100"
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+          />
+        </button>
+      ))}
+    </div>
+  )}
+
+  <dialog
+    id="pdp-lightbox-dialog"
+    class="dandy-pdp-lightbox"
+    aria-label={isEn ? `Enlarged view — ${productName}` : `معاينة مكبرة — ${productName}`}
+    data-images={JSON.stringify(safeImages.map((img) => ({ zoomUrl: img.zoomUrl, alt: img.alt })))}
+  >
+    <div class="dandy-pdp-lightbox-surface">
+      <div class="dandy-pdp-lightbox-bar">
+        <span class="dandy-pdp-lightbox-title" id="pdp-lightbox-caption">{primary.alt}</span>
+        <button
+          type="button"
+          class="dandy-pdp-lightbox-close"
+          id="pdp-lightbox-close"
+          aria-label={isEn ? 'Close enlarged preview' : 'إغلاق المعاينة المكبرة'}
+        >
+          <Icon name="x" size={20} strokeWidth={2} />
+        </button>
+      </div>
+
+      <div class="dandy-pdp-lightbox-frame">
+        {hasMultiple && (
+          <button
+            type="button"
+            class="dandy-pdp-lightbox-nav is-prev"
+            id="pdp-lightbox-prev"
+            aria-label={isEn ? 'Previous image' : 'الصورة السابقة'}
+          >
+            <Icon name={isEn ? 'chevron-left' : 'chevron-right'} size={22} strokeWidth={2} />
+          </button>
+        )}
+
+        <img
+          id="pdp-lightbox-img"
+          src={primary.zoomUrl}
+          alt={primary.alt}
+          referrerpolicy="no-referrer"
+        />
+
+        {hasMultiple && (
+          <button
+            type="button"
+            class="dandy-pdp-lightbox-nav is-next"
+            id="pdp-lightbox-next"
+            aria-label={isEn ? 'Next image' : 'الصورة التالية'}
+          >
+            <Icon name={isEn ? 'chevron-right' : 'chevron-left'} size={22} strokeWidth={2} />
+          </button>
+        )}
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<style>
+  .dandy-pdp-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: sticky;
+    top: 96px;
+  }
+
+  .dandy-pdp-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: var(--dandy-bg-stage);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-pdp-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform var(--dandy-transition-slow);
+    cursor: zoom-in;
+  }
+
+  .dandy-pdp-stage.is-fallback .dandy-pdp-main-img {
+    object-fit: contain;
+    padding: var(--dandy-space-12);
+    opacity: 0.78;
+    cursor: default;
+  }
+
+  .dandy-pdp-stage.is-sold-out .dandy-pdp-main-img {
+    opacity: 0.72;
+    filter: grayscale(0.15);
+  }
+
+  .dandy-pdp-stage-tag {
+    position: absolute;
+    top: 14px;
+    inset-inline-start: 14px;
+    z-index: 2;
+    padding: 5px 11px;
+    border-radius: var(--dandy-radius-xs);
+    font-family: var(--dandy-font-active-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0;
+    pointer-events: none;
+  }
+
+  .dandy-pdp-stage-tag.is-discount {
+    background-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+  }
+
+  .dandy-pdp-stage-tag.is-campaign {
+    background-color: var(--dandy-plum-ink);
+    color: var(--dandy-ink-inverse);
+  }
+
+  .dandy-pdp-stage-tag.is-soldout {
+    background-color: var(--dandy-bg-elevated);
+    color: var(--dandy-ink-secondary);
+    border: 1px solid var(--dandy-border-default);
+  }
+
+  .dandy-pdp-stage-action {
+    position: absolute;
+    z-index: 3;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: var(--dandy-radius-pill);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      background-color var(--dandy-transition-fast),
+      border-color var(--dandy-transition-fast),
+      color var(--dandy-transition-fast),
+      transform var(--dandy-transition-fast);
+  }
+
+  .dandy-pdp-stage-action:hover {
+    background-color: var(--dandy-bg-page);
+    border-color: var(--dandy-ink-primary);
+    transform: translateY(-1px);
+  }
+
+  .dandy-pdp-wishlist-pin {
+    top: 14px;
+    inset-inline-end: 14px;
+  }
+
+  .dandy-pdp-wishlist-pin.active {
+    background-color: var(--dandy-accent-soft);
+    border-color: var(--dandy-border-accent);
+    color: var(--dandy-accent-primary);
+  }
+
+  .dandy-pdp-wishlist-pin.active :global(svg) {
+    fill: currentColor;
+  }
+
+  .dandy-pdp-zoom-trigger {
+    bottom: 14px;
+    inset-inline-end: 14px;
+  }
+
+  .dandy-pdp-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .dandy-pdp-thumb-btn {
+    width: 72px;
+    height: 72px;
+    padding: 0;
+    border-radius: var(--dandy-radius-sm);
+    border: 1.5px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color var(--dandy-transition-fast), opacity var(--dandy-transition-fast);
+    opacity: 0.78;
+  }
+
+  .dandy-pdp-thumb-btn:hover,
+  .dandy-pdp-thumb-btn.is-active {
+    border-color: var(--dandy-ink-primary);
+    opacity: 1;
+  }
+
+  .dandy-pdp-thumb-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Accessible Lightbox Dialog */
+  .dandy-pdp-lightbox {
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-lg);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    width: min(92vw, 860px);
+    max-width: 92vw;
+    max-height: 90vh;
+    box-shadow: var(--dandy-shadow-lg);
+    overflow: hidden;
+  }
+
+  .dandy-pdp-lightbox::backdrop {
+    background-color: rgba(26, 23, 21, 0.72);
+    backdrop-filter: blur(4px);
+  }
+
+  .dandy-pdp-lightbox-surface {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+  }
+
+  .dandy-pdp-lightbox-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 18px;
+    background-color: var(--dandy-bg-editorial);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-pdp-lightbox-title {
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dandy-pdp-lightbox-close {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-pdp-lightbox-close:hover {
+    background-color: var(--dandy-bg-stage);
+  }
+
+  .dandy-pdp-lightbox-frame {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: var(--dandy-bg-stage);
+    min-height: 300px;
+    max-height: calc(90vh - 69px);
+    overflow: hidden;
+  }
+
+  .dandy-pdp-lightbox-frame img {
+    max-width: 100%;
+    max-height: calc(90vh - 110px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-pdp-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--dandy-radius-pill);
+    border: 1px solid var(--dandy-border-default);
+    background-color: rgba(255, 255, 255, 0.94);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .dandy-pdp-lightbox-nav.is-prev {
+    inset-inline-start: 16px;
+  }
+
+  .dandy-pdp-lightbox-nav.is-next {
+    inset-inline-end: 16px;
+  }
+
+  @media (max-width: 1023px) {
+    .dandy-pdp-gallery {
+      position: static;
+    }
+  }
+</style>

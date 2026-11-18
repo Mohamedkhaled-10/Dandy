@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+
+const searchParams = new URLSearchParams();
+for (const [k, v] of Astro.url.searchParams.entries()) {
+  if (k.startsWith('utm_') || k === 'fbclid' || k === 'gclid') {
+    searchParams.set(k, v);
+  }
+}
+
+const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+return Astro.redirect(`/en/special-offers${qs}`, 301);
+---

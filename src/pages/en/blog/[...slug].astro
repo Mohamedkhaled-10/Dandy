@@ -1,0 +1,9 @@
+---
+export const prerender = false;
+import BlogArticleView from '../../../components/views/BlogArticleView.astro';
+
+const { slug } = Astro.params;
+const rawSlug = typeof slug === 'string' ? slug.trim() : '';
+---
+
+<BlogArticleView locale="en" rawSlug={rawSlug} />

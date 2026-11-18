@@ -1,0 +1,1697 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { GOVERNORATES } from '../../scripts/purchase-flow';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/account', locale)}`;
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+
+const pageTitle = isEn
+  ? 'My Account | Dandy Cosmetics'
+  : 'حسابي | Dandy Cosmetics';
+const pageDescription = isEn
+  ? 'Manage your customer profile, track past orders, update saved delivery addresses, and view your wishlist at Dandy Cosmetics.'
+  : 'إدارة حساب العميلة، متابعة الطلبات السابقة، العناوين المحفوظة، وقائمة المفضلة في متجر داندي.';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
+  robots="noindex, nofollow"
+>
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Customer Account' : 'حساب العميلة'}
+    title={isEn ? 'Your Personal DANDY Space' : 'مساحتكِ الخاصة في داندي'}
+    description={
+      isEn
+        ? 'Follow up on your orders, save your preferred delivery addresses, and manage your saved favorites effortlessly.'
+        : 'تابعي طلباتكِ، احتفظي بعناوين التوصيل المفضلة، وأديري قائمة منتجاتكِ المحفوظة بسهولة.'
+    }
+    currentCrumb={isEn ? 'My Account' : 'حسابي'}
+  />
+
+  <main class="dandy-page-band" id="accountMainContainer" data-dandy-motion="calm">
+    <div class="dandy-container">
+      <!-- Initial Auth Guard Loading -->
+      <div id="accountLoading" class="dandy-acc-auth-loading" role="status" aria-live="polite">
+        <div class="dandy-acc-spinner" aria-hidden="true"></div>
+        <p>{isEn ? 'Verifying your account details...' : 'جاري التحقق من بيانات حسابكِ...'}</p>
+      </div>
+
+      <!-- Authenticated Account Workspace -->
+      <div id="accountContent" class="dandy-acc-shell" hidden>
+        <!-- Customer Identity Summary Bar -->
+        <section class="dandy-acc-identity" aria-label={isEn ? 'Account summary' : 'ملخص الحساب'}>
+          <div class="dandy-acc-user">
+            <div class="dandy-acc-avatar" id="customerAvatar" aria-hidden="true">D</div>
+            <div class="dandy-acc-user-meta">
+              <h2 id="customerGreetingName" class="dandy-acc-greeting dandy-font-ar-display">
+                {isEn ? 'Welcome back' : 'مرحباً بكِ'}
+              </h2>
+              <p id="customerEmailText" class="dandy-acc-email" dir="ltr"></p>
+            </div>
+          </div>
+
+          <div class="dandy-acc-top-actions">
+            <a href={allProductsHref} class="dandy-btn dandy-btn--outline">
+              <Icon name="shopping-bag" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Shop Now' : 'تسوقي الآن'}</span>
+            </a>
+            <button type="button" id="logoutBtn" class="dandy-btn dandy-btn--outline dandy-acc-logout-btn">
+              <Icon name="log-out" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Sign Out' : 'تسجيل الخروج'}</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Semantic Account Tabs -->
+        <div class="dandy-acc-tabs-wrap">
+          <nav class="dandy-acc-tabs" id="accountTabsBar" role="tablist" aria-label={isEn ? 'Account sections' : 'أقسام الحساب'}>
+            <button
+              type="button"
+              role="tab"
+              id="tabOverview"
+              aria-selected="true"
+              aria-controls="panelOverview"
+              data-account-tab="overview"
+              class="dandy-acc-tab is-active"
+              tabindex="0"
+            >
+              <Icon name="user" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Overview' : 'نظرة عامة'}</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              id="tabOrders"
+              aria-selected="false"
+              aria-controls="panelOrders"
+              data-account-tab="orders"
+              class="dandy-acc-tab"
+              tabindex="-1"
+            >
+              <Icon name="package" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Order History' : 'طلباتي'}</span>
+              <span class="dandy-acc-tab-count dandy-tabular" id="ordersCountBadge">0</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              id="tabWishlist"
+              aria-selected="false"
+              aria-controls="panelWishlist"
+              data-account-tab="wishlist"
+              class="dandy-acc-tab"
+              tabindex="-1"
+            >
+              <Icon name="heart" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Wishlist' : 'المفضلة'}</span>
+              <span class="dandy-acc-tab-count dandy-tabular" id="wishlistCountBadge">0</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              id="tabAddresses"
+              aria-selected="false"
+              aria-controls="panelAddresses"
+              data-account-tab="addresses"
+              class="dandy-acc-tab"
+              tabindex="-1"
+            >
+              <Icon name="map-pin" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Saved Addresses' : 'العناوين المحفوظة'}</span>
+              <span class="dandy-acc-tab-count dandy-tabular" id="addressesCountBadge">0</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              id="tabProfile"
+              aria-selected="false"
+              aria-controls="panelProfile"
+              data-account-tab="profile"
+              class="dandy-acc-tab"
+              tabindex="-1"
+            >
+              <Icon name="pencil" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Profile Details' : 'بياناتي'}</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- PANEL 1: OVERVIEW -->
+        <section
+          id="panelOverview"
+          role="tabpanel"
+          aria-labelledby="tabOverview"
+          data-account-panel="overview"
+          class="dandy-acc-panel is-active"
+        >
+          <div class="dandy-ov-stats-grid">
+            <button type="button" class="dandy-ov-stat-card" data-jump-tab="orders">
+              <span class="dandy-ov-stat-label">{isEn ? 'Total Orders' : 'إجمالي الطلبات'}</span>
+              <strong id="overviewOrdersCount" class="dandy-ov-stat-val dandy-tabular">0</strong>
+              <span class="dandy-ov-stat-link">{isEn ? 'View History →' : 'عرض السجل ←'}</span>
+            </button>
+
+            <button type="button" class="dandy-ov-stat-card" data-jump-tab="wishlist">
+              <span class="dandy-ov-stat-label">{isEn ? 'Saved Products' : 'المنتجات المحفوظة'}</span>
+              <strong id="overviewWishlistCount" class="dandy-ov-stat-val dandy-tabular">0</strong>
+              <span class="dandy-ov-stat-link">{isEn ? 'Browse Wishlist →' : 'تصفح المفضلة ←'}</span>
+            </button>
+
+            <button type="button" class="dandy-ov-stat-card" data-jump-tab="addresses">
+              <span class="dandy-ov-stat-label">{isEn ? 'Delivery Addresses' : 'عناوين التوصيل'}</span>
+              <strong id="overviewAddressesCount" class="dandy-ov-stat-val dandy-tabular">0</strong>
+              <span class="dandy-ov-stat-link">{isEn ? 'Manage Addresses →' : 'إدارة العناوين ←'}</span>
+            </button>
+          </div>
+
+          <div class="dandy-ov-cards-grid">
+            <article class="dandy-acc-surface">
+              <div class="dandy-acc-surface-head">
+                <h3 class="dandy-acc-surface-title">{isEn ? 'Latest Order' : 'أحدث طلب'}</h3>
+              </div>
+              <div id="overviewLatestOrder" class="dandy-ov-surface-body">
+                <p class="dandy-ov-empty">{isEn ? 'Loading...' : 'جاري التحميل...'}</p>
+              </div>
+            </article>
+
+            <article class="dandy-acc-surface">
+              <div class="dandy-acc-surface-head">
+                <h3 class="dandy-acc-surface-title">{isEn ? 'Default Shipping Address' : 'عنوان الشحن الافتراضي'}</h3>
+              </div>
+              <div id="overviewDefaultAddress" class="dandy-ov-surface-body">
+                <p class="dandy-ov-empty">{isEn ? 'Loading...' : 'جاري التحميل...'}</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- PANEL 2: ORDERS HISTORY -->
+        <section
+          id="panelOrders"
+          role="tabpanel"
+          aria-labelledby="tabOrders"
+          data-account-panel="orders"
+          class="dandy-acc-panel"
+          hidden
+        >
+          <div id="ordersLoading" class="dandy-acc-tab-loading" role="status">
+            <div class="dandy-acc-spinner" aria-hidden="true"></div>
+            <p>{isEn ? 'Loading your order history...' : 'جاري تحميل سجل طلباتكِ...'}</p>
+          </div>
+
+          <div id="ordersContainer" class="dandy-orders-list" hidden></div>
+
+          <div id="ordersEmpty" class="dandy-acc-empty" hidden>
+            <div class="dandy-acc-empty-icon" aria-hidden="true">
+              <Icon name="package" size={28} strokeWidth={1.6} />
+            </div>
+            <h3>{isEn ? 'No past orders yet' : 'لا توجد طلبات سابقة حتى الآن'}</h3>
+            <p>
+              {isEn
+                ? 'You have not placed any orders yet. Explore our botanical skin and hair care collection and begin your ritual today.'
+                : 'لم تقومي بأي طلبات بعد. استكشفي مستحضرات العناية الطبيعية بالبشرة والشعر وابدئي روتينكِ اليوم.'}
+            </p>
+            <a href={allProductsHref} class="dandy-btn dandy-btn--editorial">
+              <span>{isEn ? 'Explore Products' : 'استكشاف المنتجات'}</span>
+              <Icon name="arrow-left" size={16} strokeWidth={1.85} directional={true} />
+            </a>
+          </div>
+        </section>
+
+        <!-- PANEL 3: WISHLIST -->
+        <section
+          id="panelWishlist"
+          role="tabpanel"
+          aria-labelledby="tabWishlist"
+          data-account-panel="wishlist"
+          class="dandy-acc-panel"
+          hidden
+        >
+          <div id="wishlistLoading" class="dandy-acc-tab-loading" role="status">
+            <div class="dandy-acc-spinner" aria-hidden="true"></div>
+            <p>{isEn ? 'Loading your wishlist...' : 'جاري تحميل قائمة المفضلة...'}</p>
+          </div>
+
+          <div id="wishlistContainer" class="dandy-catalog-grid" hidden></div>
+
+          <div id="wishlistEmpty" class="dandy-acc-empty" hidden>
+            <div class="dandy-acc-empty-icon" aria-hidden="true">
+              <Icon name="heart" size={28} strokeWidth={1.6} />
+            </div>
+            <h3>{isEn ? 'Your wishlist is currently empty' : 'قائمة المفضلة فارغة حالياً'}</h3>
+            <p>
+              {isEn
+                ? 'Save your favorite formulations while browsing so you can return and add them to your bag anytime.'
+                : 'احفظي منتجاتكِ المفضلة أثناء التصفح لتعودي إليها وتضيفيها إلى الحقيبة بسهولة لاحقاً.'}
+            </p>
+            <a href={allProductsHref} class="dandy-btn dandy-btn--editorial">
+              <span>{isEn ? 'Browse Products' : 'تصفح المنتجات'}</span>
+              <Icon name="arrow-left" size={16} strokeWidth={1.85} directional={true} />
+            </a>
+          </div>
+        </section>
+
+        <!-- PANEL 4: SAVED ADDRESSES -->
+        <section
+          id="panelAddresses"
+          role="tabpanel"
+          aria-labelledby="tabAddresses"
+          data-account-panel="addresses"
+          class="dandy-acc-panel"
+          hidden
+        >
+          <div class="dandy-acc-section-head">
+            <div>
+              <h2 class="dandy-acc-section-title">
+                {isEn ? 'Saved Delivery Addresses' : 'عناوين التوصيل المحفوظة'}
+              </h2>
+              <p class="dandy-acc-section-desc">
+                {isEn
+                  ? 'Saved addresses appear automatically during checkout to speed up your order placement.'
+                  : 'تُستدعى هذه العناوين تلقائياً في صفحة إتمام الطلب لتسريع التوصيل.'}
+              </p>
+            </div>
+            <button type="button" id="openAddAddressModalBtn" class="dandy-btn dandy-btn--primary">
+              <Icon name="plus" size={16} strokeWidth={1.9} />
+              <span>{isEn ? 'Add New Address' : 'إضافة عنوان جديد'}</span>
+            </button>
+          </div>
+
+          <div id="addressesLoading" class="dandy-acc-tab-loading" role="status">
+            <div class="dandy-acc-spinner" aria-hidden="true"></div>
+            <p>{isEn ? 'Loading saved addresses...' : 'جاري تحميل العناوين...'}</p>
+          </div>
+
+          <div id="addressesContainer" class="dandy-addresses-grid" hidden></div>
+
+          <div id="addressesEmpty" class="dandy-acc-empty" hidden>
+            <div class="dandy-acc-empty-icon" aria-hidden="true">
+              <Icon name="map-pin" size={28} strokeWidth={1.6} />
+            </div>
+            <h3>{isEn ? 'No saved addresses yet' : 'لا توجد عناوين محفوظة بعد'}</h3>
+            <p>
+              {isEn
+                ? 'Save your home or office address to autofill delivery details with a single click at checkout.'
+                : 'أضيفي عنوان منزلكِ أو مقر عملكِ لتعبئة بيانات الشحن بنقرة واحدة عند إتمام الطلب.'}
+            </p>
+            <button type="button" id="emptyAddAddressBtn" class="dandy-btn dandy-btn--editorial">
+              <Icon name="plus" size={16} strokeWidth={1.9} />
+              <span>{isEn ? 'Add Your First Address' : 'إضافة عنوانكِ الأول'}</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- PANEL 5: PERSONAL PROFILE -->
+        <section
+          id="panelProfile"
+          role="tabpanel"
+          aria-labelledby="tabProfile"
+          data-account-panel="profile"
+          class="dandy-acc-panel"
+          hidden
+        >
+          <div class="dandy-acc-profile-grid">
+            <article class="dandy-acc-surface">
+              <div class="dandy-acc-surface-head">
+                <h2 class="dandy-acc-surface-title">{isEn ? 'Personal Details' : 'البيانات الشخصية'}</h2>
+                <p class="dandy-acc-section-desc">
+                  {isEn
+                    ? 'Update the name displayed on your invoices and personal profile.'
+                    : 'حدّثي اسمكِ الظاهر في الفواتير وحسابكِ الشخصي.'}
+                </p>
+              </div>
+
+              <form id="profileForm" class="dandy-acc-form" novalidate>
+                <div class="dandy-acc-field">
+                  <label for="profName">{isEn ? 'Full Name' : 'الاسم الكامل'}</label>
+                  <input type="text" id="profName" name="name" class="dandy-acc-input" required autocomplete="name" />
+                </div>
+
+                <div class="dandy-acc-field">
+                  <label for="profEmail">{isEn ? 'Email Address' : 'البريد الإلكتروني'}</label>
+                  <input type="email" id="profEmail" class="dandy-acc-input is-readonly" dir="ltr" readonly />
+                </div>
+
+                <div class="dandy-acc-field">
+                  <label for="profPhone">{isEn ? 'Registered Mobile Number' : 'رقم الهاتف المسجل'}</label>
+                  <input type="tel" id="profPhone" class="dandy-acc-input is-readonly" dir="ltr" readonly />
+                  <small class="dandy-acc-hint">
+                    {isEn
+                      ? 'Your verified mobile number is linked to your order history and cannot be changed directly.'
+                      : 'رقم الهاتف مرتبط بسجل الطلبات ولا يمكن تغييره ذاتياً لأغراض التوثيق.'}
+                  </small>
+                </div>
+
+                <button type="submit" id="saveProfileBtn" class="dandy-btn dandy-btn--editorial">
+                  {isEn ? 'Save Changes' : 'حفظ التغييرات'}
+                </button>
+              </form>
+            </article>
+
+            <article class="dandy-acc-surface">
+              <div class="dandy-acc-surface-head">
+                <h2 class="dandy-acc-surface-title">
+                  {isEn ? 'Account Security & Password' : 'أمان الحساب وكلمة المرور'}
+                </h2>
+                <p class="dandy-acc-section-desc">
+                  {isEn
+                    ? 'Request a secure email link anytime to set a new password.'
+                    : 'يمكنكِ طلب رابط آمن عبر البريد الإلكتروني لتعيين كلمة مرور جديدة في أي وقت.'}
+                </p>
+              </div>
+              <div class="dandy-acc-security-box">
+                <p>
+                  {isEn
+                    ? 'We will send a direct password reset link to your registered email address.'
+                    : 'سيتم إرسال رسالة إلى بريدكِ الإلكتروني المسجل تحتوي على رابط إعادة التعيين المباشر.'}
+                </p>
+                <button type="button" id="sendResetPasswordBtn" class="dandy-btn dandy-btn--outline">
+                  <Icon name="lock" size={16} strokeWidth={1.85} />
+                  <span>{isEn ? 'Send Password Reset Link' : 'إرسال رابط تغيير كلمة المرور'}</span>
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- DIALOG 1: ADD / EDIT ADDRESS -->
+  <dialog id="addressDialog" class="dandy-dialog" aria-labelledby="modalTitle">
+    <div class="dandy-dialog-card">
+      <header class="dandy-dialog-head">
+        <h3 id="modalTitle">{isEn ? 'Add New Address' : 'إضافة عنوان جديد'}</h3>
+        <button
+          type="button"
+          id="closeAddressModalBtn"
+          class="dandy-dialog-close"
+          aria-label={isEn ? 'Close dialog' : 'إغلاق النافذة'}
+        >
+          <Icon name="x" size={18} strokeWidth={1.9} />
+        </button>
+      </header>
+
+      <form id="addressForm" class="dandy-acc-form" novalidate>
+        <input type="hidden" id="editAddressId" value="" />
+        <div id="addressFormError" class="dandy-modal-error" role="alert" hidden></div>
+
+        <div class="dandy-acc-field">
+          <label for="addrLabel">
+            {isEn ? 'Address Label' : 'تسمية العنوان'} <span class="dandy-req" aria-hidden="true">*</span>
+          </label>
+          <input
+            type="text"
+            id="addrLabel"
+            class="dandy-acc-input"
+            placeholder={isEn ? 'e.g., Home, Office, Family House' : 'مثال: المنزل، العمل، بيت العائلة'}
+            required
+          />
+        </div>
+
+        <div class="dandy-acc-field">
+          <label for="addrGov">
+            {isEn ? 'Governorate' : 'المحافظة'} <span class="dandy-req" aria-hidden="true">*</span>
+          </label>
+          <select id="addrGov" class="dandy-acc-input" required>
+            <option value="">{isEn ? 'Select governorate' : 'اختر المحافظة'}</option>
+            {GOVERNORATES.map((gov) => (
+              <option value={gov.value}>{isEn ? gov.value : gov.labelAr}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="dandy-acc-field">
+          <label for="addrCity">
+            {isEn ? 'City / District' : 'المدينة / المركز / الحي'}{' '}
+            <span class="dandy-req" aria-hidden="true">*</span>
+          </label>
+          <input
+            type="text"
+            id="addrCity"
+            class="dandy-acc-input"
+            placeholder={isEn ? 'e.g., Maadi, Nasr City, Tanta' : 'مثال: المعادي، مدينة نصر، طنطا'}
+            required
+          />
+        </div>
+
+        <div class="dandy-acc-field">
+          <label for="addrDetail">
+            {isEn ? 'Street Address & Details' : 'العنوان بالتفصيل'}{' '}
+            <span class="dandy-req" aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="addrDetail"
+            rows="3"
+            class="dandy-acc-input"
+            placeholder={
+              isEn
+                ? 'Street name, building no., floor, apartment, or nearest landmark'
+                : 'اسم الشارع، رقم العمارة، الدور، الشقة أو أقرب علامة مميزة'
+            }
+            required
+          ></textarea>
+        </div>
+
+        <label class="dandy-acc-checkbox-row" for="addrIsDefault">
+          <input type="checkbox" id="addrIsDefault" />
+          <span>{isEn ? 'Set as default shipping address' : 'تعيين كعنوان الشحن الافتراضي'}</span>
+        </label>
+
+        <div class="dandy-dialog-actions">
+          <button type="submit" id="saveAddressBtn" class="dandy-btn dandy-btn--editorial">
+            {isEn ? 'Save Address' : 'حفظ العنوان'}
+          </button>
+          <button type="button" id="cancelAddressBtn" class="dandy-btn dandy-btn--outline">
+            {isEn ? 'Cancel' : 'إلغاء'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- DIALOG 2: CONFIRM ADDRESS REMOVAL -->
+  <dialog id="addressDeleteDialog" class="dandy-dialog" aria-labelledby="deleteDialogTitle">
+    <div class="dandy-dialog-card dandy-dialog-card--narrow">
+      <header class="dandy-dialog-head">
+        <h3 id="deleteDialogTitle">{isEn ? 'Delete Saved Address' : 'تأكيد حذف العنوان'}</h3>
+      </header>
+      <p class="dandy-dialog-copy">
+        {isEn ? (
+          <>
+            Are you sure you want to remove «<strong id="deleteAddressLabelPreview">selected</strong>» from your saved addresses?
+          </>
+        ) : (
+          <>
+            هل ترغبين في حذف العنوان «<strong id="deleteAddressLabelPreview">المحدد</strong>» من قائمتكِ المحفوظة؟
+          </>
+        )}
+      </p>
+      <div class="dandy-dialog-actions">
+        <button type="button" id="confirmDeleteAddressBtn" class="dandy-btn dandy-btn--primary">
+          {isEn ? 'Delete Address' : 'حذف العنوان'}
+        </button>
+        <button type="button" id="cancelDeleteAddressBtn" class="dandy-btn dandy-btn--outline">
+          {isEn ? 'Cancel' : 'إلغاء'}
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- DIALOG 3: VERIFIED PURCHASE REVIEW -->
+  <dialog id="reviewDialog" class="dandy-dialog" aria-labelledby="reviewModalTitle">
+    <div class="dandy-dialog-card">
+      <header class="dandy-dialog-head">
+        <h3 id="reviewModalTitle">{isEn ? 'Review Product' : 'تقييم المنتج'}</h3>
+        <button
+          type="button"
+          id="closeReviewModalBtn"
+          class="dandy-dialog-close"
+          aria-label={isEn ? 'Close dialog' : 'إغلاق النافذة'}
+        >
+          <Icon name="x" size={18} strokeWidth={1.9} />
+        </button>
+      </header>
+
+      <div class="dandy-review-preview">
+        <img
+          id="reviewProductThumb"
+          src="/assets/images/logo.png"
+          alt={isEn ? 'Product thumbnail' : 'صورة المنتج'}
+          width="54"
+          height="54"
+          class="dandy-review-thumb"
+          onerror="this.onerror=null;this.src='/assets/images/logo.png';"
+        />
+        <div class="dandy-review-meta">
+          <span class="dandy-verified-purchase">
+            <Icon name="check-circle" size={13} strokeWidth={2} />
+            <span>{isEn ? 'Verified Purchase' : 'شراء مؤكد'}</span>
+          </span>
+          <h4 id="reviewProductName">{isEn ? 'Product Name' : 'اسم المنتج'}</h4>
+          <span id="reviewOrderRef" class="dandy-tabular">{isEn ? 'Order: #...' : 'طلب رقم: #...'}</span>
+        </div>
+      </div>
+
+      <form id="productReviewForm" class="dandy-acc-form" novalidate>
+        <div class="dandy-acc-field dandy-stars-field">
+          <label>
+            {isEn ? 'Overall Product Rating' : 'تقييمكِ العام للمنتج'}{' '}
+            <span class="dandy-req" aria-hidden="true">*</span>
+          </label>
+          <div class="dandy-star-selector" id="reviewStarsContainer" role="radiogroup" aria-label={isEn ? 'Star rating' : 'التقييم بالنجوم'}>
+            {[1, 2, 3, 4, 5].map((val) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={val === 5 ? 'true' : 'false'}
+                class="dandy-star-btn is-active"
+                data-val={val}
+                aria-label={isEn ? `${val} out of 5` : `${val} من 5`}
+              >
+                <Icon name="star" size={24} strokeWidth={1.8} />
+              </button>
+            ))}
+          </div>
+          <div class="dandy-rating-desc" id="reviewRatingDesc">
+            {isEn ? 'Excellent, highly recommended! (5/5)' : 'ممتاز، أنصح به بشدة! (5/5)'}
+          </div>
+        </div>
+
+        <div class="dandy-acc-field">
+          <label for="reviewComment">{isEn ? 'Your Review (Optional)' : 'تعليقكِ وتجربتكِ (اختياري)'}</label>
+          <textarea
+            id="reviewComment"
+            rows="3"
+            maxlength="500"
+            class="dandy-acc-input"
+            placeholder={
+              isEn
+                ? 'Share your thoughts on the formula, scent, and results...'
+                : 'شاركينا رأيكِ في التركيبة والنتيجة بعد الاستخدام...'
+            }
+          ></textarea>
+          <small class="dandy-acc-hint">{isEn ? 'Maximum 500 characters' : 'بحد أقصى 500 حرف'}</small>
+        </div>
+
+        <div class="dandy-dialog-actions">
+          <button type="submit" id="saveReviewBtn" class="dandy-btn dandy-btn--editorial">
+            <Icon name="send" size={15} strokeWidth={1.85} />
+            <span id="saveReviewBtnLabel">{isEn ? 'Submit Review' : 'إرسال التقييم'}</span>
+          </button>
+          <button type="button" id="cancelReviewBtn" class="dandy-btn dandy-btn--outline">
+            {isEn ? 'Cancel' : 'إلغاء'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    import { initCustomerAccountPage } from '../../scripts/account-client';
+    initCustomerAccountPage();
+  </script>
+</BaseLayout>
+
+<style is:global>
+  [hidden] {
+    display: none !important;
+  }
+
+  .dandy-acc-auth-loading,
+  .dandy-acc-tab-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 56px 20px;
+    color: var(--dandy-ink-muted);
+    font-size: var(--dandy-text-sm);
+    text-align: center;
+  }
+
+  .dandy-acc-spinner {
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid var(--dandy-border-default);
+    border-top-color: var(--dandy-accent-primary);
+    border-radius: 50%;
+    animation: dandyAccSpin 750ms linear infinite;
+  }
+
+  @keyframes dandyAccSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dandy-acc-spinner {
+      animation: none;
+      border-top-color: var(--dandy-ink-primary);
+    }
+  }
+
+  .dandy-acc-identity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px 24px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    margin-bottom: 24px;
+  }
+
+  .dandy-acc-user {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .dandy-acc-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--dandy-font-en-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .dandy-acc-user-meta {
+    min-width: 0;
+  }
+
+  .dandy-acc-greeting {
+    margin: 0 0 2px;
+    font-size: clamp(1.15rem, 2vw, 1.4rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-acc-email {
+    margin: 0;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    text-align: start;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dandy-acc-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .dandy-acc-logout-btn {
+    color: var(--dandy-danger);
+    border-color: #F3C4D0;
+  }
+
+  .dandy-acc-logout-btn:hover:not(:disabled) {
+    background-color: var(--dandy-danger-soft);
+    border-color: var(--dandy-danger);
+    color: var(--dandy-danger);
+  }
+
+  .dandy-acc-tabs-wrap {
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    margin-bottom: 28px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .dandy-acc-tabs-wrap::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dandy-acc-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    min-width: max-content;
+  }
+
+  .dandy-acc-tab {
+    appearance: none;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 16px;
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color var(--dandy-transition-fast), border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-acc-tab:hover {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-acc-tab.is-active {
+    color: var(--dandy-ink-primary);
+    border-bottom-color: var(--dandy-accent-primary);
+  }
+
+  .dandy-acc-tab-count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--dandy-ink-secondary);
+    background-color: var(--dandy-bg-stage);
+    padding: 1px 7px;
+    border-radius: var(--dandy-radius-xs);
+  }
+
+  .dandy-acc-tab.is-active .dandy-acc-tab-count {
+    background-color: var(--dandy-accent-soft);
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-ov-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .dandy-ov-stat-card {
+    appearance: none;
+    text-align: start;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    font-family: var(--dandy-font-active-sans);
+    transition: border-color var(--dandy-transition-fast), box-shadow var(--dandy-transition-fast);
+  }
+
+  .dandy-ov-stat-card:hover {
+    border-color: var(--dandy-border-default);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-ov-stat-label {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    font-weight: 600;
+  }
+
+  .dandy-ov-stat-val {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    line-height: 1.2;
+  }
+
+  .dandy-ov-stat-link {
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-accent-text);
+    margin-top: 4px;
+  }
+
+  .dandy-ov-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dandy-acc-surface {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 22px;
+  }
+
+  .dandy-acc-surface-head {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-acc-surface-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-ov-surface-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dandy-ov-empty {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-ov-order-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .dandy-ov-code {
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    font-size: 0.95rem;
+  }
+
+  .dandy-ov-date {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    margin-top: 2px;
+  }
+
+  .dandy-ov-order-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-ov-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .dandy-ov-addr-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--dandy-text-base);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-ov-default-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--dandy-botanical-deep);
+    background-color: var(--dandy-botanical-soft);
+    padding: 2px 8px;
+    border-radius: var(--dandy-radius-xs);
+  }
+
+  .dandy-ov-addr-lines {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+    line-height: 1.65;
+  }
+
+  .dandy-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--dandy-radius-xs);
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .dandy-status-badge.is-new {
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-status-badge.is-processing {
+    background-color: var(--dandy-warning-soft);
+    color: var(--dandy-warning);
+  }
+
+  .dandy-status-badge.is-shipped {
+    background-color: var(--dandy-gold-soft);
+    color: var(--dandy-gold-editorial);
+  }
+
+  .dandy-status-badge.is-delivered {
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-status-badge.is-cancelled {
+    background-color: var(--dandy-danger-soft);
+    color: var(--dandy-danger);
+  }
+
+  .dandy-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .dandy-order-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 20px 22px;
+  }
+
+  .dandy-order-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    margin-bottom: 14px;
+  }
+
+  .dandy-order-code {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-order-date {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    margin-top: 2px;
+  }
+
+  .dandy-order-summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-order-label {
+    display: block;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    margin-bottom: 2px;
+  }
+
+  .dandy-order-summary-row strong {
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .dandy-ord-item-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-ord-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--dandy-radius-xs);
+    object-fit: cover;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    flex-shrink: 0;
+  }
+
+  .dandy-ord-item-info {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+
+  .dandy-ord-item-title {
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    margin-bottom: 3px;
+  }
+
+  .dandy-ord-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-ord-subitems {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .dandy-ord-subitems span {
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-order-foot {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .dandy-acc-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .dandy-acc-section-title {
+    margin: 0 0 4px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-acc-section-desc {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-addresses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+  }
+
+  .dandy-addr-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dandy-addr-card.is-default {
+    border-color: var(--dandy-botanical-deep);
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-addr-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .dandy-addr-title {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--dandy-text-base);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-addr-default-flag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--dandy-botanical-deep);
+    background-color: var(--dandy-botanical-soft);
+    padding: 2px 8px;
+    border-radius: var(--dandy-radius-xs);
+  }
+
+  .dandy-addr-body {
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+    line-height: 1.7;
+  }
+
+  .dandy-addr-body strong {
+    color: var(--dandy-ink-primary);
+    font-weight: 600;
+  }
+
+  .dandy-addr-actions {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dandy-addr-actions .dandy-btn {
+    min-height: 36px;
+    padding-block: 6px;
+    padding-inline: 12px;
+    font-size: var(--dandy-text-xs);
+  }
+
+  .dandy-addr-del-btn {
+    color: var(--dandy-danger);
+    margin-inline-start: auto;
+  }
+
+  .dandy-addr-del-btn:hover:not(:disabled) {
+    border-color: var(--dandy-danger);
+    background-color: var(--dandy-danger-soft);
+  }
+
+  .dandy-pcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    transition: transform var(--dandy-transition-base), border-color var(--dandy-transition-base), box-shadow var(--dandy-transition-base);
+  }
+
+  .dandy-pcard:hover {
+    transform: translateY(-2px);
+    border-color: var(--dandy-border-default);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-pcard-stage {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .dandy-pcard-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dandy-pcard-stage.is-fallback .dandy-pcard-img {
+    object-fit: contain;
+    padding: var(--dandy-space-8);
+    opacity: 0.78;
+  }
+
+  .dandy-pcard-tag {
+    position: absolute;
+    top: 10px;
+    inset-inline-start: 10px;
+    z-index: 2;
+    padding: 4px 9px;
+    border-radius: var(--dandy-radius-xs);
+    font-size: 0.72rem;
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+  .dandy-pcard-tag.is-discount {
+    background-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+  }
+
+  .dandy-pcard-tag.is-campaign {
+    background-color: var(--dandy-plum-ink);
+    color: var(--dandy-ink-inverse);
+  }
+
+  .dandy-pcard-tag.is-soldout {
+    background-color: var(--dandy-bg-elevated);
+    color: var(--dandy-ink-secondary);
+    border: 1px solid var(--dandy-border-default);
+  }
+
+  .dandy-pcard-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .dandy-pcard-meta {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pcard-category {
+    position: relative;
+    z-index: 2;
+    color: var(--dandy-ink-muted);
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-pcard-category:hover {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pcard-title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pcard-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-pcard-link:hover {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-pcard-price-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 4px;
+  }
+
+  .dandy-pcard-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pcard-old-price {
+    font-size: 0.82rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pcard-btn {
+    width: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--dandy-radius-sm);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid var(--dandy-ink-primary);
+    background-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+  }
+
+  .dandy-pcard-btn.is-variant {
+    background-color: transparent;
+    border-color: var(--dandy-border-default);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pcard-btn.is-soldout {
+    background-color: var(--dandy-bg-stage);
+    border-color: var(--dandy-border-subtle);
+    color: var(--dandy-ink-muted);
+    cursor: not-allowed;
+  }
+
+  .dandy-wish-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .dandy-wish-card-actions > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .dandy-wish-remove-btn {
+    width: 100%;
+    min-height: 38px;
+    padding-block: 6px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-wish-remove-btn:hover:not(:disabled) {
+    color: var(--dandy-danger);
+    border-color: var(--dandy-danger);
+    background-color: var(--dandy-danger-soft);
+  }
+
+  .dandy-acc-empty {
+    text-align: center;
+    padding: 48px 20px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px dashed var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dandy-acc-empty-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-acc-empty h3 {
+    margin: 4px 0 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-acc-empty p {
+    margin: 0 0 8px;
+    max-width: 420px;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-muted);
+    line-height: 1.65;
+  }
+
+  .dandy-acc-profile-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .dandy-acc-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dandy-acc-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dandy-acc-field label {
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-req {
+    color: var(--dandy-danger);
+  }
+
+  .dandy-acc-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-base);
+    box-sizing: border-box;
+  }
+
+  .dandy-acc-input:focus {
+    outline: none;
+    border-color: var(--dandy-ink-primary);
+  }
+
+  .dandy-acc-input.is-readonly {
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-muted);
+    cursor: default;
+  }
+
+  .dandy-acc-hint {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    line-height: 1.5;
+  }
+
+  .dandy-acc-security-box {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dandy-acc-security-box p {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+    line-height: 1.65;
+  }
+
+  .dandy-acc-checkbox-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-acc-checkbox-row input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--dandy-accent-primary);
+  }
+
+  .dandy-dialog {
+    padding: 0;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    width: min(480px, calc(100vw - 32px));
+    max-height: 90dvh;
+    margin: auto;
+    box-shadow: var(--dandy-shadow-lg);
+  }
+
+  .dandy-dialog::backdrop {
+    background-color: rgba(26, 23, 21, 0.45);
+    backdrop-filter: blur(3px);
+  }
+
+  .dandy-dialog-card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dandy-dialog-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-dialog-head h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-dialog-close {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--dandy-radius-sm);
+    color: var(--dandy-ink-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .dandy-dialog-close:hover {
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-dialog-copy {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+    line-height: 1.65;
+  }
+
+  .dandy-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .dandy-dialog-actions > .dandy-btn:first-child {
+    flex: 1 1 auto;
+  }
+
+  .dandy-modal-error {
+    padding: 10px 12px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-danger-soft);
+    border: 1px solid #F4C7D2;
+    color: var(--dandy-danger);
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+  }
+
+  .dandy-review-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+  }
+
+  .dandy-review-thumb {
+    width: 54px;
+    height: 54px;
+    border-radius: var(--dandy-radius-xs);
+    object-fit: cover;
+    border: 1px solid var(--dandy-border-subtle);
+    flex-shrink: 0;
+  }
+
+  .dandy-review-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .dandy-verified-purchase {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-review-meta h4 {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-review-meta span:last-child {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-stars-field {
+    align-items: center;
+    text-align: center;
+  }
+
+  .dandy-star-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    direction: ltr;
+  }
+
+  .dandy-star-btn {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--dandy-border-default);
+    transition: color var(--dandy-transition-fast), transform var(--dandy-transition-fast);
+  }
+
+  .dandy-star-btn.is-active {
+    color: var(--dandy-gold-editorial);
+  }
+
+  .dandy-star-btn.is-active svg {
+    fill: var(--dandy-gold-editorial);
+  }
+
+  .dandy-rating-desc {
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-ink-secondary);
+    min-height: 20px;
+  }
+
+  @media (max-width: 899px) {
+    .dandy-ov-stats-grid,
+    .dandy-ov-cards-grid,
+    .dandy-acc-profile-grid,
+    .dandy-order-summary-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,383 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HeroEditorial from '../home/HeroEditorial.astro';
+import TrustStripSection from '../home/TrustStripSection.astro';
+import CategoryDiscovery from '../home/CategoryDiscovery.astro';
+import FeaturedProducts from '../home/FeaturedProducts.astro';
+import PinkFridayHomeSection from '../home/PinkFridayHomeSection.astro';
+import EditorialBrandStory from '../home/EditorialBrandStory.astro';
+import BlogHomeSection from '../home/BlogHomeSection.astro';
+import ReviewsHomeSection from '../home/ReviewsHomeSection.astro';
+import CustomStudioSection from '../home/CustomStudioSection.astro';
+import { getAllProducts, SITE_URL } from '../../utils/products';
+import { getAllArticles } from '../../utils/articles';
+import { getHomepageStudioData } from '../../utils/homepage';
+import {
+  calculatePinkFridayPricing,
+  getPublishedPinkFridayCampaign,
+  shouldDisplayCampaignToCustomers,
+  type CampaignPricingResult,
+} from '../../utils/pink-friday-server';
+import {
+  resolveCategoriesForShowcase,
+  resolveDynamicProductSection,
+  resolveHeroSlides,
+  resolveOrderedHomepageEntries,
+  resolvePromoBanner,
+  resolveTrustItems,
+  selectProductsForStudioSection,
+} from '../../scripts/homepage-studio';
+import { resolveLocalizedHomepageStudioState } from '../../i18n/content/adapters';
+import { EN_HOMEPAGE_STUDIO_OVERLAY } from '../../i18n/content/en/homepage-studio';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const isStudioPreview = Astro.url.searchParams.get('studio_preview') === '1';
+
+const [allProducts, publishedPfCampaign, rawStudioData, allArticles] = await Promise.all([
+  getAllProducts(),
+  getPublishedPinkFridayCampaign(),
+  getHomepageStudioData({ forceFresh: isStudioPreview }),
+  getAllArticles(isStudioPreview),
+]);
+
+const studioData = isEn
+  ? resolveLocalizedHomepageStudioState(rawStudioData, 'en', EN_HOMEPAGE_STUDIO_OVERLAY)
+  : rawStudioData;
+
+const showPfSection = shouldDisplayCampaignToCustomers(publishedPfCampaign);
+const orderedEntries = resolveOrderedHomepageEntries(studioData, showPfSection);
+
+const renderedEntries = isStudioPreview
+  ? orderedEntries
+  : orderedEntries.filter((entry) => entry.visible);
+
+const heroSlides = resolveHeroSlides(studioData.hero, locale);
+const trustItems = resolveTrustItems(studioData.trust, undefined, locale);
+const resolvedCategories = resolveCategoriesForShowcase(studioData.categories, locale);
+const promoBanner = resolvePromoBanner(studioData.promoBanner, locale);
+
+const offersConfig = resolveDynamicProductSection(studioData, 'offers', locale);
+const offersProducts = selectProductsForStudioSection(allProducts, {
+  source: offersConfig.type,
+  manualProducts: offersConfig.manualProducts,
+  limit: offersConfig.limit,
+});
+
+const newArrivalsConfig = resolveDynamicProductSection(studioData, 'newArrivals', locale);
+const newArrivalsProducts = selectProductsForStudioSection(allProducts, {
+  source: newArrivalsConfig.type,
+  manualProducts: newArrivalsConfig.manualProducts,
+  limit: newArrivalsConfig.limit,
+});
+
+const studioBootstrapJson = isStudioPreview
+  ? JSON.stringify({
+      state: studioData,
+      showPinkFriday: showPfSection,
+      products: allProducts.filter((p) => !p.isHidden),
+      pinkFridayPricingMap: publishedPfCampaign
+        ? Object.fromEntries(
+            allProducts
+              .filter((p) => !p.isHidden)
+              .map((p): [string, CampaignPricingResult | null] => [
+                p.id,
+                calculatePinkFridayPricing(p, publishedPfCampaign),
+              ])
+          )
+        : {},
+    }).replace(/<\/script>/gi, '<\\/script>')
+  : null;
+
+const canonicalUrl = isEn ? `${SITE_URL}/en/` : `${SITE_URL}/`;
+const pageTitle = isEn
+  ? 'Dandy Cosmetics | Natural Skincare, Haircare & Body Care in Egypt'
+  : 'داندي | Dandy Cosmetics - منتجات طبيعية للعناية بالبشرة والشعر';
+const pageDescription = isEn
+  ? 'Shop Dandy Cosmetics for pharmacist-crafted natural skincare, haircare, body care, and signature fragrance essentials in Egypt.'
+  : 'تسوقي الآن من متجر داندي (Dandy Cosmetics)، وجهتك الأولى لأفضل منتجات العناية بالبشرة والشعر الطبيعية في مصر. اكتشفي الجمال الطبيعي اليوم!';
+const pageKeywords = isEn
+  ? 'Dandy Cosmetics, Natural Skincare Egypt, Botanical Haircare, Body Care, Body Splash, Solid Perfume, Vegan Beauty Egypt'
+  : 'Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل طبيعية, منتجات دندي, Natural Skincare, Beauty Store Egypt';
+const ogImage = 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg';
+const searchTargetUrl = `${SITE_URL}${buildLocalizedPath('/all-products', locale)}?search={search_term_string}`;
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={pageKeywords}
+  canonical={canonicalUrl}
+>
+  <slot name="head" slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Dandy Cosmetics',
+        alternateName: isEn ? 'Dandy Skincare Egypt' : 'داندي',
+        url: canonicalUrl,
+        inLanguage: isEn ? 'en' : 'ar',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: searchTargetUrl,
+          'query-input': 'required name=search_term_string',
+        },
+      })}
+    />
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Dandy Cosmetics',
+        url: `${SITE_URL}/`,
+        logo: ogImage,
+        sameAs: [
+          'https://www.facebook.com/profile.php?id=61563039704396',
+          'https://www.instagram.com/dandy_skincare_cosmotics',
+        ],
+      })}
+    />
+
+    <style is:global>
+      .dandy-home-main {
+        background-color: var(--dandy-bg-page);
+        overflow-x: clip;
+      }
+
+      .dandy-home-main > [hidden] {
+        display: none !important;
+      }
+
+      .dandy-home-section {
+        padding-block: var(--dandy-section-py-desktop);
+      }
+
+      .dandy-section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: clamp(24px, 3vw, 36px);
+      }
+
+      .dandy-section-titles {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .dandy-section-kicker {
+        margin: 0;
+        font-family: var(--dandy-font-active-sans);
+        font-size: var(--dandy-text-xs);
+        font-weight: 600;
+        color: var(--dandy-botanical-deep);
+        letter-spacing: 0;
+      }
+
+      html[lang="en"] .dandy-section-kicker {
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .dandy-section-heading {
+        margin: 0;
+        font-family: var(--dandy-font-active-display);
+        font-size: clamp(1.5rem, 2.4vw, 2.15rem);
+        font-weight: 700;
+        line-height: 1.3;
+        color: var(--dandy-ink-primary);
+      }
+
+      .dandy-section-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 40px;
+        font-family: var(--dandy-font-active-sans);
+        font-size: var(--dandy-text-sm);
+        font-weight: 600;
+        color: var(--dandy-ink-primary);
+        text-decoration: none;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--dandy-border-default);
+        padding-bottom: 2px;
+        transition: color var(--dandy-transition-fast), border-color var(--dandy-transition-fast);
+      }
+
+      .dandy-section-more:hover {
+        color: var(--dandy-accent-text);
+        border-color: var(--dandy-accent-primary);
+      }
+
+      html.dandy-studio-preview .dandy-consent-banner,
+      html.dandy-studio-preview dandy-bab-widget {
+        display: none !important;
+      }
+
+      /* Studio Edit Mode Visual Affordances inside /?studio_preview=1 */
+      html.dandy-studio-edit-mode [data-studio-section] {
+        position: relative;
+        cursor: pointer;
+        transition: outline-color 150ms ease;
+      }
+
+      html.dandy-studio-edit-mode [data-studio-section]:hover {
+        outline: 2px dashed rgba(157, 27, 77, 0.55);
+        outline-offset: -3px;
+      }
+
+      html.dandy-studio-edit-mode [data-studio-section].is-studio-selected {
+        outline: 2px solid var(--dandy-accent-primary);
+        outline-offset: -3px;
+      }
+
+      html.dandy-studio-edit-mode [data-studio-section].is-studio-selected::before {
+        content: attr(data-studio-label);
+        position: absolute;
+        top: 8px;
+        inset-inline-start: 12px;
+        z-index: 30;
+        padding: 3px 10px;
+        border-radius: var(--dandy-radius-xs);
+        background-color: var(--dandy-accent-primary);
+        color: #ffffff;
+        font-family: var(--dandy-font-active-sans);
+        font-size: 0.72rem;
+        font-weight: 700;
+        pointer-events: none;
+      }
+
+      @media (max-width: 767px) {
+        .dandy-home-section {
+          padding-block: var(--dandy-section-py-mobile);
+        }
+
+        .dandy-section-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          margin-bottom: 22px;
+        }
+      }
+    </style>
+  </slot>
+
+  <main class="dandy-home-main" id="main-content" data-dandy-motion="expressive">
+    {renderedEntries.map((entry) => {
+      const hidden = !entry.visible;
+
+      if (entry.kind === 'custom' && entry.customSection) {
+        return (
+          <CustomStudioSection
+            section={entry.customSection}
+            allProducts={allProducts}
+            pinkFridayCampaign={publishedPfCampaign}
+            hidden={hidden}
+            locale={locale}
+          />
+        );
+      }
+
+      if (entry.kind === 'pink-friday' && showPfSection) {
+        return <PinkFridayHomeSection campaign={publishedPfCampaign} locale={locale} />;
+      }
+
+      switch (entry.id) {
+        case 'hero':
+          return <HeroEditorial slides={heroSlides} hidden={hidden} locale={locale} />;
+        case 'trust':
+          return <TrustStripSection sectionId="trust" items={trustItems} hidden={hidden} locale={locale} />;
+        case 'categories':
+          return <CategoryDiscovery categories={resolvedCategories} hidden={hidden} locale={locale} />;
+        case 'offers':
+          return (
+            <FeaturedProducts
+              sectionId="offers"
+              kicker={offersConfig.subtitle}
+              heading={offersConfig.title}
+              viewAllHref={offersConfig.viewAllHref}
+              viewAllLabel={offersConfig.viewAllLabel}
+              alternateSurface={true}
+              products={offersProducts}
+              pinkFridayCampaign={publishedPfCampaign}
+              hidden={hidden}
+              locale={locale}
+            />
+          );
+        case 'promo':
+          return (
+            <EditorialBrandStory
+              sectionId="promo"
+              eyebrow={promoBanner.eyebrow}
+              title={promoBanner.title}
+              desc={promoBanner.desc}
+              ctaText={promoBanner.ctaText}
+              ctaLink={promoBanner.ctaLink}
+              image={promoBanner.image}
+              isCustomized={promoBanner.isCustomized}
+              hidden={hidden}
+              locale={locale}
+            />
+          );
+        case 'newArrivals':
+          return (
+            <FeaturedProducts
+              sectionId="newArrivals"
+              kicker={newArrivalsConfig.subtitle}
+              heading={newArrivalsConfig.title}
+              viewAllHref={newArrivalsConfig.viewAllHref}
+              viewAllLabel={newArrivalsConfig.viewAllLabel}
+              alternateSurface={false}
+              products={newArrivalsProducts}
+              pinkFridayCampaign={publishedPfCampaign}
+              hidden={hidden}
+              locale={locale}
+            />
+          );
+        case 'blog':
+          return <BlogHomeSection articles={allArticles} hidden={hidden} locale={locale} />;
+        case 'reviews':
+          return <ReviewsHomeSection reviews={studioData.reviews} hidden={hidden} locale={locale} />;
+        default:
+          return null;
+      }
+    })}
+  </main>
+
+  {studioBootstrapJson && (
+    <script
+      type="application/json"
+      id="dandy-home-studio-bootstrap"
+      is:inline
+      set:html={studioBootstrapJson}
+    />
+  )}
+
+  <script>
+    import { initHomepageStudio } from '../../scripts/homepage-studio-client';
+    initHomepageStudio();
+  </script>
+</BaseLayout>

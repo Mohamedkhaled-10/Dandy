@@ -4,7 +4,19 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import DashboardNav from '../components/DashboardNav.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
+import ToastHost from '../components/ui/ToastHost.astro';
 import { getPublishedPinkFridayCampaign } from '../utils/pink-friday-server.ts';
+import { isExcludedMotionRoute } from '../scripts/page-entrance';
+import { getDocumentAttributes } from '../i18n/config';
+import { buildHreflangAlternates } from '../i18n/metadata';
+import type { CounterpartAvailability, HreflangAlternate, Locale } from '../i18n/types';
+import { resolveLocaleFromPath } from '../i18n/resolve-locale';
+import { resolveLocalizedPinkFridayCampaign } from '../i18n/content/adapters';
+import { EN_PINK_FRIDAY_OVERLAY } from '../i18n/content/en/pink-friday';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import '../styles/animations.css';
 
 export interface Props {
   title?: string;
@@ -13,35 +25,75 @@ export interface Props {
   canonical?: string;
   lang?: string;
   dir?: string;
+  locale?: Locale;
+  counterpartAvailability?: CounterpartAvailability;
+  alternates?: HreflangAlternate[];
   showHeader?: boolean;
   showFooter?: boolean;
   showDashboardNav?: boolean;
   robots?: string;
 }
 
+const pathLocale = resolveLocaleFromPath(Astro.url.pathname || '/');
+
 const {
-  title = 'داندي | Dandy Cosmetics - منتجات طبيعية للعناية بالبشرة والشعر',
-  description = 'تسوقي الآن من متجر داندي (Dandy Cosmetics)، وجهتك الأولى لأفضل منتجات العناية بالبشرة والشعر الطبيعية في مصر. اكتشفي الجمال الطبيعي اليوم!',
-  keywords = 'Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل طبيعية, منتجات دندي, Natural Skincare, Beauty Store Egypt',
+  title = pathLocale === 'en'
+    ? 'Dandy Cosmetics | Natural Skincare, Haircare & Body Care in Egypt'
+    : 'داندي | Dandy Cosmetics - منتجات طبيعية للعناية بالبشرة والشعر',
+  description = pathLocale === 'en'
+    ? 'Shop Dandy Cosmetics for pharmacist-crafted natural skincare, haircare, body care, and signature fragrance essentials in Egypt.'
+    : 'تسوقي الآن من متجر داندي (Dandy Cosmetics)، وجهتك الأولى لأفضل منتجات العناية بالبشرة والشعر الطبيعية في مصر. اكتشفي الجمال الطبيعي اليوم!',
+  keywords = pathLocale === 'en'
+    ? 'Dandy, Dandy Cosmetics, Natural Skincare Egypt, Botanical Haircare, Body Care, Body Splash, Vegan Beauty Egypt'
+    : 'Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, العناية بالبشرة, العناية بالشعر, مستحضرات تجميل طبيعية, منتجات دندي, Natural Skincare, Beauty Store Egypt',
   canonical,
-  lang = 'ar',
-  dir = 'rtl',
+  lang,
+  dir,
+  locale,
+  counterpartAvailability,
+  alternates = [],
   showHeader = true,
   showFooter = true,
   showDashboardNav = false,
   robots = 'index, follow',
 } = Astro.props;
 
+const docAttrs = getDocumentAttributes(locale || lang || pathLocale);
+const resolvedLang = docAttrs.lang;
+const resolvedDir = dir === 'rtl' || dir === 'ltr' ? dir : docAttrs.dir;
+
 const pathname = (Astro.url.pathname || '').replace(/\/$/, '');
-const defaultCanonical = `https://dandy-ebon.vercel.app${pathname || '/'}`;
+const defaultCanonical =
+  resolvedLang === 'en' && (!pathname || pathname === '/en')
+    ? 'https://dandy-ebon.vercel.app/en/'
+    : `https://dandy-ebon.vercel.app${pathname || '/'}`;
 const resolvedCanonical = canonical || defaultCanonical;
 
-const firebaseApiKey = process.env.FIREBASE_API_KEY || "AIzaSyDqYY4EF0Nig9aBOxmWZJA8D-4Gr4tT-UU";
+const resolvedAlternates: HreflangAlternate[] =
+  Array.isArray(alternates) && alternates.length > 0
+    ? alternates
+    : String(robots).toLowerCase().includes('noindex')
+      ? []
+      : buildHreflangAlternates(Astro.url.pathname || '/', {
+          targetEntityExists: counterpartAvailability?.targetEntityExists,
+          targetSlug: counterpartAvailability?.targetSlug,
+        });
+
+const ogLocale = resolvedLang === 'en' ? 'en_US' : 'ar_EG';
+const ogLocaleAlternate = resolvedLang === 'en' ? 'ar_EG' : 'en_US';
+
+const firebaseApiKey = process.env.FIREBASE_API_KEY || '';
 const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
+const localizedPinkFridayCampaign =
+  resolvedLang === 'en'
+    ? resolveLocalizedPinkFridayCampaign(pinkFridayCampaign, 'en', EN_PINK_FRIDAY_OVERLAY)
+    : pinkFridayCampaign;
+const enableStorefrontMotion =
+  !showDashboardNav && !isExcludedMotionRoute(Astro.url.pathname || '/', Astro.url.search || '');
 ---
 
 <!DOCTYPE html>
-<html lang={lang} dir={dir}>
+<html lang={resolvedLang} dir={resolvedDir}>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -50,6 +102,13 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
   {keywords && <meta name="keywords" content={keywords} />}
   <meta name="robots" content={robots} />
   <link rel="canonical" href={resolvedCanonical} />
+  <meta property="og:locale" content={ogLocale} />
+  {resolvedAlternates.length > 0 && (
+    <meta property="og:locale:alternate" content={ogLocaleAlternate} />
+  )}
+  {resolvedAlternates.map((alt) => (
+    <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+  ))}
   <meta name="google-site-verification" content="vgH4o9b-LdBpUBJcipJLSwPjgGpGIepXbHXz8e5r3B8" />
 
   <!-- Favicons -->
@@ -58,13 +117,13 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/fav-icons/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/fav-icons/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <meta name="theme-color" content="#fe5d9f" />
+  <meta name="theme-color" content="#FAF8F6" />
 
-  <!-- Preconnect & Fonts -->
+  <!-- Preconnect & Centralized Approved Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app" />
-  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Amiri:wght@700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" />
@@ -84,7 +143,7 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
   <!-- Dandy Variants & Slugs Utilities -->
   <script is:inline src="/assets/js/variants.js"></script>
   <script is:inline src="/assets/js/product-slugs.js"></script>
-  <script is:inline define:vars={{ pinkFridayConfig: pinkFridayCampaign }}>
+  <script is:inline define:vars={{ pinkFridayConfig: localizedPinkFridayCampaign }}>
     window.__PINK_FRIDAY_CONFIG = pinkFridayConfig;
   </script>
   <script is:inline src="/assets/js/pink-friday.js"></script>
@@ -92,7 +151,7 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
   <!-- Central Firebase Initialization -->
   <script is:inline define:vars={{ firebaseApiKey }}>
     const firebaseConfig = {
-      apiKey: firebaseApiKey,
+      ...(firebaseApiKey ? { apiKey: firebaseApiKey } : {}),
       authDomain: "dandy-562fc.firebaseapp.com",
       databaseURL: "https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "dandy-562fc",
@@ -102,11 +161,21 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
     };
 
     if (typeof firebase !== 'undefined') {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        window.db = firebase.database();
+      } catch (err) {
+        console.warn('Firebase database initialization notice:', err);
       }
-      window.db = firebase.database();
-      window.auth = firebase.auth();
+      try {
+        if (firebaseApiKey && firebase.auth) {
+          window.auth = firebase.auth();
+        }
+      } catch (err) {
+        console.warn('Firebase auth initialization notice:', err);
+      }
       try {
         if (firebase.firestore) {
           firebase.firestore.setLogLevel('error');
@@ -123,10 +192,32 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
     }
   </script>
 
+  {enableStorefrontMotion && (
+    <script is:inline>
+      (function () {
+        try {
+          if (
+            'IntersectionObserver' in window &&
+            !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+            !window.location.search.includes('studio_preview=1')
+          ) {
+            var root = document.documentElement;
+            root.classList.add('dandy-motion-ready');
+            window.setTimeout(function () {
+              if (!window.__dandyMotionBooted) {
+                root.classList.remove('dandy-motion-ready');
+              }
+            }, 900);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  )}
+
   <slot name="head" />
 </head>
 <body data-astro-layout="true">
-  {showHeader && <Header />}
+  {showHeader && <Header locale={resolvedLang} counterpartAvailability={counterpartAvailability} />}
   {showDashboardNav && <DashboardNav />}
 
   <slot />
@@ -141,9 +232,19 @@ const pinkFridayCampaign = await getPublishedPinkFridayCampaign();
     src="/assets/bab/widget/bab-widget.js">
   </script>
 
-  {showFooter && <Footer />}
+  {showFooter && <Footer locale={resolvedLang} />}
+
+  <!-- Global DandyToast Notification Host -->
+  <ToastHost locale={resolvedLang} />
 
   <!-- Cookie Consent Banner for Marketing & Analytics Tracking -->
-  <ConsentBanner />
+  <ConsentBanner locale={resolvedLang} />
+
+  {enableStorefrontMotion && (
+    <script>
+      import { DandyAnimationController } from '../utils/animations';
+      DandyAnimationController.getInstance().init();
+    </script>
+  )}
 </body>
 </html>

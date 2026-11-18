@@ -1,0 +1,166 @@
+---
+/**
+ * DANDY COSMETICS — DYNAMIC PRODUCTS SHOWCASE (STUDIO SYNCHRONIZED)
+ * Powers Studio built-in sections (`offers` and `newArrivals`) as well as custom product grids,
+ * reusing the unified ProductCard component.
+ */
+import Icon from '../ui/Icon.astro';
+import ProductCard from '../product/ProductCard.astro';
+import type { Product } from '../../utils/products';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/routes';
+import {
+  calculatePinkFridayPricing,
+  type PinkFridayCampaignData,
+} from '../../utils/pink-friday-server';
+
+export interface Props {
+  sectionId?: string;
+  kicker?: string;
+  heading?: string;
+  viewAllHref?: string;
+  viewAllLabel?: string;
+  alternateSurface?: boolean;
+  products: Product[];
+  pinkFridayCampaign?: PinkFridayCampaignData | null;
+  hidden?: boolean;
+  locale?: Locale;
+}
+
+const {
+  sectionId = 'offers',
+  kicker,
+  heading,
+  viewAllHref,
+  viewAllLabel,
+  alternateSurface = true,
+  products = [],
+  pinkFridayCampaign = null,
+  hidden = false,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+const resolvedKicker = kicker || (isEn ? 'DANDY Essentials' : 'مختارات داندي');
+const resolvedHeading =
+  heading || (isEn ? 'Curated Essentials for Your Daily Ritual' : 'مستحضرات مختارة لروتينكِ اليومي');
+const resolvedViewAllHref =
+  viewAllHref && viewAllHref.startsWith('/')
+    ? buildLocalizedPath(viewAllHref, locale)
+    : viewAllHref || buildLocalizedPath('/all-products', locale);
+const resolvedViewAllLabel = viewAllLabel || (isEn ? 'Browse Full Store' : 'عرض المتجر بالكامل');
+const storeHref = buildLocalizedPath('/all-products', locale);
+
+const headingId = `home-products-heading-${sectionId}`;
+---
+
+<section
+  class:list={[
+    'dandy-home-section',
+    'dandy-featured-section',
+    { 'is-plain-surface': !alternateSurface },
+  ]}
+  aria-labelledby={headingId}
+  data-studio-section={sectionId}
+  hidden={hidden || undefined}
+>
+  <div class="dandy-container">
+    <header class="dandy-section-header" data-dandy-reveal>
+      <div class="dandy-section-titles">
+        <p class="dandy-section-kicker" data-sec-subtitle dir="auto">{resolvedKicker}</p>
+        <h2 id={headingId} class="dandy-section-heading" data-sec-title dir="auto">
+          {resolvedHeading}
+        </h2>
+      </div>
+      <a href={resolvedViewAllHref} class="dandy-section-more" data-sec-more-link>
+        <span data-sec-more-label dir="auto">{resolvedViewAllLabel}</span>
+        <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={15} strokeWidth={1.8} />
+      </a>
+    </header>
+
+    <div
+      class="dandy-featured-grid"
+      data-products-grid
+      data-dandy-stagger="grid"
+      hidden={products.length === 0 || undefined}
+    >
+      {products.map((product, index) => {
+        const pfPricing = pinkFridayCampaign
+          ? calculatePinkFridayPricing(product, pinkFridayCampaign)
+          : null;
+        return (
+          <ProductCard
+            product={product}
+            pinkFridayPricing={pfPricing}
+            priority={index < 4}
+            revealChild={true}
+            locale={locale}
+          />
+        );
+      })}
+    </div>
+
+    <div class="dandy-featured-empty" data-products-empty hidden={products.length > 0 || undefined}>
+      <p>
+        {isEn
+          ? 'Browse all available DANDY products in our full catalog.'
+          : 'يمكنكِ تصفح جميع منتجات داندي المتاحة عبر صفحة المتجر.'}
+      </p>
+      <a href={storeHref} class="dandy-btn dandy-btn--outline">
+        <span>{isEn ? 'Visit Store' : 'زيارة المتجر'}</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .dandy-featured-section {
+    background-color: var(--dandy-bg-editorial);
+    border-top: 1px solid var(--dandy-border-subtle);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-featured-section.is-plain-surface {
+    background-color: var(--dandy-bg-page);
+    border-top: none;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-featured-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dandy-featured-grid[hidden],
+  .dandy-featured-empty[hidden] {
+    display: none;
+  }
+
+  .dandy-featured-empty {
+    padding: 40px 24px;
+    text-align: center;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: var(--dandy-ink-secondary);
+  }
+
+  @media (max-width: 1099px) {
+    .dandy-featured-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .dandy-featured-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+</style>

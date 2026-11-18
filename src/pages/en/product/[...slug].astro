@@ -1,0 +1,9 @@
+---
+export const prerender = false;
+
+import ProductDetailView from '../../../components/views/ProductDetailView.astro';
+
+const { slug } = Astro.params;
+---
+
+<ProductDetailView locale="en" slug={slug} />

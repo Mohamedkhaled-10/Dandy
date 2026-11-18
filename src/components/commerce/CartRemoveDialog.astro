@@ -1,0 +1,156 @@
+---
+/**
+ * DANDY COSMETICS — ACCESSIBLE ITEM REMOVAL CONFIRMATION DIALOG (PHASE 6)
+ * Replaces abrupt deletion or native window.confirm() with a keyboard-safe <dialog>.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+---
+
+<dialog
+  id="cartRemoveDialog"
+  class="dandy-remove-dialog"
+  aria-labelledby="cartRemoveTitle"
+  aria-describedby="cartRemoveDesc"
+>
+  <div class="dandy-remove-dialog-card">
+    <div class="dandy-remove-dialog-head">
+      <span class="dandy-remove-dialog-icon" aria-hidden="true">
+        <Icon name="trash" size={18} strokeWidth={1.8} />
+      </span>
+      <div class="dandy-remove-dialog-titles">
+        <h2 id="cartRemoveTitle" class="dandy-remove-dialog-title">
+          {isEn ? 'Remove Item from Bag' : 'إزالة المنتج من الحقيبة'}
+        </h2>
+        <p id="cartRemoveDesc" class="dandy-remove-dialog-desc">
+          {isEn ? (
+            <>
+              Do you want to remove <strong id="cartRemoveItemName">this item</strong> from your
+              shopping bag?
+            </>
+          ) : (
+            <>
+              هل ترغبين في إزالة <strong id="cartRemoveItemName">هذا المنتج</strong> من حقيبة
+              التسوق؟
+            </>
+          )}
+        </p>
+      </div>
+    </div>
+
+    <div class="dandy-remove-dialog-actions">
+      <button type="button" id="cartRemoveCancelBtn" class="dandy-btn dandy-btn--outline">
+        {isEn ? 'Keep in Bag' : 'الإبقاء في الحقيبة'}
+      </button>
+      <button type="button" id="cartRemoveConfirmBtn" class="dandy-btn dandy-btn--danger">
+        <Icon name="trash" size={16} strokeWidth={1.85} />
+        <span>{isEn ? 'Remove Item' : 'تأكيد الإزالة'}</span>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .dandy-remove-dialog {
+    padding: 0;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    background-color: var(--dandy-bg-elevated);
+    color: var(--dandy-ink-primary);
+    width: min(420px, calc(100vw - 32px));
+    max-width: none;
+    margin: auto;
+    box-shadow: var(--dandy-shadow-lg);
+    font-family: var(--dandy-font-active-sans);
+  }
+
+  .dandy-remove-dialog::backdrop {
+    background-color: rgba(26, 23, 21, 0.45);
+    backdrop-filter: blur(3px);
+  }
+
+  .dandy-remove-dialog-card {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .dandy-remove-dialog-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .dandy-remove-dialog-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-danger-soft);
+    color: var(--dandy-danger);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-remove-dialog-titles {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .dandy-remove-dialog-title {
+    margin: 0 0 6px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-remove-dialog-desc {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-remove-dialog-desc strong {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-remove-dialog-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .dandy-btn--danger {
+    background-color: var(--dandy-danger);
+    color: #FFFFFF;
+  }
+
+  .dandy-btn--danger:hover:not(:disabled) {
+    background-color: #9F1239;
+    color: #FFFFFF;
+  }
+
+  @media (max-width: 480px) {
+    .dandy-remove-dialog-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .dandy-remove-dialog-actions .dandy-btn {
+      width: 100%;
+      padding-inline: 12px;
+    }
+  }
+</style>

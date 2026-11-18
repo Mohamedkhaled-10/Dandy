@@ -1,0 +1,168 @@
+---
+/**
+ * DANDY COSMETICS — REUSABLE LUCIDE ICON COMPONENT (PHASE 1)
+ * Controlled, uniform SVG stroke icon wrapper powered by @lucide/astro.
+ */
+import Check from '@lucide/astro/icons/check';
+import CircleCheck from '@lucide/astro/icons/circle-check';
+import CircleX from '@lucide/astro/icons/circle-x';
+import Info from '@lucide/astro/icons/info';
+import X from '@lucide/astro/icons/x';
+import ShoppingBag from '@lucide/astro/icons/shopping-bag';
+import Heart from '@lucide/astro/icons/heart';
+import Search from '@lucide/astro/icons/search';
+import User from '@lucide/astro/icons/user';
+import Menu from '@lucide/astro/icons/menu';
+import ChevronLeft from '@lucide/astro/icons/chevron-left';
+import ChevronRight from '@lucide/astro/icons/chevron-right';
+import ChevronDown from '@lucide/astro/icons/chevron-down';
+import ArrowLeft from '@lucide/astro/icons/arrow-left';
+import ArrowRight from '@lucide/astro/icons/arrow-right';
+import Star from '@lucide/astro/icons/star';
+import Leaf from '@lucide/astro/icons/leaf';
+import ShieldCheck from '@lucide/astro/icons/shield-check';
+import Truck from '@lucide/astro/icons/truck';
+import Plus from '@lucide/astro/icons/plus';
+import Minus from '@lucide/astro/icons/minus';
+import Trash from '@lucide/astro/icons/trash';
+import Eye from '@lucide/astro/icons/eye';
+import SlidersHorizontal from '@lucide/astro/icons/sliders-horizontal';
+import House from '@lucide/astro/icons/house';
+import LayoutGrid from '@lucide/astro/icons/layout-grid';
+import LogOut from '@lucide/astro/icons/log-out';
+import Tag from '@lucide/astro/icons/tag';
+import Phone from '@lucide/astro/icons/phone';
+import MapPin from '@lucide/astro/icons/map-pin';
+import Sparkles from '@lucide/astro/icons/sparkles';
+import ZoomIn from '@lucide/astro/icons/zoom-in';
+import Share2 from '@lucide/astro/icons/share-2';
+import Copy from '@lucide/astro/icons/copy';
+import MessageCircle from '@lucide/astro/icons/message-circle';
+import BookOpen from '@lucide/astro/icons/book-open';
+import PackageCheck from '@lucide/astro/icons/package-check';
+import Ban from '@lucide/astro/icons/ban';
+import Clock from '@lucide/astro/icons/clock';
+import Gift from '@lucide/astro/icons/gift';
+import RotateCcw from '@lucide/astro/icons/rotate-ccw';
+import Printer from '@lucide/astro/icons/printer';
+import ClipboardCheck from '@lucide/astro/icons/clipboard-check';
+import Mail from '@lucide/astro/icons/mail';
+import Banknote from '@lucide/astro/icons/banknote';
+import Package from '@lucide/astro/icons/package';
+import Receipt from '@lucide/astro/icons/receipt';
+import Lock from '@lucide/astro/icons/lock';
+import EyeOff from '@lucide/astro/icons/eye-off';
+import Pencil from '@lucide/astro/icons/pencil';
+import CircleQuestionMark from '@lucide/astro/icons/circle-question-mark';
+import Calendar from '@lucide/astro/icons/calendar';
+import Play from '@lucide/astro/icons/play';
+import Send from '@lucide/astro/icons/send';
+import ExternalLink from '@lucide/astro/icons/external-link';
+import Shield from '@lucide/astro/icons/shield';
+import UserPlus from '@lucide/astro/icons/user-plus';
+import Award from '@lucide/astro/icons/award';
+import FileText from '@lucide/astro/icons/file-text';
+
+const ICON_MAP = {
+  'check': Check,
+  'check-circle': CircleCheck,
+  'circle-check': CircleCheck,
+  'alert-circle': CircleX,
+  'circle-x': CircleX,
+  'info': Info,
+  'x': X,
+  'shopping-bag': ShoppingBag,
+  'heart': Heart,
+  'search': Search,
+  'user': User,
+  'menu': Menu,
+  'chevron-left': ChevronLeft,
+  'chevron-right': ChevronRight,
+  'chevron-down': ChevronDown,
+  'arrow-left': ArrowLeft,
+  'arrow-right': ArrowRight,
+  'star': Star,
+  'leaf': Leaf,
+  'shield-check': ShieldCheck,
+  'truck': Truck,
+  'plus': Plus,
+  'minus': Minus,
+  'trash': Trash,
+  'eye': Eye,
+  'eye-off': EyeOff,
+  'sliders': SlidersHorizontal,
+  'home': House,
+  'grid': LayoutGrid,
+  'log-out': LogOut,
+  'tag': Tag,
+  'phone': Phone,
+  'map-pin': MapPin,
+  'sparkles': Sparkles,
+  'zoom-in': ZoomIn,
+  'share-2': Share2,
+  'copy': Copy,
+  'message-circle': MessageCircle,
+  'book-open': BookOpen,
+  'package-check': PackageCheck,
+  'ban': Ban,
+  'clock': Clock,
+  'gift': Gift,
+  'rotate-ccw': RotateCcw,
+  'printer': Printer,
+  'clipboard-check': ClipboardCheck,
+  'mail': Mail,
+  'banknote': Banknote,
+  'package': Package,
+  'receipt': Receipt,
+  'lock': Lock,
+  'pencil': Pencil,
+  'circle-help': CircleQuestionMark,
+  'calendar': Calendar,
+  'play': Play,
+  'send': Send,
+  'external-link': ExternalLink,
+  'shield': Shield,
+  'user-plus': UserPlus,
+  'award': Award,
+  'file-text': FileText,
+} as const;
+
+export type LucideIconName = keyof typeof ICON_MAP;
+
+export interface Props {
+  name: LucideIconName;
+  size?: number | string;
+  strokeWidth?: number | string;
+  class?: string;
+  label?: string;
+  directional?: boolean;
+}
+
+const {
+  name,
+  size = 18,
+  strokeWidth = 1.75,
+  class: className = '',
+  label,
+  directional = false,
+} = Astro.props;
+
+const IconComponent = ICON_MAP[name] ?? Info;
+const combinedClass = [
+  'dandy-icon',
+  directional ? 'dandy-icon-directional' : '',
+  className,
+]
+  .filter(Boolean)
+  .join(' ');
+---
+
+<IconComponent
+  size={size}
+  stroke-width={strokeWidth}
+  color="currentColor"
+  class={combinedClass}
+  role={label ? 'img' : undefined}
+  aria-label={label || undefined}
+  aria-hidden={label ? undefined : 'true'}
+/>

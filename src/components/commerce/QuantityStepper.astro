@@ -1,0 +1,116 @@
+---
+/**
+ * DANDY COSMETICS — ACCESSIBLE QUANTITY STEPPER (PHASE 4)
+ * Minimum 44x44px hit targets, tabular numbers, and legacy DOM IDs (#qty-minus, #qty-input, #qty-plus).
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  disabled?: boolean;
+  locale?: Locale;
+}
+
+const { disabled = false, locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+---
+
+<div class:list={['dandy-pdp-qty', { 'is-disabled': disabled }]}>
+  <button
+    type="button"
+    class="dandy-pdp-qty-btn"
+    id="qty-minus"
+    aria-label={isEn ? 'Decrease quantity' : 'تقليل الكمية'}
+    disabled={disabled}
+  >
+    <Icon name="minus" size={16} strokeWidth={2} />
+  </button>
+
+  <input
+    type="number"
+    class="dandy-pdp-qty-input dandy-tabular"
+    id="qty-input"
+    value="1"
+    min="1"
+    max="99"
+    inputmode="numeric"
+    aria-label={isEn ? 'Requested quantity' : 'الكمية المطلوبة'}
+    disabled={disabled}
+  />
+
+  <button
+    type="button"
+    class="dandy-pdp-qty-btn"
+    id="qty-plus"
+    aria-label={isEn ? 'Increase quantity' : 'زيادة الكمية'}
+    disabled={disabled}
+  >
+    <Icon name="plus" size={16} strokeWidth={2} />
+  </button>
+</div>
+
+<style>
+  .dandy-pdp-qty {
+    display: inline-flex;
+    align-items: stretch;
+    height: 48px;
+    border: 1.5px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-page);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .dandy-pdp-qty.is-disabled {
+    opacity: 0.55;
+    background-color: var(--dandy-bg-stage);
+  }
+
+  .dandy-pdp-qty-btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    width: 44px;
+    min-width: 44px;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dandy-ink-primary);
+    cursor: pointer;
+    transition: background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-pdp-qty-btn:hover:not(:disabled) {
+    background-color: var(--dandy-bg-stage);
+  }
+
+  .dandy-pdp-qty-btn:disabled {
+    cursor: not-allowed;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pdp-qty-input {
+    width: 40px;
+    min-width: 36px;
+    border: 0;
+    background: transparent;
+    text-align: center;
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-base);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    -moz-appearance: textfield;
+    padding: 0;
+  }
+
+  .dandy-pdp-qty-input::-webkit-inner-spin-button,
+  .dandy-pdp-qty-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .dandy-pdp-qty-input:focus {
+    outline: none;
+  }
+</style>

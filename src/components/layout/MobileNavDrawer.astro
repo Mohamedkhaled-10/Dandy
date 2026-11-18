@@ -1,0 +1,595 @@
+---
+/**
+ * DANDY COSMETICS — MOBILE & TABLET NAVIGATION DRAWER (PHASE 2)
+ * RTL-first slide-out drawer from inline-start (right edge in RTL).
+ * Preserves legacy IDs (#menu-overlay, #menubar, #close-menu-trigger, #menu-auth-guest,
+ * #menu-auth-user), auth toggles, sign out, keyboard focus trapping & restoration.
+ */
+import Icon from '../ui/Icon.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../../utils/pink-friday-server';
+import { isNavHrefActive } from '../../scripts/shell';
+import { getLocaleDirection } from '../../i18n/config';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { t } from '../../i18n/translator';
+import type { CounterpartAvailability, Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+  counterpartAvailability?: CounterpartAvailability;
+}
+
+const { locale = 'ar', counterpartAvailability } = Astro.props;
+const dir = getLocaleDirection(locale);
+const publishedCampaign = await getPublishedPinkFridayCampaign();
+const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
+const currentPath = Astro.url.pathname || '/';
+const chevronName = locale === 'en' ? 'chevron-right' : 'chevron-left';
+
+const CATEGORIES = [
+  { href: buildLocalizedPath('/category/skin-care', locale), label: t(locale, 'categories.skinCare') },
+  { href: buildLocalizedPath('/category/hair-care', locale), label: t(locale, 'categories.hairCare') },
+  { href: buildLocalizedPath('/category/body-care', locale), label: t(locale, 'categories.bodyCare') },
+  { href: buildLocalizedPath('/category/fragrance', locale), label: t(locale, 'categories.fragrance') },
+];
+
+const GENERAL_LINKS = [
+  { href: buildLocalizedPath('/', locale), label: t(locale, 'navigation.home') },
+  { href: buildLocalizedPath('/all-products', locale), label: t(locale, 'navigation.allProducts') },
+  { href: buildLocalizedPath('/special-offers', locale), label: t(locale, 'navigation.specialOffers'), highlight: true },
+];
+
+const INFO_LINKS = [
+  { href: buildLocalizedPath('/track-order', locale), label: t(locale, 'navigation.trackOrder') },
+  { href: buildLocalizedPath('/about-us', locale), label: locale === 'en' ? 'Our Story — About Dandy' : 'قصتنا عن داندي' },
+  { href: buildLocalizedPath('/blog', locale), label: t(locale, 'navigation.blog') },
+  { href: buildLocalizedPath('/client-reviews', locale), label: t(locale, 'navigation.reviews') },
+  { href: buildLocalizedPath('/help', locale), label: locale === 'en' ? 'Help & Gift Guide' : 'المساعدة ودليل الهدايا' },
+  { href: buildLocalizedPath('/contact-us', locale), label: t(locale, 'navigation.contactUs') },
+];
+---
+
+<div
+  class="dandy-menu-overlay"
+  id="menu-overlay"
+  onclick="window.toggleNav(false)"
+  aria-hidden="true"
+></div>
+
+<aside
+  class="dandy-menubar"
+  id="menubar"
+  aria-label={locale === 'en' ? 'Mobile navigation drawer' : 'القائمة الجانبية'}
+  role="dialog"
+  aria-modal="true"
+  dir={dir}
+  hidden
+>
+  <div class="dandy-menubar-header">
+    <a href={buildLocalizedPath('/', locale)} class="dandy-drawer-logo" onclick="window.toggleNav(false)">
+      <img src="/assets/images/logo.png" alt="Dandy Cosmetics" width="104" height="32" loading="lazy" decoding="async" />
+    </a>
+    <button
+      type="button"
+      class="dandy-close-menu-btn"
+      id="close-menu-trigger"
+      onclick="window.toggleNav(false)"
+      aria-label={locale === 'en' ? 'Close menu' : 'إغلاق القائمة'}
+    >
+      <Icon name="x" size={19} strokeWidth={1.9} />
+    </button>
+  </div>
+
+  <div class="dandy-menubar-content">
+    <LanguageSwitcher locale={locale} availability={counterpartAvailability} variant="drawer" />
+
+    <button
+      type="button"
+      class="dandy-drawer-search-btn"
+      onclick="window.toggleNav(false); window.toggleSearchPanel(true);"
+    >
+      <Icon name="search" size={17} strokeWidth={1.8} />
+      <span>{t(locale, 'header.searchPlaceholder')}</span>
+    </button>
+
+    <div class="dandy-drawer-auth">
+      <div id="menu-auth-guest">
+        <a href={buildLocalizedPath('/account-login', locale)} class="dandy-drawer-auth-card" onclick="window.toggleNav(false)">
+          <span class="dandy-drawer-auth-icon">
+            <Icon name="user" size={18} strokeWidth={1.8} />
+          </span>
+          <span class="dandy-drawer-auth-text">
+            <strong>{locale === 'en' ? 'Sign In or Create Account' : 'تسجيل الدخول أو إنشاء حساب'}</strong>
+            <small>{locale === 'en' ? 'Track orders & manage saved addresses' : 'تابعي طلباتك واحفظي عناوينك'}</small>
+          </span>
+          <Icon name={chevronName} size={15} strokeWidth={1.9} />
+        </a>
+      </div>
+
+      <div id="menu-auth-user" style="display:none;">
+        <div class="dandy-drawer-user-row">
+          <a href={buildLocalizedPath('/account', locale)} class="dandy-drawer-auth-card" onclick="window.toggleNav(false)">
+            <span class="dandy-drawer-auth-icon dandy-drawer-auth-icon--active">
+              <Icon name="user" size={18} strokeWidth={1.85} />
+            </span>
+            <span class="dandy-drawer-auth-text">
+              <strong>{t(locale, 'header.accountTitle')}</strong>
+              <small>{locale === 'en' ? 'Orders, wishlist & saved addresses' : 'إدارة الطلبات والعناوين'}</small>
+            </span>
+          </a>
+          <button
+            type="button"
+            class="dandy-drawer-logout-btn"
+            onclick="window.headerSignOut()"
+            title={t(locale, 'header.logoutTitle')}
+            aria-label={t(locale, 'header.logoutTitle')}
+          >
+            <Icon name="log-out" size={16} strokeWidth={1.8} />
+            <span>{locale === 'en' ? 'Exit' : 'خروج'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dandy-drawer-section">
+      <div class="dandy-drawer-section-title">{t(locale, 'navigation.categories')}</div>
+      <ul class="dandy-drawer-nav-list" id="mobile-drawer-categories-list">
+        {CATEGORIES.map((item) => {
+          const active = isNavHrefActive(currentPath, item.href);
+          return (
+            <li>
+              <a
+                href={item.href}
+                class:list={['dandy-drawer-link', active && 'active']}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span>{item.label}</span>
+                <Icon name={chevronName} size={15} strokeWidth={1.8} />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    <div class="dandy-drawer-section">
+      <div class="dandy-drawer-section-title">{locale === 'en' ? 'Shopping & Offers' : 'التسوق والعروض'}</div>
+      <ul class="dandy-drawer-nav-list" id="mobile-drawer-nav-list">
+        {GENERAL_LINKS.map((item) => {
+          const active = isNavHrefActive(currentPath, item.href);
+          return (
+            <li>
+              <a
+                href={item.href}
+                class:list={['dandy-drawer-link', item.highlight && 'dandy-drawer-link--accent', active && 'active']}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span>{item.label}</span>
+                <Icon name={chevronName} size={15} strokeWidth={1.8} />
+              </a>
+            </li>
+          );
+        })}
+
+        {showPinkFriday && (
+          <li>
+            <a
+              href={buildLocalizedPath('/pink-friday', locale)}
+              class:list={[
+                'dandy-drawer-link dandy-drawer-link--accent',
+                isNavHrefActive(currentPath, buildLocalizedPath('/pink-friday', locale)) && 'active',
+              ]}
+              aria-current={isNavHrefActive(currentPath, buildLocalizedPath('/pink-friday', locale)) ? 'page' : undefined}
+            >
+              <span>Pink Friday</span>
+              <Icon name={chevronName} size={15} strokeWidth={1.8} />
+            </a>
+          </li>
+        )}
+
+        {INFO_LINKS.map((item) => {
+          const active = isNavHrefActive(currentPath, item.href);
+          return (
+            <li>
+              <a
+                href={item.href}
+                class:list={['dandy-drawer-link', active && 'active']}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span>{item.label}</span>
+                <Icon name={chevronName} size={15} strokeWidth={1.8} />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    <div class="dandy-drawer-footer-links">
+      <a href={buildLocalizedPath('/privacy-policy', locale)}>{t(locale, 'navigation.privacyPolicy')}</a>
+      <span aria-hidden="true">/</span>
+      <a href={buildLocalizedPath('/terms', locale)}>{t(locale, 'navigation.terms')}</a>
+      <span aria-hidden="true">/</span>
+      <a href="tel:01038941005" dir="ltr">01038941005</a>
+    </div>
+  </div>
+</aside>
+
+<script is:inline>
+  (function () {
+    let lastFocusedBeforeNav = null;
+
+    function getDrawerFocusable(drawer) {
+      return Array.from(
+        drawer.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter(function (el) {
+        return el.offsetParent !== null;
+      });
+    }
+
+    window.toggleNav = function (forceState) {
+      const menubar = document.getElementById('menubar');
+      const overlay = document.getElementById('menu-overlay');
+      const trigger = document.getElementById('mobile-menu-trigger');
+      if (!menubar) return;
+
+      const currentlyOpen = menubar.classList.contains('active');
+      const nextOpen = typeof forceState === 'boolean' ? forceState : !currentlyOpen;
+
+      if (nextOpen) {
+        lastFocusedBeforeNav =
+          document.activeElement instanceof HTMLElement ? document.activeElement : trigger;
+
+        const searchPanel = document.getElementById('search-panel');
+        const searchOverlay = document.getElementById('search-overlay');
+        if (searchPanel) {
+          searchPanel.classList.remove('active');
+          searchPanel.hidden = true;
+        }
+        if (searchOverlay) searchOverlay.classList.remove('active');
+        document.body.classList.remove('search-open');
+        document.documentElement.classList.remove('search-open');
+
+        menubar.hidden = false;
+        window.requestAnimationFrame(function () {
+          menubar.classList.add('active');
+          if (overlay) overlay.classList.add('active');
+        });
+        if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('menu-open');
+        document.documentElement.classList.add('menu-open');
+
+        setTimeout(function () {
+          const closeBtn = document.getElementById('close-menu-trigger');
+          if (closeBtn) closeBtn.focus();
+        }, 80);
+      } else {
+        menubar.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('menu-open');
+        document.documentElement.classList.remove('menu-open');
+        setTimeout(function () {
+          if (!menubar.classList.contains('active')) {
+            menubar.hidden = true;
+          }
+        }, 240);
+
+        if (lastFocusedBeforeNav && typeof lastFocusedBeforeNav.focus === 'function') {
+          lastFocusedBeforeNav.focus();
+          lastFocusedBeforeNav = null;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', function (e) {
+      const menubar = document.getElementById('menubar');
+      if (!menubar || !menubar.classList.contains('active')) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        window.toggleNav(false);
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const focusable = getDrawerFocusable(menubar);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+  })();
+</script>
+
+<style is:global>
+  body.menu-open,
+  html.menu-open {
+    overflow: hidden !important;
+  }
+
+  .dandy-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 23, 21, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--dandy-z-drawer-backdrop);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--dandy-transition-base), visibility var(--dandy-transition-base);
+  }
+
+  .dandy-menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .dandy-menubar {
+    position: fixed;
+    top: 0;
+    inset-inline-start: 0;
+    width: min(350px, 88vw);
+    height: 100dvh;
+    background-color: var(--dandy-bg-page);
+    z-index: var(--dandy-z-drawer);
+    box-shadow: var(--dandy-shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateX(-100%);
+    transition: transform var(--dandy-transition-base);
+    font-family: var(--dandy-font-active-sans);
+  }
+
+  html[dir='rtl'] .dandy-menubar {
+    transform: translateX(100%);
+  }
+
+  .dandy-menubar[hidden] {
+    display: none;
+  }
+
+  .dandy-menubar.active {
+    transform: translateX(0) !important;
+  }
+
+  .dandy-menubar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-drawer-logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .dandy-drawer-logo img {
+    height: 30px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .dandy-close-menu-btn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--dandy-radius-sm);
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dandy-ink-muted);
+    cursor: pointer;
+    transition: background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-close-menu-btn:hover {
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-menubar-content {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 20px calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .dandy-drawer-search-btn {
+    width: 100%;
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-sm);
+    font-family: var(--dandy-font-active-sans);
+    font-size: 0.875rem;
+    color: var(--dandy-ink-muted);
+    cursor: pointer;
+    margin-bottom: 16px;
+    text-align: start;
+    transition: border-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-drawer-search-btn:hover {
+    border-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-drawer-auth {
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-drawer-auth-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--dandy-radius-md);
+    border: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-editorial);
+    color: var(--dandy-ink-primary);
+    text-decoration: none;
+    flex: 1 1 auto;
+    transition: border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-drawer-auth-card:hover {
+    border-color: var(--dandy-border-default);
+  }
+
+  .dandy-drawer-auth-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .dandy-drawer-auth-icon--active {
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-drawer-auth-text {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .dandy-drawer-auth-text strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-drawer-auth-text small {
+    font-size: 0.74rem;
+    color: var(--dandy-ink-muted);
+    margin-top: 2px;
+  }
+
+  .dandy-drawer-user-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .dandy-drawer-logout-btn {
+    appearance: none;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding-inline: 12px;
+    border-radius: var(--dandy-radius-md);
+    border: 1px solid #F4C7D2;
+    background-color: var(--dandy-danger-soft);
+    color: var(--dandy-danger);
+    font-family: var(--dandy-font-active-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .dandy-drawer-section {
+    margin-bottom: 20px;
+  }
+
+  .dandy-drawer-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+    margin-bottom: 8px;
+    padding-inline: 4px;
+  }
+
+  .dandy-drawer-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-drawer-nav-list li {
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-drawer-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 4px;
+    min-height: 44px;
+    color: var(--dandy-ink-primary);
+    text-decoration: none;
+    font-size: 0.9125rem;
+    font-weight: 500;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-drawer-link:hover,
+  .dandy-drawer-link.active {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-drawer-link.active {
+    font-weight: 600;
+  }
+
+  .dandy-drawer-link--accent {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-drawer-footer-links {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.78rem;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-drawer-footer-links a {
+    color: var(--dandy-ink-secondary);
+    text-decoration: none;
+  }
+
+  .dandy-drawer-footer-links a:hover {
+    color: var(--dandy-ink-primary);
+    text-decoration: underline;
+  }
+</style>

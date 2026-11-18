@@ -1,0 +1,213 @@
+---
+/**
+ * DANDY COSMETICS — ACCESSIBLE 3-STEP CHECKOUT STEPPER (PHASE 6)
+ * Preserves legacy IDs (#stepper-step-1/2/3, #stepperLineProgress) while using
+ * CSS logical properties for RTL/LTR progression and semantic <ol> markup.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+---
+
+<nav class="dandy-stepper-card" aria-label={isEn ? 'Checkout steps' : 'مراحل إتمام الطلب'}>
+  <div class="dandy-stepper-track" aria-hidden="true">
+    <div class="dandy-stepper-track-fill" id="stepperLineProgress"></div>
+  </div>
+
+  <ol class="dandy-stepper-list">
+    <li class="dandy-stepper-step stepper-step active" id="stepper-step-1" aria-current="step">
+      <button type="button" class="dandy-stepper-btn" data-step-target="1">
+        <span class="dandy-stepper-node step-num-icon">
+          <Icon name="shopping-bag" size={17} strokeWidth={1.85} />
+        </span>
+        <span class="dandy-stepper-meta">
+          <span class="dandy-stepper-num dandy-tabular">{isEn ? 'Step 1' : 'الخطوة 1'}</span>
+          <span class="dandy-stepper-label step-text">
+            {isEn ? 'Shopping Bag' : 'حقيبة التسوق'}
+          </span>
+        </span>
+      </button>
+    </li>
+
+    <li class="dandy-stepper-step stepper-step" id="stepper-step-2">
+      <button type="button" class="dandy-stepper-btn" data-step-target="2">
+        <span class="dandy-stepper-node step-num-icon">
+          <Icon name="truck" size={17} strokeWidth={1.85} />
+        </span>
+        <span class="dandy-stepper-meta">
+          <span class="dandy-stepper-num dandy-tabular">{isEn ? 'Step 2' : 'الخطوة 2'}</span>
+          <span class="dandy-stepper-label step-text">
+            {isEn ? 'Shipping Details' : 'بيانات الشحن'}
+          </span>
+        </span>
+      </button>
+    </li>
+
+    <li class="dandy-stepper-step stepper-step" id="stepper-step-3">
+      <button type="button" class="dandy-stepper-btn" data-step-target="3" disabled>
+        <span class="dandy-stepper-node step-num-icon">
+          <Icon name="clipboard-check" size={17} strokeWidth={1.85} />
+        </span>
+        <span class="dandy-stepper-meta">
+          <span class="dandy-stepper-num dandy-tabular">{isEn ? 'Step 3' : 'الخطوة 3'}</span>
+          <span class="dandy-stepper-label step-text">
+            {isEn ? 'Review & Confirm' : 'المراجعة والتأكيد'}
+          </span>
+        </span>
+      </button>
+    </li>
+  </ol>
+</nav>
+
+<style>
+  .dandy-stepper-card {
+    position: relative;
+    background-color: var(--dandy-bg-elevated);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+
+  .dandy-stepper-track {
+    position: absolute;
+    top: 37px;
+    inset-inline: 16%;
+    height: 2px;
+    background-color: var(--dandy-border-subtle);
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .dandy-stepper-track-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    width: 0%;
+    background-color: var(--dandy-botanical-deep);
+    transition: width 320ms var(--dandy-ease-out);
+  }
+
+  .dandy-stepper-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .dandy-stepper-step {
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .dandy-stepper-btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    min-width: 0;
+  }
+
+  .dandy-stepper-btn:disabled {
+    cursor: default;
+  }
+
+  .dandy-stepper-node {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-editorial);
+    border: 1.5px solid var(--dandy-border-default);
+    color: var(--dandy-ink-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--dandy-transition-fast),
+                border-color var(--dandy-transition-fast),
+                color var(--dandy-transition-fast);
+  }
+
+  .dandy-stepper-step.active .dandy-stepper-node {
+    background-color: var(--dandy-ink-primary);
+    border-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+  }
+
+  .dandy-stepper-step.completed .dandy-stepper-node {
+    background-color: var(--dandy-botanical-deep);
+    border-color: var(--dandy-botanical-deep);
+    color: #FFFFFF;
+  }
+
+  .dandy-stepper-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+  }
+
+  .dandy-stepper-num {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-stepper-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+    line-height: 1.3;
+  }
+
+  .dandy-stepper-step.active .dandy-stepper-label,
+  .dandy-stepper-step.completed .dandy-stepper-label {
+    color: var(--dandy-ink-primary);
+    font-weight: 700;
+  }
+
+  @media (max-width: 639px) {
+    .dandy-stepper-card {
+      padding: 14px 10px;
+      margin-bottom: 16px;
+    }
+
+    .dandy-stepper-track {
+      top: 31px;
+      inset-inline: 18%;
+    }
+
+    .dandy-stepper-node {
+      width: 34px;
+      height: 34px;
+    }
+
+    .dandy-stepper-num {
+      display: none;
+    }
+
+    .dandy-stepper-label {
+      font-size: 0.75rem;
+    }
+  }
+</style>

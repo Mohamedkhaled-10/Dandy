@@ -1,0 +1,148 @@
+---
+/**
+ * DANDY COSMETICS — SHARED EDITORIAL PAGE HEADER (PHASE 8)
+ * Clean breadcrumb + eyebrow + H1 + lead framing matching CheckoutPageHeader.
+ * Zero static pill spam; uses CSS logical properties.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/index';
+
+export interface Props {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  currentCrumb: string;
+  parentCrumbHref?: string;
+  parentCrumbLabel?: string;
+  readingContainer?: boolean;
+  locale?: Locale;
+}
+
+const {
+  eyebrow,
+  title,
+  description,
+  currentCrumb,
+  parentCrumbHref,
+  parentCrumbLabel,
+  readingContainer = false,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+const homeHref = buildLocalizedPath('/', locale);
+---
+
+<header class="dandy-ed-header" data-dandy-motion="calm">
+  <div class={readingContainer ? 'dandy-container-reading' : 'dandy-container'}>
+    <nav
+      class="dandy-ed-breadcrumb"
+      aria-label={isEn ? 'Breadcrumb' : 'مسار التنقل'}
+      data-dandy-entrance="0"
+    >
+      <ol class="dandy-ed-breadcrumb-list">
+        <li>
+          <a href={homeHref} class="dandy-ed-crumb-link">{isEn ? 'Home' : 'الرئيسية'}</a>
+        </li>
+        <li aria-hidden="true" class="dandy-ed-crumb-sep">
+          <Icon name="chevron-left" size={14} strokeWidth={1.8} directional={true} />
+        </li>
+        {parentCrumbHref && parentCrumbLabel && (
+          <>
+            <li>
+              <a href={parentCrumbHref} class="dandy-ed-crumb-link">{parentCrumbLabel}</a>
+            </li>
+            <li aria-hidden="true" class="dandy-ed-crumb-sep">
+              <Icon name="chevron-left" size={14} strokeWidth={1.8} directional={true} />
+            </li>
+          </>
+        )}
+        <li aria-current="page" class="dandy-ed-crumb-current">
+          {currentCrumb}
+        </li>
+      </ol>
+    </nav>
+
+    <div class="dandy-ed-header-body">
+      <p class="dandy-ed-eyebrow" data-dandy-entrance="1">{eyebrow}</p>
+      <h1 class="dandy-ed-title dandy-font-ar-display" data-dandy-entrance="2">{title}</h1>
+      {description && <p class="dandy-ed-desc" data-dandy-entrance="3">{description}</p>}
+    </div>
+  </div>
+</header>
+
+<style>
+  .dandy-ed-header {
+    background-color: var(--dandy-bg-editorial);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    padding-block: clamp(18px, 3vw, 30px) clamp(22px, 3.4vw, 34px);
+  }
+
+  .dandy-ed-breadcrumb {
+    margin-bottom: 14px;
+  }
+
+  .dandy-ed-breadcrumb-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-ed-crumb-link {
+    color: var(--dandy-ink-muted);
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-ed-crumb-link:hover {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-ed-crumb-sep {
+    display: inline-flex;
+    align-items: center;
+    color: var(--dandy-border-default);
+  }
+
+  .dandy-ed-crumb-current {
+    color: var(--dandy-ink-primary);
+    font-weight: 600;
+  }
+
+  .dandy-ed-header-body {
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dandy-ed-eyebrow {
+    margin: 0;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-ed-title {
+    margin: 0;
+    font-size: clamp(1.65rem, 2.9vw, 2.3rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--dandy-ink-primary);
+    text-wrap: balance;
+  }
+
+  .dandy-ed-desc {
+    margin: 0;
+    font-size: var(--dandy-text-base);
+    line-height: 1.72;
+    color: var(--dandy-ink-secondary);
+  }
+</style>

@@ -1,0 +1,540 @@
+---
+/**
+ * DANDY COSMETICS — CUSTOM STUDIO SECTION DISPATCHER (ALL 7 TYPES)
+ * Supports all 7 Studio custom section types:
+ * `products` | `banner` | `faq` | `story` | `video` | `gallery` | `trust`
+ */
+import Icon from '../ui/Icon.astro';
+import ProductCard from '../product/ProductCard.astro';
+import TrustStripSection from './TrustStripSection.astro';
+import type { Product } from '../../utils/products';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/routes';
+import {
+  calculatePinkFridayPricing,
+  type PinkFridayCampaignData,
+} from '../../utils/pink-friday-server';
+import {
+  DEFAULT_PROMO_BANNER,
+  resolveTrustItems,
+  resolveVideoMedia,
+  sanitizeMediaUrl,
+  sanitizeNavHref,
+  selectProductsForStudioSection,
+  type CustomSection,
+} from '../../scripts/homepage-studio';
+
+export interface Props {
+  section: CustomSection;
+  allProducts: Product[];
+  pinkFridayCampaign?: PinkFridayCampaignData | null;
+  hidden?: boolean;
+  locale?: Locale;
+}
+
+const {
+  section,
+  allProducts = [],
+  pinkFridayCampaign = null,
+  hidden = false,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const resolveSectionHref = (rawUrl?: string) => {
+  const sanitized = sanitizeNavHref(rawUrl, allProductsHref);
+  return sanitized.startsWith('/') ? buildLocalizedPath(sanitized, locale) : sanitized;
+};
+
+const secProducts =
+  section.type === 'products'
+    ? selectProductsForStudioSection(allProducts, {
+        source: section.productSource || 'all',
+        manualProducts: section.manualProducts,
+        limit: section.limit || 4,
+      })
+    : [];
+
+const trustItems =
+  section.type === 'trust' ? resolveTrustItems(undefined, section.items, locale) : [];
+
+const videoMedia =
+  section.type === 'video' ? resolveVideoMedia(section.videoUrl, section.poster) : null;
+
+const fallbackImg = DEFAULT_PROMO_BANNER.image;
+---
+
+{section.type === 'trust' ? (
+  <TrustStripSection
+    sectionId={section.id}
+    title={section.title || ''}
+    subtitle={section.subtitle || ''}
+    items={trustItems}
+    hidden={hidden}
+    locale={locale}
+  />
+) : (
+  <section
+    class={`dandy-home-section dandy-custom-section dandy-custom-type-${section.type}`}
+    aria-labelledby={`custom-heading-${section.id}`}
+    data-studio-section={section.id}
+    data-custom-type={section.type}
+    hidden={hidden || undefined}
+  >
+    <div class="dandy-container">
+      {section.type === 'products' && (
+        <>
+          <header class="dandy-section-header" data-dandy-reveal>
+            <div class="dandy-section-titles">
+              {section.subtitle && (
+                <p class="dandy-section-kicker" dir="auto">{section.subtitle}</p>
+              )}
+              <h2 id={`custom-heading-${section.id}`} class="dandy-section-heading" dir="auto">
+                {section.title || (isEn ? 'Featured Selection' : 'منتجات مختارة')}
+              </h2>
+            </div>
+            <a
+              href={resolveSectionHref(section.linkUrl)}
+              class="dandy-section-more"
+            >
+              <span dir="auto">{section.linkText || (isEn ? 'View All' : 'عرض الكل')}</span>
+              <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={15} strokeWidth={1.8} />
+            </a>
+          </header>
+
+          {secProducts.length > 0 ? (
+            <div class="dandy-featured-grid" data-dandy-stagger="grid">
+              {secProducts.map((product) => {
+                const pfPricing = pinkFridayCampaign
+                  ? calculatePinkFridayPricing(product, pinkFridayCampaign)
+                  : null;
+                return (
+                  <ProductCard
+                    product={product}
+                    pinkFridayPricing={pfPricing}
+                    revealChild={true}
+                    locale={locale}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div class="dandy-featured-empty">
+              <p>
+                {isEn
+                  ? 'No available products have been selected for this section yet.'
+                  : 'لم يتم تحديد منتجات متاحة في هذا القسم بعد.'}
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {section.type === 'banner' && (
+        <div class="dandy-custom-banner" data-dandy-reveal>
+          <div class="dandy-custom-banner-copy">
+            {(section.eyebrow || section.subtitle) && (
+              <p class="dandy-section-kicker" dir="auto">{section.eyebrow || section.subtitle}</p>
+            )}
+            <h2 id={`custom-heading-${section.id}`} class="dandy-story-title" dir="auto">
+              {section.title || (isEn ? 'DANDY Special Showcase' : 'عرض خاص من داندي')}
+            </h2>
+            {section.desc && <p class="dandy-story-text" dir="auto">{section.desc}</p>}
+            <div class="dandy-story-actions">
+              <a
+                href={resolveSectionHref(section.ctaLink)}
+                class="dandy-btn dandy-btn--editorial"
+              >
+                <span dir="auto">{section.ctaText || (isEn ? 'Explore Collection' : 'اكتشفي المجموعة')}</span>
+                <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={16} strokeWidth={1.8} />
+              </a>
+            </div>
+          </div>
+
+          <div class="dandy-custom-banner-media" data-dandy-media-settle>
+            <img
+              src={sanitizeMediaUrl(section.image, fallbackImg)}
+              alt={section.title || (isEn ? 'DANDY Showcase' : 'عرض داندي')}
+              width="800"
+              height="600"
+              loading="lazy"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              class="dandy-story-img"
+              onerror={`this.onerror=null;this.src='${fallbackImg}';`}
+            />
+          </div>
+        </div>
+      )}
+
+      {section.type === 'story' && (
+        <div class="dandy-custom-story-card" data-dandy-reveal>
+          {section.subtitle && (
+            <p class="dandy-section-kicker" dir="auto">{section.subtitle}</p>
+          )}
+          <h2 id={`custom-heading-${section.id}`} class="dandy-custom-story-title" dir="auto">
+            {section.title || (isEn ? 'Our Natural Philosophy' : 'فلسفتنا الطبيعية')}
+          </h2>
+          {section.content && (
+            <blockquote class="dandy-custom-story-quote" dir="auto">{section.content}</blockquote>
+          )}
+          {section.author && (
+            <p class="dandy-custom-story-author" dir="auto">— {section.author}</p>
+          )}
+        </div>
+      )}
+
+      {section.type === 'faq' && (
+        <div class="dandy-custom-faq-wrap">
+          <header class="dandy-section-header" data-dandy-reveal>
+            <div class="dandy-section-titles">
+              {section.subtitle && (
+                <p class="dandy-section-kicker" dir="auto">{section.subtitle}</p>
+              )}
+              <h2 id={`custom-heading-${section.id}`} class="dandy-section-heading" dir="auto">
+                {section.title || (isEn ? 'Frequently Asked Questions' : 'الأسئلة الشائعة')}
+              </h2>
+            </div>
+          </header>
+
+          <div class="dandy-faq-list" data-faq-accordion data-dandy-reveal data-dandy-stagger="group">
+            {(section.items || []).map((item, idx) => (
+              <div class="dandy-faq-item" data-dandy-reveal-child>
+                <button
+                  type="button"
+                  class="dandy-faq-trigger"
+                  aria-expanded={idx === 0 ? 'true' : 'false'}
+                  data-faq-trigger
+                >
+                  <span dir="auto">{item.q || (isEn ? 'Question' : 'سؤال')}</span>
+                  <Icon name="chevron-down" size={18} strokeWidth={1.85} class="dandy-faq-chevron" />
+                </button>
+                <div class="dandy-faq-panel" hidden={idx !== 0 || undefined} data-faq-panel>
+                  <p dir="auto">{item.a || ''}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {section.type === 'video' && (
+        <div class="dandy-custom-video-wrap" data-dandy-reveal>
+          <header class="dandy-section-header">
+            <div class="dandy-section-titles">
+              {section.subtitle && (
+                <p class="dandy-section-kicker" dir="auto">{section.subtitle}</p>
+              )}
+              <h2 id={`custom-heading-${section.id}`} class="dandy-section-heading" dir="auto">
+                {section.title || (isEn ? 'See DANDY Results' : 'شاهدي نتائج داندي')}
+              </h2>
+            </div>
+          </header>
+
+          {videoMedia && (videoMedia.kind === 'youtube' || videoMedia.kind === 'vimeo') ? (
+            <div class="dandy-video-frame">
+              <iframe
+                src={videoMedia.embedUrl}
+                title={section.title || (isEn ? 'Showcase Video' : 'فيديو استعراضي')}
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+          ) : videoMedia && videoMedia.kind === 'video' ? (
+            <div class="dandy-video-frame is-native">
+              <video
+                src={videoMedia.src}
+                poster={videoMedia.poster}
+                controls
+                playsinline
+                preload="metadata"
+                class="dandy-native-video"
+              ></video>
+            </div>
+          ) : (
+            <div class="dandy-featured-empty">
+              <p>{isEn ? 'Video link is currently unavailable.' : 'رابط الفيديو غير متاح حالياً.'}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {section.type === 'gallery' && (
+        <>
+          <header class="dandy-section-header" data-dandy-reveal>
+            <div class="dandy-section-titles">
+              {section.subtitle && (
+                <p class="dandy-section-kicker" dir="auto">{section.subtitle}</p>
+              )}
+              <h2 id={`custom-heading-${section.id}`} class="dandy-section-heading" dir="auto">
+                {section.title || (isEn ? 'DANDY Gallery' : 'معرض داندي')}
+              </h2>
+            </div>
+          </header>
+
+          <div class="dandy-gallery-grid" data-dandy-reveal data-dandy-stagger="group">
+            {(section.items || []).map((item, idx) => {
+              const safeImg = sanitizeMediaUrl(item.image, fallbackImg);
+              const safeLink = item.link?.trim() ? resolveSectionHref(item.link) : null;
+              return (
+                <figure class="dandy-gallery-card" data-dandy-reveal-child>
+                  {safeLink ? (
+                    <a href={safeLink} class="dandy-gallery-link">
+                      <img
+                        src={safeImg}
+                        alt={item.title || (isEn ? `Gallery image ${idx + 1}` : `صورة المعرض ${idx + 1}`)}
+                        width="640"
+                        height="480"
+                        loading="lazy"
+                        decoding="async"
+                        referrerpolicy="no-referrer"
+                        class="dandy-gallery-img"
+                        onerror={`this.onerror=null;this.src='${fallbackImg}';`}
+                      />
+                    </a>
+                  ) : (
+                    <div class="dandy-gallery-link">
+                      <img
+                        src={safeImg}
+                        alt={item.title || (isEn ? `Gallery image ${idx + 1}` : `صورة المعرض ${idx + 1}`)}
+                        width="640"
+                        height="480"
+                        loading="lazy"
+                        decoding="async"
+                        referrerpolicy="no-referrer"
+                        class="dandy-gallery-img"
+                        onerror={`this.onerror=null;this.src='${fallbackImg}';`}
+                      />
+                    </div>
+                  )}
+                  {item.title && <figcaption class="dandy-gallery-caption" dir="auto">{item.title}</figcaption>}
+                </figure>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  </section>
+)}
+
+<style is:global>
+  .dandy-custom-section {
+    background-color: var(--dandy-bg-page);
+    border-top: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-custom-banner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 48px);
+    padding: clamp(24px, 3.5vw, 44px);
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+  }
+
+  .dandy-custom-banner-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .dandy-custom-banner-media {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--dandy-radius-sm);
+    overflow: hidden;
+    background-color: var(--dandy-bg-stage);
+    border: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-custom-story-card {
+    max-width: 820px;
+    margin-inline: auto;
+    padding: clamp(28px, 4vw, 48px);
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .dandy-custom-story-title {
+    margin: 0;
+    font-family: var(--dandy-font-active-display);
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--dandy-ink-primary);
+    text-wrap: balance;
+  }
+
+  .dandy-custom-story-quote {
+    margin: 0;
+    font-size: var(--dandy-text-lead);
+    line-height: 1.85;
+    color: var(--dandy-ink-secondary);
+    max-width: 60ch;
+  }
+
+  .dandy-custom-story-author {
+    margin: 4px 0 0;
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-custom-faq-wrap {
+    max-width: 860px;
+    margin-inline: auto;
+  }
+
+  .dandy-faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dandy-faq-item {
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+  }
+
+  .dandy-faq-trigger {
+    width: 100%;
+    min-height: 54px;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    text-align: start;
+    font-family: var(--dandy-font-active-sans);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    cursor: pointer;
+  }
+
+  .dandy-faq-trigger:hover {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-faq-chevron {
+    transition: transform 200ms var(--dandy-ease-standard);
+    flex-shrink: 0;
+  }
+
+  .dandy-faq-trigger[aria-expanded='true'] .dandy-faq-chevron {
+    transform: rotate(180deg);
+  }
+
+  .dandy-faq-panel {
+    padding: 0 20px 18px;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.75;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-faq-panel p {
+    margin: 0;
+  }
+
+  .dandy-faq-panel[hidden] {
+    display: none;
+  }
+
+  .dandy-video-frame {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    margin-inline: auto;
+    aspect-ratio: 16 / 9;
+    background-color: var(--dandy-bg-dark);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-video-frame iframe,
+  .dandy-native-video {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    object-fit: cover;
+  }
+
+  .dandy-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dandy-gallery-card {
+    margin: 0;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dandy-gallery-link {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+  }
+
+  .dandy-gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 360ms var(--dandy-ease-out);
+  }
+
+  .dandy-gallery-card:hover .dandy-gallery-img {
+    transform: scale(1.03);
+  }
+
+  .dandy-gallery-caption {
+    padding: 12px 16px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  @media (max-width: 900px) {
+    .dandy-custom-banner {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-gallery-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .dandy-gallery-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

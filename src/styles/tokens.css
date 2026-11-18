@@ -1,0 +1,308 @@
+/**
+ * ============================================================================
+ * DANDY COSMETICS — DESIGN SYSTEM TOKENS (PHASE 1)
+ * Direction: Botanical Editorial Commerce
+ * Single Source of Truth for Colors, Typography, Spacing, Radii, Shadows & Z-Index
+ *
+ * Responsive Breakpoints Reference:
+ *   - 390px  : Mobile Reference (base < 640px)
+ *   - 640px  : Small (--bp-sm)
+ *   - 768px  : Medium / Tablet (--bp-md)
+ *   - 1024px : Large / Desktop (--bp-lg)
+ *   - 1280px : Extra Large (--bp-xl)
+ *   - 1440px : Large Desktop Baseline (--bp-2xl)
+ * ============================================================================
+ */
+
+:root {
+  /* ------------------------------------------------------------------------
+     1. BACKGROUNDS & SURFACES
+     ------------------------------------------------------------------------ */
+  --dandy-bg-page: #FFFFFF;
+  --dandy-bg-editorial: #FAF8F6;
+  --dandy-bg-stage: #F5F4F1;
+  --dandy-bg-elevated: #FFFFFF;
+  --dandy-bg-dark: #1A1715;
+
+  /* ------------------------------------------------------------------------
+     2. TYPOGRAPHY & INK COLORS (Default Readable Text Foundation)
+     ------------------------------------------------------------------------ */
+  --dandy-ink-primary: #1A1715;
+  --dandy-ink-secondary: #4A4540;
+  --dandy-ink-muted: #7A736C;
+  --dandy-ink-inverse: #FAF8F6;
+
+  /* ------------------------------------------------------------------------
+     3. BOTANICAL EDITORIAL IDENTITY
+     ------------------------------------------------------------------------ */
+  --dandy-botanical-deep: #2B3A2C;
+  --dandy-botanical-soft: #EFF3EE;
+  --dandy-plum-ink: #3D242C;
+
+  /* ------------------------------------------------------------------------
+     4. COMMERCIAL ACCENT (Selective: CTAs, Wishlist, Genuine Discounts)
+     ------------------------------------------------------------------------ */
+  --dandy-accent-primary: #C83269;
+  --dandy-accent-hover: #A92455;
+  --dandy-accent-soft: #FDF2F6;
+  --dandy-accent-text: #9D1B4D;
+
+  /* ------------------------------------------------------------------------
+     5. METALLIC & EDITORIAL GOLD
+     ------------------------------------------------------------------------ */
+  --dandy-gold-editorial: #9E7B3B;
+  --dandy-gold-soft: #FAF5EB;
+
+  /* ------------------------------------------------------------------------
+     6. BORDERS & HAIRLINE DIVIDERS
+     ------------------------------------------------------------------------ */
+  --dandy-border-subtle: #EDE9E3;
+  --dandy-border-default: #D9D2C9;
+  --dandy-border-strong: #1A1715;
+  --dandy-border-accent: #F3C4D7;
+
+  /* ------------------------------------------------------------------------
+     7. FUNCTIONAL / SEMANTIC STATUS COLORS
+     ------------------------------------------------------------------------ */
+  --dandy-success: #15803D;
+  --dandy-success-soft: #F0FDF4;
+  --dandy-warning: #B45309;
+  --dandy-warning-soft: #FFFBEB;
+  --dandy-danger: #BE123C;
+  --dandy-danger-soft: #FFF1F2;
+  --dandy-info: #2B3A2C;
+  --dandy-info-soft: #EFF3EE;
+
+  /* ------------------------------------------------------------------------
+     8. TYPOGRAPHY ARCHITECTURE (Arabic-First Bilingual Stack)
+     ------------------------------------------------------------------------ */
+  --dandy-font-ar-display: "Amiri", Georgia, serif;
+  --dandy-font-ar-sans: "Alexandria", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --dandy-font-en-display: "Playfair Display", Georgia, serif;
+  --dandy-font-en-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --dandy-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Fluid Type Scale */
+  --dandy-text-display: clamp(2.125rem, 4.2vw, 3.75rem);
+  --dandy-text-h1: clamp(1.625rem, 2.6vw, 2.25rem);
+  --dandy-text-h2: clamp(1.375rem, 2vw, 1.875rem);
+  --dandy-text-h3: clamp(1.0625rem, 1.3vw, 1.25rem);
+  --dandy-text-lead: clamp(1rem, 1.15vw, 1.125rem);
+  --dandy-text-base: 0.9375rem;
+  --dandy-text-sm: 0.84375rem;
+  --dandy-text-xs: 0.75rem;
+
+  /* Line Heights (RTL Arabic vs LTR English) */
+  --dandy-leading-display-ar: 1.22;
+  --dandy-leading-display-en: 1.08;
+  --dandy-leading-heading-ar: 1.35;
+  --dandy-leading-heading-en: 1.18;
+  --dandy-leading-body-ar: 1.72;
+  --dandy-leading-body-en: 1.6;
+  --dandy-leading-ui: 1.45;
+
+  /* ------------------------------------------------------------------------
+     9. SPACING SCALE & CONTAINER BOUNDS (8px Base Rhythm)
+     ------------------------------------------------------------------------ */
+  --dandy-space-1: 4px;
+  --dandy-space-2: 8px;
+  --dandy-space-3: 12px;
+  --dandy-space-4: 16px;
+  --dandy-space-5: 20px;
+  --dandy-space-6: 24px;
+  --dandy-space-8: 32px;
+  --dandy-space-10: 40px;
+  --dandy-space-12: 48px;
+  --dandy-space-16: 64px;
+  --dandy-space-20: 80px;
+  --dandy-space-24: 96px;
+
+  --dandy-section-py-desktop: 80px;
+  --dandy-section-py-mobile: 48px;
+
+  --dandy-container-max: 1320px;
+  --dandy-container-reading: 760px;
+  --dandy-container-px: 20px;
+
+  /* ------------------------------------------------------------------------
+     10. RADII (Restrained Geometry — No Blanket Pill Slop)
+     ------------------------------------------------------------------------ */
+  --dandy-radius-xs: 2px;
+  --dandy-radius-sm: 6px;
+  --dandy-radius-md: 10px;
+  --dandy-radius-lg: 16px;
+  --dandy-radius-pill: 9999px;
+
+  /* ------------------------------------------------------------------------
+     11. SHADOWS & TRANSITIONS
+     ------------------------------------------------------------------------ */
+  --dandy-shadow-none: none;
+  --dandy-shadow-sm: 0 2px 8px rgba(26, 23, 21, 0.04);
+  --dandy-shadow-md: 0 8px 24px rgba(26, 23, 21, 0.07);
+  --dandy-shadow-lg: 0 20px 48px rgba(26, 23, 21, 0.12);
+
+  --dandy-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dandy-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dandy-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --dandy-transition-base: 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  --dandy-transition-slow: 360ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Phase 7 Motion System Tokens (Compositor-Friendly Editorial Reveal) */
+  --dandy-motion-duration-fast: 280ms;
+  --dandy-motion-duration-normal: 420ms;
+  --dandy-motion-duration-slow: 540ms;
+  --dandy-motion-distance: 10px;
+  --dandy-motion-stagger: 50ms;
+  --dandy-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dandy-motion-scale-from: 0.986;
+
+  /* ------------------------------------------------------------------------
+     12. Z-INDEX & SHELL CLEARANCE SCALE
+     ------------------------------------------------------------------------ */
+  --dandy-z-base: 1;
+  --dandy-z-sticky: 40;
+  --dandy-z-header: 100;
+  --dandy-z-drawer-backdrop: 1100;
+  --dandy-z-drawer: 1101;
+  --dandy-z-modal: 1200;
+  --dandy-z-bottom-nav: 99999;
+  --dandy-z-consent: 999999;
+  --dandy-z-toast: 2147483500;
+  --dandy-bottom-nav-height: 60px;
+
+  /* ------------------------------------------------------------------------
+     13. SAFE LEGACY COMPATIBILITY ALIASES
+     Prevents broken fallbacks and resolves --color-primary text collision
+     while preserving intended commerce accent button styles.
+     ------------------------------------------------------------------------ */
+  --color-canvas: var(--dandy-bg-page);
+  --color-canvas-subtle: var(--dandy-bg-editorial);
+  --color-surface: var(--dandy-bg-elevated);
+  --color-surface-soft: var(--dandy-bg-stage);
+  --surface-warm: var(--dandy-bg-editorial);
+  --color-surface-hover: #ECE9E3;
+
+  /* --color-primary restored to deep editorial ink (foundation.css intent) */
+  --color-primary: var(--dandy-ink-primary);
+  --color-primary-hover: var(--dandy-plum-ink);
+  --color-primary-dark: var(--dandy-ink-primary);
+  --color-burgundy: var(--dandy-plum-ink);
+
+  /* Commercial rose/blush accents */
+  --color-blush: var(--dandy-accent-primary);
+  --color-blush-hover: var(--dandy-accent-hover);
+  --color-blush-soft: var(--dandy-accent-soft);
+  --color-magenta: var(--dandy-accent-hover);
+  --color-accent: var(--dandy-accent-primary);
+  --color-accent-hover: var(--dandy-accent-hover);
+  --color-accent-soft: var(--dandy-accent-soft);
+
+  /* Gold & cream */
+  --color-gold: var(--dandy-gold-editorial);
+  --color-gold-cream: var(--dandy-gold-soft);
+  --color-cream: var(--dandy-bg-editorial);
+
+  /* Ink neutrals */
+  --color-text: var(--dandy-ink-primary);
+  --color-text-secondary: var(--dandy-ink-secondary);
+  --color-muted: var(--dandy-ink-muted);
+  --color-subtle: #9E968E;
+
+  /* Status */
+  --color-success: var(--dandy-success);
+  --color-success-soft: var(--dandy-success-soft);
+  --color-danger: var(--dandy-danger);
+  --color-danger-soft: var(--dandy-danger-soft);
+  --color-warning: var(--dandy-warning);
+  --color-warning-soft: var(--dandy-warning-soft);
+
+  /* Borders */
+  --border-subtle: var(--dandy-border-subtle);
+  --border-light: var(--dandy-border-default);
+  --border-medium: #C7BEB3;
+  --border-strong: var(--dandy-ink-muted);
+  --border-blush: var(--dandy-border-accent);
+
+  /* Previously undefined legacy palette aliases (eliminates silent fallbacks) */
+  --color-dust-grey-100: var(--dandy-ink-primary);
+  --color-dust-grey-200: var(--dandy-ink-secondary);
+  --color-dust-grey-300: var(--dandy-ink-muted);
+  --color-dust-grey-400: #9E968E;
+  --color-dust-grey-500: #C7BEB3;
+  --color-dust-grey-600: var(--dandy-border-default);
+  --color-dust-grey-700: var(--dandy-border-subtle);
+  --color-dust-grey-800: #ECE9E3;
+  --color-dust-grey-900: var(--dandy-bg-stage);
+
+  --color-rose-kiss-400: #D95384;
+  --color-rose-kiss-500: var(--dandy-accent-primary);
+  --color-rose-kiss-600: var(--dandy-accent-hover);
+  --color-pink-carnation-500: var(--dandy-accent-primary);
+  --color-pink-carnation-600: var(--dandy-accent-hover);
+  --color-soft-blossom-400: #E5A1BA;
+  --color-soft-blossom-500: #ECC0D0;
+  --color-soft-blossom-700: var(--dandy-border-accent);
+  --color-soft-blossom-900: var(--dandy-accent-soft);
+  --color-lavender-veil-600: var(--dandy-bg-editorial);
+
+  /* Legacy typography, spacing, radii & shadow aliases */
+  --font-sans: var(--dandy-font-ar-sans);
+  --font-serif: var(--dandy-font-en-display);
+  --font-editorial: var(--dandy-font-en-display);
+  --font-mono: var(--dandy-font-mono);
+
+  --text-xs: var(--dandy-text-xs);
+  --text-sm: var(--dandy-text-sm);
+  --text-base: var(--dandy-text-base);
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  --space-1: var(--dandy-space-1);
+  --space-2: var(--dandy-space-2);
+  --space-3: var(--dandy-space-3);
+  --space-4: var(--dandy-space-4);
+  --space-5: var(--dandy-space-5);
+  --space-6: var(--dandy-space-6);
+  --space-8: var(--dandy-space-8);
+  --space-10: var(--dandy-space-10);
+  --space-12: var(--dandy-space-12);
+  --space-16: var(--dandy-space-16);
+  --space-20: var(--dandy-space-20);
+
+  --container-max-width: var(--dandy-container-max);
+  --container-px: var(--dandy-container-px);
+
+  --radius-none: 0px;
+  --radius-xs: 4px;
+  --radius-sm: var(--dandy-radius-sm);
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: var(--dandy-radius-pill);
+  --border-radius-sm: var(--dandy-radius-sm);
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+
+  --shadow-xs: 0 1px 2px 0 rgba(26, 23, 21, 0.04);
+  --shadow-sm: var(--dandy-shadow-sm);
+  --shadow-md: var(--dandy-shadow-md);
+  --shadow-lg: var(--dandy-shadow-lg);
+  --shadow-gold: 0 4px 14px rgba(158, 123, 59, 0.08);
+  --shadow-blush: 0 4px 14px rgba(200, 50, 105, 0.16);
+
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Phase 10 Locale-Active Font Tokens (Default = Arabic RTL) */
+  --dandy-font-active-sans: var(--dandy-font-ar-sans);
+  --dandy-font-active-display: var(--dandy-font-ar-display);
+}
+
+html[lang="en"] {
+  --dandy-font-active-sans: var(--dandy-font-en-sans);
+  --dandy-font-active-display: var(--dandy-font-en-display);
+  --font-sans: var(--dandy-font-en-sans);
+}

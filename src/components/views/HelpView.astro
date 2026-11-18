@@ -1,0 +1,545 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/help', locale)}`;
+const trackOrderHref = buildLocalizedPath('/track-order', locale);
+
+const FAQS = isEn
+  ? [
+      {
+        id: 'natural-formulas',
+        q: 'Are Dandy Cosmetics products natural and suitable for daily use?',
+        a: 'Yes. Our formulations are built on balanced blends rich in botanical plant oils, nourishing butters, and carefully calibrated active ingredients without harsh additives, making them gentle and dependable for daily skin and hair care.',
+      },
+      {
+        id: 'lost-invoice',
+        q: 'What should I do if I lost my invoice or tracking code?',
+        a: 'Sign in to your account to view your full order and invoice history, or contact customer support on WhatsApp with the mobile number placed on your order so we can share your status right away.',
+      },
+      {
+        id: 'shipping-rates',
+        q: 'How much does shipping cost across Egyptian governorates?',
+        a: 'Shipping fees range between 70 EGP and 120 EGP depending on the governorate, and orders above 2,000 EGP qualify for complimentary nationwide shipping. Your exact fee and order total are clearly shown before confirmation on the checkout page.',
+      },
+      {
+        id: 'delivery-time',
+        q: 'How long does delivery take?',
+        a: 'Delivery takes 2 to 5 business days depending on your governorate. Our courier partner will call you to coordinate delivery upon arrival.',
+      },
+    ]
+  : [
+      {
+        id: 'natural-formulas',
+        q: 'هل مستحضرات داندي طبيعية ومناسبة للاستخدام اليومي؟',
+        a: 'نعم، نعتمد في داندي على تركيبات متوازنة غنية بالزيوت والزبدات النباتية والمكونات الفعالة المختارة بعناية، مع خلوها من الإضافات القاسية لتناسب الاستخدام اليومي بأمان.',
+      },
+      {
+        id: 'lost-invoice',
+        q: 'ماذا أفعل إذا فقدت رقم أو كود الفاتورة؟',
+        a: 'يمكنكِ تسجيل الدخول إلى حسابكِ لمراجعة سجل طلباتكِ وفواتيركِ، أو التواصل مع خدمة العملاء عبر الواتساب برقم الهاتف المسجل في الطلب لتزويدكِ بحالة شحنتكِ فوراً.',
+      },
+      {
+        id: 'shipping-rates',
+        q: 'ما هي تكلفة الشحن للمحافظات؟',
+        a: 'تتراوح تكلفة الشحن بين 70 إلى 120 جنيهاً مصرياً حسب المحافظة، ويصبح الشحن مجانياً للطلبات التي تتجاوز قيمتها 2,000 جنيه مصري، وتظهر القيمة الإجمالية بوضوح قبل تأكيد الطلب في صفحة الدفع.',
+      },
+      {
+        id: 'delivery-time',
+        q: 'كم تستغرق مدة التوصيل؟',
+        a: 'تستغرق مدة التوصيل من 2 إلى 5 أيام عمل وفقاً للمحافظة، ويتواصل معكِ مندوب شركة الشحن هاتفياً لتنسيق موعد التسليم.',
+      },
+    ];
+
+const pageTitle = isEn
+  ? 'Help Center & FAQs | Dandy Cosmetics'
+  : 'مركز المساعدة والأسئلة الشائعة | Dandy Cosmetics';
+const pageDescription = isEn
+  ? 'Clear answers on how to order, nationwide shipping rates across Egypt, Cash on Delivery policy, and FAQs at Dandy Cosmetics.'
+  : 'إجابات واضحة حول كيفية الطلب، سياسات الشحن، الدفع عند الاستلام، والأسئلة الشائعة حول منتجات داندي.';
+const pageKeywords = isEn
+  ? 'Dandy Cosmetics help, shipping rates Egypt, cash on delivery policy, skincare FAQ'
+  : 'Dandy, Dandy Cosmetics, مساعدة داندي, الأسئلة الشائعة, الشحن والتوصيل';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={pageKeywords}
+  canonical={canonicalUrl}
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </Fragment>
+
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Support & Guides' : 'الدعم والإرشادات'}
+    title={isEn ? 'Help Center & Frequently Asked Questions' : 'مركز المساعدة والأسئلة الشائعة'}
+    description={
+      isEn
+        ? 'Everything you need to know about ordering steps, nationwide shipping across Egypt, and Cash on Delivery policies.'
+        : 'كل ما تحتاجين معرفته حول خطوات الطلب، الشحن للمحافظات، وسياسات الدفع والاستلام.'
+    }
+    currentCrumb={isEn ? 'Help' : 'المساعدة'}
+  />
+
+  <main class="dandy-page-band" data-dandy-motion="calm">
+    <div class="dandy-container">
+      <div class="dandy-help-layout">
+        <!-- Main Content -->
+        <div class="dandy-help-main">
+          <!-- Step 1: How to Buy -->
+          <section class="dandy-help-card" id="how-to-buy" data-dandy-reveal>
+            <h2 class="dandy-font-ar-display">
+              {isEn ? 'How to Place an Order' : 'كيفية إتمام الطلب والشراء'}
+            </h2>
+            <div class="dandy-help-steps">
+              <div class="dandy-help-step">
+                <span class="dandy-help-step-num dandy-tabular">{isEn ? '1' : '١'}</span>
+                <div>
+                  <h3>{isEn ? 'Select Your Products' : 'اختيار المنتجات'}</h3>
+                  <p>
+                    {isEn
+                      ? 'Browse our catalog and add your chosen formulas to your shopping bag after selecting your preferred scent or variant and quantity.'
+                      : 'تصفحي المنتجات وأضيفي المستحضرات المرغوبة إلى حقيبة التسوق بعد تحديد الحجم أو العطر والكمية.'}
+                  </p>
+                </div>
+              </div>
+              <div class="dandy-help-step">
+                <span class="dandy-help-step-num dandy-tabular">{isEn ? '2' : '٢'}</span>
+                <div>
+                  <h3>{isEn ? 'Enter Delivery Information' : 'إدخال بيانات التوصيل'}</h3>
+                  <p>
+                    {isEn
+                      ? 'Open your shopping bag, fill in your full name, Egyptian mobile number, governorate, and detailed street address (or pick from your saved addresses).'
+                      : 'انتقلي لصفحة إتمام الطلب وسجلي الاسم، رقم الهاتف، والمحافظة والعنوان بالتفصيل (أو اختاري من عناوينكِ المحفوظة).'}
+                  </p>
+                </div>
+              </div>
+              <div class="dandy-help-step">
+                <span class="dandy-help-step-num dandy-tabular">{isEn ? '3' : '٣'}</span>
+                <div>
+                  <h3>{isEn ? 'Confirm & Save Your Invoice Code' : 'تأكيد الطلب والحصول على كود الفاتورة'}</h3>
+                  <p>
+                    {isEn
+                      ? 'Once you click "Confirm Order", a unique invoice code is generated immediately so you can print your invoice or track delivery anytime.'
+                      : 'عند الضغط على «تأكيد الطلب»، يتم إنشاء كود فاتورة خاص بكِ لطباعة الفاتورة أو تتبع حالة شحنتكِ في أي وقت.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 2: Order Processing -->
+          <section class="dandy-help-card" id="after-checkout" data-dandy-reveal>
+            <h2 class="dandy-font-ar-display">
+              {isEn ? 'Order Preparation & Delivery Stages' : 'مراحل تجهيز وتوصيل طلبكِ'}
+            </h2>
+            <div class="dandy-help-steps">
+              <div class="dandy-help-step">
+                <span class="dandy-help-step-icon" aria-hidden="true">
+                  <Icon name="check" size={15} strokeWidth={2} />
+                </span>
+                <div>
+                  <h3>{isEn ? 'Order Confirmed' : 'تأكيد الطلب'}</h3>
+                  <p>
+                    {isEn
+                      ? 'Your order is recorded immediately and your digital invoice is saved for fulfillment.'
+                      : 'يتم تسجيل الطلب تلقائياً وحفظ الفاتورة للبدء في تجهيزه.'}
+                  </p>
+                </div>
+              </div>
+              <div class="dandy-help-step">
+                <span class="dandy-help-step-icon" aria-hidden="true">
+                  <Icon name="package" size={15} strokeWidth={1.85} />
+                </span>
+                <div>
+                  <h3>{isEn ? 'Careful Packing' : 'التجهيز والتغليف'}</h3>
+                  <p>
+                    {isEn
+                      ? 'Each item is inspected and carefully packaged to arrive intact and sealed.'
+                      : 'تُفحص وتُغلف المستحضرات بعناية لضمان وصولها بحالتها الأصلية دون تلف.'}
+                  </p>
+                </div>
+              </div>
+              <div class="dandy-help-step">
+                <span class="dandy-help-step-icon" aria-hidden="true">
+                  <Icon name="truck" size={15} strokeWidth={1.85} />
+                </span>
+                <div>
+                  <h3>{isEn ? 'Courier Dispatch & Delivery' : 'الشحن والتسليم'}</h3>
+                  <p>
+                    {isEn
+                      ? 'Your parcel is handed to our courier partner, who contacts you by phone to arrange delivery.'
+                      : 'يُسلَّم الطرد لشركة الشحن ويتواصل معكِ المندوب هاتفياً لتنسيق موعد التسليم.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 3: Shipping & Payment -->
+          <section class="dandy-help-card" id="shipping-cod" data-dandy-reveal>
+            <h2 class="dandy-font-ar-display">
+              {isEn ? 'Shipping & Cash on Delivery' : 'الشحن والدفع عند الاستلام'}
+            </h2>
+            <p class="dandy-help-copy">
+              {isEn
+                ? 'We offer Cash on Delivery (COD) nationwide across all Egyptian governorates for a convenient, risk-free shopping experience.'
+                : 'نوفر نظام الدفع نقداً عند استلام الشحنة (Cash on Delivery) لراحة التسوق عبر جميع المحافظات.'}
+            </p>
+            <div class="dandy-help-notice" role="note">
+              {isEn ? (
+                <>
+                  <strong>Important Notice:</strong> To protect cosmetic hygiene and formula integrity, parcel opening before delivery settlement or post-delivery returns are not available.
+                </>
+              ) : (
+                <>
+                  <strong>تنويه هام:</strong> لضمان سلامة وجودة المستحضرات التجميلية، لا تتوفر معاينة للطرد مع المندوب أو إرجاع للمنتجات بعد الاستلام.
+                </>
+              )}
+            </div>
+            <p class="dandy-help-copy">
+              {isEn
+                ? 'Estimated delivery takes 2 to 5 business days by governorate. Shipping fees range from 70 to 120 EGP, with complimentary free shipping on orders exceeding 2,000 EGP.'
+                : 'تستغرق مدة التوصيل من 2 إلى 5 أيام عمل وفقاً للمحافظة. تتراوح رسوم الشحن بين 70 و120 جنيهاً مصرياً حسب المحافظة، والشحن مجاني للطلبات التي تتجاوز 2,000 جنيه مصري.'}
+            </p>
+          </section>
+
+          <!-- Step 4: Semantic FAQ Accordion -->
+          <section class="dandy-help-card" id="faq" data-dandy-reveal>
+            <h2 class="dandy-font-ar-display">{isEn ? 'Frequently Asked Questions' : 'الأسئلة الشائعة'}</h2>
+            <div class="dandy-faq-list" id="helpFaqList">
+              {FAQS.map((item) => {
+                const panelId = `faq-panel-${item.id}`;
+                const btnId = `faq-btn-${item.id}`;
+                return (
+                  <div class="dandy-faq-item">
+                    <h3 class="dandy-faq-heading">
+                      <button
+                        type="button"
+                        id={btnId}
+                        class="dandy-faq-trigger"
+                        aria-expanded="false"
+                        aria-controls={panelId}
+                        data-faq-trigger
+                      >
+                        <span>{item.q}</span>
+                        <Icon name="chevron-down" size={16} strokeWidth={1.9} class="dandy-faq-chevron" />
+                      </button>
+                    </h3>
+                    <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={btnId}
+                      class="dandy-faq-panel"
+                      hidden
+                    >
+                      <p>{item.a}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        <!-- Sticky Quick Nav Sidebar -->
+        <aside class="dandy-help-sidebar" data-dandy-reveal>
+          <div class="dandy-help-side-card">
+            <h3>{isEn ? 'Help Sections' : 'أقسام المساعدة'}</h3>
+            <nav class="dandy-help-side-nav" aria-label={isEn ? 'Help sections' : 'أقسام المساعدة'}>
+              <a href="#how-to-buy">{isEn ? 'How to Order' : 'كيفية الشراء'}</a>
+              <a href="#after-checkout">{isEn ? 'Preparation Stages' : 'مراحل التجهيز'}</a>
+              <a href="#shipping-cod">{isEn ? 'Shipping & Payment' : 'الشحن والدفع'}</a>
+              <a href="#faq">{isEn ? 'FAQs' : 'الأسئلة الشائعة'}</a>
+              <a href={trackOrderHref} class="is-accent">
+                {isEn ? 'Track Your Order →' : 'تتبع حالة طلبكِ ←'}
+              </a>
+            </nav>
+          </div>
+
+          <div class="dandy-help-side-card">
+            <h3>{isEn ? 'Need More Help?' : 'تحتاجين مساعدة إضافية؟'}</h3>
+            <p>
+              {isEn
+                ? 'Our customer care team is available daily from 10:00 AM to 10:00 PM Cairo time.'
+                : 'فريقنا متاح يومياً من 10 صباحاً حتى 10 مساءً للإجابة على استفساراتكِ.'}
+            </p>
+            <a
+              href="https://wa.me/201038941005"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="dandy-btn dandy-btn--editorial dandy-help-wa-btn"
+            >
+              <Icon name="message-circle" size={16} strokeWidth={1.85} />
+              <span>{isEn ? 'Chat on WhatsApp' : 'تواصل عبر الواتساب'}</span>
+            </a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const triggers = document.querySelectorAll<HTMLButtonElement>('[data-faq-trigger]');
+    triggers.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        const panelId = btn.getAttribute('aria-controls');
+        const panel = panelId ? document.getElementById(panelId) : null;
+        btn.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+        btn.closest('.dandy-faq-item')?.classList.toggle('is-open', !isExpanded);
+        if (panel) panel.hidden = isExpanded;
+      });
+    });
+  </script>
+</BaseLayout>
+
+<style is:global>
+  [hidden] {
+    display: none !important;
+  }
+
+  .dandy-help-layout {
+    display: grid;
+    grid-template-columns: 1fr 290px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .dandy-help-main {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .dandy-help-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 26px;
+  }
+
+  .dandy-help-card h2 {
+    margin: 0 0 18px;
+    font-size: clamp(1.2rem, 1.8vw, 1.45rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-help-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dandy-help-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .dandy-help-step-num,
+  .dandy-help-step-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-default);
+    color: var(--dandy-ink-primary);
+    font-weight: 700;
+    font-size: var(--dandy-text-xs);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .dandy-help-step h3 {
+    margin: 0 0 4px;
+    font-size: var(--dandy-text-base);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-help-step p {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-help-copy {
+    margin: 0 0 14px;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.75;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-help-copy:last-child {
+    margin-bottom: 0;
+  }
+
+  .dandy-help-notice {
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-inline-start: 3px solid var(--dandy-gold-editorial);
+    border-radius: var(--dandy-radius-sm);
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-faq-item {
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-page);
+    overflow: hidden;
+  }
+
+  .dandy-faq-heading {
+    margin: 0;
+  }
+
+  .dandy-faq-trigger {
+    width: 100%;
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 15px 18px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: start;
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    cursor: pointer;
+    transition: background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-faq-trigger:hover {
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-faq-chevron {
+    color: var(--dandy-ink-muted);
+    transition: transform var(--dandy-transition-fast);
+  }
+
+  .dandy-faq-item.is-open .dandy-faq-chevron {
+    transform: rotate(180deg);
+  }
+
+  .dandy-faq-panel {
+    padding: 14px 18px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-faq-panel p {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.75;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-help-sidebar {
+    position: sticky;
+    top: 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .dandy-help-side-card {
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: 20px;
+  }
+
+  .dandy-help-side-card h3 {
+    margin: 0 0 12px;
+    font-size: var(--dandy-text-base);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-help-side-card p {
+    margin: 0 0 14px;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-help-side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dandy-help-side-nav a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: var(--dandy-radius-xs);
+    text-decoration: none;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+    transition: background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-help-side-nav a:hover {
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-help-side-nav a.is-accent {
+    color: var(--dandy-accent-text);
+    font-weight: 700;
+  }
+
+  .dandy-help-wa-btn {
+    width: 100%;
+  }
+
+  @media (max-width: 899px) {
+    .dandy-help-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-help-sidebar {
+      position: static;
+    }
+  }
+</style>

@@ -1,0 +1,443 @@
+---
+/**
+ * DANDY COSMETICS — VERIFIED CUSTOMER REVIEWS & DISTRIBUTION PANEL (PHASE 4)
+ * SSR-grounded in real RTDB records; displays authentic score & distribution when count > 0,
+ * and an honest editorial empty state when 0 reviews exist.
+ */
+import Icon from '../ui/Icon.astro';
+import type { ReviewStatsResult } from '../../scripts/product-pdp';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/index';
+
+export interface Props {
+  reviewStats: ReviewStatsResult;
+  locale?: Locale;
+}
+
+const { reviewStats, locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const hasReviews = reviewStats.count > 0;
+const accountHref = buildLocalizedPath('/account', locale);
+
+function formatReviewDate(ts: number | null): string {
+  const fallback = isEn ? 'Recent review' : 'تقييم حديث';
+  if (!ts) return fallback;
+  try {
+    return new Date(ts).toLocaleDateString(isEn ? 'en-US' : 'ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  } catch {
+    return fallback;
+  }
+}
+---
+
+<section
+  class="dandy-pdp-reviews-section"
+  id="product-reviews-container"
+  aria-labelledby="reviews-section-heading"
+>
+  <div class="dandy-container">
+    <div class="dandy-pdp-reviews-header" data-dandy-reveal>
+      <div>
+        <p class="dandy-pdp-section-kicker">
+          {isEn ? 'Customer Reviews' : 'آراء العميلات'}
+        </p>
+        <h2 id="reviews-section-heading" class="dandy-pdp-section-heading">
+          {isEn ? 'Real Experiences & Ratings' : 'تجارب وتقييمات حقيقية'}
+        </h2>
+      </div>
+
+      <div
+        id="reviews-header-badge"
+        class="dandy-pdp-reviews-summary-pill dandy-tabular"
+        hidden={!hasReviews}
+      >
+        {hasReviews && (
+          <>
+            <Icon name="star" size={15} strokeWidth={1.8} class="dandy-star-filled" />
+            <span>{reviewStats.averageFormatted} / 5</span>
+            <span aria-hidden="true">·</span>
+            <span>
+              {isEn
+                ? `${reviewStats.count} ${reviewStats.count === 1 ? 'review' : 'reviews'}`
+                : `${reviewStats.count} تقييم`}
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+
+    <div id="reviews-list-wrapper" class="dandy-pdp-reviews-body">
+      {hasReviews ? (
+        <div class="dandy-pdp-reviews-layout">
+          <!-- Left / Start Summary Card -->
+          <aside
+            class="dandy-pdp-reviews-stats-card"
+            aria-label={isEn ? 'Ratings summary' : 'ملخص التقييمات'}
+            data-dandy-reveal
+          >
+            <div class="dandy-pdp-score-hero">
+              <span class="dandy-pdp-score-num dandy-tabular">{reviewStats.averageFormatted}</span>
+              <div class="dandy-pdp-score-meta">
+                <div class="dandy-pdp-score-stars" aria-hidden="true">
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <Icon
+                      name="star"
+                      size={16}
+                      strokeWidth={1.8}
+                      class={idx + 1 <= Math.round(reviewStats.average) ? 'dandy-star-filled' : 'dandy-star-empty'}
+                    />
+                  ))}
+                </div>
+                <span class="dandy-pdp-score-count dandy-tabular">
+                  {isEn
+                    ? `Based on ${reviewStats.count} verified ${reviewStats.count === 1 ? 'review' : 'reviews'}`
+                    : `بناءً على ${reviewStats.count} تقييم حقيقي`}
+                </span>
+              </div>
+            </div>
+
+            <div class="dandy-pdp-dist-list" aria-label={isEn ? 'Star rating breakdown' : 'توزيع النجوم'}>
+              {reviewStats.distribution.map((row) => (
+                <div class="dandy-pdp-dist-row">
+                  <span class="dandy-pdp-dist-star dandy-tabular">{row.star} ★</span>
+                  <div class="dandy-pdp-dist-track" aria-hidden="true">
+                    <div
+                      class="dandy-pdp-dist-fill"
+                      style={`width: ${row.percent}%`}
+                    />
+                  </div>
+                  <span class="dandy-pdp-dist-pct dandy-tabular">{row.percent}%</span>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          <!-- Reviews Cards Grid -->
+          <div class="dandy-pdp-reviews-grid" data-dandy-reveal data-dandy-stagger="group">
+            {reviewStats.items.map((item) => (
+              <article class="dandy-pdp-review-card" data-dandy-reveal-child>
+                <header class="dandy-pdp-review-head">
+                  <div class="dandy-pdp-reviewer">
+                    <span class="dandy-pdp-reviewer-avatar" aria-hidden="true">
+                      {item.initial}
+                    </span>
+                    <div class="dandy-pdp-reviewer-info">
+                      <span class="dandy-pdp-reviewer-name">{item.author}</span>
+                      {item.isVerifiedPurchase && (
+                        <span class="dandy-pdp-verified-note">
+                          <Icon name="check-circle" size={13} strokeWidth={2} />
+                          <span>{isEn ? 'Verified Purchase' : 'تجربة شراء مؤكدة'}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <time class="dandy-pdp-review-date">
+                    {formatReviewDate(item.createdAt)}
+                  </time>
+                </header>
+
+                <div
+                  class="dandy-pdp-review-stars"
+                  aria-label={
+                    isEn
+                      ? `Rated ${item.rating} out of 5 stars`
+                      : `تقييم ${item.rating} من 5 نجوم`
+                  }
+                >
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <Icon
+                      name="star"
+                      size={14}
+                      strokeWidth={1.8}
+                      class={idx + 1 <= item.rating ? 'dandy-star-filled' : 'dandy-star-empty'}
+                    />
+                  ))}
+                </div>
+
+                {item.comment ? (
+                  <p class="dandy-pdp-review-comment">{item.comment}</p>
+                ) : (
+                  <p class="dandy-pdp-review-comment is-muted">
+                    {isEn
+                      ? 'Star rating submitted without a written comment.'
+                      : 'تقييم بالنجوم دون تعليق مكتوب.'}
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div class="dandy-pdp-reviews-empty" data-dandy-reveal>
+          <span class="dandy-pdp-reviews-empty-icon" aria-hidden="true">
+            <Icon name="star" size={22} strokeWidth={1.6} />
+          </span>
+          <h3 class="dandy-pdp-reviews-empty-title">
+            {isEn ? 'No reviews for this formula yet' : 'لا توجد تقييمات لهذا المستحضر بعد'}
+          </h3>
+          <p class="dandy-pdp-reviews-empty-desc">
+            {isEn
+              ? 'Dandy customers can rate products and share their experience from their account page after delivery.'
+              : 'يُتاح تقييم المنتج ومشاركة التجربة لعميلات داندي بعد استلام الطلب من صفحة الحساب.'}
+          </p>
+          <a href={accountHref} class="dandy-btn dandy-btn--outline">
+            <span>{isEn ? 'Go to My Account' : 'الانتقال إلى حسابي'}</span>
+          </a>
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .dandy-pdp-reviews-section {
+    padding-block: clamp(40px, 5vw, 68px);
+    background-color: var(--dandy-bg-editorial);
+    border-top: 1px solid var(--dandy-border-subtle);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-pdp-reviews-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .dandy-pdp-reviews-summary-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-default);
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-reviews-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 310px) 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dandy-pdp-reviews-stats-card {
+    padding: 22px;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .dandy-pdp-score-hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-pdp-score-num {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-score-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .dandy-pdp-score-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .dandy-pdp-score-count {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    font-weight: 500;
+  }
+
+  .dandy-pdp-dist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dandy-pdp-dist-row {
+    display: grid;
+    grid-template-columns: 38px 1fr 38px;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-pdp-dist-track {
+    height: 7px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+  }
+
+  .dandy-pdp-dist-fill {
+    height: 100%;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-gold-editorial);
+  }
+
+  .dandy-pdp-dist-pct {
+    text-align: end;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-pdp-reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .dandy-pdp-review-card {
+    padding: 18px 20px;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-pdp-review-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .dandy-pdp-reviewer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .dandy-pdp-reviewer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+    font-weight: 700;
+    font-size: var(--dandy-text-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .dandy-pdp-reviewer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .dandy-pdp-reviewer-name {
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-verified-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-botanical-deep);
+    font-weight: 600;
+  }
+
+  .dandy-pdp-review-date {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    white-space: nowrap;
+  }
+
+  .dandy-pdp-review-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .dandy-pdp-review-comment {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-pdp-review-comment.is-muted {
+    color: var(--dandy-ink-muted);
+    font-style: italic;
+  }
+
+  .dandy-pdp-reviews-empty {
+    padding: 36px 24px;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dandy-pdp-reviews-empty-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-pdp-reviews-empty-title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-reviews-empty-desc {
+    margin: 0 0 6px;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-muted);
+    max-width: 46ch;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 900px) {
+    .dandy-pdp-reviews-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

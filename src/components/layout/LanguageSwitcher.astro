@@ -1,0 +1,189 @@
+---
+/**
+ * DANDY COSMETICS — STOREFRONT LANGUAGE SWITCHER (PHASE 11)
+ * Renders an accessible bilingual toggle (`العربية | EN` on desktop header,
+ * `العربية | English` in mobile navigation drawer) powered by `resolveRouteCounterpart`.
+ * Preserves cart, Firebase Auth session, prices, and safe query parameters only.
+ */
+import type { CounterpartAvailability, Locale } from '../../i18n/types';
+import { resolveRouteCounterpart } from '../../i18n/routes';
+import { t } from '../../i18n/translator';
+
+export interface Props {
+  locale?: Locale;
+  availability?: CounterpartAvailability;
+  variant?: 'header' | 'drawer';
+}
+
+const {
+  locale = 'ar',
+  availability,
+  variant = 'header',
+} = Astro.props;
+
+const sourceUrl = `${Astro.url.pathname || '/'}${Astro.url.search || ''}`;
+const oppositeLocale: Locale = locale === 'ar' ? 'en' : 'ar';
+const counterpart = resolveRouteCounterpart(sourceUrl, oppositeLocale, availability);
+
+const showControl = counterpart.isSwitchSafe && counterpart.isCounterpartPublished;
+const arHref = locale === 'ar' ? undefined : counterpart.fullTargetUrl;
+const enHref = locale === 'en' ? undefined : counterpart.fullTargetUrl;
+const navLabel = locale === 'en' ? 'Language selection' : 'اختيار اللغة';
+const preserveFragment = counterpart.routeKind !== 'invoice' && counterpart.routeKind !== 'track-order' && counterpart.routeKind !== 'account' && counterpart.routeKind !== 'cart' && !counterpart.usedFallback;
+---
+
+{showControl && (
+  <nav
+    class:list={['dandy-lang-switch', variant === 'drawer' ? 'dandy-lang-switch--drawer' : 'dandy-lang-switch--header']}
+    aria-label={navLabel}
+    dir="ltr"
+  >
+    {locale === 'ar' ? (
+      <span class="dandy-lang-item is-active" aria-current="true" lang="ar">
+        العربية
+      </span>
+    ) : (
+      <a
+        href={arHref}
+        class="dandy-lang-item"
+        lang="ar"
+        hreflang="ar"
+        data-lang-switch-link="ar"
+        data-preserve-fragment={preserveFragment ? 'true' : 'false'}
+        aria-label={t('en', 'navigation.home') ? 'Switch to Arabic' : 'التبديل إلى العربية'}
+      >
+        العربية
+      </a>
+    )}
+
+    <span class="dandy-lang-sep" aria-hidden="true">|</span>
+
+    {locale === 'en' ? (
+      <span class="dandy-lang-item is-active" aria-current="true" lang="en">
+        {variant === 'drawer' ? 'English' : 'EN'}
+      </span>
+    ) : (
+      <a
+        href={enHref}
+        class="dandy-lang-item"
+        lang="en"
+        hreflang="en"
+        data-lang-switch-link="en"
+        data-preserve-fragment={preserveFragment ? 'true' : 'false'}
+        aria-label="Switch store language to English"
+      >
+        {variant === 'drawer' ? 'English' : 'EN'}
+      </a>
+    )}
+  </nav>
+)}
+
+<script is:inline>
+  if (!window.__dandyLangSwitchBound) {
+    window.__dandyLangSwitchBound = true;
+    document.addEventListener('click', function (e) {
+      const target = e.target instanceof Element ? e.target.closest('[data-lang-switch-link]') : null;
+      if (!target) return;
+      const nextLocale = target.getAttribute('data-lang-switch-link');
+      if (nextLocale === 'ar' || nextLocale === 'en') {
+        try {
+          localStorage.setItem('dandy_preferred_locale', nextLocale);
+        } catch (_err) {}
+      }
+      const allowFrag = target.getAttribute('data-preserve-fragment') === 'true';
+      if (allowFrag && window.location.hash && window.location.hash.length > 1) {
+        const cleanFrag = window.location.hash.slice(1).trim();
+        if (!/^(access|token|auth|session)=/i.test(cleanFrag)) {
+          const baseHref = (target.getAttribute('href') || '/').split('#')[0];
+          target.setAttribute('href', baseHref + '#' + cleanFrag);
+        }
+      }
+    });
+  }
+</script>
+
+<style is:global>
+  .dandy-lang-switch--header {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-bg-editorial);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    flex-shrink: 0;
+  }
+
+  .dandy-lang-switch--header .dandy-lang-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: var(--dandy-ink-muted);
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color var(--dandy-transition-fast), background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-lang-switch--header a.dandy-lang-item:hover {
+    color: var(--dandy-ink-primary);
+    background-color: var(--dandy-bg-page);
+  }
+
+  .dandy-lang-switch--header .dandy-lang-item.is-active {
+    color: var(--dandy-ink-primary);
+    background-color: var(--dandy-bg-page);
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(26, 23, 21, 0.06);
+  }
+
+  .dandy-lang-sep {
+    color: var(--dandy-border-default);
+    font-size: 0.7rem;
+    user-select: none;
+  }
+
+  .dandy-lang-switch--drawer {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 6px;
+    padding: 5px;
+    margin-bottom: 14px;
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    background-color: var(--dandy-bg-editorial);
+  }
+
+  .dandy-lang-switch--drawer .dandy-lang-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 6px 10px;
+    border-radius: var(--dandy-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dandy-ink-secondary);
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast), background-color var(--dandy-transition-fast);
+  }
+
+  .dandy-lang-switch--drawer .dandy-lang-item.is-active {
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    font-weight: 700;
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  @media (max-width: 1023px) {
+    .dandy-lang-switch--header {
+      display: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,448 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/privacy-policy', locale)}`;
+const termsHref = buildLocalizedPath('/terms', locale);
+
+const pageTitle = isEn ? 'Privacy Policy | Dandy Cosmetics' : 'سياسة الخصوصية | Dandy';
+const pageDescription = isEn
+  ? 'Read the Dandy Cosmetics Privacy Policy covering order data protection, Firebase account security, Meta Pixel consent controls, and B.A.B assistant handling.'
+  : 'تعرفي على سياسة الخصوصية وأمان البيانات في متجر داندي (Dandy). نلتزم بحماية سرية معلوماتكِ وبيانات الشحن.';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
+>
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Transparency & Privacy' : 'الشفافية والخصوصية'}
+    title={isEn ? 'Privacy Policy' : 'سياسة الخصوصية'}
+    description={
+      isEn
+        ? 'Our commitment to safeguarding your personal information, order records, and privacy preferences while shopping with Dandy Cosmetics.'
+        : 'التزامنا بحماية وأمان بياناتكِ وخصوصيتكِ أثناء التسوق في متجر داندي.'
+    }
+    currentCrumb={isEn ? 'Privacy Policy' : 'سياسة الخصوصية'}
+    readingContainer={true}
+  />
+
+  <main class="dandy-page-band" data-dandy-motion="calm">
+    <div class="dandy-container-reading">
+      <article class="dandy-legal-card" data-dandy-entrance="0">
+        {isEn ? (
+          <>
+            <p class="dandy-legal-lead">
+              At <strong>Dandy Cosmetics</strong>, we value your trust and are committed to protecting the privacy and security of our visitors&rsquo; and customers&rsquo; data according to strict technical standards.
+            </p>
+
+            <h2>1. Data Collection &amp; Use</h2>
+            <p>
+              We collect only the information necessary to prepare and deliver your order and communicate regarding shipment status (your name, mobile phone number, delivery address, and optional email address). We never sell or share your personal details with unrelated third parties outside order fulfillment.
+            </p>
+
+            <h2>2. Customer Account Security</h2>
+            <p>When you create a personal account at Dandy Cosmetics:</p>
+            <ul>
+              <li>
+                <strong>Password Protection:</strong> Passwords are encrypted and managed using standard Firebase Authentication protocols and cannot be viewed by our staff.
+              </li>
+              <li>
+                <strong>Stored Information:</strong> Account records are limited to your profile details, saved delivery addresses, order history, and wishlist items to streamline future checkouts.
+              </li>
+              <li>
+                <strong>Control &amp; Deletion:</strong> You can update or delete your saved addresses and profile data anytime via the &ldquo;My Account&rdquo; portal, or request complete account closure through customer support.
+              </li>
+            </ul>
+
+            <h2>3. Technical Security</h2>
+            <p>
+              We use encrypted HTTPS/SSL connections to secure communication between your browser and our servers, ensuring safe browsing and checkout experiences.
+            </p>
+
+            <h2>4. Cookies &amp; Similar Technologies</h2>
+            <p>Browser storage and cookies are used locally for the following purposes:</p>
+            <ul>
+              <li>
+                <strong>Essential Storage:</strong> Preserves your shopping bag contents, session authentication state, language preference, and checkout functionality. These mechanisms are required for the store to operate properly.
+              </li>
+              <li>
+                <strong>Analytics &amp; Marketing Cookies (including Meta Pixel):</strong> Used to measure product engagement and advertising campaign effectiveness on Meta platforms (Facebook &amp; Instagram) so we can improve offerings.
+              </li>
+            </ul>
+
+            <h2>5. Meta Technologies (Pixel &amp; Conversions) &amp; Consent Choices</h2>
+            <p>
+              Dandy Cosmetics uses <strong>Meta Pixel (ID: 1678552386587380)</strong> to evaluate ad performance and understand store interactions after viewing advertisements:
+            </p>
+            <ul>
+              <li>
+                <strong>Prior Consent Requirement:</strong> Marketing tracking scripts and Meta event signals remain disabled unless you explicitly grant consent via the storefront cookie banner or the controls below.
+              </li>
+              <li>
+                <strong>Right to Decline or Withdraw Consent:</strong> You may decline or withdraw marketing consent at any time; Meta Pixel tracking is immediately disabled while all shopping, bag, and checkout capabilities remain fully operational.
+              </li>
+              <li>
+                <strong>Manage Your Preference Now:</strong> Update your current tracking choice anytime using the controls below:
+              </li>
+            </ul>
+          </>
+        ) : (
+          <>
+            <p class="dandy-legal-lead">
+              نقدر في متجر <strong>Dandy</strong> ثقتكم، ونلتزم بحماية خصوصية وأمان بيانات الزوار والعملاء وفق أعلى المعايير.
+            </p>
+
+            <h2>1. جمع واستخدام البيانات</h2>
+            <p>
+              تقتصر البيانات التي نجمعها على ما هو ضروري لتجهيز وشحن طلبكِ والتواصل بشأن الشحنة (الاسم، رقم الهاتف، العنوان الجغرافي، والبريد الإلكتروني). لا نقوم بمشاركة أو بيع بياناتكِ الشخصية لأي طرف ثالث غير مرتبط بتوصيل الطلب.
+            </p>
+
+            <h2>2. أمان حسابات العملاء</h2>
+            <p>عند إنشاء حساب شخصي في متجر داندي:</p>
+            <ul>
+              <li>
+                <strong>حماية كلمات المرور:</strong> يتم تشفير كلمات المرور باستخدام بروتوكولات مصادقة Firebase القياسية، ولا يمكن لأي من موظفينا الاطلاع عليها.
+              </li>
+              <li>
+                <strong>البيانات المخزنة:</strong> تقتصر على تفاصيل ملفكِ الشخصي وعناوين التوصيل المحفوظة وسجل الطلبات والمفضلة لتسهيل تجارب الشراء القادمة.
+              </li>
+              <li>
+                <strong>التحكم والحذف:</strong> يمكنكِ تعديل أو حذف عناوينكِ وبياناتكِ في أي وقت عبر لوحة «حسابي»، أو طلب إغلاق الحساب بالكامل بالتواصل المباشر مع الدعم.
+              </li>
+            </ul>
+
+            <h2>3. الأمان التقني</h2>
+            <p>
+              نستخدم اتصالات مشفرة وآمنة (SSL) لحماية تدفق البيانات بين متصفحكِ وخوادمنا، مما يضمن أمان وسلامة تجربة التصفح والطلب.
+            </p>
+
+            <h2>4. ملفات تعريف الارتباط (Cookies) والتقنيات المشابهة</h2>
+            <p>تُستخدم ملفات تعريف الارتباط محلياً في متصفحكِ للأغراض التالية:</p>
+            <ul>
+              <li>
+                <strong>الملفات الضرورية:</strong> لحفظ محتويات حقيبة التسوق، وحالة تسجيل الدخول، وتفضيلات الجلسة، وضمان عمل بوابات الدفع والشحن بأمان. هذه الملفات أساسية لعمل المتجر ولا يمكن تعطيلها.
+              </li>
+              <li>
+                <strong>ملفات التحليلات والتسويق (بما فيها Meta Pixel):</strong> تُستخدم لقياس تفاعل الزوار مع المنتجات والحملات الإعلانية على منصات Meta (Facebook وInstagram) لتحسين المنتجات وتجربة التسوق وتقديم عروض ملائمة.
+              </li>
+            </ul>
+
+            <h2>5. استخدام تقنيات Meta (Pixel &amp; Conversions) وخيارات الموافقة</h2>
+            <p>
+              يستخدم متجر داندي تقنية <strong>Meta Pixel (معرّف: 1678552386587380)</strong> لتقييم كفاءة إعلاناتنا وفهم كيفية تفاعل العملاء مع متجرنا بعد رؤية الإعلانات:
+            </p>
+            <ul>
+              <li>
+                <strong>شرط الموافقة المسبقة:</strong> لا يتم تفعيل كود التتبع التسويقي أو إرسال أي أحداث تسويقية إلى خوادم Meta إلا بعد موافقتكِ الصريحة عبر شريط ملفات تعريف الارتباط الظاهر في المتجر.
+              </li>
+              <li>
+                <strong>حق الرفض وسحب الموافقة:</strong> يحق لكِ في أي وقت رفض التتبع التسويقي أو سحب موافقتكِ السابقة؛ وفي هذه الحالة يتم إيقاف تشغيل Meta Pixel فوراً مع استمرار كافة وظائف المتجر وعملية الشراء بشكل كامل وطبيعي.
+              </li>
+              <li>
+                <strong>إدارة تفضيلاتكِ الآن:</strong> يمكنكِ تغيير خياركِ الحالي في أي لحظة بالضغط على الأزرار أدناه:
+              </li>
+            </ul>
+          </>
+        )}
+
+        <section
+          class="dandy-consent-control"
+          aria-label={isEn ? 'Manage marketing tracking consent' : 'إدارة موافقة التتبع التسويقي'}
+        >
+          <div class="dandy-consent-state">
+            <strong>
+              {isEn ? 'Current marketing consent status:' : 'حالة موافقة التتبع التسويقي لديكِ:'}
+            </strong>
+            <span id="current-consent-label" class="dandy-consent-badge">
+              {isEn ? 'Checking status...' : 'جاري التحقق...'}
+            </span>
+          </div>
+          <div class="dandy-consent-actions">
+            <button type="button" id="btn-grant-consent" class="dandy-btn dandy-btn--primary">
+              <Icon name="check" size={15} strokeWidth={2} />
+              <span>{isEn ? 'Enable Consent' : 'تفعيل الموافقة'}</span>
+            </button>
+            <button type="button" id="btn-revoke-consent" class="dandy-btn dandy-btn--outline">
+              <Icon name="ban" size={15} strokeWidth={1.9} />
+              <span>{isEn ? 'Decline / Revoke Consent' : 'رفض / إلغاء الموافقة'}</span>
+            </button>
+          </div>
+        </section>
+
+        {isEn ? (
+          <>
+            <h2>6. B.A.B Assistant &amp; Interaction Data Handling</h2>
+            <p>
+              Dandy Cosmetics provides the interactive <strong>B.A.B (Beauty Assistant Bot)</strong> helper to guide visitors to frequently asked questions, product guidance, and store policies. Based on its actual software implementation:
+            </p>
+            <ul>
+              <li>
+                <strong>Rule-Based Engine Architecture:</strong> B.A.B is a guided informational helper powered by a deterministic, pre-programmed rule engine and static local knowledge file; it does not use external generative AI models (such as Google or OpenAI) to generate responses.
+              </li>
+              <li>
+                <strong>Local Browser Processing:</strong> The public knowledge base is downloaded from static store files, and keyword matching, topic filtering, and answer lookup occur entirely inside your browser.
+              </li>
+              <li>
+                <strong>No Conversation Logging or Bot API Transmission:</strong> B.A.B does not transmit your search queries to standalone chatbot servers, nor does it persist chat histories in browser storage (such as localStorage, sessionStorage, or IndexedDB).
+              </li>
+              <li>
+                <strong>Sensitive Information:</strong> B.A.B is purely informational and will never ask for passwords, payment card details, or one-time verification codes (OTP). Do not enter confidential details into its search field.
+              </li>
+              <li>
+                <strong>External WhatsApp Support:</strong> B.A.B provides an optional link to chat with our human customer support team via WhatsApp; choosing that link takes you to Meta&rsquo;s WhatsApp platform, subject to WhatsApp&rsquo;s own terms and privacy policy.
+              </li>
+              <li>
+                <strong>Scope Distinction:</strong> The local-only behavior above describes interactions inside the B.A.B widget itself and does not alter standard order processing described in Section (1) or general website analytics consent described in Sections (4) and (5).
+              </li>
+            </ul>
+          </>
+        ) : (
+          <>
+            <h2>6. المساعد الآلي B.A.B ومعالجة بيانات التفاعل</h2>
+            <p>
+              يوفر متجر DANDY المساعد الآلي التفاعلي <strong>B.A.B (Beauty Assistant Bot)</strong> لمساعدة العميلات في الوصول السريع للأسئلة الشائعة ومعلومات المنتجات وسياسات المتجر. نوضح فيما يلي آلية معالجة البيانات الخاصة بالمساعد وفقاً للتنفيذ البرمجي الفعلي:
+            </p>
+            <ul>
+              <li>
+                <strong>طبيعة المساعد ومحرك الإجابات:</strong> B.A.B هو أداة استرشادية تعتمد كلياً على محرك قواعد محدد ومبرمج مسبقاً (Rule-based Engine) وقاعدة معرفة استاتيكية تحتوي على أسئلة وإجابات وإرشادات مُعدة سلفاً، ولا يعتمد على نماذج ذكاء اصطناعي توليدية خارجية (مثل نماذج Google أو OpenAI) في توليد الردود.
+              </li>
+              <li>
+                <strong>معالجة البحث محلياً داخل المتصفح:</strong> يتم تنزيل قاعدة المعرفة العامة للمساعد مباشرة من ملفات المتجر العامة، وتتم عمليات مطابقة الكلمات المفتاحية والبحث وفلترة المواضيع وعرض الإجابات محلياً وبشكل كامل داخل متصفح جهازكِ.
+              </li>
+              <li>
+                <strong>عدم نقل نصوص المحادثة أو تخزينها:</strong> لا يتضمن كود المساعد أي إرسال تلقائي لنصوص استفساراتكِ أو تفاعلات البحث إلى خوادم أو واجهات برمجية (APIs) مستقلة مخصصة للبوت، كما لا يقوم المساعد بحفظ سجل المحادثات في وحدات التخزين المحلية للمتصفح (مثل localStorage أو sessionStorage أو IndexedDB).
+              </li>
+              <li>
+                <strong>البيانات الحساسة:</strong> المساعد مخصص للاسترشاد فقط، ولا يطلب نهائياً كلمات المرور، أو أرقام بطاقات الدفع البنكية، أو رموز التحقق (OTP)، ويُرجى عدم إدخال أي بيانات بنكية أو حساسة في حقل البحث.
+              </li>
+              <li>
+                <strong>التواصل الخارجي عبر واتساب:</strong> يوفر المساعد خيار الانتقال المباشر للتواصل مع فريق خدمة العملاء عبر تطبيق «واتساب» الرسمي للدعم الفني؛ وفي هذه الحالة ينتقل العميل باختياره إلى منصة WhatsApp التابعة لشركة Meta وتخضع المحادثة حينها لسياسات وشروط الخدمة الخاصة بتلك المنصة.
+              </li>
+              <li>
+                <strong>التمييز بين بيانات المساعد وبيانات المتجر العامة:</strong> تقتصر خصوصية B.A.B المذكورة أعلاه على التفاعل داخل المساعد نفسه؛ ولا تلغي أو تؤثر على معالجة متجر DANDY للبيانات الضرورية لتسجيل الحسابات وإتمام الطلبات والشحن الموضحة في البند (1)، أو ملفات تعريف الارتباط وتقنيات القياس التسويقية العامة للموقع الموضحة في البندين (4) و (5).
+              </li>
+            </ul>
+          </>
+        )}
+
+        <footer class="dandy-legal-footer">
+          <span>{isEn ? 'Last updated: November 2026' : 'آخر تحديث: نوفمبر 2026'}</span>
+          <a href={termsHref}>
+            {isEn ? 'Read Terms & Conditions →' : 'اطلعي على الشروط والأحكام ←'}
+          </a>
+        </footer>
+      </article>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function () {
+      var isEn =
+        document.documentElement.lang === 'en' ||
+        window.location.pathname === '/en' ||
+        window.location.pathname.startsWith('/en/');
+
+      function updateConsentUI() {
+        var label = document.getElementById('current-consent-label');
+        if (!label) return;
+        var current =
+          window.DandyMeta && typeof window.DandyMeta.getConsent === 'function'
+            ? window.DandyMeta.getConsent()
+            : localStorage.getItem('dandy_marketing_consent') || 'unset';
+
+        label.classList.remove('is-granted', 'is-denied', 'is-unset');
+        if (current === 'granted') {
+          label.textContent = isEn
+            ? 'Granted (Marketing analytics active)'
+            : 'موافق عليها (تتبع تسويقي مفعل)';
+          label.classList.add('is-granted');
+        } else if (current === 'denied') {
+          label.textContent = isEn
+            ? 'Declined (Essential storage only)'
+            : 'مرفوضة (الملفات الضرورية فقط)';
+          label.classList.add('is-denied');
+        } else {
+          label.textContent = isEn
+            ? 'Not set yet (Tracking disabled by default)'
+            : 'لم يتم التحديد بعد (التتبع معطّل افتراضياً)';
+          label.classList.add('is-unset');
+        }
+      }
+
+      function showConsentNotice(message, type) {
+        if (window.DandyToast && typeof window.DandyToast.show === 'function') {
+          window.DandyToast.show({ message: message, type: type });
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        updateConsentUI();
+        var btnGrant = document.getElementById('btn-grant-consent');
+        var btnRevoke = document.getElementById('btn-revoke-consent');
+
+        if (btnGrant) {
+          btnGrant.addEventListener('click', function () {
+            if (window.DandyMeta && typeof window.DandyMeta.setConsent === 'function') {
+              window.DandyMeta.setConsent('granted');
+            } else {
+              localStorage.setItem('dandy_marketing_consent', 'granted');
+              localStorage.setItem('dandy_consent_choice', 'all');
+            }
+            updateConsentUI();
+            showConsentNotice(
+              isEn
+                ? 'Marketing analytics consent has been enabled.'
+                : 'تم تفعيل الموافقة على ملفات التتبع التسويقي بنجاح.',
+              'success'
+            );
+          });
+        }
+
+        if (btnRevoke) {
+          btnRevoke.addEventListener('click', function () {
+            if (window.DandyMeta && typeof window.DandyMeta.setConsent === 'function') {
+              window.DandyMeta.setConsent('denied');
+            } else {
+              localStorage.setItem('dandy_marketing_consent', 'denied');
+              localStorage.setItem('dandy_consent_choice', 'essential');
+            }
+            updateConsentUI();
+            showConsentNotice(
+              isEn
+                ? 'Marketing tracking disabled; essential storage remains active.'
+                : 'تم تعطيل التتبع التسويقي والاقتصار على الملفات الأساسية.',
+              'info'
+            );
+          });
+        }
+      });
+
+      window.addEventListener('dandy:consent-changed', updateConsentUI);
+    })();
+  </script>
+</BaseLayout>
+
+<style is:global>
+  .dandy-legal-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: clamp(24px, 4vw, 40px);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-legal-lead {
+    margin: 0 0 22px;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-legal-card h2 {
+    margin: 30px 0 10px;
+    font-family: var(--dandy-font-active-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-legal-card p {
+    margin: 0 0 16px;
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-legal-card ul {
+    margin: 10px 0 20px;
+    padding-inline-start: 22px;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-legal-card li {
+    margin-bottom: 10px;
+    line-height: 1.8;
+    font-size: 0.94rem;
+  }
+
+  .dandy-legal-card strong {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-consent-control {
+    margin: 20px 0 26px;
+    padding: 20px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .dandy-consent-state {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: var(--dandy-text-sm);
+  }
+
+  .dandy-consent-badge {
+    font-weight: 700;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-consent-badge.is-granted {
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-consent-badge.is-denied {
+    color: var(--dandy-danger);
+  }
+
+  .dandy-consent-badge.is-unset {
+    color: var(--dandy-warning);
+  }
+
+  .dandy-consent-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .dandy-legal-footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-legal-footer a {
+    color: var(--dandy-accent-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

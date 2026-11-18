@@ -1,0 +1,7 @@
+---
+export const prerender = false;
+import CategoryView from '../../../components/views/CategoryView.astro';
+const { category } = Astro.params;
+---
+
+<CategoryView locale="en" categorySlug={category} />

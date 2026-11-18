@@ -1,0 +1,163 @@
+---
+/**
+ * DANDY COSMETICS — TRUST STRIP SECTION (STUDIO SYNCHRONIZED)
+ * Powers Studio built-in `trust` strip and custom `trust` sections using Lucide SVG icons.
+ */
+import Icon from '../ui/Icon.astro';
+import type { ResolvedTrustItem } from '../../scripts/homepage-studio';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  sectionId?: string;
+  title?: string;
+  subtitle?: string;
+  items: ResolvedTrustItem[];
+  hidden?: boolean;
+  locale?: Locale;
+}
+
+const {
+  sectionId = 'trust',
+  title = '',
+  subtitle = '',
+  items = [],
+  hidden = false,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+const hasHeader = Boolean(title?.trim() || subtitle?.trim());
+const cols = items.length === 2 ? 2 : items.length >= 4 ? 4 : 3;
+---
+
+<section
+  class:list={['dandy-trust-section', { 'has-header': hasHeader }]}
+  aria-label={title || (isEn ? 'Why DANDY' : 'مزايا داندي')}
+  data-studio-section={sectionId}
+  hidden={hidden || undefined}
+>
+  <div class="dandy-container">
+    {hasHeader && (
+      <header class="dandy-section-header dandy-trust-header" data-dandy-reveal>
+        <div class="dandy-section-titles">
+          {subtitle && <p class="dandy-section-kicker" data-trust-subtitle dir="auto">{subtitle}</p>}
+          {title && <h2 class="dandy-section-heading" data-trust-title dir="auto">{title}</h2>}
+        </div>
+      </header>
+    )}
+
+    <div
+      class={`dandy-trust-grid dandy-trust-cols-${cols}`}
+      data-trust-grid
+      data-dandy-reveal
+      data-dandy-stagger="group"
+    >
+      {items.map((item) => (
+        <article class="dandy-trust-item" data-dandy-reveal-child>
+          <div class="dandy-trust-icon-box" aria-hidden="true">
+            <Icon name={item.iconName} size={20} strokeWidth={1.75} />
+          </div>
+          <div class="dandy-trust-copy">
+            <h3 class="dandy-trust-title" dir="auto">{item.title}</h3>
+            {item.desc && <p class="dandy-trust-desc" dir="auto">{item.desc}</p>}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .dandy-trust-section {
+    background-color: var(--dandy-bg-page);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    padding-block: clamp(28px, 3.5vw, 44px);
+  }
+
+  .dandy-trust-section.has-header {
+    padding-block: clamp(40px, 5vw, 64px);
+  }
+
+  .dandy-trust-header {
+    margin-bottom: 24px;
+  }
+
+  .dandy-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .dandy-trust-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dandy-trust-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dandy-trust-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+  }
+
+  .dandy-trust-icon-box {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-trust-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .dandy-trust-title {
+    margin: 0;
+    font-family: var(--dandy-font-active-sans);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-trust-desc {
+    margin: 0;
+    font-size: var(--dandy-text-xs);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  @media (max-width: 960px) {
+    .dandy-trust-grid,
+    .dandy-trust-cols-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 639px) {
+    .dandy-trust-grid,
+    .dandy-trust-cols-2,
+    .dandy-trust-cols-4 {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .dandy-trust-item {
+      padding: 14px 16px;
+    }
+  }
+</style>

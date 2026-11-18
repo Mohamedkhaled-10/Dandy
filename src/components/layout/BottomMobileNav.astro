@@ -1,0 +1,253 @@
+---
+/**
+ * DANDY COSMETICS — MOBILE BOTTOM NAVIGATION BAR (PHASE 2)
+ * Mobile-only (< 768px) fixed quick navigation bar, single global instance,
+ * immediately visible with route-active indicators and clean safe-area clearance.
+ */
+import Icon from '../ui/Icon.astro';
+import { isNavHrefActive } from '../../scripts/shell';
+import { getLocaleDirection } from '../../i18n/config';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { t } from '../../i18n/translator';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const dir = getLocaleDirection(locale);
+const currentPath = Astro.url.pathname || '/';
+
+const homeHref = buildLocalizedPath('/', locale);
+const shopHref = buildLocalizedPath('/all-products', locale);
+const catPrefix = buildLocalizedPath('/category', locale);
+const prodPrefix = buildLocalizedPath('/product', locale);
+const cartHref = buildLocalizedPath('/cart', locale);
+const offersHref = buildLocalizedPath('/special-offers', locale);
+const pfHref = buildLocalizedPath('/pink-friday', locale);
+const accountHref = buildLocalizedPath('/account', locale);
+const loginHref = buildLocalizedPath('/account-login', locale);
+
+const homeActive = isNavHrefActive(currentPath, homeHref);
+const shopActive = isNavHrefActive(currentPath, shopHref, [catPrefix, prodPrefix]);
+const cartActive = isNavHrefActive(currentPath, cartHref, [buildLocalizedPath('/checkout', locale)]);
+const offersActive = isNavHrefActive(currentPath, offersHref, [pfHref]);
+const accountActive = isNavHrefActive(currentPath, accountHref, [loginHref]);
+---
+
+<nav
+  class="dandy-bottom-nav bottom-nav"
+  aria-label={locale === 'en' ? 'Mobile quick navigation' : 'التنقل عبر الموبايل'}
+  id="global-mobile-bottom-nav"
+  dir={dir}
+>
+  <a
+    href={homeHref}
+    class:list={['dandy-bottom-link', homeActive && 'active']}
+    data-nav-href={homeHref}
+    aria-current={homeActive ? 'page' : undefined}
+  >
+    <Icon name="home" size={20} strokeWidth={homeActive ? 2 : 1.7} />
+    <span>{t(locale, 'navigation.home')}</span>
+  </a>
+
+  <a
+    href={shopHref}
+    class:list={['dandy-bottom-link', shopActive && 'active']}
+    data-nav-href={shopHref}
+    data-nav-prefixes={`${catPrefix},${prodPrefix}`}
+    aria-current={shopActive ? 'page' : undefined}
+  >
+    <Icon name="grid" size={20} strokeWidth={shopActive ? 2 : 1.7} />
+    <span>{t(locale, 'navigation.shop')}</span>
+  </a>
+
+  <a
+    href={cartHref}
+    class:list={['dandy-bottom-link dandy-bottom-link--cart', cartActive && 'active']}
+    data-nav-href={cartHref}
+    data-nav-prefixes={buildLocalizedPath('/checkout', locale)}
+    aria-current={cartActive ? 'page' : undefined}
+  >
+    <span class="dandy-bottom-icon-wrap">
+      <Icon name="shopping-bag" size={20} strokeWidth={cartActive ? 2 : 1.7} />
+      <span class="dandy-bottom-cart-count dandy-tabular" id="shared-cart-count">0</span>
+    </span>
+    <span>{locale === 'en' ? 'Bag' : 'السلة'}</span>
+  </a>
+
+  <a
+    href={offersHref}
+    class:list={['dandy-bottom-link', offersActive && 'active']}
+    data-nav-href={offersHref}
+    data-nav-prefixes={pfHref}
+    aria-current={offersActive ? 'page' : undefined}
+  >
+    <Icon name="tag" size={20} strokeWidth={offersActive ? 2 : 1.7} />
+    <span>{t(locale, 'navigation.offers')}</span>
+  </a>
+
+  <a
+    href={accountHref}
+    class:list={['dandy-bottom-link', accountActive && 'active']}
+    data-nav-href={accountHref}
+    data-nav-prefixes={loginHref}
+    aria-current={accountActive ? 'page' : undefined}
+  >
+    <Icon name="user" size={20} strokeWidth={accountActive ? 2 : 1.7} />
+    <span>{t(locale, 'navigation.account')}</span>
+  </a>
+</nav>
+
+<script is:inline>
+  (function () {
+    function syncBottomNavActive() {
+      const nav = document.getElementById('global-mobile-bottom-nav');
+      if (!nav) return;
+      const current = (window.location.pathname || '/').replace(/\/+$/, '') || '/';
+      nav.querySelectorAll('.dandy-bottom-link').forEach(function (link) {
+        const href = (link.getAttribute('data-nav-href') || '/').replace(/\/+$/, '') || '/';
+        const prefixesRaw = link.getAttribute('data-nav-prefixes') || '';
+        const prefixes = prefixesRaw ? prefixesRaw.split(',').map(function (s) { return s.trim(); }) : [];
+        let active =
+          href === '/' || href === '/en'
+            ? current === href
+            : current === href || current.startsWith(href + '/');
+        if (!active && prefixes.length) {
+          active = prefixes.some(function (p) {
+            const cleanP = p.replace(/\/+$/, '') || '/';
+            return current === cleanP || current.startsWith(cleanP + '/');
+          });
+        }
+        link.classList.toggle('active', active);
+      });
+    }
+
+    if (typeof window.updateSharedCartCount === 'function') {
+      window.updateSharedCartCount();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', syncBottomNavActive);
+    } else {
+      syncBottomNavActive();
+    }
+  })();
+</script>
+
+<style is:global>
+  nav.dandy-bottom-nav {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    nav.dandy-bottom-nav {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+  }
+
+  @media (max-width: 767px) {
+    body {
+      padding-bottom: calc(var(--dandy-bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    nav.dandy-bottom-nav {
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: stretch;
+      position: fixed !important;
+      inset-block-start: auto !important;
+      bottom: 0 !important;
+      inset-inline: 0 !important;
+      width: 100% !important;
+      height: calc(var(--dandy-bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px)) !important;
+      padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+      background-color: rgba(255, 255, 255, 0.97) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      border-top: 1px solid var(--dandy-border-default) !important;
+      box-shadow: 0 -4px 16px rgba(26, 23, 21, 0.05) !important;
+      z-index: var(--dandy-z-bottom-nav) !important;
+      transition: transform var(--dandy-transition-base), opacity var(--dandy-transition-base) !important;
+    }
+
+    .dandy-bottom-link {
+      position: relative;
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-height: 44px;
+      padding: 6px 4px;
+      color: var(--dandy-ink-muted) !important;
+      font-family: var(--dandy-font-active-sans);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      text-decoration: none !important;
+      transition: color var(--dandy-transition-fast) !important;
+    }
+
+    .dandy-bottom-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      inset-inline: 24%;
+      height: 2px;
+      background-color: var(--dandy-ink-primary);
+      border-radius: 0 0 2px 2px;
+      transform: scaleX(0);
+      transition: transform var(--dandy-transition-fast);
+    }
+
+    .dandy-bottom-link.active {
+      color: var(--dandy-ink-primary) !important;
+      font-weight: 700;
+    }
+
+    .dandy-bottom-link.active::before {
+      transform: scaleX(1);
+    }
+
+    .dandy-bottom-link:hover {
+      color: var(--dandy-ink-primary) !important;
+    }
+
+    .dandy-bottom-icon-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dandy-bottom-cart-count {
+      position: absolute;
+      top: -5px;
+      inset-inline-end: -9px;
+      min-width: 16px;
+      height: 16px;
+      padding-inline: 4px;
+      border-radius: var(--dandy-radius-pill);
+      background-color: var(--dandy-accent-primary);
+      color: #FFFFFF;
+      font-size: 0.625rem;
+      font-weight: 700;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #FFFFFF;
+    }
+  }
+
+  body.menu-open nav.dandy-bottom-nav,
+  html.menu-open nav.dandy-bottom-nav,
+  body.search-open nav.dandy-bottom-nav,
+  html.search-open nav.dandy-bottom-nav {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>

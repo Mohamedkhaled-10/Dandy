@@ -1,0 +1,187 @@
+---
+/**
+ * DANDY COSMETICS — CUSTOMER REVIEWS SHOWCASE (STUDIO SYNCHRONIZED)
+ * Powers Studio `reviews` section (`data-studio-section="reviews"`), presenting real customer
+ * chat/outcome screenshots in framed cards that preserve legibility without awkward cropping.
+ */
+import {
+  sanitizeMediaUrl,
+  type ReviewItem,
+} from '../../scripts/homepage-studio';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  reviews: ReviewItem[];
+  hidden?: boolean;
+  locale?: Locale;
+}
+
+const { reviews = [], hidden = false, locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const fallbackImg = '/assets/images/logo.png';
+
+const cleanReviews = reviews
+  .filter((r) => r && (r.image || r.text))
+  .map((r) => ({
+    author: r.author && r.author.trim() !== '-' ? r.author.trim() : '',
+    text: (r.text || '').trim(),
+    image: sanitizeMediaUrl(r.image, fallbackImg),
+  }));
+---
+
+<section
+  class="dandy-home-section dandy-reviews-home-section"
+  aria-labelledby="home-reviews-heading"
+  data-studio-section="reviews"
+  hidden={hidden || undefined}
+>
+  <div class="dandy-container">
+    <header class="dandy-section-header" data-dandy-reveal>
+      <div class="dandy-section-titles">
+        <p class="dandy-section-kicker">{isEn ? 'Verified Experiences' : 'تجارب موثقة'}</p>
+        <h2 id="home-reviews-heading" class="dandy-section-heading">
+          {isEn ? 'DANDY Customer Reviews & Results' : 'آراء وتجارب عميلات داندي'}
+        </h2>
+      </div>
+    </header>
+
+    <div
+      class="dandy-reviews-home-grid"
+      data-reviews-grid
+      data-dandy-stagger="grid"
+      hidden={cleanReviews.length === 0 || undefined}
+    >
+      {cleanReviews.map((review, idx) => (
+        <figure class="dandy-review-card" data-dandy-reveal-child>
+          <div class="dandy-review-media">
+            <img
+              src={review.image}
+              alt={
+                review.author
+                  ? isEn
+                    ? `Customer experience — ${review.author}`
+                    : `تجربة ${review.author}`
+                  : isEn
+                    ? `Dandy customer review #${idx + 1}`
+                    : `تجربة عميلة داندي #${idx + 1}`
+              }
+              width="480"
+              height="600"
+              loading="lazy"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              class="dandy-review-img"
+              onerror={`this.onerror=null;this.src='${fallbackImg}';`}
+            />
+          </div>
+          {(review.author || review.text) && (
+            <figcaption class="dandy-review-caption">
+              {review.text && <p class="dandy-review-text" dir="auto">{review.text}</p>}
+              {review.author && <span class="dandy-review-author" dir="auto">{review.author}</span>}
+            </figcaption>
+          )}
+        </figure>
+      ))}
+    </div>
+
+    <div class="dandy-featured-empty" data-reviews-empty hidden={cleanReviews.length > 0 || undefined}>
+      <p>
+        {isEn
+          ? 'No customer reviews or highlights have been added to this showcase yet.'
+          : 'لم تُضف تقييمات أو لقطات تجارب عميلات في هذه المساحة بعد.'}
+      </p>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .dandy-reviews-home-section {
+    background-color: var(--dandy-bg-editorial);
+    border-top: 1px solid var(--dandy-border-subtle);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-reviews-home-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dandy-reviews-home-grid[hidden],
+  .dandy-reviews-home-section .dandy-featured-empty[hidden] {
+    display: none;
+  }
+
+  .dandy-review-card {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+  }
+
+  .dandy-review-media {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    padding: 10px;
+    background-color: var(--dandy-bg-stage);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .dandy-review-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: var(--dandy-radius-xs);
+  }
+
+  .dandy-review-caption {
+    padding: 12px 16px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dandy-review-text {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-review-author {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    font-weight: 600;
+  }
+
+  @media (max-width: 960px) {
+    .dandy-reviews-home-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .dandy-reviews-home-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .dandy-review-media {
+      padding: 6px;
+    }
+
+    .dandy-review-caption {
+      padding: 10px;
+    }
+  }
+</style>

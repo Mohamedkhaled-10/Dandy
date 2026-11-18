@@ -1,28 +1,52 @@
 ---
 // src/components/ConsentBanner.astro
 // User privacy and marketing cookie consent banner for Dandy Cosmetics
+import Icon from './ui/Icon.astro';
+import type { Locale } from '../i18n/types';
+import { getLocaleDirection } from '../i18n/config';
+import { buildLocalizedPath } from '../i18n/routes';
+import { t } from '../i18n/translator';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const dir = getLocaleDirection(locale);
+const privacyHref = buildLocalizedPath('/privacy-policy', locale);
 ---
 
-<div id="dandy-consent-banner" class="dandy-consent-banner" style="display: none;" dir="rtl" role="dialog" aria-live="polite" aria-label="إشعار الخصوصية وملفات تعريف الارتباط">
+<div
+  id="dandy-consent-banner"
+  class="dandy-consent-banner"
+  style="display: none;"
+  dir={dir}
+  role="dialog"
+  aria-live="polite"
+  aria-label={t(locale, 'consent.bannerTitle')}
+>
   <div class="consent-container">
     <div class="consent-content">
-      <div class="consent-icon-box">
-        <i class="fas fa-cookie-bite" aria-hidden="true"></i>
+      <div class="consent-icon-box" aria-hidden="true">
+        <Icon name="shield-check" size={20} strokeWidth={1.8} />
       </div>
       <div class="consent-text-wrap">
-        <h4 class="consent-title">الخصوصية وملفات تعريف الارتباط</h4>
+        <h4 class="consent-title">{t(locale, 'consent.bannerTitle')}</h4>
         <p class="consent-desc">
-          نستخدم ملفات تعريف الارتباط وتقنيات التحليلات (بما فيها Meta Pixel) لتخصيص تجربة التصفح وقياس أداء الحملات التسويقية وتحسين خدماتنا. يمكنكِ اختيار قبول التتبع التسويقي أو الاقتصار على الملفات الأساسية فقط. لمزيد من التفاصيل، يرجى مراجعة <a href="/privacy-policy" target="_blank" class="consent-link">سياسة الخصوصية</a>.
+          {t(locale, 'consent.bannerDesc')}{' '}
+          <a href={privacyHref} target="_blank" rel="noopener noreferrer" class="consent-link">
+            {t(locale, 'navigation.privacyPolicy')}
+          </a>.
         </p>
       </div>
     </div>
     <div class="consent-actions">
       <button type="button" id="dandy-consent-accept-btn" class="consent-btn consent-btn-accept">
-        <i class="fas fa-check"></i>
-        <span>قبول التتبع التسويقي</span>
+        <Icon name="check" size={16} strokeWidth={2.1} />
+        <span>{t(locale, 'consent.acceptMarketing')}</span>
       </button>
       <button type="button" id="dandy-consent-reject-btn" class="consent-btn consent-btn-reject">
-        <span>الضرورية فقط (رفض)</span>
+        <span>{t(locale, 'consent.essentialOnly')}</span>
       </button>
     </div>
   </div>
@@ -32,29 +56,33 @@
   .dandy-consent-banner {
     position: fixed;
     bottom: 20px;
-    left: 20px;
-    right: 20px;
+    inset-inline: 20px;
     max-width: 1080px;
-    margin: 0 auto;
-    background: #ffffff;
-    border: 1px solid var(--border-light, #fbcfe8);
-    border-radius: 16px;
-    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(254, 93, 159, 0.15);
-    z-index: 999999;
-    padding: 20px 24px;
-    animation: consentSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    backdrop-filter: blur(10px);
-    font-family: inherit;
+    margin-inline: auto;
+    background: var(--dandy-bg-elevated, #ffffff);
+    border: 1px solid var(--dandy-border-default, #d9d2c9);
+    border-radius: var(--dandy-radius-lg, 18px);
+    box-shadow: var(--dandy-shadow-lg, 0 18px 40px -12px rgba(26, 23, 21, 0.2));
+    z-index: 2147483645;
+    padding: 18px 22px;
+    animation: consentSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    font-family: var(--dandy-font-active-sans, inherit);
   }
 
   @keyframes consentSlideUp {
     from {
       opacity: 0;
-      transform: translateY(30px) scale(0.98);
+      transform: translateY(18px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dandy-consent-banner {
+      animation: none;
     }
   }
 
@@ -62,55 +90,57 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 20px;
     flex-wrap: wrap;
   }
 
   .consent-content {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
-    flex: 1 1 540px;
+    gap: 14px;
+    flex: 1 1 520px;
+    min-width: 0;
   }
 
   .consent-icon-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--color-surface-soft, #fdf2f8);
-    color: var(--color-rose-kiss-500, #fe5d9f);
+    width: 42px;
+    height: 42px;
+    border-radius: var(--dandy-radius-sm, 10px);
+    background: var(--dandy-bg-stage, #f5f4f1);
+    color: var(--dandy-botanical-deep, #2e4a38);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
     flex-shrink: 0;
-    border: 1px solid rgba(254, 93, 159, 0.25);
+    border: 1px solid var(--dandy-border-subtle, #ede9e3);
   }
 
   .consent-text-wrap {
     flex: 1;
+    min-width: 0;
   }
 
   .consent-title {
-    margin: 0 0 6px 0;
-    font-size: 1rem;
+    margin: 0 0 4px 0;
+    font-size: 0.96rem;
     font-weight: 700;
-    color: var(--color-primary, #181416);
-    letter-spacing: -0.01em;
+    color: var(--dandy-ink-primary, #1a1715);
+    line-height: 1.4;
   }
 
   .consent-desc {
     margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.6;
-    color: var(--color-muted, #4b5563);
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary, #4a4540);
   }
 
   .consent-link {
-    color: var(--color-rose-kiss-500, #fe5d9f);
+    color: var(--dandy-accent-text, #9d1b4d);
     text-decoration: underline;
+    text-underline-offset: 3px;
     font-weight: 600;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s ease;
   }
 
   .consent-link:hover {
@@ -120,7 +150,7 @@
   .consent-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
     justify-content: flex-end;
   }
@@ -128,63 +158,98 @@
   .consent-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 22px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    border-radius: 10px;
+    padding: 10px 20px;
+    min-height: 42px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--dandy-radius-sm, 10px);
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    outline: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    border: 1px solid transparent;
     font-family: inherit;
     white-space: nowrap;
   }
 
+  .consent-btn:focus-visible,
+  .consent-link:focus-visible {
+    outline: 2px solid var(--dandy-ink-primary, #1a1715);
+    outline-offset: 2px;
+  }
+
   .consent-btn-accept {
-    background: linear-gradient(135deg, #fe5d9f 0%, #db2777 100%);
+    background-color: var(--dandy-ink-primary, #1a1715);
     color: #ffffff;
-    box-shadow: 0 4px 14px rgba(254, 93, 159, 0.35);
   }
 
   .consent-btn-accept:hover {
+    background-color: var(--dandy-accent-primary, #c83269);
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(254, 93, 159, 0.45);
   }
 
   .consent-btn-reject {
-    background: var(--color-surface-soft, #f3f4f6);
-    color: var(--color-dust-grey-100, #374151);
-    border: 1px solid var(--border-light, #e5e7eb);
+    background: var(--dandy-bg-stage, #f5f4f1);
+    color: var(--dandy-ink-primary, #1a1715);
+    border-color: var(--dandy-border-default, #d9d2c9);
   }
 
   .consent-btn-reject:hover {
-    background: #e5e7eb;
-    color: #111827;
+    background: var(--dandy-bg-editorial, #faf8f6);
+    border-color: var(--dandy-ink-secondary, #4a4540);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     .dandy-consent-banner {
-      bottom: 74px; /* avoid overlaying bottom navigation on mobile */
-      left: 12px;
-      right: 12px;
-      padding: 16px;
-      border-radius: 14px;
+      bottom: 66px; /* clear above 60px fixed bottom navigation on mobile */
+      inset-inline: 10px;
+      padding: 12px;
+      border-radius: var(--dandy-radius-md, 14px);
     }
 
     .consent-container {
-      gap: 16px;
+      gap: 10px;
+    }
+
+    .consent-content {
+      gap: 10px;
+      flex: 1 1 100%;
+      align-items: center;
+    }
+
+    .consent-icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--dandy-radius-xs, 8px);
+    }
+
+    .consent-title {
+      font-size: 0.84rem;
+      margin-bottom: 2px;
+    }
+
+    .consent-desc {
+      font-size: 0.74rem;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .consent-actions {
       width: 100%;
+      gap: 8px;
     }
 
     .consent-btn {
-      flex: 1 1 calc(50% - 6px);
+      flex: 1 1 calc(50% - 4px);
       justify-content: center;
-      padding: 10px 14px;
-      font-size: 0.85rem;
+      gap: 6px;
+      padding: 8px 10px;
+      font-size: 0.76rem;
+      min-height: 38px;
+      border-radius: var(--dandy-radius-xs, 8px);
     }
   }
 </style>

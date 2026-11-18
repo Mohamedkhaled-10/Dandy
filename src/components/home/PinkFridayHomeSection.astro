@@ -1,0 +1,191 @@
+---
+/**
+ * DANDY COSMETICS — CONDITIONAL PINK FRIDAY CAMPAIGN SECTION (PHASE 3)
+ * Rendered strictly when shouldDisplayCampaignToCustomers(campaign) is true.
+ * Uses only verified campaign fields and restrained Botanical Editorial dark tones.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { EN_PINK_FRIDAY_OVERLAY } from '../../i18n/content/en/pink-friday';
+import {
+  shouldDisplayCampaignToCustomers,
+  type PinkFridayCampaignData,
+} from '../../utils/pink-friday-server';
+
+export interface Props {
+  campaign?: PinkFridayCampaignData | null;
+  locale?: Locale;
+}
+
+const { campaign, locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const shouldRender = campaign ? shouldDisplayCampaignToCustomers(campaign) : false;
+
+const visualsAny = (campaign?.visuals || {}) as Record<string, any>;
+const badgeLabel = isEn
+  ? EN_PINK_FRIDAY_OVERLAY.badgeText || visualsAny.badgeText || 'Pink Friday'
+  : visualsAny.badgeText || 'Pink Friday';
+const headline = isEn
+  ? EN_PINK_FRIDAY_OVERLAY.headline || EN_PINK_FRIDAY_OVERLAY.title || 'Pink Friday Offers'
+  : visualsAny.headline || campaign?.title || 'Pink Friday';
+const subtitle = isEn
+  ? EN_PINK_FRIDAY_OVERLAY.subtitle
+  : visualsAny.subtitle ||
+    campaign?.subtitleAr ||
+    'استعدّي لتجربة تسوّق استثنائية مع عروض Pink Friday من داندي.';
+const ctaLabel = isEn
+  ? EN_PINK_FRIDAY_OVERLAY.ctaText || 'Explore Offers'
+  : visualsAny.ctaText || 'اكتشفي العروض';
+const pfHref = buildLocalizedPath('/pink-friday', locale);
+
+const rawVisualUrl: string =
+  (isEn ? EN_PINK_FRIDAY_OVERLAY.heroImageOverride : '') ||
+  visualsAny.heroImageUrl ||
+  visualsAny.bannerImage ||
+  '';
+const visualUrl =
+  rawVisualUrl && !rawVisualUrl.includes('images.unsplash.com')
+    ? rawVisualUrl
+    : '/assets/images/index-products/product-2.jpg';
+const fallbackImg = '/assets/images/index-products/product-2.jpg';
+---
+
+{shouldRender && (
+  <section
+    class="dandy-home-section dandy-pf-section"
+    aria-labelledby="home-pink-friday-heading"
+    data-studio-section="pink-friday"
+  >
+    <div class="dandy-container">
+      <div class="dandy-pf-surface" data-dandy-reveal>
+        <div class="dandy-pf-copy">
+          <p class="dandy-pf-kicker">{badgeLabel}</p>
+          <h2 id="home-pink-friday-heading" class="dandy-pf-title">
+            {headline}
+          </h2>
+          <p class="dandy-pf-subtitle">{subtitle}</p>
+          <div class="dandy-pf-actions">
+            <a href={pfHref} class="dandy-pf-cta">
+              <span>{ctaLabel}</span>
+              <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={16} strokeWidth={1.85} />
+            </a>
+          </div>
+        </div>
+
+        <div class="dandy-pf-media" data-dandy-media-settle>
+          <img
+            src={visualUrl}
+            alt={headline}
+            width="640"
+            height="480"
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            class="dandy-pf-img"
+            onerror={`this.onerror=null;this.src='${fallbackImg}';`}
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .dandy-pf-surface {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 48px);
+    padding: clamp(28px, 4vw, 48px);
+    border-radius: var(--dandy-radius-md);
+    background: linear-gradient(135deg, var(--dandy-bg-dark) 0%, var(--dandy-plum-ink) 100%);
+    color: var(--dandy-ink-inverse);
+    overflow: hidden;
+  }
+
+  .dandy-pf-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .dandy-pf-kicker {
+    margin: 0;
+    font-family: var(--dandy-font-en-sans);
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #E8C5D3;
+  }
+
+  .dandy-pf-title {
+    margin: 0;
+    font-family: var(--dandy-font-active-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.28;
+    color: #FFFFFF;
+  }
+
+  .dandy-pf-subtitle {
+    margin: 0;
+    font-size: var(--dandy-text-base);
+    line-height: 1.75;
+    color: rgba(250, 248, 246, 0.86);
+    max-width: 48ch;
+  }
+
+  .dandy-pf-actions {
+    padding-top: 6px;
+  }
+
+  .dandy-pf-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 11px 24px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: #FAF8F6;
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color var(--dandy-transition-fast), transform var(--dandy-transition-fast);
+  }
+
+  .dandy-pf-cta:hover {
+    background-color: #FFFFFF;
+    color: var(--dandy-plum-ink);
+  }
+
+  .dandy-pf-media {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--dandy-radius-sm);
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-pf-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  @media (max-width: 900px) {
+    .dandy-pf-surface {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

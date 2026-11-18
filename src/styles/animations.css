@@ -1,0 +1,153 @@
+/**
+ * ============================================================================
+ * DANDY COSMETICS — ANIMATION & PROGRESSIVE REVEAL SYSTEM (PHASE 1 + PHASE 7)
+ * Compositor-only (transform, opacity) rules with progressive enhancement,
+ * RTL/LTR direction-neutral motion, calm commerce profile, and reduced-motion.
+ * ============================================================================
+ */
+
+/* ----------------------------------------------------------------------------
+   1. TOAST MICRO-INTERACTIONS (PHASE 1)
+   ---------------------------------------------------------------------------- */
+@keyframes dandyToastEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dandyToastExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (max-width: 767px) {
+  @keyframes dandyToastEnter {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   2. PHASE 7 PROGRESSIVE PAGE ENTRANCE & SCROLL REVEAL
+   Default state is ALWAYS visible (opacity: 1; transform: none).
+   Offset state activates ONLY when html.dandy-motion-ready is set and neither
+   reduced-motion nor bfcache instant-settle is active.
+   ---------------------------------------------------------------------------- */
+html.dandy-motion-ready:not(.dandy-motion-reduced):not(.dandy-motion-instant) {
+  --dandy-active-motion-duration: var(--dandy-motion-duration-normal, 420ms);
+  --dandy-active-motion-distance: var(--dandy-motion-distance, 10px);
+}
+
+html.dandy-motion-ready:not(.dandy-motion-reduced):not(.dandy-motion-instant)
+  [data-dandy-motion="expressive"] {
+  --dandy-active-motion-duration: 450ms;
+  --dandy-active-motion-distance: 10px;
+}
+
+html.dandy-motion-ready:not(.dandy-motion-reduced):not(.dandy-motion-instant)
+  [data-dandy-motion="calm"] {
+  --dandy-active-motion-duration: var(--dandy-motion-duration-fast, 280ms);
+  --dandy-active-motion-distance: 6px;
+}
+
+/* Pre-reveal / pending state (compositor transform + opacity only) */
+html.dandy-motion-ready:not(.dandy-motion-reduced):not(.dandy-motion-instant)
+  :is(
+    [data-dandy-entrance],
+    [data-dandy-reveal]:not([data-dandy-stagger="group"]),
+    [data-dandy-stagger] [data-dandy-reveal-child]
+  ):not([data-dandy-motion-state="revealed"]):not([data-dandy-motion-state="settled"]) {
+  opacity: 0;
+  transform: translate3d(0, var(--dandy-active-motion-distance, 10px), 0);
+}
+
+/* Active reveal transition */
+html.dandy-motion-ready:not(.dandy-motion-reduced):not(.dandy-motion-instant)
+  :is(
+    [data-dandy-entrance],
+    [data-dandy-reveal]:not([data-dandy-stagger="group"]),
+    [data-dandy-stagger] [data-dandy-reveal-child]
+  )[data-dandy-motion-state="revealed"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-property: opacity, transform;
+  transition-duration: var(--dandy-active-motion-duration, 420ms);
+  transition-timing-function: var(--dandy-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  transition-delay: var(--dandy-stagger-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+/* LCP-Safe Media Micro-Scale Settle (keeps opacity: 1 at all times) */
+html.dandy-motion-ready:not(.dandy-motion-reduced):not(.dandy-motion-instant)
+  [data-dandy-media-settle]:not([data-dandy-motion-state="revealed"]):not([data-dandy-motion-state="settled"]) {
+  transform: scale(var(--dandy-motion-scale-from, 0.986));
+}
+
+html.dandy-motion-ready:not(.dandy-motion-reduced):not(.dandy-motion-instant)
+  [data-dandy-media-settle][data-dandy-motion-state="revealed"] {
+  transform: scale(1);
+  transition: transform var(--dandy-motion-duration-slow, 540ms)
+    var(--dandy-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  will-change: transform;
+}
+
+/* Settled elements intentionally omit opacity/transform/transition overrides
+   so native hover, focus, and stacking contexts remain 100% untouched. */
+
+/* Instant reveal on bfcache restore */
+html.dandy-motion-instant
+  :is(
+    [data-dandy-entrance],
+    [data-dandy-reveal],
+    [data-dandy-reveal-child],
+    [data-dandy-media-settle]
+  ) {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* ----------------------------------------------------------------------------
+   3. REDUCED MOTION SAFEGUARD
+   ---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .dandy-toast,
+  .dandy-toast.is-leaving,
+  .dandy-btn,
+  .dandy-animated {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  [data-dandy-entrance],
+  [data-dandy-reveal],
+  [data-dandy-reveal-child],
+  [data-dandy-media-settle] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

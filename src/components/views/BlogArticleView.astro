@@ -1,0 +1,580 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import ProductCard from '../product/ProductCard.astro';
+import { getArticleBySlug, getAllArticles, type Article } from '../../utils/articles';
+import { getAllProducts, SITE_URL, type Product } from '../../utils/products';
+import { getRelatedProductsForArticle } from '../../scripts/account';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { resolveLocalizedArticle, type LocalizedArticleView } from '../../i18n/content/adapters';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+  rawSlug: string;
+}
+
+const { locale = 'ar', rawSlug = '' } = Astro.props;
+const isEn = locale === 'en';
+const cleanSlug = rawSlug.trim();
+
+const article: Article | null = cleanSlug ? await getArticleBySlug(cleanSlug) : null;
+const resolvedArticleView: LocalizedArticleView | null = article
+  ? resolveLocalizedArticle(article, locale)
+  : null;
+
+const hasCounterpartTranslation = Boolean(
+  article && resolvedArticleView && (!isEn || resolvedArticleView.hasTranslation)
+);
+
+const activeArticle = hasCounterpartTranslation ? article : null;
+const activeContent = hasCounterpartTranslation && resolvedArticleView ? resolvedArticleView.content : null;
+
+if (!activeArticle) {
+  Astro.response.status = 404;
+}
+
+const blogIndexHref = buildLocalizedPath('/blog', locale);
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const homeHref = buildLocalizedPath('/', locale);
+
+const pageTitle = activeArticle && activeContent
+  ? `${activeContent.title} | ${isEn ? 'Dandy Cosmetics' : 'داندي'}`
+  : isEn
+    ? 'Article Not Found (404) | Dandy Cosmetics'
+    : 'المقال غير موجود (404) | Dandy';
+
+const pageDescription =
+  activeContent?.excerpt ||
+  (activeArticle && activeContent
+    ? isEn
+      ? `Read ${activeContent.title} on the Dandy Cosmetics Beauty Journal.`
+      : `اقرئي مقال: ${activeContent.title} على مدونة داندي.`
+    : isEn
+      ? 'Sorry, the article you are looking for is not available right now.'
+      : 'عذراً، المقال الذي تبحثين عنه غير متوفر حالياً.');
+
+const canonicalUrl = activeArticle
+  ? `${SITE_URL}${buildLocalizedPath(`/blog/${encodeURIComponent(activeArticle.slug)}`, locale)}`
+  : `${SITE_URL}/404`;
+const robots = activeArticle ? 'index, follow' : 'noindex, follow';
+
+let relatedArticles: LocalizedArticleView[] = [];
+let relatedProducts: Product[] = [];
+
+if (activeArticle) {
+  try {
+    const [allArticles, allProducts] = await Promise.all([getAllArticles(), getAllProducts()]);
+    relatedArticles = allArticles
+      .filter((a) => a.id !== activeArticle.id)
+      .map((a) => resolveLocalizedArticle(a, locale))
+      .filter((v) => (!isEn ? true : v.hasTranslation && v.content.publishedInLocale))
+      .slice(0, 3);
+    relatedProducts = getRelatedProductsForArticle(activeArticle.slug, allProducts, 4);
+  } catch {
+    relatedArticles = [];
+    relatedProducts = [];
+  }
+}
+
+const isoPublished = activeArticle?.createdAt ? new Date(activeArticle.createdAt).toISOString() : undefined;
+const isoModified = activeArticle?.updatedAt ? new Date(activeArticle.updatedAt).toISOString() : isoPublished;
+
+const displayDate =
+  (!isEn && activeArticle?.date) ||
+  (isoPublished
+    ? new Date(isoPublished).toLocaleDateString(isEn ? 'en-US' : 'ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : !isEn
+      ? activeArticle?.date || ''
+      : '');
+
+const safeHeroImage =
+  activeArticle?.image && !activeArticle.image.includes('images.unsplash.com') ? activeArticle.image : '';
+
+const blogPostingSchema =
+  activeArticle && activeContent
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        inLanguage: isEn ? 'en' : 'ar',
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': canonicalUrl,
+        },
+        headline: activeContent.title,
+        description: activeContent.excerpt || activeContent.title,
+        image: safeHeroImage ? [safeHeroImage] : undefined,
+        ...(isoPublished ? { datePublished: isoPublished } : {}),
+        ...(isoModified ? { dateModified: isoModified } : {}),
+        publisher: {
+          '@type': 'Organization',
+          name: 'Dandy Cosmetics',
+          url: `${SITE_URL}/`,
+          logo: {
+            '@type': 'ImageObject',
+            url: 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg',
+          },
+        },
+        articleSection: activeContent.category,
+      }
+    : null;
+
+const breadcrumbSchema =
+  activeArticle && activeContent
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: isEn ? 'Home' : 'الرئيسية',
+            item: `${SITE_URL}${homeHref}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: isEn ? 'Beauty Journal' : 'المدونة',
+            item: `${SITE_URL}${blogIndexHref}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: activeContent.title,
+            item: canonicalUrl,
+          },
+        ],
+      }
+    : null;
+
+// Both locales share the complete 8 translated articles when the article itself is translated;
+// if an untranslated post is hit on /en/blog/[slug], disable hreflang via targetEntityExists: false.
+const enCounterpartCheck = article ? resolveLocalizedArticle(article, 'en').hasTranslation : false;
+const counterpartAvailability = {
+  targetEntityExists: Boolean(article && enCounterpartCheck),
+  targetSlug: article?.slug,
+};
+---
+
+{activeArticle && activeContent ? (
+  <BaseLayout
+    locale={locale}
+    title={pageTitle}
+    description={pageDescription}
+    canonical={canonicalUrl}
+    robots={robots}
+    counterpartAvailability={counterpartAvailability}
+  >
+    <Fragment slot="head">
+      <meta property="og:type" content="article" />
+      <meta property="og:title" content={activeContent.title} />
+      <meta property="og:description" content={activeContent.excerpt || activeContent.title} />
+      {safeHeroImage && <meta property="og:image" content={safeHeroImage} />}
+      <meta property="og:url" content={canonicalUrl} />
+      {isoPublished && <meta property="article:published_time" content={isoPublished} />}
+      {isoModified && <meta property="article:modified_time" content={isoModified} />}
+      <meta property="article:section" content={activeContent.category} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={activeContent.title} />
+      <meta name="twitter:description" content={activeContent.excerpt || activeContent.title} />
+      {safeHeroImage && <meta name="twitter:image" content={safeHeroImage} />}
+
+      {blogPostingSchema && (
+        <script type="application/ld+json" is:inline set:html={JSON.stringify(blogPostingSchema)} />
+      )}
+      {breadcrumbSchema && (
+        <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+      )}
+    </Fragment>
+
+    <EditorialPageHeader
+      locale={locale}
+      eyebrow={activeContent.category || (isEn ? 'DANDY Beauty Journal' : 'مدونة داندي')}
+      title={activeContent.title}
+      description={activeContent.excerpt || undefined}
+      currentCrumb={activeContent.title}
+      parentCrumbHref={blogIndexHref}
+      parentCrumbLabel={isEn ? 'Beauty Journal' : 'المدونة'}
+      readingContainer={true}
+    />
+
+    <main class="dandy-page-band" data-dandy-motion="calm">
+      <div class="dandy-container-reading">
+        <div class="dandy-article-meta" data-dandy-entrance="0">
+          {displayDate && (
+            <span class="dandy-article-date">
+              <Icon name="calendar" size={15} strokeWidth={1.85} />
+              <span>{displayDate}</span>
+            </span>
+          )}
+          {activeContent.category && (
+            <>
+              {displayDate && <span aria-hidden="true">·</span>}
+              <span>{activeContent.category}</span>
+            </>
+          )}
+        </div>
+
+        {safeHeroImage && (
+          <div class="dandy-article-hero-media" data-dandy-media-settle>
+            <img
+              fetchpriority="high"
+              src={safeHeroImage}
+              alt={activeContent.title}
+              width="1280"
+              height="720"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              onerror="this.onerror=null;this.src='/assets/images/editorial/hero-botanical.jpg';"
+            />
+          </div>
+        )}
+
+        <article class="dandy-article-content" set:html={activeContent.contentHtml} />
+      </div>
+
+      {relatedProducts.length > 0 && (
+        <section class="dandy-container dandy-article-related-band" aria-labelledby="routineProductsHeading">
+          <div class="dandy-article-sec-head" data-dandy-reveal>
+            <h2 id="routineProductsHeading" class="dandy-font-ar-display">
+              {isEn ? 'Featured in This Routine' : 'المنتجات المذكورة في الروتين'}
+            </h2>
+            <a href={allProductsHref} class="dandy-article-all-link">
+              <span>{isEn ? 'All Products' : 'كل المنتجات'}</span>
+              <Icon name="arrow-left" size={15} strokeWidth={1.85} directional={true} />
+            </a>
+          </div>
+
+          <div class="dandy-catalog-grid" data-dandy-reveal data-dandy-stagger="group">
+            {relatedProducts.map((prod) => (
+              <ProductCard product={prod} revealChild={true} locale={locale} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {relatedArticles.length > 0 && (
+        <section class="dandy-container dandy-article-related-band" aria-labelledby="relatedArticlesHeading">
+          <div class="dandy-article-sec-head" data-dandy-reveal>
+            <h2 id="relatedArticlesHeading" class="dandy-font-ar-display">
+              {isEn ? 'Suggested Reads' : 'مقالات مقترحة'}
+            </h2>
+            <a href={blogIndexHref} class="dandy-article-all-link">
+              <span>{isEn ? 'Browse Journal' : 'تصفح المدونة'}</span>
+              <Icon name="arrow-left" size={15} strokeWidth={1.85} directional={true} />
+            </a>
+          </div>
+
+          <div class="dandy-rel-articles-grid" data-dandy-reveal data-dandy-stagger="group">
+            {relatedArticles.map((relView) => {
+              const item = relView.article;
+              const relImg =
+                item.image && !item.image.includes('images.unsplash.com')
+                  ? item.image.includes('/c_fill,')
+                    ? item.image.replace('w_1280,h_720', 'w_480,h_300')
+                    : item.image
+                  : '/assets/images/editorial/hero-botanical.jpg';
+              const relHref = buildLocalizedPath(`/blog/${encodeURIComponent(item.slug)}`, locale);
+              return (
+                <a href={relHref} class="dandy-rel-article-card" data-dandy-reveal-child>
+                  <div class="dandy-rel-article-thumb">
+                    <img
+                      loading="lazy"
+                      src={relImg}
+                      alt={relView.content.title}
+                      width="480"
+                      height="300"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
+                      onerror="this.onerror=null;this.src='/assets/images/editorial/hero-botanical.jpg';"
+                    />
+                  </div>
+                  <div class="dandy-rel-article-body">
+                    {relView.content.category && (
+                      <span class="dandy-rel-article-cat">{relView.content.category}</span>
+                    )}
+                    <h3>{relView.content.title}</h3>
+                    <span class="dandy-rel-article-link">
+                      <span>{isEn ? 'Read Article' : 'اقرئي المقال'}</span>
+                      <Icon name="arrow-left" size={14} strokeWidth={1.85} directional={true} />
+                    </span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </main>
+  </BaseLayout>
+) : (
+  <BaseLayout
+    locale={locale}
+    title={pageTitle}
+    description={pageDescription}
+    canonical={canonicalUrl}
+    robots="noindex, follow"
+    counterpartAvailability={{ targetEntityExists: false }}
+  >
+    <main class="dandy-error-wrap dandy-container" data-dandy-motion="calm">
+      <div class="dandy-error-code" data-dandy-entrance="0">404</div>
+      <h1 class="dandy-font-ar-display" data-dandy-entrance="1">
+        {isEn ? 'Sorry, this article could not be found' : 'عذراً، هذا المقال غير موجود'}
+      </h1>
+      <p data-dandy-entrance="2">
+        {isEn
+          ? 'The link may be incorrect, or this journal article has been moved or is not available in this language.'
+          : 'قد يكون الرابط غير صحيح أو تم نقل المقال إلى مسار جديد في مدونة داندي.'}
+      </p>
+      <div class="dandy-error-actions" data-dandy-entrance="3">
+        <a href={blogIndexHref} class="dandy-btn dandy-btn--editorial">
+          <Icon name="book-open" size={16} strokeWidth={1.85} />
+          <span>{isEn ? 'Browse Journal' : 'تصفح المدونة'}</span>
+        </a>
+        <a href={homeHref} class="dandy-btn dandy-btn--outline">
+          <Icon name="home" size={16} strokeWidth={1.85} />
+          <span>{isEn ? 'Home' : 'الصفحة الرئيسية'}</span>
+        </a>
+      </div>
+    </main>
+  </BaseLayout>
+)}
+
+<style is:global>
+  .dandy-article-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    margin-bottom: 20px;
+  }
+
+  .dandy-article-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dandy-article-hero-media {
+    width: 100%;
+    max-height: 440px;
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    margin-bottom: 32px;
+    background-color: var(--dandy-bg-stage);
+    border: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-article-hero-media img {
+    width: 100%;
+    height: 100%;
+    max-height: 440px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dandy-article-content {
+    font-size: 1.05rem;
+    line-height: 1.88;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-article-content p {
+    margin: 0 0 22px;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-article-content h2 {
+    font-family: var(--dandy-font-active-display);
+    font-size: clamp(1.3rem, 2vw, 1.58rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    margin: 36px 0 14px;
+    line-height: 1.38;
+  }
+
+  .dandy-article-content h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    margin: 28px 0 10px;
+  }
+
+  .dandy-article-content blockquote {
+    margin: 28px 0;
+    padding: 18px 22px;
+    border-inline-start: 3px solid var(--dandy-botanical-deep);
+    background-color: var(--dandy-bg-editorial);
+    border-radius: var(--dandy-radius-sm);
+    color: var(--dandy-ink-primary);
+    line-height: 1.75;
+  }
+
+  .dandy-article-content ul,
+  .dandy-article-content ol {
+    margin-block: 0 22px;
+    padding-inline-start: 22px;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-article-content li {
+    margin-bottom: 10px;
+    line-height: 1.75;
+  }
+
+  .dandy-article-content img {
+    max-width: 100%;
+    border-radius: var(--dandy-radius-md);
+    margin: 22px 0;
+  }
+
+  .dandy-article-related-band {
+    margin-top: 56px;
+    padding-top: 36px;
+    border-top: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-article-sec-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .dandy-article-sec-head h2 {
+    margin: 0;
+    font-size: clamp(1.25rem, 2vw, 1.55rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-article-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    text-decoration: none;
+  }
+
+  .dandy-article-all-link:hover {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-rel-articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .dandy-rel-article-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    transition: border-color var(--dandy-transition-fast), box-shadow var(--dandy-transition-fast);
+  }
+
+  .dandy-rel-article-card:hover {
+    border-color: var(--dandy-border-default);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-rel-article-thumb {
+    aspect-ratio: 16 / 10;
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+  }
+
+  .dandy-rel-article-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dandy-rel-article-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    gap: 8px;
+  }
+
+  .dandy-rel-article-cat {
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-rel-article-body h3 {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    line-height: 1.48;
+  }
+
+  .dandy-rel-article-link {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-error-wrap {
+    min-height: 68vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-block: 72px 88px;
+    max-width: 560px;
+  }
+
+  .dandy-error-code {
+    font-family: var(--dandy-font-en-display);
+    font-size: clamp(4rem, 10vw, 6rem);
+    font-weight: 700;
+    color: var(--dandy-border-default);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .dandy-error-wrap h1 {
+    margin: 0 0 10px;
+    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-error-wrap p {
+    margin: 0 0 28px;
+    font-size: var(--dandy-text-base);
+    line-height: 1.72;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>

@@ -1,98 +1,97 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
+import { resolveLocaleFromPath } from '../i18n/resolve-locale';
+import { buildLocalizedPath } from '../i18n/routes';
+import { SITE_URL } from '../utils/products';
+
+Astro.response.status = 404;
+
+const locale = resolveLocaleFromPath(Astro.url.pathname || '/');
+const isEn = locale === 'en';
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const homeHref = buildLocalizedPath('/', locale);
+const helpHref = buildLocalizedPath('/help', locale);
 ---
 
 <BaseLayout
-  title="الصفحة غير موجودة (404) | Dandy"
-  description="عذراً، الصفحة التي تبحثين عنها غير متوفرة حالياً في متجر داندي."
+  locale={locale}
+  title={isEn ? 'Page Not Found (404) | Dandy Cosmetics' : 'الصفحة غير موجودة (404) | Dandy'}
+  description={
+    isEn
+      ? 'Sorry, the page you are looking for is not available on Dandy Cosmetics.'
+      : 'عذراً، الصفحة التي تبحثين عنها غير متوفرة حالياً في متجر داندي.'
+  }
+  canonical={`${SITE_URL}/404`}
   robots="noindex, follow"
 >
-  <slot name="head" slot="head">
-    <style is:global>
-      .error-page-wrap {
-        min-height: 70vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 140px 20px 80px;
-        max-width: 540px;
-        margin: 0 auto;
-      }
+  <main class="dandy-error-wrap dandy-container" data-dandy-motion="calm">
+    <div class="dandy-error-code" data-dandy-entrance="0">404</div>
+    <h1 class="dandy-font-ar-display" data-dandy-entrance="1">
+      {isEn ? 'Page Not Found' : 'الصفحة غير موجودة'}
+    </h1>
+    <p data-dandy-entrance="2">
+      {isEn
+        ? 'Sorry, the link you followed may have been moved or removed. You can return to the homepage or browse DANDY formulations.'
+        : 'عذراً، الرابط الذي تحاولين الوصول إليه قد يكون تم نقله أو حذفه. يمكنكِ العودة إلى الرئيسية أو تصفح مستحضرات داندي.'}
+    </p>
 
-      .error-code {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 4.5rem;
-        font-weight: 800;
-        color: var(--border-medium);
-        line-height: 1;
-        margin-bottom: 12px;
-      }
-
-      .error-page-wrap h1 {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: var(--color-primary);
-        margin: 0 0 10px;
-      }
-
-      .error-page-wrap p {
-        font-size: 0.95rem;
-        color: var(--color-muted);
-        line-height: 1.6;
-        margin: 0 0 28px;
-      }
-
-      .error-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .error-btn-primary {
-        background: var(--color-primary);
-        color: #fff;
-        padding: 11px 22px;
-        border-radius: var(--border-radius-sm);
-        text-decoration: none;
-        font-size: 0.88rem;
-        font-weight: 700;
-        transition: opacity 0.2s;
-      }
-
-      .error-btn-primary:hover {
-        opacity: 0.9;
-      }
-
-      .error-btn-secondary {
-        background: var(--color-surface);
-        border: 1px solid var(--border-light);
-        color: var(--color-primary);
-        padding: 11px 22px;
-        border-radius: var(--border-radius-sm);
-        text-decoration: none;
-        font-size: 0.88rem;
-        font-weight: 700;
-        transition: border-color 0.2s;
-      }
-
-      .error-btn-secondary:hover {
-        border-color: var(--color-primary);
-      }
-    </style>
-  </slot>
-
-  <main class="error-page-wrap container" dir="rtl">
-    <div class="error-code">404</div>
-    <h1>الصفحة غير موجودة</h1>
-    <p>عذراً، الرابط الذي تحاولين الوصول إليه قد يكون تم نقله أو حذفه. يمكنكِ العودة للرئيسية أو تصفح مجموعات المنتجات.</p>
-    
-    <div class="error-actions">
-      <a href="/all-products" class="error-btn-primary">تصفح المنتجات</a>
-      <a href="/" class="error-btn-secondary">الرئيسية</a>
+    <div class="dandy-error-actions" data-dandy-entrance="3">
+      <a href={allProductsHref} class="dandy-btn dandy-btn--editorial">
+        <Icon name="shopping-bag" size={16} strokeWidth={1.85} />
+        <span>{isEn ? 'Browse Products' : 'تصفح المنتجات'}</span>
+      </a>
+      <a href={homeHref} class="dandy-btn dandy-btn--outline">
+        <Icon name="home" size={16} strokeWidth={1.85} />
+        <span>{isEn ? 'Home' : 'الرئيسية'}</span>
+      </a>
+      <a href={helpHref} class="dandy-btn dandy-btn--outline">
+        <Icon name="circle-help" size={16} strokeWidth={1.85} />
+        <span>{isEn ? 'Help Center' : 'مركز المساعدة'}</span>
+      </a>
     </div>
   </main>
 </BaseLayout>
 
+<style is:global>
+  .dandy-error-wrap {
+    min-height: 68vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-block: 72px 88px;
+    max-width: 560px;
+  }
+
+  .dandy-error-code {
+    font-family: var(--dandy-font-en-display);
+    font-size: clamp(4.2rem, 11vw, 6.2rem);
+    font-weight: 700;
+    color: var(--dandy-border-default);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .dandy-error-wrap h1 {
+    margin: 0 0 10px;
+    font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-error-wrap p {
+    margin: 0 0 28px;
+    font-size: var(--dandy-text-base);
+    line-height: 1.75;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>

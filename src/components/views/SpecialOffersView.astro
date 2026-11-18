@@ -1,0 +1,379 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import ProductCard from '../product/ProductCard.astro';
+import CatalogToolbar from '../catalog/CatalogToolbar.astro';
+import MobileFilterDrawer from '../catalog/MobileFilterDrawer.astro';
+import CatalogEmptyState from '../catalog/CatalogEmptyState.astro';
+import { getAllProducts, SITE_URL } from '../../utils/products';
+import {
+  calculatePinkFridayPricing,
+  getPublishedPinkFridayCampaign,
+  shouldDisplayCampaignToCustomers,
+} from '../../utils/pink-friday-server';
+import { buildCatalogItemMeta, isSpecialOfferEligible } from '../../scripts/catalog';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+
+const [allProductsRaw, pinkFridayCampaign] = await Promise.all([
+  getAllProducts(),
+  getPublishedPinkFridayCampaign(),
+]);
+
+const visibleProducts = allProductsRaw.filter((p) => p && !p.isHidden);
+
+const offerEntries = visibleProducts
+  .map((product) => {
+    const pfPricing = pinkFridayCampaign
+      ? calculatePinkFridayPricing(product, pinkFridayCampaign)
+      : null;
+    if (!isSpecialOfferEligible(product, pfPricing)) return null;
+    return { product, pfPricing };
+  })
+  .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+  .map((entry, index) => ({
+    ...entry,
+    meta: buildCatalogItemMeta(entry.product, index, entry.pfPricing, locale),
+  }));
+
+const hasOfferBestSellers = offerEntries.some((e) => e.meta.isBestSeller);
+const hasOfferSoldOut = offerEntries.some((e) => e.meta.isSoldOut);
+const availableOfferCategories = Array.from(
+  new Set(offerEntries.map((e) => e.meta.categorySlug))
+);
+const offerCategoriesCount = availableOfferCategories.length;
+const showPinkFridayCrossLink = shouldDisplayCampaignToCustomers(pinkFridayCampaign);
+
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/special-offers', locale)}`;
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const pinkFridayHref = buildLocalizedPath('/pink-friday', locale);
+
+const pageTitle = isEn
+  ? 'Special Offers & Savings | Dandy Cosmetics Egypt'
+  : 'العروض الخاصة | Dandy Cosmetics - خصومات وتخفيضات مذهلة';
+const pageDescription = isEn
+  ? 'Shop official Dandy Cosmetics special offers and authentic skincare, haircare, body care, and fragrance discounts in Egypt.'
+  : 'استفيدي من العروض الخاصة والخصومات الحصرية من داندي (Dandy Cosmetics). منتجات أصلية للعناية بالبشرة والشعر بأسعار استثنائية.';
+const keywords = isEn
+  ? 'Dandy Cosmetics, Special Offers, Skincare Discounts Egypt, Beauty Deals, Haircare Offers'
+  : 'Dandy, Dandy Cosmetics, دندي, داندي, دندي للتجميل, عروض مستحضرات تجميل, خصومات العناية بالبشرة, تخفيضات دندي, Special Offers Cosmetics';
+const ogImage = 'https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={keywords}
+  canonical={canonicalUrl}
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        inLanguage: isEn ? 'en' : 'ar',
+        name: isEn ? 'Special Offers | Dandy Cosmetics' : 'العروض الخاصة | Dandy Cosmetics',
+        description: isEn
+          ? 'Shop authentic Dandy Cosmetics discounts and special offers across skincare, haircare, and body care.'
+          : 'استفيدي من العروض الخاصة والخصومات الحصرية من داندي.',
+        url: canonicalUrl,
+      })}
+    />
+  </Fragment>
+
+  <header class="dandy-offers-header">
+    <div class="dandy-container">
+      <div class="dandy-offers-header-row">
+        <div class="dandy-offers-copy">
+          <p class="dandy-offers-kicker" data-dandy-entrance="0">
+            {isEn ? 'Exclusive DANDY Savings' : 'تخفيضات داندي الحصرية'}
+          </p>
+          <h1 class="dandy-offers-title dandy-font-ar-display" data-dandy-entrance="1">
+            {isEn ? 'Special Offers & Markdowns' : 'العروض الخاصة والتخفيضات'}
+          </h1>
+          <p class="dandy-offers-desc" data-dandy-entrance="2">
+            {isEn
+              ? 'Official discounted formulations and seasonal sets from DANDY—with transparent price comparisons and zero inflated markups.'
+              : 'مجموعات العناية والمنتجات المخفّضة رسمياً من داندي، بأسعار ومقارنات حقيقية دون أي عروض وهمية.'}
+          </p>
+          <div class="dandy-offers-meta" data-dandy-entrance="3">
+            <span class="dandy-tabular">
+              {isEn
+                ? `${offerEntries.length} ${offerEntries.length === 1 ? 'active offer' : 'active offers'}`
+                : `${offerEntries.length} عرض نشط`}
+            </span>
+            <span aria-hidden="true" class="dandy-offers-dot">·</span>
+            <a href={allProductsHref} class="dandy-offers-link">
+              <span>{isEn ? 'Shop Full Catalog' : 'تصفح كامل الكتالوج'}</span>
+            </a>
+          </div>
+        </div>
+
+        {showPinkFridayCrossLink && (
+          <aside
+            class="dandy-offers-pf-callout"
+            aria-label={isEn ? 'Pink Friday Campaign' : 'حملة Pink Friday'}
+            data-dandy-entrance="4"
+          >
+            <div class="dandy-offers-pf-icon" aria-hidden="true">
+              <Icon name="sparkles" size={20} strokeWidth={1.75} />
+            </div>
+            <div class="dandy-offers-pf-body">
+              <p class="dandy-offers-pf-title">
+                {isEn ? 'Pink Friday Collections Are Live' : 'كوليكشنز Pink Friday متاحة الآن'}
+              </p>
+              <p class="dandy-offers-pf-sub">
+                {isEn
+                  ? 'Explore curated gift sets and choose your preferred signature scents.'
+                  : 'استكشفي الباقات المجمعة واخـتاري الروائح المفضلة لكِ.'}
+              </p>
+            </div>
+            <a href={pinkFridayHref} class="dandy-btn dandy-btn--editorial">
+              <span>{isEn ? 'Explore Bundles' : 'عرض الباقات'}</span>
+              <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={16} strokeWidth={1.85} />
+            </a>
+          </aside>
+        )}
+      </div>
+    </div>
+  </header>
+
+  <main
+    class="dandy-page-band"
+    data-catalog-root
+    data-show-category-filter={offerCategoriesCount > 1 ? 'true' : 'false'}
+    data-sync-url="true"
+  >
+    <div class="dandy-container">
+      {offerEntries.length > 0 ? (
+        <>
+          <CatalogToolbar
+            totalCount={offerEntries.length}
+            showCategoryFilter={offerCategoriesCount > 1}
+            availableCategories={availableOfferCategories}
+            showPriceFilter={false}
+            hasSaleItems={false}
+            hasBestSellerItems={hasOfferBestSellers}
+            hasSoldOutItems={hasOfferSoldOut}
+            searchPlaceholder={isEn ? 'Search special offers...' : 'ابحثي داخل العروض الخاصة...'}
+            locale={locale}
+          />
+
+          <MobileFilterDrawer
+            showCategoryFilter={offerCategoriesCount > 1}
+            availableCategories={availableOfferCategories}
+            showPriceFilter={false}
+            hasSaleItems={false}
+            hasBestSellerItems={hasOfferBestSellers}
+            hasSoldOutItems={hasOfferSoldOut}
+            locale={locale}
+          />
+
+          <div class="dandy-catalog-grid" id="offersContainer" data-catalog-grid data-dandy-stagger="grid">
+            {offerEntries.map(({ product, pfPricing, meta }, index) => (
+              <div
+                class="dandy-catalog-slot"
+                data-catalog-item
+                data-dandy-reveal-child
+                data-product-id={meta.id}
+                data-index={meta.index}
+                data-name={meta.name}
+                data-category={meta.categorySlug}
+                data-category-label={meta.categoryLabelAr}
+                data-price={meta.currentPrice}
+                data-on-sale={meta.isOnSale ? 'true' : 'false'}
+                data-bestseller={meta.isBestSeller ? 'true' : 'false'}
+                data-sold-out={meta.isSoldOut ? 'true' : 'false'}
+                data-search={meta.searchText}
+              >
+                <ProductCard
+                  product={product}
+                  pinkFridayPricing={pfPricing}
+                  priority={index < 4}
+                  locale={locale}
+                />
+              </div>
+            ))}
+          </div>
+
+          <CatalogEmptyState
+            isFilterEmpty={true}
+            hidden={true}
+            icon="search"
+            title={isEn ? 'No offers match your search' : 'لا توجد عروض تطابق بحثكِ'}
+            description={
+              isEn
+                ? 'Try clearing your search or filters to view all active special offers.'
+                : 'جرّبي مسح الفلاتر لمشاهدة كل العروض الخاصة المتاحة حالياً.'
+            }
+            resetLabel={isEn ? 'Show All Offers' : 'عرض جميع العروض'}
+          />
+        </>
+      ) : (
+        <CatalogEmptyState
+          hidden={false}
+          icon="tag"
+          title={isEn ? 'No Individual Markdowns Active Right Now' : 'لا توجد تخفيضات فردية نشطة حالياً'}
+          description={
+            isEn
+              ? 'Explore our full catalog of natural DANDY essentials or discover curated value collections.'
+              : 'يمكنكِ تصفح جميع مستحضرات داندي الطبيعية أو استكشاف باقات العروض المجمعة.'
+          }
+          ctaLabel={isEn ? 'Shop All Products' : 'تصفحي جميع المنتجات'}
+          ctaHref={allProductsHref}
+        />
+      )}
+    </div>
+  </main>
+
+  <script>
+    import { initCatalogControllers } from '../../scripts/catalog-client';
+    initCatalogControllers();
+  </script>
+</BaseLayout>
+
+<style>
+  .dandy-offers-header {
+    background-color: var(--dandy-bg-editorial);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    padding-block: clamp(24px, 4vw, 40px);
+  }
+
+  .dandy-offers-header-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .dandy-offers-copy {
+    flex: 1 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-offers-kicker {
+    margin: 0;
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-offers-title {
+    margin: 0;
+    font-size: clamp(1.75rem, 3.2vw, 2.45rem);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--dandy-ink-primary);
+    text-wrap: balance;
+  }
+
+  .dandy-offers-desc {
+    margin: 0;
+    max-width: 58ch;
+    font-size: var(--dandy-text-base);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-offers-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 4px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-offers-dot {
+    color: var(--dandy-border-default);
+  }
+
+  .dandy-offers-link {
+    color: var(--dandy-accent-text);
+    text-decoration: none;
+  }
+
+  .dandy-offers-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .dandy-offers-pf-callout {
+    flex: 0 1 440px;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 16px 18px;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+  }
+
+  .dandy-offers-pf-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-accent-soft);
+    color: var(--dandy-accent-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .dandy-offers-pf-body {
+    flex: 1 1 180px;
+    min-width: 0;
+  }
+
+  .dandy-offers-pf-title {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-offers-pf-sub {
+    margin: 2px 0 0;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-secondary);
+  }
+
+  @media (max-width: 639px) {
+    .dandy-offers-pf-callout {
+      flex-basis: 100%;
+    }
+
+    .dandy-offers-pf-callout .dandy-btn {
+      width: 100%;
+    }
+  }
+</style>

@@ -1,0 +1,237 @@
+---
+/**
+ * DANDY COSMETICS — SHARED ORDER LIFECYCLE TIMELINE (PHASE 6)
+ * Used across /invoice and /track-order. Preserves canonical 4-step progression
+ * + cancelled banner without inventing extra states or colliding at 390px.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+---
+
+<div class="dandy-cancelled-banner" id="cancelledBanner" role="status" hidden>
+  <span class="dandy-cancelled-icon" aria-hidden="true">
+    <Icon name="ban" size={18} strokeWidth={2} />
+  </span>
+  <div>
+    <strong>{isEn ? 'This order has been cancelled' : 'تم إلغاء هذا الطلب'}</strong>
+    <p>
+      {isEn
+        ? 'If you have any questions about this order, please reach out to us via WhatsApp and we will help you right away.'
+        : 'إذا كان لديكِ أي استفسار حول هذا الطلب، يمكنكِ التواصل معنا عبر واتساب وسنساعدكِ فوراً.'}
+    </p>
+  </div>
+</div>
+
+<div
+  class="dandy-timeline-wrap"
+  id="timelineContainer"
+  aria-label={isEn ? 'Order tracking stages' : 'مراحل متابعة الطلب'}
+>
+  <div class="dandy-timeline-rail" aria-hidden="true">
+    <div class="dandy-timeline-rail-fill" id="timelineProgressBar"></div>
+  </div>
+
+  <ol class="dandy-timeline-steps">
+    <li class="dandy-timeline-step step-item timeline-track-step" id="step-new">
+      <span class="dandy-timeline-dot step-circle timeline-dot">
+        <Icon name="receipt" size={17} strokeWidth={1.85} />
+      </span>
+      <span class="dandy-timeline-label step-label timeline-text">
+        {isEn ? 'Pending Review' : 'قيد المراجعة'}
+      </span>
+    </li>
+
+    <li class="dandy-timeline-step step-item timeline-track-step" id="step-processing">
+      <span class="dandy-timeline-dot step-circle timeline-dot">
+        <Icon name="package" size={17} strokeWidth={1.85} />
+      </span>
+      <span class="dandy-timeline-label step-label timeline-text">
+        {isEn ? 'Preparing Order' : 'قيد التجهيز'}
+      </span>
+    </li>
+
+    <li class="dandy-timeline-step step-item timeline-track-step" id="step-shipped">
+      <span class="dandy-timeline-dot step-circle timeline-dot">
+        <Icon name="truck" size={17} strokeWidth={1.85} />
+      </span>
+      <span class="dandy-timeline-label step-label timeline-text">
+        {isEn ? 'Shipped' : 'تم الشحن'}
+      </span>
+    </li>
+
+    <li class="dandy-timeline-step step-item timeline-track-step" id="step-delivered">
+      <span class="dandy-timeline-dot step-circle timeline-dot">
+        <Icon name="check" size={17} strokeWidth={2} />
+      </span>
+      <span class="dandy-timeline-label step-label timeline-text">
+        {isEn ? 'Delivered' : 'تم التوصيل'}
+      </span>
+    </li>
+  </ol>
+</div>
+
+<style>
+  .dandy-cancelled-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-block: 16px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-danger-soft);
+    border: 1px solid #F4C7D2;
+    color: var(--dandy-danger);
+  }
+
+  .dandy-cancelled-banner[hidden] {
+    display: none;
+  }
+
+  .dandy-cancelled-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: #FFFFFF;
+    border: 1px solid #F4C7D2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dandy-danger);
+  }
+
+  .dandy-cancelled-banner strong {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .dandy-cancelled-banner p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-timeline-wrap {
+    position: relative;
+    padding-block: 10px 6px;
+    margin-block: 18px;
+  }
+
+  .dandy-timeline-wrap[hidden] {
+    display: none;
+  }
+
+  .dandy-timeline-rail {
+    position: absolute;
+    top: 30px;
+    inset-inline: 12.5%;
+    height: 2px;
+    background-color: var(--dandy-border-default);
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .dandy-timeline-rail-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    width: 0%;
+    background-color: var(--dandy-botanical-deep);
+    transition: width 360ms var(--dandy-ease-out);
+  }
+
+  .dandy-timeline-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .dandy-timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .dandy-timeline-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-elevated);
+    border: 1.5px solid var(--dandy-border-default);
+    color: var(--dandy-ink-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--dandy-transition-fast),
+                border-color var(--dandy-transition-fast),
+                color var(--dandy-transition-fast),
+                box-shadow var(--dandy-transition-fast);
+  }
+
+  .dandy-timeline-step.active .dandy-timeline-dot {
+    background-color: var(--dandy-botanical-deep);
+    border-color: var(--dandy-botanical-deep);
+    color: #FFFFFF;
+  }
+
+  .dandy-timeline-step.current .dandy-timeline-dot {
+    background-color: var(--dandy-ink-primary);
+    border-color: var(--dandy-ink-primary);
+    color: #FFFFFF;
+    box-shadow: 0 0 0 4px var(--dandy-bg-stage);
+  }
+
+  .dandy-timeline-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+    line-height: 1.35;
+  }
+
+  .dandy-timeline-step.active .dandy-timeline-label,
+  .dandy-timeline-step.current .dandy-timeline-label {
+    color: var(--dandy-ink-primary);
+    font-weight: 700;
+  }
+
+  @media (max-width: 480px) {
+    .dandy-timeline-rail {
+      top: 27px;
+      inset-inline: 12%;
+    }
+
+    .dandy-timeline-dot {
+      width: 34px;
+      height: 34px;
+    }
+
+    .dandy-timeline-label {
+      font-size: 0.72rem;
+    }
+  }
+
+  @media print {
+    .dandy-timeline-wrap {
+      break-inside: avoid;
+    }
+  }
+</style>

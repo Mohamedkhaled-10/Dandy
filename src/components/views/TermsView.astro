@@ -1,0 +1,248 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/terms', locale)}`;
+const privacyHref = buildLocalizedPath('/privacy-policy', locale);
+
+const pageTitle = isEn ? 'Terms & Conditions | Dandy Cosmetics' : 'الشروط والأحكام | Dandy';
+const pageDescription = isEn
+  ? 'Read the Terms & Conditions governing shopping, orders, shipping, Cash on Delivery, returns, and B.A.B usage at Dandy Cosmetics.'
+  : 'الشروط والأحكام الخاصة بالتسوق والطلب وسياسات الشحن والاسترجاع في متجر داندي (Dandy).';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  canonical={canonicalUrl}
+>
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Store Policies' : 'الضوابط والسياسات'}
+    title={isEn ? 'Terms & Conditions' : 'الشروط والأحكام'}
+    description={
+      isEn
+        ? 'The terms and guidelines governing browsing, ordering, delivery, and customer care at Dandy Cosmetics.'
+        : 'القواعد والضوابط المنظمة لعمليات التسوق والطلب والتوصيل في متجر داندي.'
+    }
+    currentCrumb={isEn ? 'Terms & Conditions' : 'الشروط والأحكام'}
+    readingContainer={true}
+  />
+
+  <main class="dandy-page-band" data-dandy-motion="calm">
+    <div class="dandy-container-reading">
+      <article class="dandy-legal-card" data-dandy-entrance="0">
+        {isEn ? (
+          <>
+            <p class="dandy-legal-lead">
+              Welcome to <strong>Dandy Cosmetics</strong>. By browsing this website or placing an order, you agree to the terms and conditions outlined below:
+            </p>
+
+            <h2>1. Permitted Use &amp; Intellectual Property</h2>
+            <p>
+              Browsing products and editorial content is permitted for personal, non-commercial use. All product imagery, formulations, copy, designs, and brand trademarks published on this store are the exclusive property of Dandy Cosmetics and are protected under applicable law.
+            </p>
+
+            <h2>2. Customer Account Terms</h2>
+            <ul>
+              <li>
+                <strong>Accurate Information:</strong> Customers agree to provide accurate, complete contact and delivery details (full name, Egyptian mobile number, and shipping address).
+              </li>
+              <li>
+                <strong>Account Confidentiality:</strong> Customers are responsible for keeping their login credentials and password confidential.
+              </li>
+              <li>
+                <strong>Order Linking:</strong> Guest orders placed using a registered phone number are automatically linked when creating a new customer account so purchase history can be tracked in one place.
+              </li>
+              <li>
+                <strong>Fair Use:</strong> Dandy Cosmetics reserves the right to restrict or suspend any account found misusing store services (such as repeated unexcused refusals of Cash on Delivery parcels).
+              </li>
+            </ul>
+
+            <h2>3. Ordering, Payment &amp; Delivery</h2>
+            <p>
+              Orders are confirmed and coordinated directly for dispatch. We provide Cash on Delivery (COD) nationwide across Egypt for customer convenience. Delivery timelines and shipping fees vary by governorate.
+            </p>
+
+            <h2>4. Exchanges &amp; Returns</h2>
+            <p>
+              To uphold strict hygiene and safety standards for personal care products, cosmetic items are subject to tight return controls. If you receive a damaged item or an incorrect shipment, please contact customer care on WhatsApp immediately so we can resolve and replace the product promptly.
+            </p>
+
+            <h2>5. Use of the B.A.B Digital Assistant</h2>
+            <p>
+              The interactive <strong>B.A.B (Beauty Assistant Bot)</strong> helper is provided on the storefront to guide customers to FAQs and store information, subject to the following terms:
+            </p>
+            <ul>
+              <li>
+                <strong>Informational Guidance Only:</strong> B.A.B relies on a curated, pre-configured knowledge base. Responses provided by the assistant are strictly informational and illustrative and may not cover exceptional individual cases.
+              </li>
+              <li>
+                <strong>Binding Official Policies:</strong> The official policies published on Dandy Cosmetics pages (Terms &amp; Conditions, Shipping &amp; Returns guidance, and Privacy Policy) remain the binding authority for all transactions. Please contact support directly for exceptional inquiries.
+              </li>
+              <li>
+                <strong>No Transactional Authority:</strong> The assistant cannot place orders on your behalf, modify or cancel existing orders, process payments, or verify financial settlements.
+              </li>
+              <li>
+                <strong>No Account or Live Inventory Access:</strong> B.A.B has no programmatic access to your personal account details, private order history, or real-time warehouse stock quantities.
+              </li>
+              <li>
+                <strong>Data Safety:</strong> Never enter passwords, payment card numbers, or OTP verification codes into the assistant&rsquo;s search input; they are never required.
+              </li>
+              <li>
+                <strong>External Third-Party Links:</strong> External links offered inside B.A.B (such as WhatsApp support) take you to third-party platforms governed by those platforms&rsquo; own terms and privacy policies.
+              </li>
+            </ul>
+          </>
+        ) : (
+          <>
+            <p class="dandy-legal-lead">
+              مرحباً بكم في متجر <strong>Dandy</strong>. استخدامكِ للموقع وإتمام الطلبات يخضع للشروط والضوابط الموضحة أدناه:
+            </p>
+
+            <h2>1. الاستخدام وحقوق الملكية</h2>
+            <p>
+              يُسمح بتصفح المنتجات والمحتوى للأغراض الشخصية. جميع الصور، التركيبات، النصوص، والعلامات التجارية المنشورة هي ملك حصري لـ Dandy ومحمية بموجب القوانين ذات الصلة.
+            </p>
+
+            <h2>2. شروط حسابات العملاء</h2>
+            <ul>
+              <li>
+                <strong>صحة البيانات:</strong> يتعهد العميل بتقديم بيانات دقيقة وصحيحة (الاسم، رقم الهاتف، وعنوان التوصيل).
+              </li>
+              <li>
+                <strong>سرية الحساب:</strong> يتحمل العميل مسؤولية الحفاظ على سرية بيانات حسابه وكلمة المرور.
+              </li>
+              <li>
+                <strong>ربط الطلبات:</strong> يتم ربط الطلبات المنفذة كضيف تلقائياً برقم الهاتف المسجل عند إنشاء حساب جديد لتسهيل تتبع المشتريات.
+              </li>
+              <li>
+                <strong>الاستخدام العادل:</strong> يحتفظ المتجر بحق تقييد أو تعليق أي حساب يثبت إساءة استخدامه للخدمة (مثل تكرار رفض استلام الشحنات عند الدفع عند الاستلام دون سبب مشروع).
+              </li>
+            </ul>
+
+            <h2>3. الطلب والدفع والتوصيل</h2>
+            <p>
+              يتم تأكيد الطلبات والتواصل مع العميل لتنسيق موعد الشحن. نوفر خيار الدفع عند الاستلام لضمان راحة وثقة العميل. مدة التوصيل ورسوم الشحن تتحدد بناءً على المحافظة والمنطقة الجغرافية.
+            </p>
+
+            <h2>4. الاستبدال والاسترجاع</h2>
+            <p>
+              حرصاً على سلامة وصحة عملائنا، تخضع مستحضرات العناية الشخصية لسياسات استبدال واسترجاع صارمة. في حال استلام منتج تالف أو وجود خطأ في الشحنة، يرجى التواصل فوراً مع خدمة العملاء عبر الواتساب لمعالجة الأمر واستبدال المنتج.
+            </p>
+
+            <h2>5. استخدام المساعد الآلي B.A.B</h2>
+            <p>
+              يُعد المساعد الآلي <strong>B.A.B</strong> أداة رقمية تفاعلية متاحة على المتجر لمساعدة العميلات وتوجيههن والإجابة على الأسئلة الشائعة، ويخضع استخدامه للضوابط التالية:
+            </p>
+            <ul>
+              <li>
+                <strong>طبيعة الخدمة والاسترشاد:</strong> يعتمد المساعد على قاعدة معرفة ومعلومات مُعدة مسبقاً، وتعتبر جميع المعلومات والإجابات المقدمة من خلاله إرشادية وتوضيحية فقط، وقد لا تغطي كافة الحالات الفردية أو الاستثنائية.
+              </li>
+              <li>
+                <strong>المرجعية القانونية المعتمدة:</strong> السياسات والشروط الرسمية المنشورة في صفحات متجر DANDY (شروط الاستخدام، سياسة الاسترجاع والاستبدال، وسياسة الخصوصية) هي المرجع الأساسي والملزم والمعتمد لكافة المعاملات، ويُرجى التواصل المباشر مع فريق الدعم الفني لتأكيد أي حالة خاصة أو استفسار استثنائي.
+              </li>
+              <li>
+                <strong>حدود الصلاحيات والعمليات:</strong> لا يملك المساعد الآلي أي صلاحية لتنفيذ عمليات الشراء نيابة عن العميل، أو تعديل الطلبات القائمة، أو إلغائها، أو تأكيد المدفوعات واستلام المبالغ المالية.
+              </li>
+              <li>
+                <strong>الوصول للبيانات والمخزون:</strong> لا يمتلك المساعد وصولاً برمجياً مباشراً إلى بيانات حسابكِ الشخصي، أو سجل طلباتكِ الخاصة، أو كميات المخزون الحي لحظياً في المستودعات.
+              </li>
+              <li>
+                <strong>أمان وسرية البيانات:</strong> لا يجوز إدخال كلمات المرور أو أرقام بطاقات الائتمان أو رموز التحقق البنكي في حقول البحث والاستفسار الخاصة بالمساعد، حيث لا يُطلب ذلك مطلقاً لتقديم المساعدة.
+              </li>
+              <li>
+                <strong>الروابط الخارجية وخدمات الطرف الثالث:</strong> الروابط الخارجية التي يوفرها المساعد (مثل رابط المحادثة عبر WhatsApp) تخضع لشروط الاستخدام وسياسات الخصوصية الخاصة بالشركات والخدمات التابعة لها بمجرد مغادرة الموقع.
+              </li>
+            </ul>
+          </>
+        )}
+
+        <footer class="dandy-legal-footer">
+          <span>{isEn ? 'Last updated: November 2026' : 'آخر تحديث: نوفمبر 2026'}</span>
+          <a href={privacyHref}>
+            {isEn ? 'Read Privacy Policy →' : 'اطلعي على سياسة الخصوصية ←'}
+          </a>
+        </footer>
+      </article>
+    </div>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .dandy-legal-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: clamp(24px, 4vw, 40px);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-legal-lead {
+    margin: 0 0 22px;
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-legal-card h2 {
+    margin: 30px 0 10px;
+    font-family: var(--dandy-font-active-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-legal-card p {
+    margin: 0 0 16px;
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-legal-card ul {
+    margin: 10px 0 20px;
+    padding-inline-start: 22px;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-legal-card li {
+    margin-bottom: 10px;
+    line-height: 1.8;
+    font-size: 0.94rem;
+  }
+
+  .dandy-legal-card strong {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-legal-footer {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-legal-footer a {
+    color: var(--dandy-accent-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

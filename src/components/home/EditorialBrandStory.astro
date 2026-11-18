@@ -1,0 +1,242 @@
+---
+/**
+ * DANDY COSMETICS — EDITORIAL PROMO & BRAND STORY SECTION (STUDIO SYNCHRONIZED)
+ * Synchronized directly with Studio `promo` (`promoBanner`: eyebrow, title, desc, ctaText, ctaLink, image)
+ * while preserving the Botanical Editorial pharmaceutical philosophy as verified default content.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { DEFAULT_PROMO_BANNER, DEFAULT_PROMO_BANNER_EN } from '../../scripts/homepage-studio';
+
+export interface Props {
+  sectionId?: string;
+  eyebrow?: string;
+  title?: string;
+  desc?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  image?: string;
+  isCustomized?: boolean;
+  hidden?: boolean;
+  locale?: Locale;
+}
+
+const {
+  sectionId = 'promo',
+  eyebrow,
+  title,
+  desc,
+  ctaText,
+  ctaLink,
+  image,
+  isCustomized = false,
+  hidden = false,
+  locale = 'ar',
+} = Astro.props;
+
+const isEn = locale === 'en';
+const defaults = isEn ? DEFAULT_PROMO_BANNER_EN : DEFAULT_PROMO_BANNER;
+const resolvedEyebrow = eyebrow || defaults.eyebrow;
+const resolvedTitle = title || defaults.title;
+const resolvedDesc = desc || defaults.desc;
+const resolvedCtaText = ctaText || defaults.ctaText;
+const rawCtaLink = ctaLink || defaults.ctaLink;
+const resolvedCtaLink = rawCtaLink.startsWith('/') ? buildLocalizedPath(rawCtaLink, locale) : rawCtaLink;
+const resolvedImage = image || defaults.image;
+const aboutHref = buildLocalizedPath('/about-us', locale);
+
+const headingId = `home-story-heading-${sectionId}`;
+---
+
+<section
+  class="dandy-home-section dandy-story-section"
+  aria-labelledby={headingId}
+  data-studio-section={sectionId}
+  hidden={hidden || undefined}
+>
+  <div class="dandy-container dandy-story-grid">
+    <div class="dandy-story-media" data-dandy-media-settle>
+      <figure class="dandy-story-frame">
+        <img
+          src={resolvedImage}
+          alt={resolvedTitle}
+          width="900"
+          height="1200"
+          loading="lazy"
+          decoding="async"
+          referrerpolicy="no-referrer"
+          class="dandy-story-img"
+          data-promo-image
+          onerror={`this.onerror=null;this.src='${defaults.image}';`}
+        />
+      </figure>
+    </div>
+
+    <div class="dandy-story-copy" data-dandy-reveal>
+      <p class="dandy-section-kicker" data-promo-eyebrow dir="auto">{resolvedEyebrow}</p>
+      <h2 id={headingId} class="dandy-story-title" data-promo-title dir="auto">
+        {resolvedTitle}
+      </h2>
+
+      <p class="dandy-story-text" data-promo-desc dir="auto">
+        {resolvedDesc}
+      </p>
+
+      {!isCustomized && (
+        <>
+          <blockquote class="dandy-story-quote" data-promo-default-extra>
+            {isEn
+              ? '“Our mission is to make high-quality botanical beauty accessible to everyone — formulas crafted to international standards at fair local value.”'
+              : '«مهمتنا هي جعل منتجات الجمال عالية الجودة في متناول الجميع، بتركيبات تنافس المعايير العالمية وبقيمة محلية عادلة.»'}
+          </blockquote>
+
+          <ul class="dandy-story-pillars" data-promo-default-pillars>
+            <li>
+              <Icon name="leaf" size={18} strokeWidth={1.75} class="dandy-story-icon" />
+              <span>
+                {isEn
+                  ? 'Carefully selected pure botanical oils and nourishing butters for gentle everyday rituals'
+                  : 'زيوت نباتية وزبدات مغذية مختارة بعناية للاستخدام اليومي اللطيف'}
+              </span>
+            </li>
+            <li>
+              <Icon name="truck" size={18} strokeWidth={1.75} class="dandy-story-icon" />
+              <span>
+                {isEn
+                  ? 'Cairo, Egypt — Reliable door-to-door delivery across all Egyptian governorates'
+                  : 'القاهرة، مصر — شحن وتوصيل موثوق لجميع المحافظات'}
+              </span>
+            </li>
+          </ul>
+        </>
+      )}
+
+      <div class="dandy-story-actions">
+        <a href={resolvedCtaLink} class="dandy-btn dandy-btn--editorial" data-promo-cta>
+          <span data-promo-cta-text dir="auto">{resolvedCtaText}</span>
+          <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={16} strokeWidth={1.8} />
+        </a>
+        <a href={aboutHref} class="dandy-btn dandy-btn--outline">
+          <span>{isEn ? 'Read Our Story' : 'اقرئي قصة داندي'}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .dandy-story-section {
+    background-color: var(--dandy-bg-page);
+  }
+
+  .dandy-story-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: clamp(28px, 5vw, 64px);
+  }
+
+  .dandy-story-media {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dandy-story-frame {
+    margin: 0;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    max-height: 540px;
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    background-color: var(--dandy-bg-stage);
+    border: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-story-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dandy-story-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  .dandy-story-title {
+    margin: 0;
+    font-family: var(--dandy-font-active-display);
+    font-size: clamp(1.625rem, 2.6vw, 2.35rem);
+    font-weight: 700;
+    line-height: 1.32;
+    color: var(--dandy-ink-primary);
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+
+  .dandy-story-text {
+    margin: 0;
+    font-size: var(--dandy-text-base);
+    line-height: 1.82;
+    color: var(--dandy-ink-secondary);
+    max-width: 58ch;
+  }
+
+  .dandy-story-quote {
+    margin: 4px 0;
+    padding: 14px 18px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-sm);
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    line-height: 1.75;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-story-pillars {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dandy-story-pillars li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--dandy-text-sm);
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-story-icon {
+    color: var(--dandy-botanical-deep);
+    flex-shrink: 0;
+  }
+
+  .dandy-story-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .dandy-story-grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    .dandy-story-frame {
+      aspect-ratio: 4 / 3;
+      max-height: 360px;
+    }
+  }
+</style>

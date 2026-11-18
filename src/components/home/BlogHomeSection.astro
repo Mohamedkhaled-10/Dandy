@@ -1,0 +1,282 @@
+---
+/**
+ * DANDY COSMETICS — BLOG SHOWCASE SECTION (STUDIO SYNCHRONIZED)
+ * Powers Studio `blog` section (`data-studio-section="blog"`), displaying latest 3 published
+ * Firestore articles in restrained Botanical Editorial card layout with zero pill spam.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Article } from '../../utils/articles';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { resolveLocalizedArticle } from '../../i18n/content/adapters';
+
+export interface Props {
+  articles: Article[];
+  hidden?: boolean;
+  locale?: Locale;
+}
+
+const { articles = [], hidden = false, locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const localizedArticles = articles
+  .map((article) => ({
+    article,
+    view: resolveLocalizedArticle(article, locale, { fallbackToArabicWhenMissing: true }),
+  }))
+  .filter((entry) => !isEn || entry.view.hasTranslation)
+  .slice(0, 3);
+
+const fallbackBlogImg = '/assets/images/editorial/story-botanical.jpg';
+const blogIndexHref = buildLocalizedPath('/blog', locale);
+
+function getArticleExcerpt(article: Article, localizedExcerpt?: string): string {
+  if (localizedExcerpt && localizedExcerpt.trim()) {
+    return localizedExcerpt.trim();
+  }
+  if (article.excerpt && article.excerpt.trim()) {
+    return article.excerpt.trim();
+  }
+  if (article.content) {
+    const plain = article.content.replace(/<[^>]+>/g, '').trim();
+    return plain.length > 130 ? `${plain.slice(0, 130)}...` : plain;
+  }
+  return '';
+}
+
+function getArticleDateLabel(article: Article): string {
+  if (article.createdAt) {
+    try {
+      return new Date(article.createdAt).toLocaleDateString(isEn ? 'en-US' : 'ar-EG', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return article.date?.trim() || '';
+    }
+  }
+  if (!isEn && article.date?.trim()) return article.date.trim();
+  return '';
+}
+---
+
+<section
+  class="dandy-home-section dandy-blog-home-section"
+  aria-labelledby="home-blog-heading"
+  data-studio-section="blog"
+  hidden={hidden || undefined}
+>
+  <div class="dandy-container">
+    <header class="dandy-section-header" data-dandy-reveal>
+      <div class="dandy-section-titles">
+        <p class="dandy-section-kicker">{isEn ? 'Beauty Journal' : 'مدونة العناية والجمال'}</p>
+        <h2 id="home-blog-heading" class="dandy-section-heading">
+          {isEn ? 'Skincare & Haircare Guides' : 'نصائح ومقالات روتين البشرة والشعر'}
+        </h2>
+      </div>
+      <a href={blogIndexHref} class="dandy-section-more">
+        <span>{isEn ? 'All Articles' : 'كل المقالات'}</span>
+        <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={15} strokeWidth={1.8} />
+      </a>
+    </header>
+
+    {localizedArticles.length > 0 ? (
+      <div class="dandy-blog-home-grid" data-dandy-reveal data-dandy-stagger="group">
+        {localizedArticles.map(({ article, view }) => {
+          const articleTitle = view.content.title;
+          const articleCat = view.content.category || (isEn ? 'Beauty Rituals' : 'روتين الجمال');
+          const excerpt = getArticleExcerpt(article, view.content.excerpt);
+          const dateLabel = getArticleDateLabel(article);
+          const articleHref = buildLocalizedPath(`/blog/${encodeURIComponent(article.slug)}`, locale);
+          const imgSrc =
+            article.image && !article.image.includes('images.unsplash.com')
+              ? article.image
+              : fallbackBlogImg;
+
+          return (
+            <article class="dandy-blog-home-card" data-dandy-reveal-child>
+              <a href={articleHref} class="dandy-blog-home-media">
+                <img
+                  src={imgSrc}
+                  alt={articleTitle}
+                  width="640"
+                  height="360"
+                  loading="lazy"
+                  decoding="async"
+                  referrerpolicy="no-referrer"
+                  class="dandy-blog-home-img"
+                  onerror={`this.onerror=null;this.src='${fallbackBlogImg}';`}
+                />
+              </a>
+
+              <div class="dandy-blog-home-body">
+                <p class="dandy-blog-home-meta">
+                  <span>{articleCat}</span>
+                  {dateLabel && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>{dateLabel}</span>
+                    </>
+                  )}
+                </p>
+
+                <h3 class="dandy-blog-home-title">
+                  <a href={articleHref}>{articleTitle}</a>
+                </h3>
+
+                {excerpt && <p class="dandy-blog-home-excerpt">{excerpt}</p>}
+
+                <a href={articleHref} class="dandy-blog-home-link">
+                  <span>{isEn ? 'Read Article' : 'اقرئي المقال'}</span>
+                  <Icon name={isEn ? 'chevron-right' : 'chevron-left'} size={14} strokeWidth={2} />
+                </a>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="dandy-featured-empty">
+        <p>
+          {isEn
+            ? 'Explore DANDY skincare and haircare routine articles in our Beauty Journal.'
+            : 'تصفحي مكتبة مقالات العناية بالبشرة والشعر على مدونة داندي.'}
+        </p>
+        <a href={blogIndexHref} class="dandy-btn dandy-btn--outline">
+          <span>{isEn ? 'Visit Journal' : 'زيارة المدونة'}</span>
+        </a>
+      </div>
+    )}
+  </div>
+</section>
+
+<style is:global>
+  .dandy-blog-home-section {
+    background-color: var(--dandy-bg-page);
+    border-top: 1px solid var(--dandy-border-subtle);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-blog-home-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dandy-blog-home-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    transition:
+      transform var(--dandy-transition-base),
+      border-color var(--dandy-transition-base),
+      box-shadow var(--dandy-transition-base);
+  }
+
+  .dandy-blog-home-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--dandy-border-default);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-blog-home-media {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+  }
+
+  .dandy-blog-home-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 360ms var(--dandy-ease-out);
+  }
+
+  .dandy-blog-home-card:hover .dandy-blog-home-img {
+    transform: scale(1.03);
+  }
+
+  .dandy-blog-home-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    padding: 18px;
+    gap: 10px;
+  }
+
+  .dandy-blog-home-meta {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    font-weight: 500;
+  }
+
+  .dandy-blog-home-title {
+    margin: 0;
+    font-family: var(--dandy-font-active-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.42;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-blog-home-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dandy-blog-home-title a:hover {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-blog-home-excerpt {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .dandy-blog-home-link {
+    margin-top: auto;
+    padding-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+    text-decoration: none;
+  }
+
+  .dandy-blog-home-card:hover .dandy-blog-home-link {
+    color: var(--dandy-accent-text);
+  }
+
+  @media (max-width: 960px) {
+    .dandy-blog-home-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .dandy-blog-home-grid {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+  }
+</style>

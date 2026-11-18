@@ -1,0 +1,782 @@
+---
+/**
+ * DANDY COSMETICS — EDITORIAL HERO SECTION (STUDIO SYNCHRONIZED)
+ * Supports Studio multi-slide responsive images (desktop/mobile <picture>),
+ * editable slide title/subtitle/CTA copy with grounded Botanical Editorial fallbacks,
+ * accessible slide controls, and live STUDIO_UPDATE_STATE preview updates.
+ */
+import Icon from '../ui/Icon.astro';
+import type { Locale } from '../../i18n/types';
+import { buildLocalizedPath } from '../../i18n/routes';
+import {
+  DEFAULT_HERO_SLIDE,
+  DEFAULT_HERO_SLIDE_EN,
+  type ResolvedHeroSlide,
+} from '../../scripts/homepage-studio';
+
+export interface Props {
+  slides?: ResolvedHeroSlide[];
+  hidden?: boolean;
+  locale?: Locale;
+}
+
+const { slides = [], hidden = false, locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const defaultHeroSlide = isEn ? DEFAULT_HERO_SLIDE_EN : DEFAULT_HERO_SLIDE;
+const activeSlides: ResolvedHeroSlide[] =
+  slides.length > 0
+    ? slides
+    : [{ index: 0, ...defaultHeroSlide, hasCustomCopy: false }];
+
+const firstSlide = activeSlides[0];
+const multiSlide = activeSlides.length > 1;
+const firstCtaHref = firstSlide.link?.startsWith('/')
+  ? buildLocalizedPath(firstSlide.link, locale)
+  : firstSlide.link || buildLocalizedPath('/all-products', locale);
+const aboutHref = buildLocalizedPath('/about-us', locale);
+---
+
+<section
+  class="dandy-hero"
+  aria-label={isEn ? 'Dandy Natural Skin & Hair Care' : 'داندي للعناية الطبيعية بالبشرة والشعر'}
+  data-studio-section="hero"
+  hidden={hidden || undefined}
+>
+  <div class="dandy-container dandy-hero-grid">
+    <div class="dandy-hero-copy">
+      <p class="dandy-hero-kicker" data-hero-kicker data-dandy-entrance="0">
+        {isEn ? (
+          <>
+            Dandy Cosmetics <span aria-hidden="true">·</span> Pharmacist-Formulated Botanical Care
+          </>
+        ) : (
+          <>
+            Dandy Cosmetics <span aria-hidden="true">·</span> عناية طبيعية برؤية صيدلانية
+          </>
+        )}
+      </p>
+
+      <h1 class="dandy-hero-title" data-hero-title dir="auto" data-dandy-entrance="1">
+        {firstSlide.title}
+      </h1>
+
+      <p class="dandy-hero-subtitle" data-hero-subtitle dir="auto" data-dandy-entrance="2">
+        {firstSlide.subtitle}
+      </p>
+
+      <div class="dandy-hero-actions" data-dandy-entrance="3">
+        <a
+          href={firstCtaHref}
+          class="dandy-btn dandy-btn--editorial dandy-hero-cta"
+          data-hero-cta
+        >
+          <span data-hero-cta-label dir="auto">{firstSlide.buttonText}</span>
+          <Icon name={isEn ? 'arrow-right' : 'arrow-left'} size={16} strokeWidth={1.85} />
+        </a>
+        <a href={aboutHref} class="dandy-btn dandy-btn--outline dandy-hero-secondary-cta">
+          <span>{isEn ? 'Our Philosophy' : 'فلسفة داندي'}</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="dandy-hero-visual">
+      <div
+        class="dandy-hero-carousel"
+        data-hero-carousel
+        data-active-index="0"
+        data-slide-count={activeSlides.length}
+      >
+        <div class="dandy-hero-slides" data-hero-slides data-dandy-media-settle>
+          {activeSlides.map((slide, idx) => (
+            <figure
+              class:list={['dandy-hero-frame', { 'is-active': idx === 0 }]}
+              data-hero-slide={idx}
+              data-duration={slide.durationSeconds}
+              data-title={slide.title}
+              data-subtitle={slide.subtitle}
+              data-button-text={slide.buttonText}
+              data-link={slide.link?.startsWith('/') ? buildLocalizedPath(slide.link, locale) : slide.link}
+              aria-hidden={idx === 0 ? 'false' : 'true'}
+            >
+              <img
+                src={slide.desktopImage}
+                data-desktop-src={slide.desktopImage}
+                data-mobile-src={slide.mobileImage || ''}
+                alt={
+                  slide.title ||
+                  (isEn
+                    ? 'Dandy Cosmetics natural botanical skincare essentials'
+                    : 'مستحضرات داندي للعناية بالبشرة بتركيبات نباتية طبيعية')
+                }
+                width="1376"
+                height="768"
+                loading={idx === 0 ? 'eager' : 'lazy'}
+                decoding={idx === 0 ? 'sync' : 'async'}
+                fetchpriority={idx === 0 ? 'high' : 'auto'}
+                referrerpolicy="no-referrer"
+                class="dandy-hero-img"
+                onerror="this.onerror=null;this.src='/assets/images/editorial/hero-botanical.jpg';"
+              />
+            </figure>
+          ))}
+        </div>
+
+        <div class="dandy-hero-controls" data-hero-controls hidden={!multiSlide || undefined}>
+          <button
+            type="button"
+            class="dandy-hero-nav-btn"
+            data-hero-prev
+            aria-label={isEn ? 'Previous slide' : 'الشريحة السابقة'}
+          >
+            <Icon name={isEn ? 'chevron-left' : 'chevron-right'} size={16} strokeWidth={2} />
+          </button>
+
+          <div
+            class="dandy-hero-dots"
+            role="tablist"
+            aria-label={isEn ? 'Select slide' : 'اختيار شريحة العرض'}
+            data-hero-dots
+          >
+            {activeSlides.map((_, idx) => (
+              <button
+                type="button"
+                role="tab"
+                class:list={['dandy-hero-dot', { 'is-active': idx === 0 }]}
+                data-hero-dot={idx}
+                aria-selected={idx === 0 ? 'true' : 'false'}
+                aria-label={isEn ? `Slide ${idx + 1}` : `الشريحة رقم ${idx + 1}`}
+              ></button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            class="dandy-hero-nav-btn"
+            data-hero-next
+            aria-label={isEn ? 'Next slide' : 'الشريحة التالية'}
+          >
+            <Icon name={isEn ? 'chevron-right' : 'chevron-left'} size={16} strokeWidth={2} />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <dl class="dandy-hero-facts" aria-label={isEn ? 'Store highlights' : 'مميزات المتجر'} data-dandy-entrance="4">
+      <div class="dandy-hero-fact">
+        <dt>{isEn ? 'Formulations' : 'التركيبات'}</dt>
+        <dd>{isEn ? 'Pure plant oils & rich butters' : 'زيوت نباتية وزبدات مغذية'}</dd>
+      </div>
+      <div class="dandy-hero-fact">
+        <dt>{isEn ? 'Delivery' : 'الشحن والتوصيل'}</dt>
+        <dd>{isEn ? 'All Egypt governorates' : 'توصيل لكافة محافظات مصر'}</dd>
+      </div>
+      <div class="dandy-hero-fact">
+        <dt>{isEn ? 'Free Shipping' : 'الشحن المجاني'}</dt>
+        <dd>
+          {isEn ? (
+            <>
+              Orders over <span class="dandy-tabular">2,000</span> EGP
+            </>
+          ) : (
+            <>
+              للطلبات فوق <span class="dandy-tabular">2000</span> ج.م
+            </>
+          )}
+        </dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<style is:global>
+  .dandy-hero {
+    background-color: var(--dandy-bg-editorial);
+    border-bottom: 1px solid var(--dandy-border-subtle);
+    padding-block: clamp(32px, 4.5vw, 64px);
+    overflow-x: clip;
+  }
+
+  .dandy-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "copy visual"
+      "facts visual";
+    align-items: center;
+    column-gap: clamp(24px, 3.6vw, 56px);
+    row-gap: 18px;
+  }
+
+  .dandy-hero-copy {
+    grid-area: copy;
+    align-self: end;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .dandy-hero-kicker {
+    margin: 0;
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-botanical-deep);
+    letter-spacing: 0;
+  }
+
+  .dandy-hero-title {
+    margin: 0;
+    font-family: var(--dandy-font-active-display);
+    font-size: clamp(2rem, 3.6vw, 3.35rem);
+    font-weight: 700;
+    line-height: 1.24;
+    color: var(--dandy-ink-primary);
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+
+  html[lang="en"] .dandy-hero-title {
+    line-height: 1.12;
+  }
+
+  .dandy-hero-subtitle {
+    margin: 0;
+    font-size: var(--dandy-text-lead);
+    line-height: 1.78;
+    color: var(--dandy-ink-secondary);
+    max-width: 54ch;
+  }
+
+  html[lang="en"] .dandy-hero-subtitle {
+    line-height: 1.64;
+  }
+
+  .dandy-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding-top: 6px;
+  }
+
+  .dandy-hero-cta {
+    padding-inline: 26px;
+  }
+
+  .dandy-hero-facts {
+    grid-area: facts;
+    align-self: start;
+    margin: 10px 0 0;
+    padding-top: 20px;
+    width: 100%;
+    border-top: 1px solid var(--dandy-border-subtle);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .dandy-hero-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .dandy-hero-fact dt {
+    font-size: var(--dandy-text-xs);
+    font-weight: 600;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-hero-fact dd {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-hero-visual {
+    grid-area: visual;
+    align-self: center;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dandy-hero-carousel {
+    position: relative;
+    width: 100%;
+  }
+
+  .dandy-hero-slides {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    background-color: var(--dandy-bg-stage);
+    border: 1px solid var(--dandy-border-subtle);
+  }
+
+  .dandy-hero-frame {
+    margin: 0;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 420ms var(--dandy-ease-standard);
+  }
+
+  .dandy-hero-frame.is-active {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+  }
+
+  .dandy-hero-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .dandy-hero-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .dandy-hero-controls[hidden] {
+    display: none;
+  }
+
+  .dandy-hero-nav-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--dandy-transition-fast), border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-hero-nav-btn:hover {
+    background-color: var(--dandy-bg-stage);
+    border-color: var(--dandy-ink-primary);
+  }
+
+  .dandy-hero-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dandy-hero-dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: var(--dandy-radius-pill);
+    border: none;
+    background-color: var(--dandy-border-default);
+    cursor: pointer;
+    transition: width 220ms var(--dandy-ease-out), background-color 220ms var(--dandy-ease-standard);
+  }
+
+  .dandy-hero-dot::after {
+    content: "";
+    position: absolute;
+    inset: -10px -6px;
+  }
+
+  .dandy-hero-dot.is-active {
+    width: 22px;
+    background-color: var(--dandy-ink-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dandy-hero-frame,
+    .dandy-hero-dot {
+      transition: none;
+    }
+  }
+
+  /* Standard Desktop (1024px – 1199px): preserve editorial composition cleanly above the fold */
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    .dandy-hero {
+      padding-block: clamp(24px, 3.2vw, 40px);
+    }
+
+    .dandy-hero-grid {
+      row-gap: 14px;
+    }
+
+    .dandy-hero-title {
+      font-size: clamp(1.8rem, 3.1vw, 2.55rem);
+    }
+
+    .dandy-hero-copy {
+      gap: 14px;
+    }
+  }
+
+  /* Wide / Landscape Tablet (900px – 1023px): balanced split + full-width bottom facts */
+  @media (min-width: 900px) and (max-width: 1023px) {
+    .dandy-hero {
+      padding-block: 32px 40px;
+    }
+
+    .dandy-hero-grid {
+      grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+      grid-template-areas:
+        "copy visual"
+        "facts facts";
+      column-gap: 32px;
+      row-gap: 24px;
+      align-items: center;
+    }
+
+    .dandy-hero-copy {
+      align-self: center;
+      gap: 14px;
+    }
+
+    .dandy-hero-kicker {
+      font-size: 0.75rem;
+    }
+
+    .dandy-hero-title {
+      font-size: clamp(1.78rem, 2.8vw, 2.15rem);
+      line-height: 1.24;
+      max-width: 19ch;
+    }
+
+    html[lang="en"] .dandy-hero-title {
+      line-height: 1.14;
+    }
+
+    .dandy-hero-subtitle {
+      font-size: 0.95rem;
+      line-height: 1.66;
+      max-width: 52ch;
+    }
+
+    html[lang="en"] .dandy-hero-subtitle {
+      line-height: 1.56;
+    }
+
+    .dandy-hero-actions {
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .dandy-hero-actions .dandy-btn {
+      padding-inline: 18px;
+      font-size: 0.875rem;
+    }
+
+    .dandy-hero-facts {
+      margin-top: 0;
+      padding-top: 18px;
+      gap: 24px;
+    }
+
+    .dandy-hero-fact dd {
+      font-size: 0.875rem;
+      line-height: 1.45;
+    }
+  }
+
+  /* Portrait Tablet (768px – 899px): spacious image-first editorial composition */
+  @media (min-width: 768px) and (max-width: 899px) {
+    .dandy-hero {
+      padding-block: 20px 32px;
+    }
+
+    .dandy-hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "visual"
+        "copy"
+        "facts";
+      gap: 20px;
+      align-items: start;
+    }
+
+    .dandy-hero-carousel {
+      border-radius: var(--dandy-radius-md);
+      overflow: hidden;
+      border: 1px solid var(--dandy-border-subtle);
+      background-color: var(--dandy-bg-editorial);
+    }
+
+    .dandy-hero-slides {
+      aspect-ratio: 16 / 9;
+      border: none;
+      border-radius: 0;
+      background-color: var(--dandy-bg-editorial);
+    }
+
+    .dandy-hero-controls {
+      margin-top: 0;
+      padding: 3px 12px;
+      min-height: 38px;
+      justify-content: space-between;
+      border-top: 1px solid var(--dandy-border-subtle);
+      background-color: var(--dandy-bg-page);
+    }
+
+    .dandy-hero-nav-btn {
+      position: relative;
+      width: 36px;
+      height: 32px;
+      border-color: transparent;
+      background-color: transparent;
+    }
+
+    .dandy-hero-nav-btn::after {
+      content: "";
+      position: absolute;
+      inset: -6px -4px;
+    }
+
+    .dandy-hero-nav-btn:hover {
+      background-color: var(--dandy-bg-stage);
+      border-color: var(--dandy-border-subtle);
+    }
+
+    .dandy-hero-copy {
+      align-self: stretch;
+      gap: 13px;
+    }
+
+    .dandy-hero-kicker {
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .dandy-hero-title {
+      font-size: clamp(1.95rem, 3.8vw, 2.4rem);
+      line-height: 1.24;
+      max-width: 24ch;
+    }
+
+    html[lang="en"] .dandy-hero-title {
+      line-height: 1.14;
+      max-width: 26ch;
+    }
+
+    .dandy-hero-subtitle {
+      font-size: 0.98rem;
+      line-height: 1.66;
+      max-width: 60ch;
+    }
+
+    html[lang="en"] .dandy-hero-subtitle {
+      line-height: 1.56;
+    }
+
+    .dandy-hero-actions {
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    .dandy-hero-facts {
+      margin-top: 2px;
+      padding-top: 18px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+  }
+
+  /* Mobile Editorial Composition (< 768px): spacious image-first layout, integrated controls & separated highlights */
+  @media (max-width: 767px) {
+    .dandy-hero {
+      padding-block: 14px 26px;
+    }
+
+    .dandy-hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "visual"
+        "copy"
+        "facts";
+      gap: 16px;
+      align-items: start;
+    }
+
+    .dandy-hero-carousel {
+      border-radius: var(--dandy-radius-md);
+      overflow: hidden;
+      border: 1px solid var(--dandy-border-subtle);
+      background-color: var(--dandy-bg-editorial);
+    }
+
+    .dandy-hero-slides {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
+      border: none;
+      border-radius: 0;
+      background-color: var(--dandy-bg-editorial);
+    }
+
+    .dandy-hero-controls {
+      margin-top: 0;
+      padding: 2px 8px;
+      min-height: 36px;
+      justify-content: space-between;
+      gap: 8px;
+      border-top: 1px solid var(--dandy-border-subtle);
+      background-color: var(--dandy-bg-page);
+    }
+
+    .dandy-hero-nav-btn {
+      position: relative;
+      width: 34px;
+      height: 32px;
+      border-color: transparent;
+      background-color: transparent;
+    }
+
+    .dandy-hero-nav-btn::after {
+      content: "";
+      position: absolute;
+      inset: -6px -5px;
+    }
+
+    .dandy-hero-nav-btn:hover {
+      background-color: var(--dandy-bg-stage);
+      border-color: var(--dandy-border-subtle);
+    }
+
+    .dandy-hero-dots {
+      gap: 8px;
+    }
+
+    .dandy-hero-dot {
+      width: 7px;
+      height: 7px;
+    }
+
+    .dandy-hero-dot.is-active {
+      width: 20px;
+    }
+
+    .dandy-hero-copy {
+      align-self: stretch;
+      gap: 11px;
+    }
+
+    .dandy-hero-kicker {
+      font-size: 0.75rem;
+      line-height: 1.48;
+      color: var(--dandy-botanical-deep);
+    }
+
+    .dandy-hero-title {
+      font-size: clamp(1.62rem, 6.6vw, 2.05rem);
+      line-height: 1.24;
+      max-width: 100%;
+    }
+
+    html[lang="en"] .dandy-hero-title {
+      font-size: clamp(1.54rem, 6vw, 1.95rem);
+      line-height: 1.14;
+    }
+
+    .dandy-hero-subtitle {
+      font-size: clamp(0.9rem, 2.4vw, 0.96rem);
+      line-height: 1.58;
+      max-width: 54ch;
+    }
+
+    html[lang="en"] .dandy-hero-subtitle {
+      line-height: 1.5;
+    }
+
+    .dandy-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 10px;
+      width: 100%;
+      padding-top: 4px;
+    }
+
+    .dandy-hero-cta {
+      flex: 1 1 195px;
+      justify-content: center;
+      min-height: 46px;
+      padding-inline: 20px;
+      font-size: 0.9rem;
+    }
+
+    .dandy-hero-secondary-cta {
+      flex: 1 1 165px;
+      justify-content: center;
+      min-height: 44px;
+      padding-inline: 18px;
+      font-size: 0.875rem;
+    }
+
+    .dandy-hero-facts {
+      margin: 2px 0 0;
+      padding-top: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .dandy-hero-fact {
+      gap: 3px;
+    }
+
+    .dandy-hero-fact dt {
+      font-size: 0.72rem;
+    }
+
+    .dandy-hero-fact dd {
+      font-size: 0.82rem;
+      line-height: 1.42;
+    }
+  }
+
+  /* Standard & Narrow Mobile (< 640px): clean horizontal highlight rows instead of cramped 3 columns */
+  @media (max-width: 639px) {
+    .dandy-hero-facts {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .dandy-hero-fact {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 2px 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--dandy-border-subtle);
+    }
+
+    .dandy-hero-fact:last-child {
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .dandy-hero-fact dd {
+      font-size: 0.84rem;
+      text-align: end;
+    }
+  }
+</style>

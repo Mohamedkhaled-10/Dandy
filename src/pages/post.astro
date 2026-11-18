@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
 import { getArticleById, getArticleBySlug, type Article } from '../utils/articles';
 
 const idParam = Astro.url.searchParams.get('id');
@@ -12,22 +13,17 @@ const cleanSlug = typeof slugParam === 'string' ? slugParam.trim() : '';
 
 let article: Article | null = null;
 
-// Case A & Deterministic Precedence: Document ID takes precedence as the immutable database primary key
 if (cleanId) {
   article = await getArticleById(cleanId);
 } else if (cleanSlug) {
-  // Case B: Slug parameter
   article = await getArticleBySlug(cleanSlug);
 }
 
-// Validate published status and presence of canonical slug before redirecting
 if (article && article.status === 'published' && article.slug && typeof article.slug === 'string' && article.slug.trim()) {
   const canonicalSlug = article.slug.trim();
-  // Case A & B: Redirect with HTTP 301 to the stored canonical slug route
   return Astro.redirect(`/blog/${canonicalSlug}`, 301);
 }
 
-// Case C & D: Missing, invalid, unpublished, or no query params -> Return 404 Not Found
 Astro.response.status = 404;
 
 const pageTitle = 'المقال غير موجود (404) | Dandy';
@@ -41,82 +37,62 @@ const canonicalUrl = 'https://dandy-ebon.vercel.app/404';
   canonical={canonicalUrl}
   robots="noindex, follow"
 >
-  <slot name="head" slot="head">
-    <style is:global>
-      .error-page-wrap {
-        min-height: 65vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 140px 20px 80px;
-        max-width: 540px;
-        margin: 0 auto;
-      }
-      .error-code {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 4.5rem;
-        font-weight: 800;
-        color: var(--border-medium);
-        line-height: 1;
-        margin-bottom: 12px;
-      }
-      .error-page-wrap h1 {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: var(--color-primary);
-        margin: 0 0 10px;
-      }
-      .error-page-wrap p {
-        font-size: 0.95rem;
-        color: var(--color-muted);
-        line-height: 1.6;
-        margin: 0 0 28px;
-      }
-      .error-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-      .error-btn-primary {
-        background: var(--color-primary);
-        color: #fff;
-        padding: 11px 22px;
-        border-radius: var(--border-radius-sm);
-        text-decoration: none;
-        font-size: 0.88rem;
-        font-weight: 700;
-        transition: opacity 0.2s;
-      }
-      .error-btn-primary:hover {
-        opacity: 0.9;
-      }
-      .error-btn-secondary {
-        background: var(--color-surface-soft);
-        color: var(--color-primary);
-        border: 1px solid var(--border-light);
-        padding: 11px 22px;
-        border-radius: var(--border-radius-sm);
-        text-decoration: none;
-        font-size: 0.88rem;
-        font-weight: 700;
-        transition: background 0.2s;
-      }
-      .error-btn-secondary:hover {
-        background: var(--border-light);
-      }
-    </style>
-  </slot>
-
-  <div class="error-page-wrap container" dir="rtl">
-    <div class="error-code">404</div>
-    <h1>عذراً، هذا المقال غير موجود</h1>
-    <p>قد يكون الرابط غير صحيح أو تم نقل المقال إلى مسار جديد في مدونة داندي.</p>
-    <div class="error-actions">
-      <a href="/blog" class="error-btn-primary"><i class="fas fa-book-open"></i> تصفح المدونة</a>
-      <a href="/" class="error-btn-secondary"><i class="fas fa-home"></i> الصفحة الرئيسية</a>
+  <main class="dandy-error-wrap dandy-container" data-dandy-motion="calm">
+    <div class="dandy-error-code" data-dandy-entrance="0">404</div>
+    <h1 class="dandy-font-ar-display" data-dandy-entrance="1">عذراً، هذا المقال غير موجود</h1>
+    <p data-dandy-entrance="2">قد يكون الرابط غير صحيح أو تم نقل المقال إلى مسار جديد في مدونة داندي.</p>
+    <div class="dandy-error-actions" data-dandy-entrance="3">
+      <a href="/blog" class="dandy-btn dandy-btn--editorial">
+        <Icon name="book-open" size={16} strokeWidth={1.85} />
+        <span>تصفح المدونة</span>
+      </a>
+      <a href="/" class="dandy-btn dandy-btn--outline">
+        <Icon name="home" size={16} strokeWidth={1.85} />
+        <span>الصفحة الرئيسية</span>
+      </a>
     </div>
-  </div>
+  </main>
 </BaseLayout>
+
+<style is:global>
+  .dandy-error-wrap {
+    min-height: 68vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-block: 72px 88px;
+    max-width: 560px;
+  }
+
+  .dandy-error-code {
+    font-family: var(--dandy-font-en-display);
+    font-size: clamp(4rem, 10vw, 6rem);
+    font-weight: 700;
+    color: var(--dandy-border-default);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .dandy-error-wrap h1 {
+    margin: 0 0 10px;
+    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-error-wrap p {
+    margin: 0 0 28px;
+    font-size: var(--dandy-text-base);
+    line-height: 1.72;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>

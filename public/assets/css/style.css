@@ -3,52 +3,7 @@
    Refinement, Polish, and Conversion-focused RTL UX
    ========================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-
-:root {
-  /* Harmonized with Foundation CSS (Phase 01) */
-  --color-canvas: #ffffff;
-  --color-canvas-subtle: var(--color-dust-grey-900, #f7f6f6);
-  --color-surface: #ffffff;
-  --color-surface-soft: var(--color-dust-grey-900, #f7f6f6);
-  --color-surface-hover: var(--color-dust-grey-800, #efeded);
-  
-  --color-primary: var(--color-rose-kiss-500, #fe5d9f);       /* Strongest Brand Accent */
-  --color-primary-hover: var(--color-rose-kiss-600, #fe7db3);
-  --color-text: var(--color-dust-grey-100, #2c2828);          /* Crisp high contrast neutral dark */
-  --color-text-secondary: var(--color-dust-grey-200, #595050);
-  --color-muted: var(--color-dust-grey-300, #857979);         /* Quiet neutral gray-brown for subtitles & helper texts */
-  --color-subtle: var(--color-dust-grey-400, #aea5a5);
-  
-  --color-blush: var(--color-pink-carnation-500, #f686bd);    /* Dandy signature blush/rose accent */
-  --color-blush-hover: var(--color-pink-carnation-600, #f8a0cb);
-  --color-blush-soft: var(--color-soft-blossom-900, #fdf2f6); /* Powder-puff warm rose-cream */
-  --color-gold: #b38728;                                      /* Restrained metallic bronze gold */
-  --color-gold-cream: #fef8ee;
-  
-  --color-success: #15803d;
-  --color-danger: #be123c;
-  --color-warning: #b45309;
-  
-  /* Borders, shadows and restrained roundness (NO pills everywhere) */
-  --border-subtle: var(--color-dust-grey-700, #e6e4e4);
-  --border-light: var(--color-dust-grey-600, #dedbdb);
-  --border-medium: var(--color-dust-grey-500, #d6d2d2);
-  --border-blush: var(--color-soft-blossom-700, #f9d8e5);
-  --border-radius-sm: 6px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  
-  /* Subtle diffused shadow profiles */
-  --shadow-sm: 0 1px 3px 0 rgba(44, 40, 40, 0.05), 0 1px 2px -1px rgba(44, 40, 40, 0.03);
-  --shadow-md: 0 4px 12px -2px rgba(44, 40, 40, 0.06), 0 2px 4px -2px rgba(44, 40, 40, 0.03);
-  --shadow-lg: 0 10px 24px -4px rgba(44, 40, 40, 0.07), 0 4px 8px -4px rgba(44, 40, 40, 0.04);
-  --shadow-gold: 0 4px 14px rgba(179, 135, 40, 0.08);
-  --shadow-blush: 0 4px 14px rgba(246, 134, 189, 0.18);
-  
-  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* Canonical :root tokens and legacy compatibility aliases live in src/styles/tokens.css */
 
 /* Base resets & typography */
 * {
@@ -65,9 +20,9 @@ html {
 
 body {
   min-height: 100%;
-  background-color: var(--color-canvas);
-  color: var(--color-text);
-  font-family: var(--font-sans, 'Alexandria', 'Cairo', 'Plus Jakarta Sans', sans-serif);
+  background-color: var(--dandy-bg-page);
+  color: var(--dandy-ink-primary);
+  font-family: var(--dandy-font-ar-sans);
   line-height: 1.6;
   direction: inherit;
   margin: 0;
@@ -75,8 +30,8 @@ body {
 }
 
 h1, h2, h3, h4, .font-heading {
-  font-family: var(--font-sans, 'Alexandria', 'Cairo', 'Plus Jakarta Sans', sans-serif);
-  color: var(--color-text);
+  font-family: var(--dandy-font-ar-sans);
+  color: var(--dandy-ink-primary);
   font-weight: 700;
   line-height: 1.3;
 }
@@ -185,7 +140,7 @@ nav ul li a.nav-track-btn {
   transition: var(--transition-smooth);
 }
 
-nav ul li a.nav-track-btn:hover { background: var(--color-primary-hover) !important;
+nav ul li a.nav-track-btn:hover { background: var(--dandy-accent-hover) !important;
   color: #fff !important;
   border-style: solid;
 }
@@ -236,7 +191,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   transition: var(--transition-fast);
 }
 
-.nav-cart:hover { background: var(--color-primary-hover);
+.nav-cart:hover { background: var(--dandy-accent-hover);
   color: #fff;
 }
 
@@ -506,7 +461,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   right: 20px;
   z-index: 2;
   color: #fff;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--dandy-font-en-display);
   font-size: 1.5rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -670,7 +625,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   justify-content: center;
   gap: 10px;
   padding: 12px;
-  background: var(--color-primary);
+  background: var(--dandy-accent-primary);
   color: var(--color-surface);
   text-decoration: none;
   font-weight: 700;
@@ -682,7 +637,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   font-size: 0.95rem;
 }
 
-.product .buy-btn:hover { background: var(--color-primary-hover);
+.product .buy-btn:hover { background: var(--dandy-accent-hover);
 }
 
 /* Browse more link banner */
@@ -698,7 +653,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   justify-content: center;
   gap: 12px;
   padding: 16px 40px;
-  background: var(--color-primary);
+  background: var(--dandy-accent-primary);
   color: var(--color-surface);
   text-decoration: none;
   font-weight: 700;
@@ -708,7 +663,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   transition: var(--transition-smooth);
 }
 
-.browse-more a:hover { background: var(--color-primary-hover);
+.browse-more a:hover { background: var(--dandy-accent-hover);
   transform: translateY(-3px);
   box-shadow: 0 12px 28px rgba(254, 93, 159, 0.25);
 }
@@ -887,8 +842,8 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   transition: var(--transition-fast);
 }
 
-.btn-order { background: var(--color-primary); color: #fff; }
-.btn-order:hover { background: var(--color-primary-hover); }
+.btn-order { background: var(--dandy-accent-primary); color: #fff; }
+.btn-order:hover { background: var(--dandy-accent-hover); }
 
 .btn-whatsapp { background: #25D366; color: #fff; }
 .btn-whatsapp:hover { opacity: 0.9; }
@@ -1103,7 +1058,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
 }
 
 .cookie-popup button {
-  background: var(--color-primary);
+  background: var(--dandy-accent-primary);
   color: #fff;
   border: none;
   padding: 10px 24px;
@@ -1114,7 +1069,7 @@ nav ul li.dropdown .dropdown-menu li a { text-align: right; }
   transition: var(--transition-fast);
 }
 
-.cookie-popup button:hover { background: var(--color-primary-hover);
+.cookie-popup button:hover { background: var(--dandy-accent-hover);
 }
 
 /* ==========================================
@@ -1199,7 +1154,7 @@ footer.legacy-footer {
   transition: var(--transition-fast);
 }
 
-.footer-social .social-icons a:hover { background: var(--color-primary-hover);
+.footer-social .social-icons a:hover { background: var(--dandy-accent-hover);
   color: #fff;
   transform: translateY(-3px);
 }

@@ -1,0 +1,15 @@
+---
+// src/pages/offers.astro
+// Canonical 301 Redirect Handler from legacy/Studio `/offers` path to `/special-offers`
+export const prerender = false;
+
+const searchParams = new URLSearchParams();
+for (const [k, v] of Astro.url.searchParams.entries()) {
+  if (k.startsWith('utm_') || k === 'fbclid' || k === 'gclid') {
+    searchParams.set(k, v);
+  }
+}
+
+const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+return Astro.redirect(`/special-offers${qs}`, 301);
+---

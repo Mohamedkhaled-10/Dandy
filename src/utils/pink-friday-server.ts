@@ -36,7 +36,10 @@ export interface PinkFridayCollection {
 
 export interface PinkFridayVisuals {
   bannerImage?: string;
+  heroImageUrl?: string;
   bannerPosition?: string; // 'center' | 'top' | 'bottom'
+  headline?: string;
+  subtitle?: string;
   ctaText?: string;
   badgeText?: string;
 }

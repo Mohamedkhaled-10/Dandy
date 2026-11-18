@@ -1,0 +1,181 @@
+---
+/**
+ * DANDY COSMETICS — PDP VARIANT / SCENT SELECTOR (PHASE 4)
+ * Preserves legacy DOM contracts (#variant-section-container, #variant-pills-container,
+ * .variant-pill-btn, data-id, data-name, toggleScentVariant) with refined botanical UI.
+ */
+import Icon from '../ui/Icon.astro';
+import type { VariantItem } from '../../utils/products';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  variants: VariantItem[];
+  hasVariants: boolean;
+  locale?: Locale;
+}
+
+const { variants = [], hasVariants = false, locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+---
+
+<div
+  id="variant-section-container"
+  class="dandy-pdp-variants"
+  style={hasVariants ? undefined : 'display: none;'}
+  hidden={!hasVariants}
+>
+  {hasVariants && (
+    <>
+      <div class="dandy-pdp-variants-head">
+        <span class="dandy-pdp-variants-label">
+          <Icon name="sliders" size={15} strokeWidth={1.9} />
+          <span>{isEn ? 'Choose Your Scent' : 'اختاري الرائحة المفضلة'}</span>
+        </span>
+        <span class="dandy-pdp-variants-hint" id="selected-variants-summary" aria-live="polite">
+          {isEn ? 'You may choose one or more scents' : 'يمكنكِ اختيار رائحة أو أكثر'}
+        </span>
+      </div>
+
+      <div
+        class="dandy-pdp-variants-list"
+        id="variant-pills-container"
+        role="group"
+        aria-label={isEn ? 'Choose scent' : 'اختيار الرائحة'}
+      >
+        {variants.map((v) => {
+          const isAvail = v.isAvailable !== false;
+          return (
+            <button
+              type="button"
+              class:list={['dandy-pdp-variant-btn variant-pill-btn', { disabled: !isAvail }]}
+              data-id={v.id}
+              data-name={v.name}
+              aria-pressed="false"
+              aria-disabled={!isAvail ? 'true' : undefined}
+              disabled={!isAvail}
+              onclick={isAvail ? `window.toggleScentVariant('${v.id}')` : undefined}
+            >
+              <span class="dandy-pdp-variant-check" aria-hidden="true">
+                <Icon name="check" size={14} strokeWidth={2.3} />
+              </span>
+              <span class="dandy-pdp-variant-name">{v.name}</span>
+              {!isAvail && (
+                <span class="dandy-pdp-variant-sold">
+                  {isEn ? '(Sold out)' : '(نفدت)'}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  )}
+</div>
+
+<style>
+  .dandy-pdp-variants {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+  }
+
+  .dandy-pdp-variants-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dandy-pdp-variants-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-variants-hint {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    font-weight: 500;
+  }
+
+  .dandy-pdp-variants-hint.is-selected {
+    color: var(--dandy-accent-text);
+    font-weight: 600;
+  }
+
+  .dandy-pdp-variants-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dandy-pdp-variant-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 8px 15px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1.5px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    font-family: var(--dandy-font-active-sans);
+    font-size: var(--dandy-text-sm);
+    font-weight: 500;
+    line-height: 1.3;
+    cursor: pointer;
+    transition:
+      border-color var(--dandy-transition-fast),
+      background-color var(--dandy-transition-fast),
+      color var(--dandy-transition-fast),
+      box-shadow var(--dandy-transition-fast);
+  }
+
+  .dandy-pdp-variant-btn:hover:not(:disabled) {
+    border-color: var(--dandy-ink-primary);
+    background-color: var(--dandy-bg-stage);
+  }
+
+  .dandy-pdp-variant-btn.selected {
+    border-color: var(--dandy-accent-primary);
+    background-color: var(--dandy-accent-soft);
+    color: var(--dandy-accent-text);
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px var(--dandy-accent-primary);
+  }
+
+  .dandy-pdp-variant-check {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--dandy-accent-primary);
+  }
+
+  .dandy-pdp-variant-btn.selected .dandy-pdp-variant-check {
+    display: inline-flex;
+  }
+
+  .dandy-pdp-variant-btn.disabled,
+  .dandy-pdp-variant-btn:disabled {
+    opacity: 0.52;
+    cursor: not-allowed;
+    background-color: var(--dandy-bg-stage);
+    border-style: dashed;
+  }
+
+  .dandy-pdp-variant-sold {
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-danger);
+    font-weight: 600;
+  }
+</style>

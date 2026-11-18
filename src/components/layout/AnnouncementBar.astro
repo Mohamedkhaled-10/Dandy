@@ -1,0 +1,129 @@
+---
+/**
+ * DANDY COSMETICS — ANNOUNCEMENT BAR (PHASE 2)
+ * Renders a single restrained announcement bar across all storefront pages,
+ * switching dynamically between an active Pink Friday campaign and free shipping.
+ */
+import Icon from '../ui/Icon.astro';
+import { getPublishedPinkFridayCampaign, shouldDisplayCampaignToCustomers } from '../../utils/pink-friday-server';
+import { resolveAnnouncementState } from '../../scripts/shell';
+import { resolveLocalizedPinkFridayCampaign } from '../../i18n/content/adapters';
+import { EN_PINK_FRIDAY_OVERLAY } from '../../i18n/content/en/pink-friday';
+import { getLocaleDirection } from '../../i18n/config';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const dir = getLocaleDirection(locale);
+const rawCampaign = await getPublishedPinkFridayCampaign();
+const publishedCampaign = rawCampaign
+  ? resolveLocalizedPinkFridayCampaign(rawCampaign, locale, locale === 'en' ? EN_PINK_FRIDAY_OVERLAY : null)
+  : null;
+const showPinkFriday = shouldDisplayCampaignToCustomers(publishedCampaign);
+const announcement = resolveAnnouncementState(showPinkFriday, publishedCampaign, locale);
+const isPinkFriday = announcement.mode === 'pink-friday';
+---
+
+<div
+  class:list={['dandy-announce-bar', isPinkFriday ? 'dandy-announce-bar--campaign' : 'dandy-announce-bar--shipping']}
+  id="site-announce-bar"
+  data-mode={announcement.mode}
+  dir={dir}
+  role="region"
+  aria-label={locale === 'en' ? 'Store announcement' : 'إعلان المتجر'}
+>
+  <div class="dandy-announce-inner" id={isPinkFriday ? 'pf-announcement-bar' : undefined}>
+    <span class="dandy-announce-icon" aria-hidden="true">
+      <Icon name={isPinkFriday ? 'sparkles' : 'truck'} size={14} strokeWidth={1.8} />
+    </span>
+    <span class="dandy-announce-text">{announcement.headline}</span>
+    {isPinkFriday && announcement.ctaHref && announcement.ctaText && (
+      <a href={announcement.ctaHref} class="dandy-announce-cta">
+        <span>{announcement.ctaText}</span>
+        <Icon name={locale === 'en' ? 'chevron-right' : 'chevron-left'} size={14} strokeWidth={2} />
+      </a>
+    )}
+  </div>
+</div>
+
+<style>
+  .dandy-announce-bar {
+    width: 100%;
+    min-height: 34px;
+    padding-block: 6px;
+    padding-inline: var(--dandy-container-px);
+    background-color: var(--dandy-bg-dark);
+    color: var(--dandy-ink-inverse);
+    border-bottom: 1px solid rgba(250, 248, 246, 0.08);
+    font-family: var(--dandy-font-active-sans);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: calc(var(--dandy-z-header) + 1);
+  }
+
+  .dandy-announce-bar--campaign {
+    background-color: #2A1620;
+    border-bottom-color: rgba(200, 50, 105, 0.35);
+  }
+
+  .dandy-announce-inner {
+    width: 100%;
+    max-width: var(--dandy-container-max);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .dandy-announce-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #E7B9CA;
+    flex-shrink: 0;
+  }
+
+  .dandy-announce-text {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--dandy-ink-inverse);
+    letter-spacing: 0;
+  }
+
+  .dandy-announce-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #F49BB9;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color var(--dandy-transition-fast);
+    white-space: nowrap;
+  }
+
+  .dandy-announce-cta:hover {
+    color: #FFFFFF;
+  }
+
+  @media (max-width: 639px) {
+    .dandy-announce-bar {
+      padding-inline: 12px;
+      min-height: 32px;
+    }
+
+    .dandy-announce-text,
+    .dandy-announce-cta {
+      font-size: 0.74rem;
+    }
+  }
+</style>

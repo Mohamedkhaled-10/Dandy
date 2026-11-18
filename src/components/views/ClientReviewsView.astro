@@ -1,0 +1,382 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/client-reviews', locale)}`;
+
+const pageTitle = isEn
+  ? 'Customer Reviews & Testimonials | Dandy Cosmetics'
+  : 'آراء وتجارب العملاء | Dandy Cosmetics';
+const pageDescription = isEn
+  ? 'Real customer photos, videos, and honest feedback sharing experiences with Dandy Cosmetics natural skin and hair care products.'
+  : 'تجارب وآراء حقيقية لعملاء داندي حول جودة وفعالية منتجات العناية بالبشرة والشعر.';
+const pageKeywords = isEn
+  ? 'Dandy Cosmetics reviews, customer testimonials Egypt, natural skincare results'
+  : 'Dandy, Dandy Cosmetics, دندي, داندي, آراء العملاء, تجارب العملاء, تقييمات داندي';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={pageKeywords}
+  canonical={canonicalUrl}
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
+  </Fragment>
+
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'Verified Experiences' : 'تجارب موثقة'}
+    title={isEn ? 'Customer Reviews & Results' : 'تجارب وآراء العملاء'}
+    description={
+      isEn
+        ? 'Real photos and video feedback shared by DANDY customers after incorporating our skin and hair formulations into their daily routine.'
+        : 'مشاركات وتجارب حقيقية شاركتها عميلاتنا بعد استخدام مستحضرات داندي للعناية بالبشرة والشعر.'
+    }
+    currentCrumb={isEn ? 'Customer Reviews' : 'آراء العملاء'}
+  />
+
+  <main class="dandy-page-band" data-dandy-motion="calm">
+    <div class="dandy-container">
+      <section class="dandy-rev-group" aria-labelledby="revPhotosTitle">
+        <h2 id="revPhotosTitle" class="dandy-rev-group-title dandy-font-ar-display" data-dandy-reveal>
+          {isEn ? 'Customer Photo Highlights' : 'تجارب وصور العملاء'}
+        </h2>
+        <div class="dandy-rev-gallery" id="testimonial-images">
+          <p class="dandy-rev-loading">
+            {isEn ? 'Loading photo testimonials...' : 'جاري تحميل التجارب المصورة...'}
+          </p>
+        </div>
+      </section>
+
+      <section class="dandy-rev-group" aria-labelledby="revVideosTitle">
+        <h2 id="revVideosTitle" class="dandy-rev-group-title dandy-font-ar-display" data-dandy-reveal>
+          {isEn ? 'Video Reviews' : 'تجارب مرئية'}
+        </h2>
+        <div class="dandy-rev-gallery" id="testimonial-videos">
+          <p class="dandy-rev-loading">
+            {isEn ? 'Loading video testimonials...' : 'جاري تحميل التجارب المرئية...'}
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+  <script>
+    import { getIconSvg } from '../../scripts/icons';
+
+    const imageSection = document.getElementById('testimonial-images');
+    const videoSection = document.getElementById('testimonial-videos');
+    const isEn =
+      document.documentElement.lang === 'en' ||
+      window.location.pathname === '/en' ||
+      window.location.pathname.startsWith('/en/');
+
+    const copy = isEn
+      ? {
+          loadError: 'Could not load reviews right now due to a connection or network timeout.',
+          retry: 'Try Again',
+          noReviews: 'No reviews are currently available.',
+          loadingPhotos: 'Loading photo testimonials...',
+          loadingVideos: 'Loading video testimonials...',
+          noPhotos: 'No photo testimonials published yet.',
+          noVideos: 'No video testimonials published yet.',
+          photoTitle: 'Customer experience with Dandy Cosmetics',
+          photoAlt: 'Customer review of Dandy Cosmetics product',
+          videoTitle: 'Customer video review with DANDY',
+          watchVideo: 'Watch Review',
+        }
+      : {
+          loadError: 'تعذر تحميل التجارب حالياً بسبب ضعف الاتصال أو قيود الشبكة.',
+          retry: 'إعادة المحاولة',
+          noReviews: 'لا توجد تجارب متاحة حالياً.',
+          loadingPhotos: 'جاري تحميل التجارب المصورة...',
+          loadingVideos: 'جاري تحميل التجارب المرئية...',
+          noPhotos: 'لا توجد تجارب مصورة منشورة حالياً.',
+          noVideos: 'لا توجد تجارب مرئية منشورة حالياً.',
+          photoTitle: 'تجربة عميلة مع منتجات داندي',
+          photoAlt: 'تجربة استخدام منتجات داندي',
+          videoTitle: 'تجربة فيديو مع داندي',
+          watchVideo: 'مشاهدة التجربة',
+        };
+
+    function isSafeMediaUrl(rawUrl: string): boolean {
+      const trimmed = rawUrl.trim();
+      return trimmed.startsWith('https://') || trimmed.startsWith('http://') || trimmed.startsWith('/');
+    }
+
+    function renderEmpty(el: HTMLElement | null, msg: string): void {
+      if (!el) return;
+      el.innerHTML = `<div class="dandy-rev-empty"><p>${msg}</p></div>`;
+    }
+
+    function renderErrorWithRetry(el: HTMLElement | null, onRetry: () => void): void {
+      if (!el) return;
+      el.innerHTML = '';
+      const box = document.createElement('div');
+      box.className = 'dandy-rev-empty';
+      const p = document.createElement('p');
+      p.textContent = copy.loadError;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dandy-btn dandy-btn--outline dandy-rev-retry-btn';
+      btn.innerHTML = `${getIconSvg('rotate-ccw', { size: 15, strokeWidth: 1.85 })}<span>${copy.retry}</span>`;
+      btn.addEventListener('click', onRetry);
+      box.appendChild(p);
+      box.appendChild(btn);
+      el.appendChild(box);
+    }
+
+    function loadTestimonials(): void {
+      const db =
+        (window as any).db ||
+        ((window as any).firebase && (window as any).firebase.database
+          ? (window as any).firebase.database()
+          : null);
+      if (!db || !imageSection || !videoSection) {
+        renderEmpty(imageSection, copy.noReviews);
+        renderEmpty(videoSection, copy.noReviews);
+        return;
+      }
+
+      imageSection.innerHTML = `<p class="dandy-rev-loading">${copy.loadingPhotos}</p>`;
+      videoSection.innerHTML = `<p class="dandy-rev-loading">${copy.loadingVideos}</p>`;
+
+      let settled = false;
+      const fallbackTimer = window.setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          renderErrorWithRetry(imageSection, loadTestimonials);
+          renderErrorWithRetry(videoSection, loadTestimonials);
+        }
+      }, 7000);
+
+      const handleSnapshot = (snapshot: any) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(fallbackTimer);
+
+        const data = snapshot.val();
+        imageSection.innerHTML = '';
+        videoSection.innerHTML = '';
+
+        if (!data) {
+          renderEmpty(imageSection, copy.noPhotos);
+          renderEmpty(videoSection, copy.noVideos);
+          return;
+        }
+
+        let imageCount = 0;
+        let videoCount = 0;
+
+        Object.values(data).forEach((rawItem: unknown) => {
+          const item = rawItem as { type?: string; url?: string } | null;
+          if (!item || typeof item.url !== 'string' || !isSafeMediaUrl(item.url)) return;
+
+          const capsule = document.createElement('div');
+          capsule.className = 'dandy-rev-capsule';
+
+          if (item.type === 'image') {
+            imageCount++;
+            const link = document.createElement('a');
+            link.href = item.url;
+            link.className = 'glightbox dandy-rev-link';
+            link.setAttribute('data-gallery', 'testimonial-images');
+            link.setAttribute('data-title', copy.photoTitle);
+
+            const img = document.createElement('img');
+            img.src = item.url;
+            img.alt = copy.photoAlt;
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.referrerPolicy = 'no-referrer';
+            img.onerror = () => {
+              img.onerror = null;
+              img.src = '/assets/images/logo.png';
+            };
+
+            link.appendChild(img);
+            capsule.appendChild(link);
+            imageSection.appendChild(capsule);
+          } else if (item.type === 'video') {
+            videoCount++;
+            const link = document.createElement('a');
+            link.href = item.url;
+            link.className = 'glightbox dandy-rev-link';
+            link.setAttribute('data-gallery', 'testimonial-videos');
+            link.setAttribute('data-type', 'video');
+            link.setAttribute('data-title', copy.videoTitle);
+
+            const thumb = document.createElement('div');
+            thumb.className = 'dandy-rev-video-tile';
+            thumb.innerHTML = `
+              <span class="dandy-rev-play-circle">${getIconSvg('play', { size: 22, strokeWidth: 1.9 })}</span>
+              <span>${copy.watchVideo}</span>
+            `;
+
+            link.appendChild(thumb);
+            capsule.appendChild(link);
+            videoSection.appendChild(capsule);
+          }
+        });
+
+        if (imageCount === 0) renderEmpty(imageSection, copy.noPhotos);
+        if (videoCount === 0) renderEmpty(videoSection, copy.noVideos);
+
+        if ((window as any).GLightbox) {
+          (window as any).GLightbox({ selector: '.glightbox' });
+        }
+      };
+
+      const handleError = () => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(fallbackTimer);
+        renderErrorWithRetry(imageSection, loadTestimonials);
+        renderErrorWithRetry(videoSection, loadTestimonials);
+      };
+
+      try {
+        db.ref('testimonials').once('value', handleSnapshot, handleError);
+      } catch {
+        handleError();
+      }
+    }
+
+    loadTestimonials();
+  </script>
+</BaseLayout>
+
+<style is:global>
+  .dandy-rev-group + .dandy-rev-group {
+    margin-top: 44px;
+  }
+
+  .dandy-rev-group-title {
+    margin: 0 0 18px;
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-rev-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 18px;
+  }
+
+  .dandy-rev-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--dandy-ink-muted);
+    font-size: var(--dandy-text-sm);
+    margin: 0;
+  }
+
+  .dandy-rev-capsule {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    transition: transform var(--dandy-transition-base), border-color var(--dandy-transition-base), box-shadow var(--dandy-transition-base);
+  }
+
+  .dandy-rev-capsule:hover {
+    transform: translateY(-2px);
+    border-color: var(--dandy-border-default);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-rev-link {
+    display: block;
+    text-decoration: none;
+    background-color: var(--dandy-bg-stage);
+  }
+
+  .dandy-rev-capsule img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: contain;
+    padding: 8px;
+    display: block;
+    background-color: var(--dandy-bg-stage);
+  }
+
+  .dandy-rev-retry-btn {
+    margin-top: 14px;
+  }
+
+  .dandy-rev-video-tile {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background-color: var(--dandy-bg-dark);
+    color: var(--dandy-ink-inverse);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+  }
+
+  .dandy-rev-play-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: rgba(250, 248, 246, 0.14);
+    border: 1px solid rgba(250, 248, 246, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dandy-ink-inverse);
+    transition: background-color var(--dandy-transition-fast), transform var(--dandy-transition-fast);
+  }
+
+  .dandy-rev-capsule:hover .dandy-rev-play-circle {
+    background-color: var(--dandy-accent-primary);
+    border-color: var(--dandy-accent-primary);
+    transform: scale(1.06);
+  }
+
+  .dandy-rev-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 36px 20px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px dashed var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    color: var(--dandy-ink-muted);
+    font-size: var(--dandy-text-sm);
+  }
+
+  .dandy-rev-empty p {
+    margin: 0;
+  }
+
+  @media (max-width: 639px) {
+    .dandy-rev-gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+  }
+</style>

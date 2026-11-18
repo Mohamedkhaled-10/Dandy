@@ -5,23 +5,23 @@
    ========================================================================== */
 
 :host {
-  /* Color Palette — DANDY Luxury Beauty Identity */
-  --bab-primary: #fe5d9f;
-  --bab-primary-dark: #e04587;
-  --bab-secondary: #db2777;
-  --bab-secondary-dark: #be185d;
-  --bab-wine: #2a0e16;
-  --bab-wine-surface: #38121d;
+  /* Color Palette — Mapped safely to DANDY Design Tokens with Shadow DOM fallbacks */
+  --bab-primary: var(--dandy-accent-primary, #C83269);
+  --bab-primary-dark: var(--dandy-accent-hover, #A92455);
+  --bab-secondary: var(--dandy-accent-primary, #C83269);
+  --bab-secondary-dark: var(--dandy-accent-hover, #A92455);
+  --bab-wine: var(--dandy-ink-primary, #1A1715);
+  --bab-wine-surface: var(--dandy-plum-ink, #3D242C);
   --bab-wine-light: #52192a;
-  --bab-bg: #fdf6f9;
-  --bab-surface: #ffffff;
-  --bab-surface-card: #ffffff;
-  --bab-surface-muted: #fbf5f8;
-  --bab-border: #f5d8e7;
-  --bab-border-subtle: #fbebf3;
-  --bab-text: #1f2937;
-  --bab-text-muted: #5e6676;
-  --bab-text-light: #8892a0;
+  --bab-bg: var(--dandy-bg-editorial, #FAF8F6);
+  --bab-surface: var(--dandy-bg-elevated, #FFFFFF);
+  --bab-surface-card: var(--dandy-bg-elevated, #FFFFFF);
+  --bab-surface-muted: var(--dandy-bg-stage, #F5F4F1);
+  --bab-border: var(--dandy-border-default, #D9D2C9);
+  --bab-border-subtle: var(--dandy-border-subtle, #EDE9E3);
+  --bab-text: var(--dandy-ink-primary, #1A1715);
+  --bab-text-muted: var(--dandy-ink-secondary, #4A4540);
+  --bab-text-light: var(--dandy-ink-muted, #7A736C);
 
   /* Geometry & Radii */
   --bab-radius-xl: 24px;
@@ -31,13 +31,13 @@
   --bab-radius-pill: 9999px;
 
   /* Elevation Shadows */
-  --bab-shadow-panel: 0 28px 65px -12px rgba(42, 14, 22, 0.22), 0 12px 28px -6px rgba(219, 39, 119, 0.16);
-  --bab-shadow-launcher: 0 14px 30px -4px rgba(219, 39, 119, 0.42), 0 6px 14px -2px rgba(42, 14, 22, 0.16);
-  --bab-shadow-card: 0 2px 8px -2px rgba(42, 14, 22, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
-  --bab-shadow-hover: 0 8px 20px -4px rgba(219, 39, 119, 0.14), 0 2px 6px -1px rgba(42, 14, 22, 0.04);
+  --bab-shadow-panel: 0 28px 65px -12px rgba(26, 23, 21, 0.2), 0 12px 28px -6px rgba(200, 50, 105, 0.14);
+  --bab-shadow-launcher: 0 14px 30px -4px rgba(200, 50, 105, 0.36), 0 6px 14px -2px rgba(26, 23, 21, 0.16);
+  --bab-shadow-card: 0 2px 8px -2px rgba(26, 23, 21, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --bab-shadow-hover: 0 8px 20px -4px rgba(200, 50, 105, 0.14), 0 2px 6px -1px rgba(26, 23, 21, 0.04);
 
   /* Typography */
-  --bab-font: "Alexandria", "Cairo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --bab-font: var(--dandy-font-ar-sans, "Alexandria", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
 
   font-family: var(--bab-font);
   direction: rtl;

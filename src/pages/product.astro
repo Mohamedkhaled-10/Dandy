@@ -4,6 +4,7 @@
 export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
 import { getProductById } from '../utils/products';
 
 const id = Astro.url.searchParams.get('id');
@@ -34,68 +35,66 @@ if (id) {
   title="المنتج غير موجود (404) | داندي كوزمتكس"
   description="عذراً، المنتج المطلوب غير متوفر حالياً في متجر داندي كوزمتكس."
   canonical="https://dandy-ebon.vercel.app/all-products"
-  hideFooterTop={false}
+  robots="noindex, nofollow"
 >
-  <slot name="head">
-    <meta name="robots" content="noindex, nofollow" />
-    <style>
-      .not-found-container {
-        text-align: center;
-        padding: 160px 20px 100px;
-        max-width: 600px;
-        margin: 0 auto;
-        direction: rtl;
-        font-family: 'Tajawal', sans-serif;
-      }
-      .not-found-icon {
-        font-size: 3.5rem;
-        color: #db2777;
-        margin-bottom: 20px;
-      }
-      .not-found-title {
-        font-size: 1.8rem;
-        font-weight: 800;
-        margin-bottom: 12px;
-        color: #18181b;
-      }
-      .not-found-desc {
-        color: #71717a;
-        font-size: 1rem;
-        line-height: 1.7;
-        margin-bottom: 24px;
-      }
-      .btn-catalog-cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #db2777;
-        color: #ffffff;
-        padding: 12px 28px;
-        border-radius: 99px;
-        text-decoration: none;
-        font-weight: 700;
-        transition: all 0.2s ease;
-      }
-      .btn-catalog-cta:hover {
-        background: #be185d;
-        transform: translateY(-2px);
-      }
-    </style>
-  </slot>
-
-  <main class="container">
-    <div class="not-found-container">
-      <div class="not-found-icon">
-        <i class="fas fa-search"></i>
-      </div>
-      <h1 class="not-found-title">عذراً، المستحضر المطلوب غير متوفر</h1>
-      <p class="not-found-desc">
-        لم نتمكن من العثور على المنتج المطلوب برقم التعريف ({id || 'غير محدد'}). قد يكون المنتج قد نفد أو تم حذفه من التشكيلة.
-      </p>
-      <a href="/all-products" class="btn-catalog-cta">
-        <i class="fas fa-th-large"></i>
+  <main class="dandy-error-wrap dandy-container" data-dandy-motion="calm">
+    <div class="dandy-error-code">404</div>
+    <h1 class="dandy-font-ar-display">عذراً، المستحضر المطلوب غير متوفر</h1>
+    <p>
+      لم نتمكن من العثور على المنتج المطلوب برقم التعريف ({id || 'غير محدد'}). قد يكون المنتج قد نفد أو تم حذفه من التشكيلة.
+    </p>
+    <div class="dandy-error-actions">
+      <a href="/all-products" class="dandy-btn dandy-btn--editorial">
+        <Icon name="shopping-bag" size={16} strokeWidth={1.85} />
         <span>تصفح تشكيلة منتجات داندي</span>
+      </a>
+      <a href="/" class="dandy-btn dandy-btn--outline">
+        <Icon name="home" size={16} strokeWidth={1.85} />
+        <span>الصفحة الرئيسية</span>
       </a>
     </div>
   </main>
 </BaseLayout>
+
+<style is:global>
+  .dandy-error-wrap {
+    min-height: 68vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-block: 72px 88px;
+    max-width: 560px;
+  }
+
+  .dandy-error-code {
+    font-family: var(--dandy-font-en-display);
+    font-size: clamp(4rem, 10vw, 6rem);
+    font-weight: 700;
+    color: var(--dandy-border-default);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .dandy-error-wrap h1 {
+    margin: 0 0 10px;
+    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-error-wrap p {
+    margin: 0 0 28px;
+    font-size: var(--dandy-text-base);
+    line-height: 1.72;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+</style>

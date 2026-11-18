@@ -1,0 +1,303 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import EditorialPageHeader from '../editorial/EditorialPageHeader.astro';
+import { getAllArticles, type Article } from '../../utils/articles';
+import { SITE_URL } from '../../utils/products';
+import { buildLocalizedPath } from '../../i18n/routes';
+import { resolveLocalizedArticle, type LocalizedArticleView } from '../../i18n/content/adapters';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'ar' } = Astro.props;
+const isEn = locale === 'en';
+const canonicalUrl = `${SITE_URL}${buildLocalizedPath('/blog', locale)}`;
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+
+let rawArticles: Article[] = [];
+try {
+  rawArticles = await getAllArticles();
+} catch {
+  rawArticles = [];
+}
+
+const localizedArticles: LocalizedArticleView[] = rawArticles
+  .map((item) => resolveLocalizedArticle(item, locale))
+  .filter((view) => (!isEn ? true : view.hasTranslation && view.content.publishedInLocale));
+
+function getArticleExcerpt(view: LocalizedArticleView): string {
+  const { excerpt, contentHtml } = view.content;
+  if (excerpt && excerpt.trim()) {
+    return excerpt.trim();
+  }
+  if (contentHtml) {
+    const plainText = contentHtml.replace(/<[^>]+>/g, '').trim();
+    return plainText.length > 155 ? plainText.substring(0, 155) + '...' : plainText;
+  }
+  return '';
+}
+
+function formatArticleDate(article: Article): string {
+  if (!isEn && article.date) return article.date;
+  const dateSource = article.createdAt || article.updatedAt;
+  if (dateSource) {
+    try {
+      return new Date(dateSource).toLocaleDateString(isEn ? 'en-US' : 'ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return isEn ? '' : article.date || '';
+    }
+  }
+  return isEn ? '' : article.date || '';
+}
+
+const pageTitle = isEn
+  ? 'DANDY Beauty Journal | Natural Skin & Hair Care Guides'
+  : 'مدونة داندي للعناية | أسرار ونصائح الجمال الطبيعي';
+const pageDescription = isEn
+  ? 'Explore the Dandy Cosmetics Beauty Journal for pharmacist-guided skincare routines, haircare guides, and botanical ingredient insights.'
+  : 'تصفحي مدونة داندي واكتشفي أسرار العناية بالبشرة والشعر والروتين الصحي بتركيبات طبيعية.';
+const pageKeywords = isEn
+  ? 'Dandy Cosmetics Journal, natural skincare guides, haircare routine Egypt, botanical ingredients'
+  : 'مدونة داندي بيوتي، العناية بالبشرة، العناية بالشعر، خلطات تجميلية طبيعية، روتين صحي للبشرة مصر';
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  keywords={pageKeywords}
+  canonical={canonicalUrl}
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:image" content="https://res.cloudinary.com/dogk78w9z/image/upload/v1789152384/WhatsApp_Image_2026-06-18_at_5.55.06_PM.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </Fragment>
+
+  <EditorialPageHeader
+    locale={locale}
+    eyebrow={isEn ? 'DANDY Rituals & Ingredient Journal' : 'مجلة داندي للروتين والعناية'}
+    title={isEn ? 'Care & Beauty Journal' : 'مدونة داندي'}
+    description={
+      isEn
+        ? 'Practical daily guides for balanced skin, hair, and body care, written with clear pharmacist-backed routine steps.'
+        : 'دليلكِ العملي للعناية اليومية بالبشرة والشعر والجسم، بمقالات صيدلانية مبسطة وخطوات روتين متوازنة.'
+    }
+    currentCrumb={isEn ? 'Beauty Journal' : 'المدونة'}
+  />
+
+  <main class="dandy-page-band" data-dandy-motion="calm">
+    <div class="dandy-container">
+      {localizedArticles.length > 0 ? (
+        <div class="dandy-blog-grid" id="blogContainer" data-dandy-stagger="grid">
+          {localizedArticles.map((view) => {
+            const item = view.article;
+            const canonicalLink = buildLocalizedPath(`/blog/${encodeURIComponent(item.slug)}`, locale);
+            const rawImg =
+              item.image && !item.image.includes('images.unsplash.com')
+                ? item.image
+                : '/assets/images/editorial/hero-botanical.jpg';
+            const title = view.content.title || (isEn ? 'Natural Care Guide' : 'مقال في العناية الطبيعية');
+            const dateText = formatArticleDate(item);
+            const excerptText = getArticleExcerpt(view);
+            const category = view.content.category || (isEn ? 'Skin Care' : 'العناية بالبشرة');
+
+            return (
+              <article class="dandy-blog-card" data-dandy-reveal-child>
+                <a href={canonicalLink} class="dandy-blog-thumb" aria-label={title}>
+                  <img
+                    src={rawImg}
+                    alt={title}
+                    width="640"
+                    height="400"
+                    loading="lazy"
+                    decoding="async"
+                    referrerpolicy="no-referrer"
+                    onerror="this.onerror=null;this.src='/assets/images/editorial/hero-botanical.jpg';"
+                  />
+                </a>
+                <div class="dandy-blog-body">
+                  <div class="dandy-blog-meta">
+                    <span class="dandy-blog-cat">{category}</span>
+                    {dateText && (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span>{dateText}</span>
+                      </>
+                    )}
+                  </div>
+
+                  <h2 class="dandy-blog-title">
+                    <a href={canonicalLink}>{title}</a>
+                  </h2>
+
+                  {excerptText && <p class="dandy-blog-excerpt">{excerptText}</p>}
+
+                  <a href={canonicalLink} class="dandy-blog-more">
+                    <span>{isEn ? 'Read Article' : 'اقرئي المقال'}</span>
+                    <Icon name="arrow-left" size={15} strokeWidth={1.85} directional={true} />
+                  </a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div class="dandy-blog-empty" data-dandy-reveal>
+          <Icon name="book-open" size={30} strokeWidth={1.6} />
+          <p>{isEn ? 'No journal articles are currently published in English.' : 'لا توجد مقالات منشورة حالياً بالمدونة.'}</p>
+          <a href={allProductsHref} class="dandy-btn dandy-btn--outline">
+            {isEn ? 'Browse Products' : 'تصفح المنتجات'}
+          </a>
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .dandy-blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 24px;
+  }
+
+  .dandy-blog-card {
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--dandy-transition-base), border-color var(--dandy-transition-base), box-shadow var(--dandy-transition-base);
+  }
+
+  .dandy-blog-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--dandy-border-default);
+    box-shadow: var(--dandy-shadow-sm);
+  }
+
+  .dandy-blog-thumb {
+    display: block;
+    aspect-ratio: 16 / 10;
+    background-color: var(--dandy-bg-stage);
+    overflow: hidden;
+  }
+
+  .dandy-blog-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 360ms var(--dandy-ease-out);
+  }
+
+  .dandy-blog-card:hover .dandy-blog-thumb img {
+    transform: scale(1.03);
+  }
+
+  .dandy-blog-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    gap: 10px;
+  }
+
+  .dandy-blog-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-blog-cat {
+    font-weight: 600;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-blog-title {
+    margin: 0;
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.48;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-blog-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-blog-title a:hover {
+    color: var(--dandy-accent-text);
+  }
+
+  .dandy-blog-excerpt {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .dandy-blog-more {
+    margin-top: auto;
+    padding-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    color: var(--dandy-ink-primary);
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast), gap var(--dandy-transition-fast);
+  }
+
+  .dandy-blog-more:hover {
+    color: var(--dandy-accent-text);
+    gap: 9px;
+  }
+
+  .dandy-blog-empty {
+    text-align: center;
+    padding: 56px 20px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px dashed var(--dandy-border-default);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--dandy-ink-muted);
+  }
+
+  .dandy-blog-empty p {
+    margin: 0;
+    font-size: var(--dandy-text-base);
+  }
+
+  @media (max-width: 639px) {
+    .dandy-blog-grid {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+  }
+</style>

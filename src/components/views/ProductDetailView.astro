@@ -1,0 +1,1297 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../ui/Icon.astro';
+import ProductCard from '../product/ProductCard.astro';
+import ProductGallery from '../commerce/ProductGallery.astro';
+import ProductInfo from '../commerce/ProductInfo.astro';
+import ReviewSummaryPanel from '../commerce/ReviewSummaryPanel.astro';
+import {
+  getAllProducts,
+  getProductBySlug,
+  getProductById,
+  generateProductJsonLd,
+  SITE_URL,
+  type Product,
+} from '../../utils/products';
+import {
+  getPublishedPinkFridayCampaign,
+  calculatePinkFridayPricing,
+} from '../../utils/pink-friday-server';
+import {
+  isProductSoldOut,
+  normalizeProductVariants,
+  resolveCategoryArabicLabel,
+} from '../../scripts/product-card';
+import {
+  computePdpEffectivePricing,
+  computeReviewStats,
+  extractProductHighlights,
+  normalizeProductGalleryImages,
+  resolveLocalizedParsedDescription,
+  selectRelatedProducts,
+  type ReviewRecordInput,
+} from '../../scripts/product-pdp';
+import { resolveLocalizedProduct } from '../../i18n/content/adapters';
+import { buildLocalizedPath } from '../../i18n/routes';
+import type { Locale } from '../../i18n/types';
+
+export interface Props {
+  locale?: Locale;
+  slug?: string;
+}
+
+const { locale = 'ar', slug } = Astro.props;
+const isEn = locale === 'en';
+const dir = isEn ? 'ltr' : 'rtl';
+
+const RTDB_URL = 'https://dandy-562fc-default-rtdb.europe-west1.firebasedatabase.app';
+
+const allProductsHref = buildLocalizedPath('/all-products', locale);
+const homeHref = buildLocalizedPath('/', locale);
+
+if (!slug) {
+  return Astro.redirect(allProductsHref, 301);
+}
+
+const [livePfCampaign, allProducts] = await Promise.all([
+  getPublishedPinkFridayCampaign(),
+  getAllProducts(),
+]);
+
+// 1. Resolve product by slug
+let product: Product | null = await getProductBySlug(slug);
+
+// 2. Legacy ID fallback redirect (301) preserving tracking query params
+if (!product) {
+  const productById = await getProductById(slug);
+  if (productById) {
+    const searchParams = new URLSearchParams();
+    for (const [k, v] of Astro.url.searchParams.entries()) {
+      if (k.startsWith('utm_') || k === 'fbclid' || k === 'gclid') {
+        searchParams.set(k, v);
+      }
+    }
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return Astro.redirect(
+      `${buildLocalizedPath(`/product/${encodeURIComponent(productById.resolvedSlug)}`, locale)}${qs}`,
+      301
+    );
+  }
+}
+
+// 3. Handle 404 when missing or hidden
+const isNotFound = !product || product.isHidden;
+if (isNotFound) {
+  Astro.response.status = 404;
+}
+
+// 4. Enforce canonical slug URL (301 redirect for non-canonical alias)
+if (product && !product.isHidden) {
+  const reqSlug = decodeURIComponent(slug).toLowerCase().trim();
+  if (reqSlug !== product.resolvedSlug.toLowerCase()) {
+    const searchParams = new URLSearchParams();
+    for (const [k, v] of Astro.url.searchParams.entries()) {
+      if (k.startsWith('utm_') || k === 'fbclid' || k === 'gclid') {
+        searchParams.set(k, v);
+      }
+    }
+    const qs = searchParams.toString() ? `?${searchParams.toString()}` : '';
+    return Astro.redirect(
+      `${buildLocalizedPath(`/product/${encodeURIComponent(product.resolvedSlug)}`, locale)}${qs}`,
+      301
+    );
+  }
+}
+
+// 5. Fetch real reviews SSR from public RTDB endpoint (never fabricated)
+let rawReviews: Record<string, ReviewRecordInput> | null = null;
+if (product && !isNotFound) {
+  try {
+    const revRes = await fetch(
+      `${RTDB_URL}/reviews/${encodeURIComponent(product.id)}.json`,
+      {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(3500),
+      }
+    );
+    if (revRes.ok) {
+      const parsedJson = await revRes.json();
+      if (parsedJson && typeof parsedJson === 'object') {
+        rawReviews = parsedJson as Record<string, ReviewRecordInput>;
+      }
+    }
+  } catch {
+    rawReviews = null;
+  }
+}
+
+const reviewStats = computeReviewStats(rawReviews, locale);
+const localizedProductView =
+  product && !isNotFound ? resolveLocalizedProduct(product, locale) : null;
+
+// 6. SEO & Structured Data
+const productName =
+  localizedProductView?.localization.content.name ||
+  product?.name ||
+  (isEn ? 'Product Unavailable' : 'المنتج غير متوفر');
+
+const pageTitle =
+  product && !isNotFound
+    ? isEn
+      ? `${productName} | Dandy Cosmetics`
+      : `${product.name} | داندي كوزمتكس - Dandy Cosmetics`
+    : isEn
+      ? 'Product Not Found (404) | Dandy Cosmetics'
+      : 'المنتج غير موجود (404) | داندي كوزمتكس';
+
+const rawSourceDesc = isEn
+  ? localizedProductView?.localization.content.shortDescription ||
+    localizedProductView?.localization.content.description ||
+    ''
+  : product?.description || '';
+const rawDesc = rawSourceDesc.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+const metaDescription = rawDesc
+  ? rawDesc.length > 155
+    ? rawDesc.substring(0, 155) + '...'
+    : rawDesc
+  : product && !isNotFound
+    ? isEn
+      ? `${productName} — Natural botanical care by Dandy Cosmetics Egypt.`
+      : `${product.name} - مستحضر للعناية بالجمال من داندي كوزمتكس مصر.`
+    : isEn
+      ? 'The requested product is currently unavailable at Dandy Cosmetics.'
+      : 'المنتج المطلوب غير متوفر حالياً في متجر داندي كوزمتكس.';
+
+const canonicalUrl =
+  product && !isNotFound
+    ? `${SITE_URL}${buildLocalizedPath(`/product/${encodeURIComponent(product.resolvedSlug)}`, locale)}`
+    : `${SITE_URL}${allProductsHref}`;
+
+const ogImage =
+  product?.image && !product.image.includes('images.unsplash.com')
+    ? product.image
+    : `${SITE_URL}/assets/images/fav-icons/android-chrome-512x512.png`;
+
+const categoryMeta = product
+  ? resolveCategoryArabicLabel(product, locale)
+  : {
+      slug: 'skin-care',
+      labelAr: isEn ? 'Skin Care' : 'العناية بالبشرة',
+    };
+
+const categoryHref = buildLocalizedPath(`/category/${categoryMeta.slug}`, locale);
+
+const productForJsonLd =
+  product && !isNotFound
+    ? {
+        ...product,
+        ...(reviewStats.count > 0
+          ? { avgRating: reviewStats.average, reviewCount: reviewStats.count }
+          : {}),
+      }
+    : null;
+
+const jsonLd = productForJsonLd
+  ? generateProductJsonLd(productForJsonLd, canonicalUrl, locale, {
+      name: productName,
+      description: localizedProductView?.localization.content.description || rawDesc,
+      categoryName: categoryMeta.labelAr,
+    })
+  : null;
+
+const breadcrumbJsonLd =
+  product && !isNotFound
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: isEn ? 'Home' : 'الرئيسية',
+            item: `${SITE_URL}${homeHref}`,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: categoryMeta.labelAr,
+            item: `${SITE_URL}${categoryHref}`,
+          },
+          { '@type': 'ListItem', position: 3, name: productName, item: canonicalUrl },
+        ],
+      }
+    : null;
+
+// 7. Compute Grounded View Models
+const pfPricing =
+  product && !isNotFound ? calculatePinkFridayPricing(product, livePfCampaign) : null;
+const pricing =
+  product && !isNotFound
+    ? computePdpEffectivePricing(product, 0, pfPricing)
+    : computePdpEffectivePricing({ price: 0, onSale: false }, 0, null);
+
+const isSoldOut = product ? isProductSoldOut(product) : false;
+const isAvailable = Boolean(product && !isSoldOut && !isNotFound);
+
+const galleryImages =
+  product && !isNotFound ? normalizeProductGalleryImages(product, locale, productName) : [];
+
+const stageBadge = isSoldOut
+  ? { text: isEn ? 'Sold Out' : 'نفذت الكمية', tone: 'soldout' as const }
+  : pricing.isPinkFriday
+    ? { text: pricing.campaignBadgeText || 'Pink Friday', tone: 'campaign' as const }
+    : pricing.discountPercent
+      ? {
+          text: isEn ? `${pricing.discountPercent}% OFF` : `خصم ${pricing.discountPercent}%`,
+          tone: 'discount' as const,
+        }
+      : null;
+
+const rawVariantsList = product ? normalizeProductVariants(product.variants) : [];
+const variantsList =
+  localizedProductView && localizedProductView.localization.variants.length > 0
+    ? localizedProductView.localization.variants.map((v) => ({
+        id: v.id,
+        name: v.localizedName,
+        isAvailable: v.isAvailable,
+        ...(v.price !== null ? { price: v.price } : {}),
+      }))
+    : rawVariantsList;
+
+const hasVariants = Boolean(
+  product &&
+    (product.hasVariants === true || (product.hasVariants as unknown) === 'true') &&
+    variantsList.length > 0
+);
+
+const parsedDescription = product
+  ? resolveLocalizedParsedDescription(product, locale)
+  : resolveLocalizedParsedDescription({ id: '', description: '' }, locale);
+
+const highlights =
+  product && !isNotFound ? extractProductHighlights(product, parsedDescription, locale) : [];
+
+const relatedProducts =
+  product && !isNotFound ? selectRelatedProducts(allProducts, product, 4) : [];
+
+// 8. WhatsApp & Social Share URLs
+const waPhone = '201038941005';
+const waMessage = product
+  ? isEn
+    ? `Hello Dandy, I would like to inquire about this product:\n- Product: ${productName}\n- Link: ${canonicalUrl}`
+    : `مرحباً داندي، أود الاستفسار عن هذا المنتج:\n- اسم المنتج: ${product.name}\n- الرابط: ${canonicalUrl}`
+  : '';
+const waLink = `https://wa.me/${waPhone}?text=${encodeURIComponent(waMessage)}`;
+const shareWaLink = product
+  ? `https://wa.me/?text=${encodeURIComponent(productName + '\n' + canonicalUrl)}`
+  : '#';
+const shareFbLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}`;
+const shareIgLink = 'https://www.instagram.com/dandy_skincare_cosmotics';
+const shareMessengerLink = 'https://www.facebook.com/profile.php?id=61563039704396';
+
+// 9. Approved Product-to-Article Editorial Guides
+interface ProductArticleGuide {
+  label: string;
+  leadText: string;
+  anchorText: string;
+  tailText?: string;
+  articleUrl: string;
+}
+
+const AR_PRODUCT_ARTICLE_MAP: Record<string, ProductArticleGuide> = {
+  'free-sulfate-shampoo-500ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تعرفي على كيفية دمج الشامبو الخالي من السلفات لحماية الزيوت الطبيعية ضمن',
+    anchorText: 'روتين العناية بالشعر الجاف والمتقصف',
+    tailText: 'للحصول على أفضل النتائج.',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'hair-mask-repair-250ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'اكتشفي خطوات تطبيق حمام الكريم والترطيب الأسبوعي بالتفصيل في',
+    anchorText: 'روتين علاج الشعر التالف والمتقصف',
+    tailText: 'لاستعادة نعومة ولمعان شعركِ.',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'hair-repair-collection': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تغطي هذه المجموعة المتكاملة الخطوات الأساسية الموصى بها في',
+    anchorText: 'دليل العناية بالشعر الجاف والتالف',
+    tailText: 'من التنظيف اللطيف إلى الترميم العميق.',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'facial-cleanser-150ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'يُمثل هذا الغسول الخطوة الأولى الأساسية لتنقية البشرة ضمن',
+    anchorText: 'روتين العناية اليومي بالبشرة وتنظيفها',
+    tailText: 'صباحاً ومساءً.',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+  'facial-serum-3x1-30ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'اكتشفي الترتيب الصحيح لتطبيق السيروم وتعزيز نضارة الوجه في',
+    anchorText: 'خطوات روتين العناية بالبشرة اليومي',
+    tailText: 'للحفاظ على إشراقة وصحة بشرتك.',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+  'skin-care-collection': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تجمع هذه المجموعة بين خطوتي التنظيف والترطيب المشروحتين في',
+    anchorText: 'دليل روتين نضارة البشرة اليومي',
+    tailText: 'لروتين عناية متكامل ومتوازن.',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+  'hand-cream-60gm': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تعرفي على أهمية العناية اليومية وترطيب اليدين وحمايتهما من الجفاف ضمن',
+    anchorText: 'خطوات روتين العناية اليومية باليدين والجسم',
+    tailText: 'للحفاظ على نعومة ملمسكِ.',
+    articleUrl: '/blog/daily-beauty-routine-hair-skin-body',
+  },
+  'anti-dandruff-shampoo-250ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تعرفي على خطوات تنظيف الفروة والتدليك الهادئ بالشامبو ضمن',
+    anchorText: 'روتين العناية بفروة الرأس المعرضة للقشرة',
+    tailText: 'لمعرفة خطوات الاستخدام والعناية بالفروة.',
+    articleUrl: '/blog/anti-dandruff-routine',
+  },
+  'anti-dandruff-spray-60ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'اكتشفي طريقة التطبيق الموضعي للاسبراي قبل الاستحمام بالتفصيل في',
+    anchorText: 'دليل روتين العناية بالقشرة',
+    tailText: 'مع توضيح خطوات الاستخدام الأسبوعية.',
+    articleUrl: '/blog/anti-dandruff-routine',
+  },
+  'anti-dandruff-collection': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تجمع هذه المجموعة بين الاسبراي والشامبو المشروحين في',
+    anchorText: 'روتين العناية بفروة الرأس المعرضة للقشرة',
+    tailText: 'لمعرفة خطوات الاستخدام الأسبوعية للمنتجين.',
+    articleUrl: '/blog/anti-dandruff-routine',
+  },
+  'anti-hair-loss-shampoo-250ml': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تعرفي على خطوات تنظيف الفروة والتدليك الهادئ بالشامبو ضمن',
+    anchorText: 'روتين العناية بالشعر المتساقط والضعيف',
+    tailText: 'لمعرفة خطوات الاستخدام وتنظيم العناية بالفروة.',
+    articleUrl: '/blog/hair-loss-routine',
+  },
+  'anti-hair-loss-spray': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'اكتشفي طريقة التطبيق الموضعي للاسبراي بالتفصيل في',
+    anchorText: 'دليل روتين العناية بتساقط الشعر',
+    tailText: 'ضمن خطوات العناية اليومية بالفروة.',
+    articleUrl: '/blog/hair-loss-routine',
+  },
+  'anti-hair-loss-collection': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تجمع هذه المجموعة بين خطوات الغسيل والعناية اليومية المشروحة في',
+    anchorText: 'روتين العناية بالشعر المتساقط والضعيف',
+    tailText: 'لتنظيم خطوات العناية المتكاملة.',
+    articleUrl: '/blog/hair-loss-routine',
+  },
+  'hair-booster-oils-mix': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'اكتشفي خطوات تطبيق حمام الزيت الأسبوعي بالتفصيل في',
+    anchorText: 'دليل روتين العناية بالشعر المتساقط',
+    tailText: 'ضمن خطوات العناية بالخصلات والفروة.',
+    articleUrl: '/blog/hair-loss-routine',
+  },
+  'body-splash-250ml': {
+    label: 'دليل استخدام البادي سبلاش',
+    leadText: 'تعرفي على أفضل وقت لتطبيق البادي سبلاش بعد الاستحمام ضمن',
+    anchorText: 'خطوات روتين التعطير اليومي وتثبيت الرائحة',
+    tailText: 'لانتعاش يدوم طوال اليوم.',
+    articleUrl: '/blog/daily-fragrance-body-splash-routine',
+  },
+  'body-splash-100ml': {
+    label: 'دليل استخدام البادي سبلاش',
+    leadText: 'اكتشفي كيفية استخدام البادي سبلاش بأسلوب متوازن وتوزيعه في',
+    anchorText: 'دليل روتين التعطير اليومي بالبادي سبلاش',
+    tailText: 'لتجديد الانتعاش بسهولة.',
+    articleUrl: '/blog/daily-fragrance-body-splash-routine',
+  },
+  'body-splash-25ml': {
+    label: 'دليل استخدام البادي سبلاش',
+    leadText: 'تعرفي على طريقة تجديد الانتعاش الخفيف خلال اليوم ضمن',
+    anchorText: 'خطوات روتين استخدام البادي سبلاش اليومي',
+    tailText: 'في المشاوير وأوقات السفر.',
+    articleUrl: '/blog/daily-fragrance-body-splash-routine',
+  },
+  'solid-perfume-30gm': {
+    label: 'دليل تنسيق الطبقات العطرية',
+    leadText: 'اكتشفي مواضع وضع المخمرية على نقاط النبض وتنسيقها في',
+    anchorText: 'روتين التعطير اليومي والفرق بين المخمرية والبادي سبلاش',
+    tailText: 'للمسة عطرية ناعمة.',
+    articleUrl: '/blog/daily-fragrance-body-splash-routine',
+  },
+  'dandy-musk-6ml': {
+    label: 'دليل تنسيق الطبقات العطرية',
+    leadText: 'تعرفي على كيفية استخدام زيت المسك وتنسيقه مع المعطرات ضمن',
+    anchorText: 'خطوات روتين التعطير اليومي وطبقات الروائح الهادئة',
+    tailText: 'لنفحات كلاسيكية تدوم.',
+    articleUrl: '/blog/daily-fragrance-body-splash-routine',
+  },
+  'musk-collection-3-tola-3ml': {
+    label: 'دليل تنسيق الطبقات العطرية',
+    leadText: 'استكشفي كيفية دمج نفحات المسك المتنوعة مع الروتين اليومي في',
+    anchorText: 'دليل روتين التعطير وتنسيق روائح المسك والبادي سبلاش',
+    tailText: 'لتناغم عطري مميز.',
+    articleUrl: '/blog/daily-fragrance-body-splash-routine',
+  },
+  'body-and-hair-mist': {
+    label: 'دليل التعطير اليومي',
+    leadText: 'تعرفي على طريقة تعطير خصلات الشعر دون إثقالها في',
+    anchorText: 'روتين التعطير اليومي والفرق بين معطر الشعر والجسم والبادي سبلاش',
+    tailText: 'لحيوية وانتعاش فواح.',
+    articleUrl: '/blog/daily-fragrance-body-splash-routine',
+  },
+  'laser-replacement-cream-60gm': {
+    label: 'دليل العناية بالروتين',
+    leadText: 'تعرفي على خطوات تهدئة البشرة وأفضل وقت لاستخدام الكريم ضمن',
+    anchorText: 'روتين العناية بالبشرة بعد إزالة الشعر',
+    tailText: 'للحصول على بشرة ناعمة ومرتاحة.',
+    articleUrl: '/blog/post-hair-removal-skincare-routine',
+  },
+};
+
+const EN_PRODUCT_ARTICLE_MAP: Record<string, ProductArticleGuide> = {
+  'free-sulfate-shampoo-500ml': {
+    label: 'Routine Care Guide',
+    leadText: 'Learn how to pair a sulfate-free cleanser to protect natural hair lipids inside our',
+    anchorText: 'Dry & Damaged Hair Care Routine',
+    tailText: 'for softer, healthier strands.',
+    articleUrl: '/en/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'hair-mask-repair-250ml': {
+    label: 'Routine Care Guide',
+    leadText: 'Explore the weekly deep-conditioning steps inside our',
+    anchorText: 'Repair Routine for Dry & Damaged Hair',
+    tailText: 'to restore softness and natural shine.',
+    articleUrl: '/en/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'hair-repair-collection': {
+    label: 'Routine Care Guide',
+    leadText: 'This complete bundle brings together the core steps recommended in our',
+    anchorText: 'Dry & Damaged Hair Care Guide',
+    tailText: 'from gentle cleansing to deep restoration.',
+    articleUrl: '/en/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'facial-cleanser-150ml': {
+    label: 'Routine Care Guide',
+    leadText: 'This gentle cleanser anchors the first purifying step in our',
+    anchorText: 'Daily Facial Skincare & Cleansing Routine',
+    tailText: 'morning and night.',
+    articleUrl: '/en/blog/daily-skincare-routine-healthy-skin',
+  },
+  'facial-serum-3x1-30ml': {
+    label: 'Routine Care Guide',
+    leadText: 'Discover how to layer your serum for balanced hydration and glow in our',
+    anchorText: 'Daily Healthy Skincare Steps',
+    tailText: 'for radiant, comfortable skin.',
+    articleUrl: '/en/blog/daily-skincare-routine-healthy-skin',
+  },
+  'skin-care-collection': {
+    label: 'Routine Care Guide',
+    leadText: 'Pairs cleansing and daily nourishment together as outlined in our',
+    anchorText: 'Daily Skin Glow Routine Guide',
+    tailText: 'for a calm, consistent regimen.',
+    articleUrl: '/en/blog/daily-skincare-routine-healthy-skin',
+  },
+  'hand-cream-60gm': {
+    label: 'Routine Care Guide',
+    leadText: 'See how daily barrier hydration protects hands from dryness inside our',
+    anchorText: 'Daily Hair, Skin & Body Care Routine',
+    tailText: 'for lasting softness.',
+    articleUrl: '/en/blog/daily-beauty-routine-hair-skin-body',
+  },
+  'anti-dandruff-shampoo-250ml': {
+    label: 'Routine Care Guide',
+    leadText: 'Follow our gentle scalp cleansing and massage ritual inside the',
+    anchorText: 'Flake-Prone Scalp Care Routine',
+    tailText: 'for step-by-step weekly guidance.',
+    articleUrl: '/en/blog/anti-dandruff-routine',
+  },
+  'anti-dandruff-spray-60ml': {
+    label: 'Routine Care Guide',
+    leadText: 'Read how to apply the pre-wash scalp spray effectively in our',
+    anchorText: 'Anti-Dandruff Routine Guide',
+    tailText: 'with weekly usage steps.',
+    articleUrl: '/en/blog/anti-dandruff-routine',
+  },
+  'anti-dandruff-collection': {
+    label: 'Routine Care Guide',
+    leadText: 'Combines the scalp spray and shampoo covered in our',
+    anchorText: 'Flake-Prone Scalp Care Routine',
+    tailText: 'for an organized weekly schedule.',
+    articleUrl: '/en/blog/anti-dandruff-routine',
+  },
+  'anti-hair-loss-shampoo-250ml': {
+    label: 'Routine Care Guide',
+    leadText: 'See how to cleanse and stimulate delicate roots gently inside our',
+    anchorText: 'Weak & Thinning Hair Care Routine',
+    tailText: 'for balanced scalp support.',
+    articleUrl: '/en/blog/hair-loss-routine',
+  },
+  'anti-hair-loss-spray': {
+    label: 'Routine Care Guide',
+    leadText: 'Learn targeted leave-on application timing in our',
+    anchorText: 'Hair Fall & Scalp Care Guide',
+    tailText: 'for daily scalp consistency.',
+    articleUrl: '/en/blog/hair-loss-routine',
+  },
+  'anti-hair-loss-collection': {
+    label: 'Routine Care Guide',
+    leadText: 'Brings together wash-day cleansing and daily care steps from our',
+    anchorText: 'Weak & Thinning Hair Care Routine',
+    tailText: 'into one cohesive regimen.',
+    articleUrl: '/en/blog/hair-loss-routine',
+  },
+  'hair-booster-oils-mix': {
+    label: 'Routine Care Guide',
+    leadText: 'Follow our weekly botanical oil bath method in the',
+    anchorText: 'Hair Fall & Strengthening Routine Guide',
+    tailText: 'to nourish both roots and lengths.',
+    articleUrl: '/en/blog/hair-loss-routine',
+  },
+  'body-splash-250ml': {
+    label: 'Body Splash Fragrance Guide',
+    leadText: 'Discover the ideal post-shower misting routine inside our',
+    anchorText: 'Daily Fragrance & Scent-Layering Guide',
+    tailText: 'for all-day freshness.',
+    articleUrl: '/en/blog/daily-fragrance-body-splash-routine',
+  },
+  'body-splash-100ml': {
+    label: 'Body Splash Fragrance Guide',
+    leadText: 'Learn how to layer light aromatic notes evenly in our',
+    anchorText: 'Daily Body Splash Fragrance Routine',
+    tailText: 'for effortless everyday wear.',
+    articleUrl: '/en/blog/daily-fragrance-body-splash-routine',
+  },
+  'body-splash-25ml': {
+    label: 'Body Splash Fragrance Guide',
+    leadText: 'See how to refresh your scent cleanly on the go inside our',
+    anchorText: 'Daily Body Splash Layering Guide',
+    tailText: 'for errands and travel days.',
+    articleUrl: '/en/blog/daily-fragrance-body-splash-routine',
+  },
+  'solid-perfume-30gm': {
+    label: 'Scent Layering Guide',
+    leadText: 'Explore pulse-point application and layering techniques in our',
+    anchorText: 'Daily Fragrance Routine: Mukhammariya vs. Body Splash',
+    tailText: 'for a soft, lingering trail.',
+    articleUrl: '/en/blog/daily-fragrance-body-splash-routine',
+  },
+  'dandy-musk-6ml': {
+    label: 'Scent Layering Guide',
+    leadText: 'Learn how to pair concentrated musk oil with body mists inside our',
+    anchorText: 'Daily Fragrance & Soft Musk Layering Guide',
+    tailText: 'for timeless scent longevity.',
+    articleUrl: '/en/blog/daily-fragrance-body-splash-routine',
+  },
+  'musk-collection-3-tola-3ml': {
+    label: 'Scent Layering Guide',
+    leadText: 'Discover how to blend complementary musk notes daily in our',
+    anchorText: 'Musk & Body Splash Layering Guide',
+    tailText: 'for a signature aroma.',
+    articleUrl: '/en/blog/daily-fragrance-body-splash-routine',
+  },
+  'body-and-hair-mist': {
+    label: 'Daily Fragrance Guide',
+    leadText: 'Learn how to lightly perfume hair strands without weighing them down in our',
+    anchorText: 'Daily Fragrance Routine: Hair & Body Mist vs. Splash',
+    tailText: 'for airy, vibrant freshness.',
+    articleUrl: '/en/blog/daily-fragrance-body-splash-routine',
+  },
+  'laser-replacement-cream-60gm': {
+    label: 'Routine Care Guide',
+    leadText: 'Read soothing post-epilation timing and skin-comfort tips in our',
+    anchorText: 'Post-Hair-Removal Skincare Routine',
+    tailText: 'for calm, smooth skin.',
+    articleUrl: '/en/blog/post-hair-removal-skincare-routine',
+  },
+};
+
+const activeArticleMap = isEn ? EN_PRODUCT_ARTICLE_MAP : AR_PRODUCT_ARTICLE_MAP;
+const productArticle =
+  product && !isNotFound && product.resolvedSlug
+    ? activeArticleMap[product.resolvedSlug] || null
+    : null;
+
+const SECTION_ICONS: Record<string, 'book-open' | 'sparkles' | 'leaf' | 'check-circle'> = {
+  overview: 'book-open',
+  features: 'sparkles',
+  ingredients: 'leaf',
+  usage: 'check-circle',
+  results: 'sparkles',
+};
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={metaDescription}
+  canonical={canonicalUrl}
+  robots={isNotFound ? 'noindex, nofollow' : 'index, follow'}
+  counterpartAvailability={
+    product && !isNotFound
+      ? { targetEntityExists: true, targetSlug: product.resolvedSlug }
+      : { targetEntityExists: false }
+  }
+>
+  <Fragment slot="head">
+    <meta property="og:type" content="product" />
+    <meta property="og:title" id="og-title-meta" content={pageTitle} />
+    <meta property="og:description" id="og-desc-meta" content={metaDescription} />
+    <meta property="og:image" id="og-image-meta" content={ogImage} />
+    <meta property="og:url" id="og-url-meta" content={canonicalUrl} />
+    <meta
+      property="og:site_name"
+      content={isEn ? 'Dandy Cosmetics' : 'داندي كوزمتكس - Dandy Cosmetics'}
+    />
+    {product && !isNotFound && (
+      <>
+        <meta property="product:price:amount" content={String(pricing.unitBasePrice)} />
+        <meta property="product:price:currency" content="EGP" />
+        <meta
+          property="product:availability"
+          content={isAvailable ? 'in stock' : 'out of stock'}
+        />
+      </>
+    )}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {jsonLd && (
+      <script id="product-jsonld" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
+    {breadcrumbJsonLd && (
+      <script
+        id="breadcrumb-jsonld"
+        type="application/ld+json"
+        set:html={JSON.stringify(breadcrumbJsonLd)}
+      />
+    )}
+  </Fragment>
+
+  <main class="dandy-pdp-main" dir={dir}>
+    {isNotFound ? (
+      <section class="dandy-container dandy-pdp-notfound-wrap">
+        <div class="dandy-pdp-notfound" id="product-not-found-view">
+          <span class="dandy-pdp-notfound-icon" aria-hidden="true">
+            <Icon name="search" size={28} strokeWidth={1.7} />
+          </span>
+          <h1>
+            {isEn
+              ? 'Sorry, this product is unavailable'
+              : 'عذراً، المستحضر المطلوب غير متوفر'}
+          </h1>
+          <p>
+            {isEn
+              ? 'The link you followed may be outdated or this formula has been updated in the Dandy Cosmetics catalog.'
+              : 'قد يكون الرابط الذي اتبعتهِ غير صحيح أو تم تحديث اسم المنتج في تشكيلة داندي كوزمتكس.'}
+          </p>
+          <a href={allProductsHref} class="dandy-btn dandy-btn--editorial dandy-btn--pill">
+            <Icon name="grid" size={16} strokeWidth={1.8} />
+            <span>
+              {isEn ? 'Explore All Dandy Products' : 'استكشفي جميع مستحضرات داندي'}
+            </span>
+          </a>
+        </div>
+      </section>
+    ) : (
+      <>
+        <!-- 1. Breadcrumb & Primary Hero Split -->
+        <section class="dandy-pdp-hero">
+          <div class="dandy-container">
+            <nav
+              class="dandy-pdp-breadcrumb"
+              id="product-breadcrumb"
+              aria-label={isEn ? 'Breadcrumb' : 'مسار التنقل'}
+              data-dandy-entrance="0"
+            >
+              <a href={homeHref}>{isEn ? 'Home' : 'الرئيسية'}</a>
+              <Icon
+                name="chevron-left"
+                size={14}
+                strokeWidth={1.8}
+                class="dandy-pdp-bread-sep"
+                directional={true}
+              />
+              <a href={categoryHref}>{categoryMeta.labelAr}</a>
+              <Icon
+                name="chevron-left"
+                size={14}
+                strokeWidth={1.8}
+                class="dandy-pdp-bread-sep"
+                directional={true}
+              />
+              <span class="current" id="bread-product">{productName}</span>
+            </nav>
+
+            <div class="dandy-pdp-grid" id="detailFrame">
+              <div class="dandy-pdp-col-gallery" data-dandy-media-settle>
+                <ProductGallery
+                  productId={product!.id}
+                  productName={productName}
+                  images={galleryImages}
+                  badge={stageBadge}
+                  isSoldOut={isSoldOut}
+                  locale={locale}
+                />
+              </div>
+
+              <div class="dandy-pdp-col-info">
+                <ProductInfo
+                  productId={product!.id}
+                  productName={productName}
+                  categorySlug={categoryMeta.slug}
+                  categoryLabelAr={categoryMeta.labelAr}
+                  isSoldOut={isSoldOut}
+                  pricing={pricing}
+                  hasVariants={hasVariants}
+                  variants={variantsList}
+                  parsedDescription={parsedDescription}
+                  highlights={highlights}
+                  reviewStats={reviewStats}
+                  waLink={waLink}
+                  shareWaLink={shareWaLink}
+                  shareFbLink={shareFbLink}
+                  shareIgLink={shareIgLink}
+                  shareMessengerLink={shareMessengerLink}
+                  canonicalUrl={canonicalUrl}
+                  locale={locale}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Structured Product Details & Editorial Routine Guide -->
+        <section
+          class="dandy-pdp-details-section"
+          id="details-editorial-section"
+          aria-labelledby="details-section-heading"
+        >
+          <div class="dandy-container">
+            <header class="dandy-pdp-section-head" data-dandy-reveal>
+              <p class="dandy-pdp-section-kicker">
+                {isEn ? 'Formula & Care Profile' : 'تفاصيل التركيبة والعناية'}
+              </p>
+              <h2 id="details-section-heading" class="dandy-pdp-section-heading">
+                {isEn ? 'Product Details & Properties' : 'تفاصيل وخواص المستحضر'}
+              </h2>
+            </header>
+
+            <div class="dandy-pdp-details-layout">
+              <div
+                id="product-desc"
+                class="dandy-pdp-desc-stack dandy-prose"
+                data-dandy-reveal
+                data-dandy-stagger="group"
+              >
+                {parsedDescription.sections.length > 0 ? (
+                  parsedDescription.sections.map((section) => (
+                    <article
+                      class="dandy-pdp-desc-card"
+                      data-desc-section={section.id}
+                      data-dandy-reveal-child
+                    >
+                      <h3 class="dandy-pdp-desc-title">
+                        <span class="dandy-pdp-desc-icon" aria-hidden="true">
+                          <Icon
+                            name={SECTION_ICONS[section.id] || 'sparkles'}
+                            size={17}
+                            strokeWidth={1.8}
+                          />
+                        </span>
+                        <span>{section.title}</span>
+                      </h3>
+
+                      {section.paragraphs.map((para) => (
+                        <p class="dandy-pdp-desc-p">{para}</p>
+                      ))}
+
+                      {section.bullets.length > 0 && (
+                        <ul
+                          class:list={[
+                            'dandy-pdp-desc-list',
+                            { 'is-steps': section.id === 'usage' },
+                          ]}
+                        >
+                          {section.bullets.map((bullet, idx) => (
+                            <li>
+                              {section.id === 'usage' ? (
+                                <span
+                                  class="dandy-pdp-step-num dandy-tabular"
+                                  aria-hidden="true"
+                                >
+                                  {idx + 1}
+                                </span>
+                              ) : (
+                                <Icon
+                                  name="check"
+                                  size={15}
+                                  strokeWidth={2.2}
+                                  class="dandy-pdp-bullet-icon"
+                                />
+                              )}
+                              <span>{bullet}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </article>
+                  ))
+                ) : (
+                  <article class="dandy-pdp-desc-card">
+                    <h3 class="dandy-pdp-desc-title">
+                      <span class="dandy-pdp-desc-icon" aria-hidden="true">
+                        <Icon name="book-open" size={17} strokeWidth={1.8} />
+                      </span>
+                      <span>{isEn ? 'Product Overview' : 'وصف المستحضر'}</span>
+                    </h3>
+                    <p class="dandy-pdp-desc-p">{parsedDescription.leadIntro}</p>
+                  </article>
+                )}
+              </div>
+
+              {productArticle && (
+                <aside
+                  class="dandy-pdp-routine-aside"
+                  aria-label={isEn ? 'Routine Care Guide' : 'دليل العناية والروتين'}
+                >
+                  <div class="dandy-pdp-routine-card" data-dandy-reveal>
+                    <span class="dandy-pdp-routine-kicker">
+                      <Icon name="book-open" size={15} strokeWidth={1.9} />
+                      <span>{productArticle.label}</span>
+                    </span>
+                    <p class="dandy-pdp-routine-copy">
+                      {productArticle.leadText}{' '}
+                      <a href={productArticle.articleUrl} class="dandy-pdp-routine-link">
+                        {productArticle.anchorText}
+                      </a>
+                      {productArticle.tailText ? ` ${productArticle.tailText}` : ''}
+                    </p>
+                    <a href={productArticle.articleUrl} class="dandy-btn dandy-btn--outline">
+                      <span>{isEn ? 'Read Full Guide' : 'قراءة الدليل الكامل'}</span>
+                      <Icon name="arrow-left" size={15} strokeWidth={1.8} directional={true} />
+                    </a>
+                  </div>
+                </aside>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Verified Customer Reviews Panel -->
+        <ReviewSummaryPanel reviewStats={reviewStats} locale={locale} />
+
+        <!-- 4. Related Products -->
+        {relatedProducts.length > 0 && (
+          <section
+            class="dandy-pdp-related-section"
+            id="related-products-section"
+            aria-labelledby="related-products-heading"
+          >
+            <div class="dandy-container">
+              <header class="dandy-pdp-related-header" data-dandy-reveal>
+                <div>
+                  <p class="dandy-pdp-section-kicker">
+                    {isEn ? 'Complete Your Routine' : 'تكمّل روتينكِ'}
+                  </p>
+                  <h2 id="related-products-heading" class="dandy-pdp-section-heading">
+                    {isEn
+                      ? 'Related Formulas in This Category'
+                      : 'مستحضرات مقترحة من نفس الفئة'}
+                  </h2>
+                </div>
+                <a href={categoryHref} class="dandy-pdp-related-more">
+                  <span>
+                    {isEn ? `Explore ${categoryMeta.labelAr}` : `عرض ${categoryMeta.labelAr}`}
+                  </span>
+                  <Icon name="arrow-left" size={15} strokeWidth={1.8} directional={true} />
+                </a>
+              </header>
+
+              <div
+                class="dandy-pdp-related-grid"
+                id="related-products-grid"
+                data-dandy-reveal
+                data-dandy-stagger="group"
+              >
+                {relatedProducts.map((relProd) => {
+                  const relPfPricing = livePfCampaign
+                    ? calculatePinkFridayPricing(relProd, livePfCampaign)
+                    : null;
+                  return (
+                    <ProductCard
+                      product={relProd}
+                      pinkFridayPricing={relPfPricing}
+                      priority={true}
+                      revealChild={true}
+                      locale={locale}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <script
+          id="pdp-bootstrap-data"
+          type="application/json"
+          set:html={JSON.stringify({
+            product,
+            canonicalUrl,
+            pinkFridayPricing: pfPricing,
+          })}
+        />
+      </>
+    )}
+  </main>
+
+  {!isNotFound && (
+    <script>
+      import { initProductDetailPage } from '../../scripts/pdp-client';
+      initProductDetailPage();
+    </script>
+  )}
+</BaseLayout>
+
+<style is:global>
+  .dandy-pdp-main {
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    overflow-x: clip;
+  }
+
+  .dandy-pdp-section-kicker {
+    margin: 0 0 6px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    color: var(--dandy-gold-editorial);
+  }
+
+  .dandy-pdp-section-heading {
+    margin: 0;
+    font-family: var(--dandy-font-active-display);
+    font-size: clamp(1.375rem, 2.2vw, 1.875rem);
+    font-weight: 700;
+    line-height: var(--dandy-leading-heading-ar);
+    color: var(--dandy-ink-primary);
+    letter-spacing: 0;
+  }
+
+  /* 1. Hero Section & Breadcrumb */
+  .dandy-pdp-hero {
+    padding-block: clamp(18px, 2.5vw, 30px) clamp(36px, 5vw, 60px);
+  }
+
+  .dandy-pdp-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: clamp(18px, 2.4vw, 28px);
+    font-size: var(--dandy-text-xs);
+    color: var(--dandy-ink-muted);
+    line-height: 1.5;
+  }
+
+  .dandy-pdp-breadcrumb a {
+    color: var(--dandy-ink-muted);
+    text-decoration: none;
+    transition: color var(--dandy-transition-fast);
+  }
+
+  .dandy-pdp-breadcrumb a:hover {
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-bread-sep {
+    color: var(--dandy-border-default);
+  }
+
+  .dandy-pdp-breadcrumb .current {
+    color: var(--dandy-ink-primary);
+    font-weight: 600;
+    max-width: min(360px, 65vw);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dandy-pdp-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 48%) minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 52px);
+    align-items: start;
+  }
+
+  .dandy-pdp-col-gallery,
+  .dandy-pdp-col-info {
+    min-width: 0;
+  }
+
+  /* 2. Details & Editorial Routine Section */
+  .dandy-pdp-details-section {
+    padding-block: clamp(36px, 4.5vw, 64px);
+    border-top: 1px solid var(--dandy-border-subtle);
+    background-color: var(--dandy-bg-page);
+  }
+
+  .dandy-pdp-section-head {
+    margin-bottom: 24px;
+  }
+
+  .dandy-pdp-details-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .dandy-pdp-details-layout:not(:has(.dandy-pdp-routine-aside)) {
+    grid-template-columns: minmax(0, 780px);
+  }
+
+  .dandy-pdp-desc-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .dandy-pdp-desc-card {
+    padding: 20px 22px;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+  }
+
+  .dandy-pdp-desc-title {
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--dandy-font-active-sans);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-desc-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .dandy-pdp-desc-p {
+    margin: 0;
+    font-size: var(--dandy-text-base);
+    line-height: var(--dandy-leading-body-ar);
+    color: var(--dandy-ink-secondary);
+    max-width: 70ch;
+  }
+
+  .dandy-pdp-desc-p + .dandy-pdp-desc-p {
+    margin-top: 10px;
+  }
+
+  .dandy-pdp-desc-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .dandy-pdp-desc-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: var(--dandy-text-base);
+    line-height: 1.65;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-pdp-bullet-icon {
+    color: var(--dandy-botanical-deep);
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .dandy-pdp-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-botanical-deep);
+    color: var(--dandy-ink-inverse);
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .dandy-pdp-routine-card {
+    padding: 22px;
+    background-color: var(--dandy-botanical-soft);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .dandy-pdp-routine-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: var(--dandy-text-xs);
+    font-weight: 700;
+    color: var(--dandy-botanical-deep);
+  }
+
+  .dandy-pdp-routine-copy {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-pdp-routine-link {
+    color: var(--dandy-ink-primary);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* 3. Related Products Section */
+  .dandy-pdp-related-section {
+    padding-block: clamp(40px, 5vw, 68px);
+    background-color: var(--dandy-bg-page);
+  }
+
+  .dandy-pdp-related-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .dandy-pdp-related-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--dandy-ink-primary);
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid var(--dandy-border-default);
+    padding-bottom: 3px;
+    transition: color var(--dandy-transition-fast), border-color var(--dandy-transition-fast);
+  }
+
+  .dandy-pdp-related-more:hover {
+    color: var(--dandy-accent-text);
+    border-color: var(--dandy-accent-primary);
+  }
+
+  .dandy-pdp-related-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  /* 4. 404 Not Found View */
+  .dandy-pdp-notfound-wrap {
+    padding-block: clamp(48px, 8vw, 96px);
+  }
+
+  .dandy-pdp-notfound {
+    max-width: 560px;
+    margin-inline: auto;
+    padding: 40px 28px;
+    text-align: center;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .dandy-pdp-notfound-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-stage);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-pdp-notfound h1 {
+    margin: 0;
+    font-size: var(--dandy-text-h2);
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-pdp-notfound p {
+    margin: 0 0 8px;
+    font-size: var(--dandy-text-base);
+    color: var(--dandy-ink-secondary);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 1099px) {
+    .dandy-pdp-related-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .dandy-pdp-grid {
+      grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+      gap: 24px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .dandy-pdp-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .dandy-pdp-details-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .dandy-pdp-related-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .dandy-pdp-desc-card {
+      padding: 16px;
+    }
+  }
+</style>

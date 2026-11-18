@@ -1,0 +1,413 @@
+---
+// src/pages/category/[category].astro
+// Server-Side Rendered Category Landing Page for Dandy Cosmetics
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+import ProductCard from '../../components/product/ProductCard.astro';
+import CategoryEditorialHeader from '../../components/catalog/CategoryEditorialHeader.astro';
+import CatalogToolbar from '../../components/catalog/CatalogToolbar.astro';
+import MobileFilterDrawer from '../../components/catalog/MobileFilterDrawer.astro';
+import CatalogEmptyState from '../../components/catalog/CatalogEmptyState.astro';
+import { getAllProducts, SITE_URL, type Product } from '../../utils/products';
+import {
+  getCategoryBySlug,
+  getProductsForCategory,
+  generateCategoryJsonLd,
+  type CategoryTaxonomy,
+} from '../../utils/categories';
+import {
+  calculatePinkFridayPricing,
+  getPublishedPinkFridayCampaign,
+} from '../../utils/pink-friday-server';
+import { buildCatalogItemMeta } from '../../scripts/catalog';
+
+const { category } = Astro.params;
+
+// 1. Resolve Category Configuration
+const categoryConfig: CategoryTaxonomy | null = getCategoryBySlug(category);
+const isNotFound = !categoryConfig;
+
+if (isNotFound) {
+  Astro.response.status = 404;
+}
+
+// 2. Fetch Category Products & Campaign Server-Side if valid
+let categoryProducts: Product[] = [];
+const [allProducts, pinkFridayCampaign] = categoryConfig
+  ? await Promise.all([getAllProducts(), getPublishedPinkFridayCampaign()])
+  : [[], null];
+
+if (categoryConfig) {
+  categoryProducts = getProductsForCategory(categoryConfig.slug, allProducts);
+}
+
+const catalogEntries = categoryProducts.map((product, index) => {
+  const pfPricing = pinkFridayCampaign
+    ? calculatePinkFridayPricing(product, pinkFridayCampaign)
+    : null;
+  const meta = buildCatalogItemMeta(product, index, pfPricing);
+  return { product, pfPricing, meta };
+});
+
+const hasSaleItems = catalogEntries.some((e) => e.meta.isOnSale);
+const hasBestSellerItems = catalogEntries.some((e) => e.meta.isBestSeller);
+const hasSoldOutItems = catalogEntries.some((e) => e.meta.isSoldOut);
+
+// 3. SEO Metadata Configuration
+const pageTitle = categoryConfig
+  ? categoryConfig.seoTitle
+  : 'القسم غير موجود (404) | داندي كوزمتكس - Dandy Cosmetics';
+
+const pageDescription = categoryConfig
+  ? categoryConfig.seoDescription
+  : 'عذراً، القسم المطلوب غير متوفر حالياً في متجر داندي كوزمتكس. تصفحي مجموعاتنا الطبيعية للعناية بالجمال.';
+
+const canonicalUrl = categoryConfig
+  ? `${SITE_URL}/category/${categoryConfig.slug}`
+  : `${SITE_URL}/all-products`;
+
+const ogImage = categoryConfig
+  ? categoryConfig.image
+  : `${SITE_URL}/assets/images/fav-icons/android-chrome-512x512.png`;
+
+// 4. Generate Structured Data (Only for valid 200 category pages)
+const schemas = categoryConfig
+  ? generateCategoryJsonLd(categoryConfig, categoryProducts, canonicalUrl)
+  : [];
+
+// 5. Approved Category-to-Article Editorial Guides (Phase 3.5)
+interface CategoryArticleGuide {
+  title: string;
+  description: string;
+  anchorText: string;
+  articleUrl: string;
+}
+
+const CATEGORY_ARTICLE_MAP: Record<string, CategoryArticleGuide> = {
+  'hair-care': {
+    title: 'دليل العناية التحريري',
+    description: 'تعرّفي على أفضل النصائح والخطوات العملية لتغذية وترميم خصلات شعركِ وحمايتها من التلف:',
+    anchorText: 'دليل روتين العناية بالشعر الجاف والمتقصف',
+    articleUrl: '/blog/daily-hair-care-routine-dry-damaged-hair',
+  },
+  'skin-care': {
+    title: 'دليل العناية التحريري',
+    description: 'اكتشفي الترتيب اليومي المثالي لخطوات التنظيف والترطيب وتغذية بشرتكِ للحفاظ على نضارتها:',
+    anchorText: 'دليل روتين العناية بالبشرة والحفاظ على نضارتها',
+    articleUrl: '/blog/daily-skincare-routine-healthy-skin',
+  },
+};
+
+const categoryArticle = categoryConfig ? CATEGORY_ARTICLE_MAP[categoryConfig.slug] : null;
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  canonical={categoryConfig ? canonicalUrl : undefined}
+  robots={isNotFound ? 'noindex, nofollow' : 'index, follow'}
+>
+  <Fragment slot="head">
+    {categoryConfig && (
+      <>
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={categoryConfig.seoTitle} />
+        <meta property="og:description" content={categoryConfig.seoDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:site_name" content="داندي كوزمتكس - Dandy Cosmetics" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={categoryConfig.seoTitle} />
+        <meta name="twitter:description" content={categoryConfig.seoDescription} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {schemas.map((schema) => (
+          <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+        ))}
+      </>
+    )}
+  </Fragment>
+
+  {isNotFound ? (
+    <main class="dandy-page-band">
+      <div class="dandy-container">
+        <div class="dandy-cat-notfound">
+          <div class="dandy-cat-notfound-icon" aria-hidden="true">
+            <Icon name="search" size={28} strokeWidth={1.7} />
+          </div>
+          <h1 class="dandy-cat-notfound-title dandy-font-ar-display">القسم غير موجود (404)</h1>
+          <p class="dandy-cat-notfound-desc">
+            عذراً، القسم الذي تبحثين عنه غير متوفر أو تم نقله. يمكنكِ استعراض كامل تشكيلة داندي الطبيعية للعناية بالبشرة والشعر والجسم عبر صفحة المتجر.
+          </p>
+          <div class="dandy-cat-notfound-actions">
+            <a href="/all-products" class="dandy-btn dandy-btn--editorial">
+              <span>تصفحي جميع المنتجات</span>
+              <Icon name="arrow-left" size={16} strokeWidth={1.85} />
+            </a>
+            <a href="/" class="dandy-btn dandy-btn--outline">
+              <span>العودة للرئيسية</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  ) : (
+    <>
+      <CategoryEditorialHeader
+        category={categoryConfig!}
+        productCount={categoryProducts.length}
+      />
+
+      <main
+        class="dandy-page-band"
+        id="category-catalog"
+        data-catalog-root
+        data-locked-category={categoryConfig!.slug}
+        data-show-category-filter="false"
+        data-sync-url="true"
+      >
+        <div class="dandy-container">
+          {catalogEntries.length > 0 ? (
+            <>
+              <CatalogToolbar
+                totalCount={catalogEntries.length}
+                showCategoryFilter={false}
+                showPriceFilter={true}
+                hasSaleItems={hasSaleItems}
+                hasBestSellerItems={hasBestSellerItems}
+                hasSoldOutItems={hasSoldOutItems}
+                searchPlaceholder={`ابحثي في قسم ${categoryConfig!.arabicName}...`}
+              />
+
+              <MobileFilterDrawer
+                showCategoryFilter={false}
+                showPriceFilter={true}
+                hasSaleItems={hasSaleItems}
+                hasBestSellerItems={hasBestSellerItems}
+                hasSoldOutItems={hasSoldOutItems}
+              />
+
+              <div class="dandy-catalog-grid" id="category-grid" data-catalog-grid>
+                {catalogEntries.map(({ product, pfPricing, meta }, index) => (
+                  <div
+                    class="dandy-catalog-slot"
+                    data-catalog-item
+                    data-product-id={meta.id}
+                    data-index={meta.index}
+                    data-name={meta.name}
+                    data-category={meta.categorySlug}
+                    data-category-label={meta.categoryLabelAr}
+                    data-price={meta.currentPrice}
+                    data-on-sale={meta.isOnSale ? 'true' : 'false'}
+                    data-bestseller={meta.isBestSeller ? 'true' : 'false'}
+                    data-sold-out={meta.isSoldOut ? 'true' : 'false'}
+                    data-search={meta.searchText}
+                  >
+                    <ProductCard
+                      product={product}
+                      pinkFridayPricing={pfPricing}
+                      priority={index < 4}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <CatalogEmptyState
+                isFilterEmpty={true}
+                hidden={true}
+                icon="search"
+                title="لا توجد منتجات تطابق بحثكِ في هذا القسم"
+                description="جرّبي تعديل كلمات البحث أو مسح الفلاتر لمشاهدة كل مستحضرات القسم المتاحة."
+                resetLabel="عرض كل منتجات القسم"
+              />
+            </>
+          ) : (
+            <CatalogEmptyState
+              hidden={false}
+              icon="package-check"
+              title="لا توجد منتجات متاحة في هذا القسم حالياً"
+              description="يمكنكِ تصفح بقية أقسام داندي واستكشاف المستحضرات المتاحة الآن."
+              ctaLabel="تصفح جميع المنتجات"
+              ctaHref="/all-products"
+            />
+          )}
+        </div>
+      </main>
+
+      {categoryArticle && (
+        <section class="dandy-cat-guide-band" aria-label="دليل العناية التحريري">
+          <div class="dandy-container">
+            <div class="dandy-cat-guide-card">
+              <div class="dandy-cat-guide-icon" aria-hidden="true">
+                <Icon name="book-open" size={22} strokeWidth={1.75} />
+              </div>
+
+              <div class="dandy-cat-guide-body">
+                <h2 class="dandy-cat-guide-heading dandy-font-ar-display">{categoryArticle.title}</h2>
+                <p class="dandy-cat-guide-text">{categoryArticle.description}</p>
+              </div>
+
+              <div class="dandy-cat-guide-action">
+                <a href={categoryArticle.articleUrl} class="dandy-cat-guide-link">
+                  <span>{categoryArticle.anchorText}</span>
+                  <Icon name="arrow-left" size={16} strokeWidth={1.85} />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  )}
+
+  <script>
+    import { initCatalogControllers } from '../../scripts/catalog-client';
+    initCatalogControllers();
+  </script>
+</BaseLayout>
+
+<style>
+  .dandy-cat-notfound {
+    max-width: 560px;
+    margin: 24px auto;
+    padding: clamp(32px, 5vw, 56px) 24px;
+    text-align: center;
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .dandy-cat-notfound-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--dandy-radius-pill);
+    background-color: var(--dandy-bg-page);
+    border: 1px solid var(--dandy-border-subtle);
+    color: var(--dandy-ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dandy-cat-notfound-title {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-cat-notfound-desc {
+    margin: 0;
+    font-size: var(--dandy-text-base);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-cat-notfound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 6px;
+  }
+
+  /* Responsive Editorial Guide Card (Root-Cause Overflow Fix — No white-space: nowrap trap) */
+  .dandy-cat-guide-band {
+    padding-bottom: clamp(48px, 6vw, 72px);
+  }
+
+  .dandy-cat-guide-card {
+    background-color: var(--dandy-bg-editorial);
+    border: 1px solid var(--dandy-border-subtle);
+    border-radius: var(--dandy-radius-md);
+    padding: clamp(18px, 3vw, 28px);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .dandy-cat-guide-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--dandy-radius-sm);
+    background-color: var(--dandy-botanical-soft);
+    color: var(--dandy-botanical-deep);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .dandy-cat-guide-body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dandy-cat-guide-heading {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dandy-ink-primary);
+  }
+
+  .dandy-cat-guide-text {
+    margin: 0;
+    font-size: var(--dandy-text-sm);
+    line-height: 1.7;
+    color: var(--dandy-ink-secondary);
+  }
+
+  .dandy-cat-guide-action {
+    min-width: 0;
+  }
+
+  .dandy-cat-guide-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    max-width: 100%;
+    padding: 10px 18px;
+    border-radius: var(--dandy-radius-sm);
+    border: 1px solid var(--dandy-border-default);
+    background-color: var(--dandy-bg-page);
+    color: var(--dandy-ink-primary);
+    font-size: var(--dandy-text-sm);
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    white-space: normal;
+    text-align: center;
+    overflow-wrap: anywhere;
+    transition: border-color var(--dandy-transition-fast), background-color var(--dandy-transition-fast), color var(--dandy-transition-fast);
+  }
+
+  .dandy-cat-guide-link:hover {
+    background-color: var(--dandy-ink-primary);
+    border-color: var(--dandy-ink-primary);
+    color: var(--dandy-ink-inverse);
+  }
+
+  @media (max-width: 899px) {
+    .dandy-cat-guide-card {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    .dandy-cat-guide-action,
+    .dandy-cat-guide-link {
+      width: 100%;
+    }
+  }
+</style>
